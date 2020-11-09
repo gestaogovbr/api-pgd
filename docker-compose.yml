@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:11
+    ports:
+      - "5432:5432"
+    volumes:
+        - ./database:/var/lib/postgresql      
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=api_pgd
+  web:
+    image: api-pgd:latest
+    command: uvicorn api:app --host 0.0.0.0 --port 5057 --reload
+    ports:
+      - "5057:5057"
+    volumes:
+        - ./:/home/api-pgd
+    depends_on:
+      - db
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
