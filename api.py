@@ -15,12 +15,17 @@ def get_db():
     finally:
         db.close()
 
-@app.post("/plano_trabalho/", response_model=schemas.PlanoTrabalho)
-async def create_plano_trabalho(
+@app.put("/plano_trabalho/{plano_id}", response_model=schemas.PlanoTrabalho)
+async def create_or_update_plano_trabalho(
+    plano_id: int,
     plano_trabalho: schemas.PlanoTrabalho,
     db: Session = Depends(get_db)
     ):
-    crud.create_plano_tabalho(db, plano_trabalho)
+    db_plano_trabalho = crud.get_plano_trabalho(db, plano_id)
+    if db_plano_trabalho is None:
+        crud.create_plano_tabalho(db, plano_id, plano_trabalho)
+    else:
+        crud.update_plano_tabalho(db, plano_id, plano_trabalho)
     return plano_trabalho
 
 @app.get("/plano_trabalho/{plano_id}")

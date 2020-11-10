@@ -8,13 +8,34 @@ def get_plano_trabalho(db: Session, plano_id: int):
         db
         .query(models.PlanoTrabalho)
         .filter(models.PlanoTrabalho.id == plano_id)
-        .first()
+        .one()
     )
 
-def create_plano_tabalho(db: Session, plano_trabalho: schemas.PlanoTrabalho):
-    "Cria um plano de trabalho no banco de dados."
-    db_plano_trabalho = models.PlanoTrabalho(**plano_trabalho.dict())
+def create_plano_tabalho(
+    db: Session,
+    plano_id: int,
+    plano_trabalho: schemas.PlanoTrabalho
+    ):
+    "Cria um plano de trabalho definido pelo plano_id."
+    db_plano_trabalho = models.PlanoTrabalho(
+        id = plano_id,
+        **plano_trabalho.dict()
+    )
     db.add(db_plano_trabalho)
+    db.commit()
+    db.refresh(db_plano_trabalho)
+    return db_plano_trabalho
+
+def update_plano_tabalho(
+    db: Session,
+    plano_id: int,
+    plano_trabalho: schemas.PlanoTrabalho
+    ):
+    "Atualiza um plano de trabalho definido pelo plano_id."
+    db_plano_trabalho = get_plano_trabalho(db, plano_id)
+    for k, v in db_plano_trabalho.__dict__.items():
+        if k[0] != '_' and k != 'id':
+            setattr(db_plano_trabalho, k, getattr(plano_trabalho, k))
     db.commit()
     db.refresh(db_plano_trabalho)
     return db_plano_trabalho
