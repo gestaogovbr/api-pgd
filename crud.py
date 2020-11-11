@@ -8,7 +8,7 @@ def get_plano_trabalho(db: Session, plano_id: int):
         db
         .query(models.PlanoTrabalho)
         .filter(models.PlanoTrabalho.id == plano_id)
-        .one()
+        .first()
     )
 
 def create_plano_tabalho(
