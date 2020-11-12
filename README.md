@@ -39,4 +39,9 @@ Alternativamente você pode subir a aplicação sem o parâmetro _detached_ `-d`
 ## Arquitetura da solução
 O arquivo `docker-compose.yml` descreve a receita dos conteiners que compõem a solução. Atualmente são utilizados 3 containers: um rodando o BD **Postgres 11**, outro rodando a **API** e outro rodando o **PgAdmin** para acessar o Postgres e realizar consultas ou qualquer manipulação no BD.
 
-Consulte o `docker-compose.yml` para descobrir o login e senha do PgAdmin e do Postgres. No PgAdmin utilize `'db'` como valor para o endereço do Postgres. Isso é necessário porquê o os containers utilizam uma rede interna do Docker para se comunicarem.
+
+## Dicas
+
+* Consulte o `docker-compose.yml` para descobrir o login e senha do PgAdmin e do Postgres
+* No PgAdmin utilize `'db'` como valor para o endereço do Postgres. Isso é necessário porquê os conteiners utilizam uma rede interna do Docker para se comunicarem
+* Caso a modelagem ORM seja alterada, pode ser mais simples remover (dropar) o BD e recriá-lo novamente apenas subindo a solução. Para remover o BD utilize o PgAdmin
