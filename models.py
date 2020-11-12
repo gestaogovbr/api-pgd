@@ -11,9 +11,9 @@ from database import Base
 class PlanoTrabalho(Base):
     "Plano de Trabalho"
     __tablename__ = 'plano_trabalho'
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     cod_unidade = Column(Integer)
-    cod_plano_trabalho = Column(String)
+    cod_plano = Column(String)
     matricula_siape = Column(Integer)
     cpf = Column(String)
     nome_participante = Column(String)
@@ -45,4 +45,4 @@ class Atividade(Base):
     avaliacao = Column(Integer)
     data_avaliacao = Column(Date)
     justificativa = Column(String)
-    plano_trabalho = relationship('PlanoTrabalho', back_populates='atividades')
+    # plano_trabalho = relationship('PlanoTrabalho', back_populates='atividades')

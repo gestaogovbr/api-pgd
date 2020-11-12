@@ -18,8 +18,8 @@ class Atividade(BaseModel):
 
 class PlanoTrabalho(BaseModel):
     cod_unidade: int
-    cod_plano_trabalho: str
-    atividades: List[Atividade]
+    cod_plano: str
+    # atividades: List[Atividade]
     matricula_siape: int
     cpf: str
     nome_participante: str

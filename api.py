@@ -87,20 +87,19 @@ async def shutdown():
 
 @app.put("/plano_trabalho/{plano_id}", response_model=schemas.PlanoTrabalho)
 async def create_or_update_plano_trabalho(
-    plano_id: int,
     plano_trabalho: schemas.PlanoTrabalho,
     db: Session = Depends(get_db)
     ):
-    db_plano_trabalho = crud.get_plano_trabalho(db, plano_id)
+    db_plano_trabalho = crud.get_plano_trabalho(db, plano_trabalho.cod_plano)
     if db_plano_trabalho is None:
-        crud.create_plano_tabalho(db, plano_id, plano_trabalho)
+        crud.create_plano_tabalho(db, plano_trabalho)
     else:
-        crud.update_plano_tabalho(db, plano_id, plano_trabalho)
+        crud.update_plano_tabalho(db, plano_trabalho)
     return plano_trabalho
 
-@app.get("/plano_trabalho/{plano_id}")
-def get_plano_trabalho(plano_id: int, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
-    plano_trabalho = crud.get_plano_trabalho(db, plano_id)
+@app.get("/plano_trabalho/{cod_plano}")
+def get_plano_trabalho(cod_plano: str, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
     if plano_trabalho is None:
         return HTTPException(404, detail="Plano de trabalho não encontrado")
     return plano_trabalho

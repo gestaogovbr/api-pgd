@@ -2,23 +2,21 @@ from sqlalchemy.orm import Session
 
 import models, schemas
 
-def get_plano_trabalho(db: Session, plano_id: int):
+def get_plano_trabalho(db: Session, cod_plano: int):
     "Traz um plano de trabalho a partir do banco de dados."
     return (
         db
         .query(models.PlanoTrabalho)
-        .filter(models.PlanoTrabalho.id == plano_id)
+        .filter(models.PlanoTrabalho.cod_plano == cod_plano)
         .first()
     )
 
 def create_plano_tabalho(
     db: Session,
-    plano_id: int,
     plano_trabalho: schemas.PlanoTrabalho
     ):
-    "Cria um plano de trabalho definido pelo plano_id."
+    "Cria um plano de trabalho definido pelo cod_plano."
     db_plano_trabalho = models.PlanoTrabalho(
-        id = plano_id,
         **plano_trabalho.dict()
     )
     db.add(db_plano_trabalho)
@@ -28,11 +26,10 @@ def create_plano_tabalho(
 
 def update_plano_tabalho(
     db: Session,
-    plano_id: int,
     plano_trabalho: schemas.PlanoTrabalho
     ):
-    "Atualiza um plano de trabalho definido pelo plano_id."
-    db_plano_trabalho = get_plano_trabalho(db, plano_id)
+    "Atualiza um plano de trabalho definido pelo cod_plano."
+    db_plano_trabalho = get_plano_trabalho(db, plano_trabalho.cod_plano)
     for k, v in db_plano_trabalho.__dict__.items():
         if k[0] != '_' and k != 'id':
             setattr(db_plano_trabalho, k, getattr(plano_trabalho, k))
