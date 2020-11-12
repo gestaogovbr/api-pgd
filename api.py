@@ -17,7 +17,24 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+description = """
+O **Programa de Gestão** é a política da Administração Pública Federal para ...
+
+De acordo com a norma [IN nº65/2020](https://www.in.gov.br/en/web/dou/-/instrucao-normativa-n-65-de-30-de-julho-de-2020-269669395) todos os órgãos devem submeter ao órgão central todas
+as informações sobre os Planos de Trabalho que estão sendo realizados naquela
+instituição. A submissão deve ser realizada através desta **API**.
+[melhorar estes textos!!]
+
+Para solicitar credenciais para submissão de dados, entre em contato com [email-do-suporte@economia.gov.br](mailto:email-do-suporte@economia.gov.br)
+
+
+"""
+
+app = FastAPI(
+    title="Plataforma do Programa de Gestão - PGD",
+    description=description,
+    version="0.1.0",
+)
 
 @app.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
