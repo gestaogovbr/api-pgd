@@ -1,17 +1,16 @@
 from datetime import timedelta
 
-from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import Depends, FastAPI, HTTPException, status, Request
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from fastapi_users import FastAPIUsers
+from fastapi_users.authentication import JWTAuthentication
 
 import models, schemas, crud
 from database import engine, get_db
-from auth import (
-    fake_users_db, authenticate_user, create_access_token,
-    get_current_active_user, oauth2_scheme,
-    Token, User
-)
+from auth import user_db, User, UserCreate, UserUpdate, UserDB, SECRET_KEY
+from auth import database as auth_db
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -36,24 +35,55 @@ app = FastAPI(
     version="0.1.0",
 )
 
-@app.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-@app.get("/users/me")
-async def read_users_me(current_user: User = Depends(get_current_active_user)):
-    return current_user
+def on_after_register(user: UserDB, request: Request):
+    print(f"User {user.id} has registered.")
+
+
+def on_after_forgot_password(user: UserDB, token: str, request: Request):
+    print(f"User {user.id} has forgot their password. Reset token: {token}")
+
+jwt_authentication = JWTAuthentication(
+    secret=SECRET_KEY,
+    lifetime_seconds=3600,
+    tokenUrl="/auth/jwt/login"
+)   
+
+fastapi_users = FastAPIUsers(
+    user_db,
+    [jwt_authentication],
+    User,
+    UserCreate,
+    UserUpdate,
+    UserDB,
+)
+
+app = FastAPI()
+app.include_router(
+    fastapi_users.get_auth_router(jwt_authentication), prefix="/auth/jwt", tags=["auth"]
+)
+app.include_router(
+    fastapi_users.get_register_router(on_after_register), prefix="/auth", tags=["auth"]
+)
+app.include_router(
+    fastapi_users.get_reset_password_router(
+        SECRET_KEY, after_forgot_password=on_after_forgot_password
+    ),
+    prefix="/auth",
+    tags=["auth"],
+)
+app.include_router(fastapi_users.get_users_router(), prefix="/users", tags=["users"])
+
+
+@app.on_event("startup")
+async def startup():
+    await auth_db.connect()
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    await auth_db.disconnect()
 
 @app.put("/plano_trabalho/{plano_id}", response_model=schemas.PlanoTrabalho)
 async def create_or_update_plano_trabalho(
