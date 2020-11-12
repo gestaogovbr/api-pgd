@@ -37,7 +37,7 @@ Alternativamente você pode subir a aplicação sem o parâmetro _detached_ `-d`
 > ```$ docker-compose up```
 
 ## Arquitetura da solução
-O arquivo `docker-compose.yml` descreve a receita dos conteiners que compõem a solução. Atualmente são utilizados 3 containers: um rodando o BD **Postgres 11**, outro rodando a **API** e outro rodando o **PgAdmin** para acessar o Postgres e realizar consultas ou qualquer manipulação no BD.
+O arquivo `docker-compose.yml` descreve a receita dos conteiners que compõem a solução. Atualmente são utilizados 3 containers: um rodando o BD **Postgres 11**, outro rodando a **API** e outro rodando o **PgAdmin** para acessar o Postgres e realizar consultas ou qualquer manipulação no BD. O PgAdmin está rodando em http://localhost:5050.
 
 
 ## Dicas
