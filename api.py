@@ -35,7 +35,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
 
 def on_after_register(user: UserDB, request: Request):
     print(f"User {user.id} has registered.")
@@ -48,7 +48,7 @@ jwt_authentication = JWTAuthentication(
     secret=SECRET_KEY,
     lifetime_seconds=3600,
     tokenUrl="/auth/jwt/login"
-)   
+)
 
 fastapi_users = FastAPIUsers(
     user_db,
