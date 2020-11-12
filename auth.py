@@ -6,8 +6,12 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from typing import List, Optional
 from pydantic import BaseModel
+from fastapi_users import models as user_models
+from fastapi_users.db import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
+import databases
+from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 
-from database import SessionLocal, engine
+from database import SessionLocal, engine, SQLALCHEMY_DATABASE_URL
 
 
 # to get a string like this run:
@@ -40,11 +44,28 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
-class User(BaseModel):
-    username: str
-    email: Optional[str] = None
-    full_name: Optional[str] = None
-    disabled: Optional[bool] = None
+
+class User(user_models.BaseUser):
+    orgao: int
+
+class UserCreate(user_models.BaseUserCreate):
+    pass
+
+class UserUpdate(User, user_models.BaseUserUpdate):
+    pass
+
+class UserDB(User, user_models.BaseUserDB):
+    pass
+
+database = databases.Database(SQLALCHEMY_DATABASE_URL)
+
+Base: DeclarativeMeta = declarative_base()
+
+class UserTable(Base, SQLAlchemyBaseUserTable):
+    pass
+
+users = UserTable.__table__
+user_db = SQLAlchemyUserDatabase(UserDB, database, users)
 
 class UserInDB(User):
     hashed_password: str
