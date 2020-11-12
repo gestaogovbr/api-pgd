@@ -14,7 +14,11 @@ Repositório com o código-fonte da API do PGD
 > ```$ docker build -t api-pgd .```
 
 O parâmetro `-t api-pgd` define uma tag(um nome) para a imagem docker gerada.
-4. Para subir os containers:
+
+4. Criar diretório com permissão correta para persistência do PgAdmin:
+> ```$ mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/```
+
+5. Para subir os containers:
 > ```$ docker-compose up -d```
 
 A API está disponível em http://localhost:5057 e em http://localhost:5057/docs você acessa a interface para interagir com a API.
