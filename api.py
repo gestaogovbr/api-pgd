@@ -59,7 +59,6 @@ fastapi_users = FastAPIUsers(
     UserDB,
 )
 
-app = FastAPI()
 app.include_router(
     fastapi_users.get_auth_router(jwt_authentication),
     prefix="/auth/jwt",
