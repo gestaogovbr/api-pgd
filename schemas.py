@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from datetime import date
 
 class Atividade(BaseModel):
+    id_atividade: int
     nome_grupo_atividade: Optional[str]
     nome_atividade: str
     faixa_complexidade: str

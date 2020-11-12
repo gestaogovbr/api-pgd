@@ -61,10 +61,14 @@ fastapi_users = FastAPIUsers(
 
 app = FastAPI()
 app.include_router(
-    fastapi_users.get_auth_router(jwt_authentication), prefix="/auth/jwt", tags=["auth"]
+    fastapi_users.get_auth_router(jwt_authentication),
+    prefix="/auth/jwt",
+    tags=["auth"]
 )
 app.include_router(
-    fastapi_users.get_register_router(on_after_register), prefix="/auth", tags=["auth"]
+    fastapi_users.get_register_router(on_after_register),
+    prefix="/auth",
+    tags=["auth"]
 )
 app.include_router(
     fastapi_users.get_reset_password_router(
@@ -73,7 +77,11 @@ app.include_router(
     prefix="/auth",
     tags=["auth"],
 )
-app.include_router(fastapi_users.get_users_router(), prefix="/users", tags=["users"])
+app.include_router(
+    fastapi_users.get_users_router(),
+    prefix="/users",
+    tags=["users"]
+)
 
 
 @app.on_event("startup")
@@ -85,21 +93,36 @@ async def startup():
 async def shutdown():
     await auth_db.disconnect()
 
-@app.put("/plano_trabalho/{plano_id}", response_model=schemas.PlanoTrabalho)
+@app.put("/plano_trabalho/{cod_plano}",
+         response_model=schemas.PlanoTrabalho
+         )
 async def create_or_update_plano_trabalho(
+    cod_plano: str,
     plano_trabalho: schemas.PlanoTrabalho,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    # token: str = Depends(oauth2_scheme)
     ):
-    db_plano_trabalho = crud.get_plano_trabalho(db, plano_trabalho.cod_plano)
+    if cod_plano != plano_trabalho.cod_plano:
+        return HTTPException(
+            400,
+            detail="Parâmetro cod_plano diferente do conteúdo do JSON")
+
+    db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
+
     if db_plano_trabalho is None:
         crud.create_plano_tabalho(db, plano_trabalho)
     else:
         crud.update_plano_tabalho(db, plano_trabalho)
     return plano_trabalho
 
-@app.get("/plano_trabalho/{cod_plano}")
-def get_plano_trabalho(cod_plano: str, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+@app.get("/plano_trabalho/{cod_plano}",
+         response_model=schemas.PlanoTrabalho
+        )
+def get_plano_trabalho(cod_plano: str,
+                       db: Session = Depends(get_db),
+                    #    token: str = Depends(oauth2_scheme)
+                       ):
     plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
     if plano_trabalho is None:
         return HTTPException(404, detail="Plano de trabalho não encontrado")
-    return plano_trabalho
+    return plano_trabalho.__dict__
