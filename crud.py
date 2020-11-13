@@ -4,7 +4,7 @@ import models, schemas
 
 def get_plano_trabalho(db: Session, cod_plano: int):
     "Traz um plano de trabalho a partir do banco de dados."
-    return (
+    return schemas.PlanoTrabalhoSchema.from_orm(
         db
         .query(models.PlanoTrabalho)
         .filter(models.PlanoTrabalho.cod_plano == cod_plano)
@@ -13,22 +13,22 @@ def get_plano_trabalho(db: Session, cod_plano: int):
 
 def create_plano_tabalho(
     db: Session,
-    plano_trabalho: schemas.PlanoTrabalho
+    plano_trabalho: schemas.PlanoTrabalhoSchema
     ):
     "Cria um plano de trabalho definido pelo cod_plano."
-    # db_plano_trabalho = models.PlanoTrabalho(
-    #     **plano_trabalho.dict()
-    # )
-    plano_trabalho_data = jsonable_encoder(plano_trabalho)
-    db_plano_trabalho = PlanoTrabalho(**plano_trabalho_data)
+    db_atividades = [models.Atividade(**a.dict()) for a in plano_trabalho.atividades]
+    plano_trabalho.atividades = db_atividades
+    db_plano_trabalho = models.PlanoTrabalho(
+        **plano_trabalho.dict()
+    )
     db.add(db_plano_trabalho)
     db.commit()
     db.refresh(db_plano_trabalho)
-    return schemas.PlanoTrabalho.from_orm(db_plano_trabalho)
+    return schemas.PlanoTrabalhoSchema.from_orm(db_plano_trabalho)
 
 def update_plano_tabalho(
     db: Session,
-    plano_trabalho: schemas.PlanoTrabalho
+    plano_trabalho: schemas.PlanoTrabalhoSchema
     ):
     "Atualiza um plano de trabalho definido pelo cod_plano."
     db_plano_trabalho = get_plano_trabalho(db, plano_trabalho.cod_plano)

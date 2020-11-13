@@ -25,8 +25,6 @@ instituição. A submissão deve ser realizada através desta **API**.
 [melhorar estes textos!!]
 
 Para solicitar credenciais para submissão de dados, entre em contato com [email-do-suporte@economia.gov.br](mailto:email-do-suporte@economia.gov.br)
-
-
 """
 
 app = FastAPI(
@@ -87,17 +85,16 @@ app.include_router(
 async def startup():
     await auth_db.connect()
 
-
 @app.on_event("shutdown")
 async def shutdown():
     await auth_db.disconnect()
 
 @app.put("/plano_trabalho/{cod_plano}",
-         response_model=schemas.PlanoTrabalho
+         response_model=schemas.PlanoTrabalhoSchema
          )
 async def create_or_update_plano_trabalho(
     cod_plano: str,
-    plano_trabalho: schemas.PlanoTrabalho,
+    plano_trabalho: schemas.PlanoTrabalhoSchema,
     db: Session = Depends(get_db),
     # token: str = Depends(oauth2_scheme)
     ):
@@ -115,7 +112,7 @@ async def create_or_update_plano_trabalho(
     return plano_trabalho
 
 @app.get("/plano_trabalho/{cod_plano}",
-         response_model=schemas.PlanoTrabalho
+         response_model=schemas.PlanoTrabalhoSchema
         )
 def get_plano_trabalho(cod_plano: str,
                        db: Session = Depends(get_db),

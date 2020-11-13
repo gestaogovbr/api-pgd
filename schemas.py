@@ -2,7 +2,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 from datetime import date
 
-class Atividade(BaseModel):
+class AtividadeSchema(BaseModel):
     id_atividade: int
     nome_grupo_atividade: Optional[str]
     nome_atividade: str
@@ -21,7 +21,7 @@ class Atividade(BaseModel):
         orm_mode = True
 
 
-class PlanoTrabalho(BaseModel):
+class PlanoTrabalhoSchema(BaseModel):
     cod_unidade: int
     cod_plano: str
     matricula_siape: int
@@ -38,7 +38,7 @@ class PlanoTrabalho(BaseModel):
     entregue_no_prazo: Optional[bool] = None #TODO Na especificação está como Int e usa 1 e 2 para sim e não. Não seria melhor usar bool?
     horas_homologadas: float
 
-    atividades: List[Atividade] # = []
+    atividades: List[AtividadeSchema] # = []
 
     class Config:
         orm_mode = True

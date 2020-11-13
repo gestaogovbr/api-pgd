@@ -47,4 +47,4 @@ class Atividade(Base):
     avaliacao = Column(Integer)
     data_avaliacao = Column(Date)
     justificativa = Column(String)
-    plano_trabalaho = relationship('PlanoTrabalho', back_populates='atividades')
+    plano_trabalho = relationship('PlanoTrabalho', back_populates='atividades')
