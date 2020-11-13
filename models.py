@@ -27,13 +27,14 @@ class PlanoTrabalho(Base):
     data_interrupcao = Column(Date)
     entregue_no_prazo = Column(Boolean) #TODO Na especificação está como Int e usa 1 e 2 para sim e não. Não seria melhor usar bool?
     horas_homologadas = Column(Float)
-    atividades = relationship('Atividade', backref='plano_trabalho')
+    atividades = relationship('Atividade', back_populates='plano_trabalho')
 
 class Atividade(Base):
     "Atividade"
     __tablename__ = 'atividade'
     id_atividade = Column(Integer, primary_key=True, index=True)
-    id_plano_trabalho = Column(Integer, ForeignKey('plano_trabalho.id'))
+    # id_plano_trabalho = Column(Integer, ForeignKey('plano_trabalho.id'))
+    id_plano_trabalho = Column('id_plano_trabalho', Integer(), ForeignKey('plano_trabalho.id'), nullable=False)
     nome_grupo_atividade = Column(String)
     nome_atividade = Column(String)
     faixa_complexidade = Column(String)
@@ -46,3 +47,4 @@ class Atividade(Base):
     avaliacao = Column(Integer)
     data_avaliacao = Column(Date)
     justificativa = Column(String)
+    plano_trabalaho = relationship('PlanoTrabalho', back_populates='atividades')

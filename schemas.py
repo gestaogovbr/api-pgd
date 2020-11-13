@@ -17,10 +17,13 @@ class Atividade(BaseModel):
     data_avaliacao: date
     justificativa: Optional[str]
 
+    class Config:
+        orm_mode = True
+
+
 class PlanoTrabalho(BaseModel):
     cod_unidade: int
     cod_plano: str
-    # atividades: List[Atividade]
     matricula_siape: int
     cpf: str
     nome_participante: str
@@ -34,3 +37,9 @@ class PlanoTrabalho(BaseModel):
     data_interrupcao: date
     entregue_no_prazo: Optional[bool] = None #TODO Na especificação está como Int e usa 1 e 2 para sim e não. Não seria melhor usar bool?
     horas_homologadas: float
+
+    atividades: List[Atividade] # = []
+
+    class Config:
+        orm_mode = True
+
