@@ -4,12 +4,16 @@ import models, schemas
 
 def get_plano_trabalho(db: Session, cod_plano: int):
     "Traz um plano de trabalho a partir do banco de dados."
-    return schemas.PlanoTrabalhoSchema.from_orm(
+    db_plano_trabalho = (
         db
         .query(models.PlanoTrabalho)
         .filter(models.PlanoTrabalho.cod_plano == cod_plano)
         .first()
     )
+    if db_plano_trabalho:
+        return schemas.PlanoTrabalhoSchema.from_orm(db_plano_trabalho)
+    else:
+        return None
 
 def create_plano_tabalho(
     db: Session,
