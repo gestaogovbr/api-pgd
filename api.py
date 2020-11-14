@@ -99,7 +99,7 @@ async def create_or_update_plano_trabalho(
     # token: str = Depends(oauth2_scheme)
     ):
     if cod_plano != plano_trabalho.cod_plano:
-        return HTTPException(
+        raise HTTPException(
             400,
             detail="Parâmetro cod_plano diferente do conteúdo do JSON")
 
@@ -120,5 +120,5 @@ def get_plano_trabalho(cod_plano: str,
                        ):
     plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
     if plano_trabalho is None:
-        return HTTPException(404, detail="Plano de trabalho não encontrado")
+        raise HTTPException(404, detail="Plano de trabalho não encontrado")
     return plano_trabalho.__dict__
