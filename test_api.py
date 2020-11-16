@@ -9,7 +9,7 @@ client =TestClient(app)
 
 pt_json = {
   "cod_unidade": 0,
-  "cod_plano": "999",
+  "cod_plano": "9999",
   "matricula_siape": 0,
   "cpf": "string",
   "nome_participante": "string",
@@ -25,7 +25,7 @@ pt_json = {
   "horas_homologadas": 0,
   "atividades": [
     {
-      "id_atividade": 9,
+      "id_atividade": 90,
       "nome_grupo_atividade": "string",
       "nome_atividade": "string",
       "faixa_complexidade": "string",
@@ -40,7 +40,7 @@ pt_json = {
       "justificativa": "string"
     },
     {
-      "id_atividade": 7,
+      "id_atividade": 70,
       "nome_grupo_atividade": "string",
       "nome_atividade": "string",
       "faixa_complexidade": "string",
@@ -56,6 +56,11 @@ pt_json = {
     }
   ]
 }
+
+def test_create_pt():
+    response = client.put("/plano_trabalho/9999", json=pt_json)
+    assert response.status_code == 200
+    assert response.json() == pt_json
 
 def test_create_pt_cod_plano_inconsistent():
     pt_json["cod_plano"] = 110
