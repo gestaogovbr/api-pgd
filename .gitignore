@@ -1,2 +1,6 @@
 __pycache__
 ./database
+.cache
+.local
+.ipython
+.vscode
