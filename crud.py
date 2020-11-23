@@ -20,6 +20,7 @@ def create_plano_tabalho(
     plano_trabalho: schemas.PlanoTrabalhoSchema
     ):
     "Cria um plano de trabalho definido pelo cod_plano."
+
     db_atividades = [models.Atividade(**a.dict()) for a in plano_trabalho.atividades]
     plano_trabalho.atividades = db_atividades
     db_plano_trabalho = models.PlanoTrabalho(
@@ -35,10 +36,19 @@ def update_plano_tabalho(
     plano_trabalho: schemas.PlanoTrabalhoSchema
     ):
     "Atualiza um plano de trabalho definido pelo cod_plano."
-    db_plano_trabalho = get_plano_trabalho(db, plano_trabalho.cod_plano)
+
+    db_plano_trabalho = (
+        db
+        .query(models.PlanoTrabalho)
+        .filter(models.PlanoTrabalho.cod_plano == plano_trabalho.cod_plano)
+        .first()
+    )
     for k, v in db_plano_trabalho.__dict__.items():
-        if k[0] != '_' and k != 'id':
+        # if k[0] != '_' and k != 'id':
+        if k[0] != '_' and k != 'id' and k != 'atividades':
             setattr(db_plano_trabalho, k, getattr(plano_trabalho, k))
+    # db_atividades = [models.Atividade(**a.dict()) for a in plano_trabalho.atividades]
+    # db_plano_trabalho.atividades = db_atividades
     db.commit()
     db.refresh(db_plano_trabalho)
     return db_plano_trabalho
