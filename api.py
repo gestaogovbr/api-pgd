@@ -98,6 +98,7 @@ async def create_or_update_plano_trabalho(
     db: Session = Depends(get_db),
     # token: str = Depends(oauth2_scheme)
     ):
+    # Validação da entrada conforme regras de negócio
     if cod_plano != plano_trabalho.cod_plano:
         raise HTTPException(
             400,
@@ -107,6 +108,12 @@ async def create_or_update_plano_trabalho(
         raise HTTPException(
             400,
             detail="Data fim do Plano de Trabalho deve ser maior ou igual que Data início.")
+    for atividade in plano_trabalho.atividades:
+        if plano_trabalho.data_fim > atividade.data_avaliacao:
+            raise HTTPException(
+                400,
+                detail="Data de avaliação da atividade deve maior ou"+
+                 " igual que a Data Fim do Plano de Trabalho.")
 
     db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
 
