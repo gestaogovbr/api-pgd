@@ -18,7 +18,17 @@ O parâmetro `-t api-pgd` define uma tag(um nome) para a imagem docker gerada.
 4. Criar diretório com permissão correta para persistência do PgAdmin:
 > ```$ sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/```
 
-5. Para subir os containers:
+5. Tentar subir os containers:
+> ```$ docker-compose up```
+
+Vai dar um erro de permissão no pgadmin. Quando a mensagem de erro aparecer,
+pare os containers (`ctrl` + `C`) e digite novamente:
+
+> ```sudo chown -R 5050:5050 ./pgadmin_data/```
+
+Para ajustar as permissões de arquivo em todas as novas subpastas.
+
+6. Para subir os containers:
 > ```$ docker-compose up -d```
 
 A API está disponível em http://localhost:5057 e em http://localhost:5057/docs você acessa a interface para interagir com a API.
