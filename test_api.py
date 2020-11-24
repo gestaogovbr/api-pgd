@@ -8,13 +8,11 @@ import pytest
 
 client =TestClient(app)
 
-cod_plano_exemp = 555
-
 @pytest.fixture
 def input_pt():
     pt_json = {
       "cod_unidade": 0,
-      "cod_plano": str(cod_plano_exemp),
+      "cod_plano": "555",
       "matricula_siape": 0,
       "cpf": "string",
       "nome_participante": "string",
@@ -30,7 +28,7 @@ def input_pt():
       "horas_homologadas": 0,
       "atividades": [
         {
-          "id_atividade": 900,
+          "id_atividade": "909290",
           "nome_grupo_atividade": "string",
           "nome_atividade": "string",
           "faixa_complexidade": "string",
@@ -45,7 +43,7 @@ def input_pt():
           "justificativa": "string"
         },
         {
-          "id_atividade": 700,
+          "id_atividade": "700290",
           "nome_grupo_atividade": "string",
           "nome_atividade": "string",
           "faixa_complexidade": "string",
@@ -64,19 +62,30 @@ def input_pt():
     return pt_json
 
 def test_create_pt(input_pt):
-    response = client.put(f"/plano_trabalho/{cod_plano_exemp}", json=input_pt)
+    response = client.put(f"/plano_trabalho/555", json=input_pt)
     assert response.status_code == 200
     assert response.json() == input_pt
 
-def test_create_pt_invalid_dates(input_pt):
-    data_inicio = "2020-06-04"
-    data_fim = "2020-04-01"
+@pytest.mark.parametrize("data_inicio, data_fim, cod_plano",
+                          [
+                            ("2020-06-04", "2020-04-01", 77),
+                            ("2020-06-04", "2020-04-01", 78),
+                            ("2020-06-04", "2020-04-01", 79),
+                            ("2020-04-01", "2020-06-04", 8870),
+                            ])
+def test_create_pt_invalid_dates(input_pt, data_inicio, data_fim, cod_plano):
     input_pt['data_inicio'] = data_inicio
     input_pt['data_fim'] = data_fim
+    input_pt['cod_plano'] = cod_plano
 
-    response = client.put(f"/plano_trabalho/{cod_plano_exemp}", json=input_pt)
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Data fim do Plano de Trabalho deve ser maior ou igual que Data início."}
+    response = client.put(f"/plano_trabalho/{cod_plano}", json=input_pt)
+    if data_inicio > data_fim:
+        assert response.status_code == 400
+        assert response.json() == {"detail": "Data fim do Plano de Trabalho deve ser maior ou igual que Data início."}
+    else:
+        assert response.status_code == 200
+        assert response.json() == input_pt
+
 
 def test_create_pt_cod_plano_inconsistent(input_pt):
     input_pt["cod_plano"] = 110
