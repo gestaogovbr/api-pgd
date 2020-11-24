@@ -75,12 +75,12 @@ def test_create_pt_cod_plano_inconsistent(truncate_bd, input_pt):
     input_pt["cod_plano"] = 110
     response = client.put("/plano_trabalho/111", json=input_pt)
     assert response.status_code == 400
-    assert response.json() == {"detail": "Parâmetro cod_plano diferente do conteúdo do JSON"}
+    assert response.json().get("detail", None) == "Parâmetro cod_plano diferente do conteúdo do JSON"
 
 def test_get_pt_inexistente():
     response = client.get("/plano_trabalho/888888888")
     assert response.status_code == 404
-    assert response.json() == {"detail": "Plano de trabalho não encontrado"}
+    assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
 
 @pytest.mark.parametrize("data_inicio, data_fim, cod_plano, id_ati_1, id_ati_2",
                           [
@@ -105,7 +105,7 @@ def test_create_pt_invalid_dates(truncate_bd,
     response = client.put(f"/plano_trabalho/{cod_plano}", json=input_pt)
     if data_inicio > data_fim:
         assert response.status_code == 400
-        assert response.json() == {"detail": "Data fim do Plano de Trabalho deve ser maior ou igual que Data início."}
+        assert response.json().get("detail", None) == "Data fim do Plano de Trabalho deve ser maior ou igual que Data início."
     else:
         assert response.status_code == 200
         # assert response.json() == input_pt # Para comparar estes objetos é preciso aceitar, por exemplo 0 = 0.0 nas propriedades do json
@@ -139,7 +139,7 @@ def test_create_pt_invalid_data_avaliacao(truncate_bd,
     response = client.put(f"/plano_trabalho/{cod_plano}", json=input_pt)
     if data_fim > data_avaliacao_1 or data_fim > data_avaliacao_2:
         assert response.status_code == 400
-        assert response.json() == {"detail": "Data de avaliação da atividade deve maior ou igual que a Data Fim do Plano de Trabalho."}
+        assert response.json().get("detail", None) == "Data de avaliação da atividade deve maior ou igual que a Data Fim do Plano de Trabalho."
     else:
         assert response.status_code == 200
         # assert response.json() == input_pt # Para comparar estes objetos é preciso aceitar, por exemplo 0 = 0.0 nas propriedades do json
