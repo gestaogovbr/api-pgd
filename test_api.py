@@ -70,6 +70,18 @@ def test_create_pt(truncate_bd, input_pt):
     assert response.status_code == 200
     assert response.json() == input_pt
 
+
+def test_create_pt_cod_plano_inconsistent(truncate_bd, input_pt):
+    input_pt["cod_plano"] = 110
+    response = client.put("/plano_trabalho/111", json=input_pt)
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Parâmetro cod_plano diferente do conteúdo do JSON"}
+
+def test_get_pt_inexistente():
+    response = client.get("/plano_trabalho/888888888")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Plano de trabalho não encontrado"}
+
 @pytest.mark.parametrize("data_inicio, data_fim, cod_plano",
                           [
                             ("2020-06-04", "2020-04-01", 77),
@@ -95,15 +107,3 @@ def test_create_pt_invalid_dates(truncate_bd,
     else:
         assert response.status_code == 200
         # assert response.json() == input_pt # Para comparar estes objetos é preciso aceitar, por exemplo 0 = 0.0 nas propriedades do json
-
-
-def test_create_pt_cod_plano_inconsistent(truncate_bd, input_pt):
-    input_pt["cod_plano"] = 110
-    response = client.put("/plano_trabalho/111", json=input_pt)
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Parâmetro cod_plano diferente do conteúdo do JSON"}
-
-def test_get_pt_inexistente():
-    response = client.get("/plano_trabalho/888888888")
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Plano de trabalho não encontrado"}
