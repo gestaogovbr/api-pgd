@@ -61,7 +61,7 @@ def input_pt():
     }
     return pt_json
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="module")
 def truncate_bd():
     client.post(f"/truncate_pts_atividades")
 
@@ -82,28 +82,64 @@ def test_get_pt_inexistente():
     assert response.status_code == 404
     assert response.json() == {"detail": "Plano de trabalho não encontrado"}
 
-@pytest.mark.parametrize("data_inicio, data_fim, cod_plano",
+@pytest.mark.parametrize("data_inicio, data_fim, cod_plano, id_ati_1, id_ati_2",
                           [
-                            ("2020-06-04", "2020-04-01", 77),
-                            ("2020-06-04", "2020-04-01", 78),
-                            ("2020-06-04", "2020-04-01", 79),
-                            ("2020-04-01", "2020-06-04", 8870),
+                            ("2020-06-04", "2020-04-01", 77, 333, 334),
+                            ("2020-06-04", "2020-04-01", 78, 335, 336),
+                            ("2020-06-04", "2020-04-01", 79, 337, 338),
+                            ("2020-04-01", "2020-06-04", 8870, 339, 340),
                             ])
 def test_create_pt_invalid_dates(truncate_bd,
                                  input_pt,
                                  data_inicio,
                                  data_fim,
-                                 cod_plano):
+                                 cod_plano,
+                                 id_ati_1,
+                                 id_ati_2):
     input_pt['data_inicio'] = data_inicio
     input_pt['data_fim'] = data_fim
     input_pt['cod_plano'] = cod_plano
-    input_pt['atividades'][0]['id_atividade'] = 34534543
-    input_pt['atividades'][1]['id_atividade'] = 34534544
+    input_pt['atividades'][0]['id_atividade'] = id_ati_1
+    input_pt['atividades'][1]['id_atividade'] = id_ati_2
 
     response = client.put(f"/plano_trabalho/{cod_plano}", json=input_pt)
     if data_inicio > data_fim:
         assert response.status_code == 400
         assert response.json() == {"detail": "Data fim do Plano de Trabalho deve ser maior ou igual que Data início."}
+    else:
+        assert response.status_code == 200
+        # assert response.json() == input_pt # Para comparar estes objetos é preciso aceitar, por exemplo 0 = 0.0 nas propriedades do json
+
+@pytest.mark.parametrize(
+    "data_fim, data_avaliacao_1, data_avaliacao_2, cod_plano, id_ati_1, id_ati_2",
+    [
+      ("2020-06-04", "2020-04-01", "2020-04-01", 77, 333, 334),
+      ("2020-06-04", "2020-04-01", "2021-04-01", 78, 335, 336),
+      ("2020-06-04", "2020-10-01", "2019-04-01", 79, 337, 338),
+      ("2020-04-01", "2020-04-01", "2020-06-04", 80, 339, 340),
+      ("2020-04-01", "2020-04-01", "2020-04-01", 81, 341, 342),
+      ("2020-04-01", "2020-02-01", "2020-01-04", 82, 343, 344),
+      ])
+def test_create_pt_invalid_data_avaliacao(truncate_bd,
+                                          input_pt,
+                                          data_fim,
+                                          data_avaliacao_1,
+                                          data_avaliacao_2,
+                                          cod_plano,
+                                          id_ati_1,
+                                          id_ati_2):
+    input_pt['data_inicio'] = "2020-01-01"
+    input_pt['data_fim'] = data_fim
+    input_pt['cod_plano'] = cod_plano
+    input_pt['atividades'][0]['id_atividade'] = id_ati_1
+    input_pt['atividades'][0]['data_avaliacao'] = data_avaliacao_1
+    input_pt['atividades'][1]['id_atividade'] = id_ati_2
+    input_pt['atividades'][1]['data_avaliacao'] = data_avaliacao_2
+
+    response = client.put(f"/plano_trabalho/{cod_plano}", json=input_pt)
+    if data_fim > data_avaliacao_1 or data_fim > data_avaliacao_2:
+        assert response.status_code == 400
+        assert response.json() == {"detail": "Data de avaliação da atividade deve maior ou igual que a Data Fim do Plano de Trabalho."}
     else:
         assert response.status_code == 200
         # assert response.json() == input_pt # Para comparar estes objetos é preciso aceitar, por exemplo 0 = 0.0 nas propriedades do json
