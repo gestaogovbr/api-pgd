@@ -1,5 +1,6 @@
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import text as sa_text
 import models, schemas
 
 def get_plano_trabalho(db: Session, cod_plano: int):
@@ -52,3 +53,8 @@ def update_plano_tabalho(
     db.commit()
     db.refresh(db_plano_trabalho)
     return db_plano_trabalho
+
+def truncate_pts_atividades(db: Session):
+    "Trunca as tabelas principais. Útil para zerar BD para executar testes."
+    db.execute(sa_text('''TRUNCATE TABLE plano_trabalho CASCADE'''))
+    db.commit()

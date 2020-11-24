@@ -127,3 +127,7 @@ def get_plano_trabalho(cod_plano: str,
     if plano_trabalho is None:
         raise HTTPException(404, detail="Plano de trabalho não encontrado")
     return plano_trabalho.__dict__
+
+@app.post("/truncate_pts_atividades")
+def truncate_pts_atividades(db: Session = Depends(get_db)):
+    crud.truncate_pts_atividades(db)
