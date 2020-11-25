@@ -12,8 +12,8 @@ class PlanoTrabalho(Base):
     "Plano de Trabalho"
     __tablename__ = 'plano_trabalho'
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    cod_unidade = Column(Integer)
-    cod_plano = Column(String)
+    cod_unidade = Column(Integer, nullable=False)
+    cod_plano = Column(String, nullable=False)
     matricula_siape = Column(Integer)
     cpf = Column(String)
     nome_participante = Column(String)
@@ -37,10 +37,10 @@ class PlanoTrabalho(Base):
 class Atividade(Base):
     "Atividade"
     __tablename__ = 'atividade'
+    # id_atividade = Column(Integer, primary_key=True, index=True)
+    cod_unidade = Column(Integer, primary_key=True, index=True)
+    id_plano_trabalho = Column(Integer, ForeignKey('plano_trabalho.id'), primary_key=True, index=True)
     id_atividade = Column(Integer, primary_key=True, index=True)
-    cod_unidade = Column(Integer)
-    # id_plano_trabalho = Column(Integer, ForeignKey('plano_trabalho.id'))
-    id_plano_trabalho = Column('id_plano_trabalho', Integer(), ForeignKey('plano_trabalho.id'), nullable=False)
     nome_grupo_atividade = Column(String)
     nome_atividade = Column(String)
     faixa_complexidade = Column(String)
@@ -54,8 +54,9 @@ class Atividade(Base):
     data_avaliacao = Column(Date)
     justificativa = Column(String)
     plano_trabalho = relationship('PlanoTrabalho', back_populates='atividades')
-    __table_args__ = (UniqueConstraint(
-        'cod_unidade',
-        'id_atividade',
-        name='_unidade_atividade_uc'
-    ),)
+    # __table_args__ = (UniqueConstraint(
+    #     'cod_unidade',
+    #     'id_plano_trabalho',
+    #     'id_atividade',
+    #     name='_unidade_atividade_uc'
+    # ),)
