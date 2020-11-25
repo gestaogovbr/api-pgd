@@ -5,3 +5,4 @@ __pycache__
 .ipython
 .vscode
 .bash_history
+.python_history
