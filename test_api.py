@@ -11,7 +11,6 @@ client =TestClient(app)
 @pytest.fixture
 def input_pt():
     pt_json = {
-      "cod_unidade": 0,
       "cod_plano": "555",
       "matricula_siape": 0,
       "cpf": "string",
@@ -143,3 +142,25 @@ def test_create_pt_invalid_data_avaliacao(truncate_bd,
     else:
         assert response.status_code == 200
         # assert response.json() == input_pt # Para comparar estes objetos é preciso aceitar, por exemplo 0 = 0.0 nas propriedades do json
+
+# @pytest.mark.parametrize("cod_plano, id_ati_1, id_ati_2",
+#                           [
+#                             (77, 333, 334),
+#                             ])
+# def test_create_pt_duplicate_atividade(truncate_bd,
+#                                  input_pt,
+#                                  data_inicio,
+#                                  data_fim,
+#                                  cod_plano,
+#                                  id_ati_1,
+#                                  id_ati_2):
+#     input_pt['data_inicio'] = data_inicio
+#     input_pt['data_fim'] = data_fim
+#     input_pt['cod_plano'] = cod_plano
+#     input_pt['atividades'][0]['id_atividade'] = id_ati_1
+#     input_pt['atividades'][1]['id_atividade'] = id_ati_2
+
+#     response = client.put(f"/plano_trabalho/{cod_plano}", json=input_pt)
+#     if data_inicio > data_fim:
+#         assert response.status_code == 400
+#         assert response.json().get("detail", None) == "Data fim do Plano de Trabalho deve ser maior ou igual que Data início."

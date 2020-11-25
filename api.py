@@ -96,14 +96,14 @@ async def create_or_update_plano_trabalho(
     cod_plano: str,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
     db: Session = Depends(get_db),
-    # token: str = Depends(oauth2_scheme)
+    token: str = Depends(oauth2_scheme),
+    user: User = Depends(fastapi_users.get_current_user)
     ):
     # Validação da entrada conforme regras de negócio
     if cod_plano != plano_trabalho.cod_plano:
         raise HTTPException(
             400,
             detail="Parâmetro cod_plano diferente do conteúdo do JSON")
-
     if plano_trabalho.data_inicio > plano_trabalho.data_fim:
         raise HTTPException(
             400,
@@ -118,9 +118,14 @@ async def create_or_update_plano_trabalho(
     db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
 
     if db_plano_trabalho is None:
-        crud.create_plano_tabalho(db, plano_trabalho)
+        crud.create_plano_tabalho(db, plano_trabalho, user.cod_unidade)
     else:
-        crud.update_plano_tabalho(db, plano_trabalho)
+        if plano_trabalho.cod_unidade == user.cod_unidade:
+            crud.update_plano_tabalho(db, plano_trabalho)
+        else:
+            raise HTTPException(
+                403,
+                detail="Usuário não pode alterar Plano de Trabalho de outra unidade.")
     return plano_trabalho
 
 @app.get("/plano_trabalho/{cod_plano}",

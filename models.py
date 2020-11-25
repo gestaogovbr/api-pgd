@@ -54,9 +54,3 @@ class Atividade(Base):
     data_avaliacao = Column(Date)
     justificativa = Column(String)
     plano_trabalho = relationship('PlanoTrabalho', back_populates='atividades')
-    # __table_args__ = (UniqueConstraint(
-    #     'cod_unidade',
-    #     'id_plano_trabalho',
-    #     'id_atividade',
-    #     name='_unidade_atividade_uc'
-    # ),)

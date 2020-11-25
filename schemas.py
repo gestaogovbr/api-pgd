@@ -22,7 +22,6 @@ class AtividadeSchema(BaseModel):
 
 
 class PlanoTrabalhoSchema(BaseModel):
-    cod_unidade: int
     cod_plano: str
     matricula_siape: int
     cpf: str
