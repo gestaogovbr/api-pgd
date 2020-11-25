@@ -3,7 +3,7 @@ banco pelo ORM do SQLAlchemy.
 """
 
 from sqlalchemy import (Boolean, Column, ForeignKey,
-                        Integer, String, Float, Date)
+                        Integer, String, Float, Date, UniqueConstraint)
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -28,6 +28,11 @@ class PlanoTrabalho(Base):
     entregue_no_prazo = Column(Boolean) #TODO Na especificação está como Int e usa 1 e 2 para sim e não. Não seria melhor usar bool?
     horas_homologadas = Column(Float)
     atividades = relationship('Atividade', back_populates='plano_trabalho')
+    __table_args__ = (UniqueConstraint(
+        'cod_unidade',
+        'cod_plano',
+        name='_unidade_plano_uc'
+    ),)
 
 class Atividade(Base):
     "Atividade"
@@ -49,3 +54,8 @@ class Atividade(Base):
     data_avaliacao = Column(Date)
     justificativa = Column(String)
     plano_trabalho = relationship('PlanoTrabalho', back_populates='atividades')
+    __table_args__ = (UniqueConstraint(
+        'cod_unidade',
+        'id_atividade',
+        name='_unidade_atividade_uc'
+    ),)
