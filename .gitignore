@@ -4,3 +4,4 @@ __pycache__
 .local
 .ipython
 .vscode
+.bash_history
