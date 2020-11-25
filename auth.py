@@ -11,6 +11,7 @@ from fastapi_users.db import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
 import databases
 import sqlalchemy
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
+from sqlalchemy import Column, Integer
 
 from database import SessionLocal, engine, SQLALCHEMY_DATABASE_URL
 
@@ -38,12 +39,15 @@ fake_users_db = {
 }
 
 class User(user_models.BaseUser):
+    id_orgao: int
     pass
 
 class UserCreate(user_models.BaseUserCreate):
+    id_orgao: int
     pass
 
 class UserUpdate(User, user_models.BaseUserUpdate):
+    id_orgao: int
     pass
 
 class UserDB(User, user_models.BaseUserDB):
@@ -54,6 +58,7 @@ database = databases.Database(SQLALCHEMY_DATABASE_URL)
 Base: DeclarativeMeta = declarative_base()
 
 class UserTable(Base, SQLAlchemyBaseUserTable):
+    id_orgao = Column(Integer)
     pass
 
 users = UserTable.__table__
