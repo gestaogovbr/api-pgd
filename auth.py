@@ -39,15 +39,15 @@ fake_users_db = {
 }
 
 class User(user_models.BaseUser):
-    id_orgao: int
+    cod_unidade: int
     pass
 
 class UserCreate(user_models.BaseUserCreate):
-    id_orgao: int
+    cod_unidade: int
     pass
 
 class UserUpdate(User, user_models.BaseUserUpdate):
-    id_orgao: int
+    cod_unidade: int
     pass
 
 class UserDB(User, user_models.BaseUserDB):
@@ -58,7 +58,7 @@ database = databases.Database(SQLALCHEMY_DATABASE_URL)
 Base: DeclarativeMeta = declarative_base()
 
 class UserTable(Base, SQLAlchemyBaseUserTable):
-    id_orgao = Column(Integer)
+    cod_unidade = Column(Integer)
     pass
 
 users = UserTable.__table__

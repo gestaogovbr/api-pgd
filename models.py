@@ -33,6 +33,7 @@ class Atividade(Base):
     "Atividade"
     __tablename__ = 'atividade'
     id_atividade = Column(Integer, primary_key=True, index=True)
+    cod_unidade = Column(Integer)
     # id_plano_trabalho = Column(Integer, ForeignKey('plano_trabalho.id'))
     id_plano_trabalho = Column('id_plano_trabalho', Integer(), ForeignKey('plano_trabalho.id'), nullable=False)
     nome_grupo_atividade = Column(String)
