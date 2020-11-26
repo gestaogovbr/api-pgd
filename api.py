@@ -133,7 +133,7 @@ async def create_or_update_plano_trabalho(
         )
 def get_plano_trabalho(cod_plano: str,
                        db: Session = Depends(get_db),
-                    #    token: str = Depends(oauth2_scheme)
+                       token: str = Depends(oauth2_scheme),
                        ):
     plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
     if plano_trabalho is None:
