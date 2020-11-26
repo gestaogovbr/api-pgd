@@ -1,6 +1,8 @@
 """
 Testes automáticos
 """
+import os
+import json
 
 from fastapi.testclient import TestClient
 from api import app
@@ -68,6 +70,34 @@ def test_create_pt(truncate_bd, input_pt):
     response = client.put(f"/plano_trabalho/555", json=input_pt)
     assert response.status_code == 200
     assert response.json() == input_pt
+
+@pytest.fixture(scope="module")
+def token_user_1():
+    "Authenticate in the API and return the bearer token."
+    #TODO: Refatorar e resolver utilizando o objeto TestClient
+    # data = {
+    #     'grant_type': '',
+    #     'username': 'nitai@example.com',
+    #     'password': 'string',
+    #     'scope': '',
+    #     'client_id': '',
+    #     'client_secret': ''
+    # }
+    # response = client.post(f"/auth/jwt/login", json=data)
+    # print(response)
+    # return response.json().get("access_token")
+
+    shell_cmd = 'curl -X POST "http://localhost:5057/auth/jwt/login"' \
+                    ' -H  "accept: application/json"' \
+                    ' -H  "Content-Type: application/x-www-form-urlencoded"' \
+                    ' -d "grant_type=&username=nitai%40example.com&password=string&scope=&client_id=&client_secret="'
+    myCmd = os.popen(shell_cmd).read()
+    response = json.loads(myCmd)
+    return response.get('access_token')
+
+def test_authenticate(token_user_1):
+    assert type(token_user_1) is str
+    assert "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." in token_user_1
 
 
 def test_create_pt_cod_plano_inconsistent(truncate_bd, input_pt):
