@@ -12,7 +12,7 @@ def get_plano_trabalho(db: Session, cod_plano: int):
         .first()
     )
     if db_plano_trabalho:
-        return schemas.PlanoTrabalhoSchema.from_orm(db_plano_trabalho)
+        return db_plano_trabalho
     else:
         return None
 

@@ -107,12 +107,13 @@ async def create_or_update_plano_trabalho(
     if plano_trabalho.data_inicio > plano_trabalho.data_fim:
         raise HTTPException(
             400,
-            detail="Data fim do Plano de Trabalho deve ser maior ou igual que Data início.")
+            detail="Data fim do Plano de Trabalho deve ser maior ou igual" \
+                   " que Data início.")
     for atividade in plano_trabalho.atividades:
         if plano_trabalho.data_fim > atividade.data_avaliacao:
             raise HTTPException(
                 400,
-                detail="Data de avaliação da atividade deve maior ou"+
+                detail="Data de avaliação da atividade deve maior ou" \
                  " igual que a Data Fim do Plano de Trabalho.")
 
     db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
@@ -120,7 +121,7 @@ async def create_or_update_plano_trabalho(
     if db_plano_trabalho is None:
         crud.create_plano_tabalho(db, plano_trabalho, user.cod_unidade)
     else:
-        if plano_trabalho.cod_unidade == user.cod_unidade:
+        if db_plano_trabalho.cod_unidade == user.cod_unidade:
             crud.update_plano_tabalho(db, plano_trabalho)
         else:
             raise HTTPException(
@@ -134,10 +135,12 @@ async def create_or_update_plano_trabalho(
 def get_plano_trabalho(cod_plano: str,
                        db: Session = Depends(get_db),
                        token: str = Depends(oauth2_scheme),
+                    #    user: User = Depends(fastapi_users.get_current_user)
                        ):
-    plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
-    if plano_trabalho is None:
+    db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
+    if db_plano_trabalho is None:
         raise HTTPException(404, detail="Plano de trabalho não encontrado")
+    plano_trabalho = schemas.PlanoTrabalhoSchema.from_orm(db_plano_trabalho)
     return plano_trabalho.__dict__
 
 @app.post("/truncate_pts_atividades")
