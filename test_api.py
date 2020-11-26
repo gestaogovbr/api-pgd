@@ -183,7 +183,6 @@ def test_create_pt_invalid_dates(truncate_bd,
         assert response.json().get("detail", None) ==detail_msg
     else:
         assert response.status_code == 200
-        # assert response.json() == input_pt # Para comparar estes objetos é preciso aceitar, por exemplo 0 = 0.0 nas propriedades do json
 
 @pytest.mark.parametrize(
     "data_fim, data_avaliacao_1, data_avaliacao_2, cod_plano, id_ati_1, id_ati_2",
@@ -218,29 +217,37 @@ def test_create_pt_invalid_data_avaliacao(truncate_bd,
                           headers=authed_header_user_1)
     if data_fim > data_avaliacao_1 or data_fim > data_avaliacao_2:
         assert response.status_code == 400
-        assert response.json().get("detail", None) == "Data de avaliação da atividade deve maior ou igual que a Data Fim do Plano de Trabalho."
+        detail_msg = "Data de avaliação da atividade deve maior ou igual" \
+                     " que a Data Fim do Plano de Trabalho."
+        assert response.json().get("detail", None) == detail_msg
     else:
         assert response.status_code == 200
-        # assert response.json() == input_pt # Para comparar estes objetos é preciso aceitar, por exemplo 0 = 0.0 nas propriedades do json
 
-# @pytest.mark.parametrize("cod_plano, id_ati_1, id_ati_2",
-#                           [
-#                             (77, 333, 334),
-#                             ])
-# def test_create_pt_duplicate_atividade(truncate_bd,
-#                                  input_pt,
-#                                  data_inicio,
-#                                  data_fim,
-#                                  cod_plano,
-#                                  id_ati_1,
-#                                  id_ati_2):
-#     input_pt['data_inicio'] = data_inicio
-#     input_pt['data_fim'] = data_fim
-#     input_pt['cod_plano'] = cod_plano
-#     input_pt['atividades'][0]['id_atividade'] = id_ati_1
-#     input_pt['atividades'][1]['id_atividade'] = id_ati_2
+@pytest.mark.parametrize("cod_plano, id_ati_1, id_ati_2",
+                          [
+                            (90, 401, 402),
+                            (91, 403, 403), # <<<< IGUAIS
+                            (92, 404, 404), # <<<< IGUAIS
+                            (93, 405, 406),
+                            ])
+def test_create_pt_duplicate_atividade(truncate_bd,
+                                       input_pt,
+                                       cod_plano,
+                                       id_ati_1,
+                                       id_ati_2,
+                                       authed_header_user_1,
+                                       client):
+    input_pt['cod_plano'] = cod_plano
+    input_pt['atividades'][0]['id_atividade'] = id_ati_1
+    input_pt['atividades'][1]['id_atividade'] = id_ati_2
 
-#     response = client.put(f"/plano_trabalho/{cod_plano}", json=input_pt)
-#     if data_inicio > data_fim:
-#         assert response.status_code == 400
-#         assert response.json().get("detail", None) == "Data fim do Plano de Trabalho deve ser maior ou igual que Data início."
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=authed_header_user_1)
+    if id_ati_1 == id_ati_2:
+        assert response.status_code == 400
+        detail_msg = "Atividades devem possuir id_atividade diferentes."
+        assert response.json().get("detail", None) == detail_msg
+    else:
+        assert response.status_code == 200
+
