@@ -87,7 +87,11 @@ def register_user(client, email, password, cod_unidade):
 
 @pytest.fixture(scope="module")
 def register_user_1(client, truncate_users):
-    return register_user(client, "test@api.com", "api", 0)
+    return register_user(client, "test1@api.com", "api", 1)
+
+@pytest.fixture(scope="module")
+def register_user_2(client, truncate_users):
+    return register_user(client, "test2@api.com", "api", 2)
 
 @pytest.fixture(scope="module")
 def authed_header_user_1(register_user_1):
@@ -109,7 +113,26 @@ def authed_header_user_1(register_user_1):
     shell_cmd = 'curl -X POST "http://localhost:5057/auth/jwt/login"' \
                     ' -H  "accept: application/json"' \
                     ' -H  "Content-Type: application/x-www-form-urlencoded"' \
-                    ' -d "grant_type=&username=test%40api.com&password=api&scope=&client_id=&client_secret="'
+                    ' -d "grant_type=&username=test1%40api.com&password=api&scope=&client_id=&client_secret="'
+    my_cmd = os.popen(shell_cmd).read()
+    response = json.loads(my_cmd)
+    token_user_1 = response.get('access_token')
+    header = {
+        'Authorization': f'Bearer {token_user_1}',
+        'accept': 'application/json',
+        'Content-Type': 'application/json'
+        }
+
+    return header
+@pytest.fixture(scope="module")
+def authed_header_user_2(register_user_2):
+    """Authenticate in the API and return a dict with bearer header
+    parameter to be passed to apis requests."""
+
+    shell_cmd = 'curl -X POST "http://localhost:5057/auth/jwt/login"' \
+                    ' -H  "accept: application/json"' \
+                    ' -H  "Content-Type: application/x-www-form-urlencoded"' \
+                    ' -d "grant_type=&username=test2%40api.com&password=api&scope=&client_id=&client_secret="'
     my_cmd = os.popen(shell_cmd).read()
     response = json.loads(my_cmd)
     token_user_1 = response.get('access_token')
@@ -129,10 +152,10 @@ def authed_header_user_1(register_user_1):
 
 # Tests
 def test_register_user(truncate_users, client):
-    user_1 = register_user(client, "test1@api.com", "api", 0)
+    user_1 = register_user(client, "testx@api.com", "api", 0)
     assert user_1.status_code == 201
 
-    user_2 = register_user(client, "test1@api.com", "api", 0)
+    user_2 = register_user(client, "testx@api.com", "api", 0)
     assert user_2.status_code == 400
     assert user_2.json().get("detail", None) == "REGISTER_USER_ALREADY_EXISTS"
 
@@ -275,3 +298,15 @@ def test_create_pt_duplicate_atividade(input_pt,
         assert response.json().get("detail", None) == detail_msg
     else:
         assert response.status_code == 200
+
+def test_update_pt_different_cod_unidade(input_pt,
+                                         authed_header_user_2,
+                                         client):
+    cod_plano = 555
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=authed_header_user_2)
+
+    assert response.status_code == 403
+    detail_msg = "Usuário não pode alterar Plano de Trabalho de outra unidade."
+    assert response.json().get("detail", None) == detail_msg
