@@ -69,11 +69,15 @@ def input_pt():
     return pt_json
 
 @pytest.fixture(scope="module")
-def truncate_bd(client):
+def truncate_planos_trabalho(client):
     client.post(f"/truncate_pts_atividades")
 
 @pytest.fixture(scope="module")
-def register_user_1(client):
+def truncate_users(client):
+    client.post(f"/truncate_users")
+
+@pytest.fixture(scope="module")
+def register_user_1(client, truncate_users):
     data = {
         "email":"test@api.com",
         "password":"api",
@@ -102,7 +106,7 @@ def authed_header_user_1(register_user_1):
     shell_cmd = 'curl -X POST "http://localhost:5057/auth/jwt/login"' \
                     ' -H  "accept: application/json"' \
                     ' -H  "Content-Type: application/x-www-form-urlencoded"' \
-                    ' -d "grant_type=&username=nitai%40example.com&password=string&scope=&client_id=&client_secret="'
+                    ' -d "grant_type=&username=test%40api.com&password=api&scope=&client_id=&client_secret="'
     my_cmd = os.popen(shell_cmd).read()
     response = json.loads(my_cmd)
     token_user_1 = response.get('access_token')
@@ -129,7 +133,7 @@ def test_authenticate(authed_header_user_1):
     assert type(token) is str
     assert "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." in token
 
-def test_create_plano_trabalho(input_pt, authed_header_user_1, truncate_bd, client):
+def test_create_plano_trabalho(input_pt, authed_header_user_1, truncate_planos_trabalho, client):
     response = client.put(f"/plano_trabalho/555",
                           data=json.dumps(input_pt),
                           headers=authed_header_user_1)
@@ -138,7 +142,7 @@ def test_create_plano_trabalho(input_pt, authed_header_user_1, truncate_bd, clie
 
 def test_create_pt_cod_plano_inconsistent(input_pt,
                                           authed_header_user_1,
-                                          truncate_bd,
+                                          truncate_planos_trabalho,
                                           client):
     input_pt["cod_plano"] = 110
     response = client.put("/plano_trabalho/111",
@@ -175,7 +179,7 @@ def test_create_pt_invalid_dates(input_pt,
                                  id_ati_1,
                                  id_ati_2,
                                  authed_header_user_1,
-                                 truncate_bd,
+                                 truncate_planos_trabalho,
                                  client):
     input_pt['data_inicio'] = data_inicio
     input_pt['data_fim'] = data_fim
@@ -212,7 +216,7 @@ def test_create_pt_invalid_data_avaliacao(input_pt,
                                           id_ati_1,
                                           id_ati_2,
                                           authed_header_user_1,
-                                          truncate_bd,
+                                          truncate_planos_trabalho,
                                           client):
     input_pt['data_inicio'] = "2020-01-01"
     input_pt['data_fim'] = data_fim
@@ -245,7 +249,7 @@ def test_create_pt_duplicate_atividade(input_pt,
                                        id_ati_1,
                                        id_ati_2,
                                        authed_header_user_1,
-                                       truncate_bd,
+                                       truncate_planos_trabalho,
                                        client):
     input_pt['cod_plano'] = cod_plano
     input_pt['atividades'][0]['id_atividade'] = id_ati_1

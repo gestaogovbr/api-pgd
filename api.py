@@ -154,3 +154,7 @@ def get_plano_trabalho(cod_plano: str,
 @app.post("/truncate_pts_atividades")
 def truncate_pts_atividades(db: Session = Depends(get_db)):
     crud.truncate_pts_atividades(db)
+
+@app.post("/truncate_users")
+def truncate_users(db: Session = Depends(get_db)):
+    crud.truncate_users(db)
