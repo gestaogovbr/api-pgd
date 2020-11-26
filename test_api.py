@@ -73,7 +73,17 @@ def truncate_bd(client):
     client.post(f"/truncate_pts_atividades")
 
 @pytest.fixture(scope="module")
-def authed_header_user_1():
+def register_user_1(client):
+    data = {
+        "email":"test@api.com",
+        "password":"api",
+        "cod_unidade": 0,
+    }
+    return client.post(f"/auth/register", data=json.dumps(data))
+
+
+@pytest.fixture(scope="module")
+def authed_header_user_1(register_user_1):
     """Authenticate in the API and return a dict with bearer header
     parameter to be passed to apis requests."""
     #TODO: Refatorar e resolver utilizando o objeto TestClient
@@ -111,6 +121,8 @@ def authed_header_user_1():
 #                headers=authed_header_user_1)
 
 # Tests
+def test_register_user(register_user_1):
+    assert register_user_1.status_code == 201
 
 def test_authenticate(authed_header_user_1):
     token = authed_header_user_1.get("Authorization")
@@ -120,8 +132,6 @@ def test_authenticate(authed_header_user_1):
 def test_create_plano_trabalho(input_pt, authed_header_user_1, truncate_bd, client):
     response = client.put(f"/plano_trabalho/555",
                           data=json.dumps(input_pt),
-                          # auth=('nitai%40example.com', 'string'),
-                          # headers=authed_header_user_1.update({'content-type':'application/json'}))
                           headers=authed_header_user_1)
     assert response.status_code == 200
     assert response.json() == input_pt
@@ -250,19 +260,3 @@ def test_create_pt_duplicate_atividade(input_pt,
         assert response.json().get("detail", None) == detail_msg
     else:
         assert response.status_code == 200
-
-# @pytest.mark.parametrize("cod_plano_1, id_ati_1_1, id_ati_1_2, " \
-#                          "cod_plano_2, id_ati_2_1, id_ati_2_2 ",
-#                           [
-#                             (90, 401, 402, 91, 401, 402),
-#                             ])
-# def test_create_pt_repeated_id_atividade(input_pt,
-#                                          cod_plano_1,
-#                                          id_ati_1_1,
-#                                          id_ati_1_2,
-#                                          cod_plano_2,
-#                                          id_ati_2_1,
-#                                          id_ati_2_2,
-#                                          authed_header_user_1,
-#                                          truncate_bd,
-#                                          client):
