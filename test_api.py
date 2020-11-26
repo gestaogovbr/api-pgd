@@ -1,16 +1,22 @@
 """
-Testes automáticos
+Testes automáticos da API
 """
 import os
 import json
+from types import GeneratorType as Generator
 
 from fastapi.testclient import TestClient
 from api import app
 import pytest
 
-client =TestClient(app)
+# Fixtures
 
-@pytest.fixture
+@pytest.fixture(scope="module")
+def client() -> Generator:
+    with TestClient(app) as c:
+        yield c
+
+@pytest.fixture(scope="module")
 def input_pt():
     pt_json = {
       "cod_plano": "555",
@@ -63,17 +69,13 @@ def input_pt():
     return pt_json
 
 @pytest.fixture(scope="module")
-def truncate_bd():
+def truncate_bd(client):
     client.post(f"/truncate_pts_atividades")
 
-def test_create_pt(truncate_bd, input_pt):
-    response = client.put(f"/plano_trabalho/555", json=input_pt)
-    assert response.status_code == 200
-    assert response.json() == input_pt
-
 @pytest.fixture(scope="module")
-def token_user_1():
-    "Authenticate in the API and return the bearer token."
+def authed_header_user_1():
+    """Authenticate in the API and return a dict with bearer header
+    parameter to be passed to apis requests."""
     #TODO: Refatorar e resolver utilizando o objeto TestClient
     # data = {
     #     'grant_type': '',
@@ -83,7 +85,7 @@ def token_user_1():
     #     'client_id': '',
     #     'client_secret': ''
     # }
-    # response = client.post(f"/auth/jwt/login", json=data)
+    # response = client.post(f"/auth/jwt/login", data=data)
     # print(response)
     # return response.json().get("access_token")
 
@@ -91,24 +93,71 @@ def token_user_1():
                     ' -H  "accept: application/json"' \
                     ' -H  "Content-Type: application/x-www-form-urlencoded"' \
                     ' -d "grant_type=&username=nitai%40example.com&password=string&scope=&client_id=&client_secret="'
-    myCmd = os.popen(shell_cmd).read()
-    response = json.loads(myCmd)
-    return response.get('access_token')
+    my_cmd = os.popen(shell_cmd).read()
+    response = json.loads(my_cmd)
+    token_user_1 = response.get('access_token')
+    header = {
+        'Authorization': f'Bearer {token_user_1}',
+        'accept': 'application/json',
+        'Content-Type': 'application/json'
+        }
 
-def test_authenticate(token_user_1):
-    assert type(token_user_1) is str
-    assert "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." in token_user_1
+    return header
 
+# @pytest.fixture(scope="module")
+# def insert_one_pt():
+#     shell_cmd = 'curl -X POST "http://localhost:5057/auth/jwt/login"' \
+#                     ' -H  "accept: application/json"' \
+#                     ' -H  "Content-Type: application/x-www-form-urlencoded"' \
+#                     ' -d "grant_type=&username=nitai%40example.com&password=string&scope=&client_id=&client_secret="'
+#     myCmd = os.popen(shell_cmd).read()
+#     response = json.loads(myCmd)
+#     token_user_1 = response.get('access_token')
+#     header = {'Authorization': f'Bearer {token_user_1}'}
 
-def test_create_pt_cod_plano_inconsistent(truncate_bd, input_pt):
+#     response = client.put(f"/plano_trabalho/555",
+#                           json=input_pt,
+#                           headers=header)
+
+# Tests
+
+def test_authenticate(authed_header_user_1):
+    token = authed_header_user_1.get("Authorization")
+    assert type(token) is str
+    assert "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." in token
+
+def test_create_plano_trabalho(truncate_bd, input_pt, authed_header_user_1, client):
+    response = client.put(f"/plano_trabalho/555",
+                          data=json.dumps(input_pt),
+                          # auth=('nitai%40example.com', 'string'),
+                          # headers=authed_header_user_1.update({'content-type':'application/json'}))
+                          headers=authed_header_user_1)
+    assert response.status_code == 200
+    assert response.json() == input_pt
+
+def test_create_pt_cod_plano_inconsistent(truncate_bd,
+                                          input_pt,
+                                          authed_header_user_1,
+                                          client):
     input_pt["cod_plano"] = 110
-    response = client.put("/plano_trabalho/111", json=input_pt)
+    response = client.put("/plano_trabalho/111",
+                          json=input_pt,
+                          headers=authed_header_user_1)
     assert response.status_code == 400
-    assert response.json().get("detail", None) == "Parâmetro cod_plano diferente do conteúdo do JSON"
+    detail_msg = "Parâmetro cod_plano diferente do conteúdo do JSON"
+    assert response.json().get("detail", None) == detail_msg
 
-def test_get_pt_inexistente():
-    response = client.get("/plano_trabalho/888888888")
+# def test_get_plano_trabalho(insert_one_pt, authed_header_user_1):
+def test_get_plano_trabalho(authed_header_user_1, client):
+    response = client.get("/plano_trabalho/555",
+                          headers=authed_header_user_1)
+    assert response.status_code == 200
+
+def test_get_pt_inexistente(authed_header_user_1, client):
+    response = client.get("/plano_trabalho/888888888",
+                          headers=authed_header_user_1)
     assert response.status_code == 404
+
     assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
 
 @pytest.mark.parametrize("data_inicio, data_fim, cod_plano, id_ati_1, id_ati_2",
@@ -124,7 +173,9 @@ def test_create_pt_invalid_dates(truncate_bd,
                                  data_fim,
                                  cod_plano,
                                  id_ati_1,
-                                 id_ati_2):
+                                 id_ati_2,
+                                 authed_header_user_1,
+                                 client):
     input_pt['data_inicio'] = data_inicio
     input_pt['data_fim'] = data_fim
     input_pt['cod_plano'] = cod_plano
@@ -134,7 +185,9 @@ def test_create_pt_invalid_dates(truncate_bd,
     response = client.put(f"/plano_trabalho/{cod_plano}", json=input_pt)
     if data_inicio > data_fim:
         assert response.status_code == 400
-        assert response.json().get("detail", None) == "Data fim do Plano de Trabalho deve ser maior ou igual que Data início."
+        detail_msg = "Data fim do Plano de Trabalho deve ser maior" \
+                     "ou igual que Data início."
+        assert response.json().get("detail", None) ==detail_msg
     else:
         assert response.status_code == 200
         # assert response.json() == input_pt # Para comparar estes objetos é preciso aceitar, por exemplo 0 = 0.0 nas propriedades do json
@@ -156,7 +209,9 @@ def test_create_pt_invalid_data_avaliacao(truncate_bd,
                                           data_avaliacao_2,
                                           cod_plano,
                                           id_ati_1,
-                                          id_ati_2):
+                                          id_ati_2,
+                                          authed_header_user_1,
+                                          client):
     input_pt['data_inicio'] = "2020-01-01"
     input_pt['data_fim'] = data_fim
     input_pt['cod_plano'] = cod_plano
@@ -165,7 +220,9 @@ def test_create_pt_invalid_data_avaliacao(truncate_bd,
     input_pt['atividades'][1]['id_atividade'] = id_ati_2
     input_pt['atividades'][1]['data_avaliacao'] = data_avaliacao_2
 
-    response = client.put(f"/plano_trabalho/{cod_plano}", json=input_pt)
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=authed_header_user_1)
     if data_fim > data_avaliacao_1 or data_fim > data_avaliacao_2:
         assert response.status_code == 400
         assert response.json().get("detail", None) == "Data de avaliação da atividade deve maior ou igual que a Data Fim do Plano de Trabalho."
