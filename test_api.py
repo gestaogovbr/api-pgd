@@ -76,15 +76,18 @@ def truncate_planos_trabalho(client):
 def truncate_users(client):
     client.post(f"/truncate_users")
 
-@pytest.fixture(scope="module")
-def register_user_1(client, truncate_users):
+def register_user(client, email, password, cod_unidade):
     data = {
-        "email":"test@api.com",
-        "password":"api",
-        "cod_unidade": 0,
+        "email":email,
+        "password":password,
+        "cod_unidade": cod_unidade,
     }
     return client.post(f"/auth/register", data=json.dumps(data))
 
+
+@pytest.fixture(scope="module")
+def register_user_1(client, truncate_users):
+    return register_user(client, "test@api.com", "api", 0)
 
 @pytest.fixture(scope="module")
 def authed_header_user_1(register_user_1):
@@ -125,15 +128,23 @@ def authed_header_user_1(register_user_1):
 #                headers=authed_header_user_1)
 
 # Tests
-def test_register_user(register_user_1):
-    assert register_user_1.status_code == 201
+def test_register_user(truncate_users, client):
+    user_1 = register_user(client, "test1@api.com", "api", 0)
+    assert user_1.status_code == 201
+
+    user_2 = register_user(client, "test1@api.com", "api", 0)
+    assert user_2.status_code == 400
+    assert user_2.json().get("detail", None) == "REGISTER_USER_ALREADY_EXISTS"
 
 def test_authenticate(authed_header_user_1):
     token = authed_header_user_1.get("Authorization")
     assert type(token) is str
     assert "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." in token
 
-def test_create_plano_trabalho(input_pt, authed_header_user_1, truncate_planos_trabalho, client):
+def test_create_plano_trabalho(input_pt,
+                               authed_header_user_1,
+                               truncate_planos_trabalho,
+                               client):
     response = client.put(f"/plano_trabalho/555",
                           data=json.dumps(input_pt),
                           headers=authed_header_user_1)
