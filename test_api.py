@@ -105,19 +105,10 @@ def authed_header_user_1():
     return header
 
 # @pytest.fixture(scope="module")
-# def insert_one_pt():
-#     shell_cmd = 'curl -X POST "http://localhost:5057/auth/jwt/login"' \
-#                     ' -H  "accept: application/json"' \
-#                     ' -H  "Content-Type: application/x-www-form-urlencoded"' \
-#                     ' -d "grant_type=&username=nitai%40example.com&password=string&scope=&client_id=&client_secret="'
-#     myCmd = os.popen(shell_cmd).read()
-#     response = json.loads(myCmd)
-#     token_user_1 = response.get('access_token')
-#     header = {'Authorization': f'Bearer {token_user_1}'}
-
-#     response = client.put(f"/plano_trabalho/555",
-#                           json=input_pt,
-#                           headers=header)
+# def insert_pt_user_1(authed_header_user_1, client):
+#     client.put(f"/plano_trabalho/888888888",
+#                json=input_pt,
+#                headers=authed_header_user_1)
 
 # Tests
 
@@ -182,11 +173,13 @@ def test_create_pt_invalid_dates(truncate_bd,
     input_pt['atividades'][0]['id_atividade'] = id_ati_1
     input_pt['atividades'][1]['id_atividade'] = id_ati_2
 
-    response = client.put(f"/plano_trabalho/{cod_plano}", json=input_pt)
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=authed_header_user_1)
     if data_inicio > data_fim:
         assert response.status_code == 400
         detail_msg = "Data fim do Plano de Trabalho deve ser maior" \
-                     "ou igual que Data início."
+                     " ou igual que Data início."
         assert response.json().get("detail", None) ==detail_msg
     else:
         assert response.status_code == 200
