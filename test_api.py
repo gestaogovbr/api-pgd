@@ -16,7 +16,7 @@ def client() -> Generator:
     with TestClient(app) as c:
         yield c
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def input_pt():
     pt_json = {
       "cod_plano": "555",
@@ -117,7 +117,7 @@ def test_authenticate(authed_header_user_1):
     assert type(token) is str
     assert "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." in token
 
-def test_create_plano_trabalho(truncate_bd, input_pt, authed_header_user_1, client):
+def test_create_plano_trabalho(input_pt, authed_header_user_1, truncate_bd, client):
     response = client.put(f"/plano_trabalho/555",
                           data=json.dumps(input_pt),
                           # auth=('nitai%40example.com', 'string'),
@@ -126,9 +126,9 @@ def test_create_plano_trabalho(truncate_bd, input_pt, authed_header_user_1, clie
     assert response.status_code == 200
     assert response.json() == input_pt
 
-def test_create_pt_cod_plano_inconsistent(truncate_bd,
-                                          input_pt,
+def test_create_pt_cod_plano_inconsistent(input_pt,
                                           authed_header_user_1,
+                                          truncate_bd,
                                           client):
     input_pt["cod_plano"] = 110
     response = client.put("/plano_trabalho/111",
@@ -158,14 +158,14 @@ def test_get_pt_inexistente(authed_header_user_1, client):
                             ("2020-06-04", "2020-04-01", 79, 337, 338),
                             ("2020-04-01", "2020-06-04", 80, 339, 340),
                             ])
-def test_create_pt_invalid_dates(truncate_bd,
-                                 input_pt,
+def test_create_pt_invalid_dates(input_pt,
                                  data_inicio,
                                  data_fim,
                                  cod_plano,
                                  id_ati_1,
                                  id_ati_2,
                                  authed_header_user_1,
+                                 truncate_bd,
                                  client):
     input_pt['data_inicio'] = data_inicio
     input_pt['data_fim'] = data_fim
@@ -194,8 +194,7 @@ def test_create_pt_invalid_dates(truncate_bd,
       ("2020-04-01", "2020-04-01", "2020-04-01", 81, 341, 342),
       ("2020-04-01", "2020-02-01", "2020-01-04", 82, 343, 344),
       ])
-def test_create_pt_invalid_data_avaliacao(truncate_bd,
-                                          input_pt,
+def test_create_pt_invalid_data_avaliacao(input_pt,
                                           data_fim,
                                           data_avaliacao_1,
                                           data_avaliacao_2,
@@ -203,6 +202,7 @@ def test_create_pt_invalid_data_avaliacao(truncate_bd,
                                           id_ati_1,
                                           id_ati_2,
                                           authed_header_user_1,
+                                          truncate_bd,
                                           client):
     input_pt['data_inicio'] = "2020-01-01"
     input_pt['data_fim'] = data_fim
@@ -217,7 +217,7 @@ def test_create_pt_invalid_data_avaliacao(truncate_bd,
                           headers=authed_header_user_1)
     if data_fim > data_avaliacao_1 or data_fim > data_avaliacao_2:
         assert response.status_code == 400
-        detail_msg = "Data de avaliação da atividade deve maior ou igual" \
+        detail_msg = "Data de avaliação da atividade deve ser maior ou igual" \
                      " que a Data Fim do Plano de Trabalho."
         assert response.json().get("detail", None) == detail_msg
     else:
@@ -230,12 +230,12 @@ def test_create_pt_invalid_data_avaliacao(truncate_bd,
                             (92, 404, 404), # <<<< IGUAIS
                             (93, 405, 406),
                             ])
-def test_create_pt_duplicate_atividade(truncate_bd,
-                                       input_pt,
+def test_create_pt_duplicate_atividade(input_pt,
                                        cod_plano,
                                        id_ati_1,
                                        id_ati_2,
                                        authed_header_user_1,
+                                       truncate_bd,
                                        client):
     input_pt['cod_plano'] = cod_plano
     input_pt['atividades'][0]['id_atividade'] = id_ati_1
@@ -251,3 +251,18 @@ def test_create_pt_duplicate_atividade(truncate_bd,
     else:
         assert response.status_code == 200
 
+# @pytest.mark.parametrize("cod_plano_1, id_ati_1_1, id_ati_1_2, " \
+#                          "cod_plano_2, id_ati_2_1, id_ati_2_2 ",
+#                           [
+#                             (90, 401, 402, 91, 401, 402),
+#                             ])
+# def test_create_pt_repeated_id_atividade(input_pt,
+#                                          cod_plano_1,
+#                                          id_ati_1_1,
+#                                          id_ati_1_2,
+#                                          cod_plano_2,
+#                                          id_ati_2_1,
+#                                          id_ati_2_2,
+#                                          authed_header_user_1,
+#                                          truncate_bd,
+#                                          client):

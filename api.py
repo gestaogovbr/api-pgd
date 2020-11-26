@@ -115,7 +115,7 @@ async def create_or_update_plano_trabalho(
         if plano_trabalho.data_fim > atividade.data_avaliacao:
             raise HTTPException(
                 400,
-                detail="Data de avaliação da atividade deve maior ou" \
+                detail="Data de avaliação da atividade deve ser maior ou" \
                  " igual que a Data Fim do Plano de Trabalho.")
 
     ids_atividades = [a.id_atividade for a in plano_trabalho.atividades]
