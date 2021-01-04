@@ -21,7 +21,7 @@ def input_pt():
     pt_json = {
       "cod_plano": "555",
       "matricula_siape": 0,
-      "cpf": "string",
+      "cpf": "36041181404",
       "nome_participante": "string",
       "cod_unidade_exercicio": 0,
       "nome_unidade_exercicio": "string",
@@ -228,7 +228,7 @@ def test_create_pt_invalid_dates(input_pt,
         assert response.status_code == 400
         detail_msg = "Data fim do Plano de Trabalho deve ser maior" \
                      " ou igual que Data início."
-        assert response.json().get("detail", None) ==detail_msg
+        assert response.json().get("detail", None) == detail_msg
     else:
         assert response.status_code == 200
 
@@ -309,4 +309,32 @@ def test_update_pt_different_cod_unidade(input_pt,
 
     assert response.status_code == 403
     detail_msg = "Usuário não pode alterar Plano de Trabalho de outra unidade."
+    assert response.json().get("detail", None) == detail_msg
+
+@pytest.mark.parametrize("cod_plano, cpf",
+                          [
+                            (100, '04811556430'),
+                            (101, '01111556430'),
+                            (102, '02211556430'),
+                            (103, '03311556430'),
+                            (104, '04411556430'),
+                            (104, '0441155643'),
+                            (104, '4411556430'),
+                            (104, '048.115.564-37'),
+                            (104, '044.115.564-30'),
+                            ])
+def test_create_pt_invalid_cpf(input_pt,
+                               cod_plano,
+                               cpf,
+                               authed_header_user_1,
+                               truncate_planos_trabalho,
+                               client):
+    input_pt['cod_plano'] = cod_plano
+    input_pt['cpf'] = cpf
+
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=authed_header_user_1)
+    assert response.status_code == 400
+    detail_msg = "CPF inválido."
     assert response.json().get("detail", None) == detail_msg
