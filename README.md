@@ -59,3 +59,14 @@ O arquivo `docker-compose.yml` descreve a receita dos conteiners que compõem a 
 * Consulte o `docker-compose.yml` para descobrir o login e senha do PgAdmin e do Postgres
 * No PgAdmin utilize `'db'` como valor para o endereço do Postgres. Isso é necessário porquê os conteiners utilizam uma rede interna do Docker para se comunicarem
 * Caso a modelagem ORM seja alterada, pode ser mais simples remover (dropar) o BD e recriá-lo novamente apenas subindo a solução. Para remover o BD utilize o PgAdmin
+
+## Rodando testes
+
+Para rodar os testes execute:
+> ```$ pytest test_api.py```
+
+Para rodar no modo verboso útil para debugar:
+> ```$ pytest test_api.py -vv```
+
+Para rodar um teste específico utilize o parâmetro `-k`. Este exemplo roda apenas o teste `test_create_pt_invalid_cpf`:
+> ```$ pytest test_api.py -k test_create_pt_invalid_cpf -vv```
