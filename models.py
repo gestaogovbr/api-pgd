@@ -19,7 +19,7 @@ class PlanoTrabalho(Base):
     nome_participante = Column(String)
     cod_unidade_exercicio = Column(Integer)
     nome_unidade_exercicio = Column(String)
-    local_execucao = Column(Integer)
+    modalidade_execucao = Column(Integer)
     carga_horaria_semanal = Column(Integer)
     data_inicio = Column(Date)
     data_fim = Column(Date)

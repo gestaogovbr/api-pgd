@@ -1,6 +1,7 @@
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import date
+from enum import IntEnum
 
 class AtividadeSchema(BaseModel):
     id_atividade: int
@@ -20,7 +21,11 @@ class AtividadeSchema(BaseModel):
     class Config:
         orm_mode = True
 
-
+class ModalidadeEnum(IntEnum):
+    presencial = 1
+    semipresencial = 2
+    teletrabalho = 3       
+       
 class PlanoTrabalhoSchema(BaseModel):
     cod_plano: str
     matricula_siape: int
@@ -28,7 +33,7 @@ class PlanoTrabalhoSchema(BaseModel):
     nome_participante: str
     cod_unidade_exercicio: int
     nome_unidade_exercicio: str
-    local_execucao: int
+    modalidade_execucao: ModalidadeEnum = Field(None, alias='modalidade_execucao')
     carga_horaria_semanal: int
     data_inicio: date
     data_fim: date
@@ -41,4 +46,6 @@ class PlanoTrabalhoSchema(BaseModel):
 
     class Config:
         orm_mode = True
+        
+
 

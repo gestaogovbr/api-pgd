@@ -4,6 +4,7 @@ Testes automáticos da API
 import os
 import json
 from types import GeneratorType as Generator
+import requests
 
 from fastapi.testclient import TestClient
 from api import app
@@ -19,53 +20,53 @@ def client() -> Generator:
 @pytest.fixture()
 def input_pt():
     pt_json = {
-      "cod_plano": "555",
-      "matricula_siape": 0,
-      "cpf": "36041181404",
-      "nome_participante": "string",
-      "cod_unidade_exercicio": 0,
-      "nome_unidade_exercicio": "string",
-      "local_execucao": 0,
-      "carga_horaria_semanal": 0,
-      "data_inicio": "2020-11-14",
-      "data_fim": "2020-11-14",
-      "carga_horaria_total": 0,
-      "data_interrupcao": "2020-11-14",
-      "entregue_no_prazo": True,
-      "horas_homologadas": 0,
-      "atividades": [
-        {
-          "id_atividade": 909290,
-          "nome_grupo_atividade": "string",
-          "nome_atividade": "string",
-          "faixa_complexidade": "string",
-          "parametros_complexidade": "string",
-          "tempo_exec_presencial": 0,
-          "tempo_exec_teletrabalho": 0,
-          "entrega_esperada": "string",
-          "qtde_entregas": 0,
-          "qtde_entregas_efetivas": 0,
-          "avaliacao": 0,
-          "data_avaliacao": "2020-11-14",
-          "justificativa": "string"
-        },
-        {
-          "id_atividade": 700290,
-          "nome_grupo_atividade": "string",
-          "nome_atividade": "string",
-          "faixa_complexidade": "string",
-          "parametros_complexidade": "string",
-          "tempo_exec_presencial": 0,
-          "tempo_exec_teletrabalho": 0,
-          "entrega_esperada": "string",
-          "qtde_entregas": 0,
-          "qtde_entregas_efetivas": 0,
-          "avaliacao": 0,
-          "data_avaliacao": "2020-11-14",
-          "justificativa": "string"
-        }
-      ]
+  "cod_plano": "555",
+  "matricula_siape": 0,
+  "cpf": "99160773120",
+  "nome_participante": "string",
+  "cod_unidade_exercicio": 0,
+  "nome_unidade_exercicio": "string",
+  "modalidade_execucao": 1,
+  "carga_horaria_semanal": 0,
+  "data_inicio": "2021-01-07",
+  "data_fim": "2021-01-07",
+  "carga_horaria_total": 0,
+  "data_interrupcao": "2021-01-07",
+  "entregue_no_prazo": True,
+  "horas_homologadas": 0,
+  "atividades": [
+    {
+      "id_atividade": 2,
+      "nome_grupo_atividade": "string",
+      "nome_atividade": "string",
+      "faixa_complexidade": "string",
+      "parametros_complexidade": "string",
+      "tempo_exec_presencial": 0,
+      "tempo_exec_teletrabalho": 0,
+      "entrega_esperada": "string",
+      "qtde_entregas": 0,
+      "qtde_entregas_efetivas": 0,
+      "avaliacao": 0,
+      "data_avaliacao": "2021-01-07",
+      "justificativa": "string"
+    },
+    {
+      "id_atividade": 3,
+      "nome_grupo_atividade": "string",
+      "nome_atividade": "string",
+      "faixa_complexidade": "string",
+      "parametros_complexidade": "string",
+      "tempo_exec_presencial": 0,
+      "tempo_exec_teletrabalho": 0,
+      "entrega_esperada": "string",
+      "qtde_entregas": 0,
+      "qtde_entregas_efetivas": 0,
+      "avaliacao": 0,
+      "data_avaliacao": "2021-01-07",
+      "justificativa": "string"
     }
+  ]
+}
     return pt_json
 
 @pytest.fixture(scope="module")
@@ -110,13 +111,26 @@ def authed_header_user_1(register_user_1):
     # print(response)
     # return response.json().get("access_token")
 
-    shell_cmd = 'curl -X POST "http://localhost:5057/auth/jwt/login"' \
-                    ' -H  "accept: application/json"' \
-                    ' -H  "Content-Type: application/x-www-form-urlencoded"' \
-                    ' -d "grant_type=&username=test1%40api.com&password=api&scope=&client_id=&client_secret="'
-    my_cmd = os.popen(shell_cmd).read()
-    response = json.loads(my_cmd)
-    token_user_1 = response.get('access_token')
+    # shell_cmd = 'curl -X POST "http://192.168.0.206:5057/auth/jwt/login"' \
+    #                 ' -H  "accept: application/json"' \
+    #                 ' -H  "Content-Type: application/json"' \
+    #                 ' -d "grant_type=&username=test1%40api.com&password=api&scope=&client_id=&client_secret="'
+    # my_cmd = os.popen(shell_cmd).read()
+    # response = json.loads(my_cmd)
+    # token_user_1 = response.get('access_token')
+    
+    url = "http://localhost:5057/auth/jwt/login"
+
+    payload='accept=application%2Fjson&Content-Type=application%2Fjson&username=test1%40api.com&password=api'
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+    response_dict = json.loads(response.text)
+    token_user_1 = response_dict.get('access_token')
+    print(token_user_1)
+    
     header = {
         'Authorization': f'Bearer {token_user_1}',
         'accept': 'application/json',
@@ -129,13 +143,18 @@ def authed_header_user_2(register_user_2):
     """Authenticate in the API and return a dict with bearer header
     parameter to be passed to apis requests."""
 
-    shell_cmd = 'curl -X POST "http://localhost:5057/auth/jwt/login"' \
-                    ' -H  "accept: application/json"' \
-                    ' -H  "Content-Type: application/x-www-form-urlencoded"' \
-                    ' -d "grant_type=&username=test2%40api.com&password=api&scope=&client_id=&client_secret="'
-    my_cmd = os.popen(shell_cmd).read()
-    response = json.loads(my_cmd)
-    token_user_1 = response.get('access_token')
+    url = "http://localhost:5057/auth/jwt/login"
+
+    payload='accept=application%2Fjson&Content-Type=application%2Fjson&username=test2%40api.com&password=api'
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+    response_dict = json.loads(response.text)
+    token_user_1 = response_dict.get('access_token')
+    print(token_user_1)
+    
     header = {
         'Authorization': f'Bearer {token_user_1}',
         'accept': 'application/json',
@@ -338,3 +357,28 @@ def test_create_pt_invalid_cpf(input_pt,
     assert response.status_code == 400
     detail_msg = "CPF inválido."
     assert response.json().get("detail", None) == detail_msg
+
+    
+@pytest.mark.parametrize("cod_plano, modalidade_execucao",
+                          [
+                            (556, -1),
+                            (81, -2),
+                            (82, -3)                                                      
+                            ])
+def test_create_pt_invalid_modalidade_execucao(input_pt, 
+                               cod_plano,                                              
+                               modalidade_execucao,
+                               authed_header_user_1,
+                               truncate_planos_trabalho,
+                               client):  
+    input_pt['cod_plano'] = cod_plano
+    input_pt['modalidade_execucao']= modalidade_execucao
+    # print(input_pt)
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=authed_header_user_1)
+    # print(response)
+ 
+    assert response.status_code == 422
+    detail_msg = "value is not a valid enumeration member; permitted: 1, 2, 3"
+    assert response.json().get("detail")[0]["msg"] == detail_msg
