@@ -90,32 +90,32 @@ async def shutdown():
     await auth_db.disconnect()
 
 # TODO Mover esta função para arquivo específico
-def cpf_validate(numbers):
-    #  Obtém os números do CPF e ignora outros caracteres
-    try:
-        int(numbers)
-    except:
-        return False
+# def cpf_validate(numbers):
+#     #  Obtém os números do CPF e ignora outros caracteres
+#     try:
+#         int(numbers)
+#     except:
+#         return False
 
-    cpf = [int(char) for char in numbers]
+#     cpf = [int(char) for char in numbers]
 
-    #  Verifica se o CPF tem 11 dígitos
-    if len(cpf) != 11:
-        return False
+#     #  Verifica se o CPF tem 11 dígitos
+#     if len(cpf) != 11:
+#         return False
 
-    #  Verifica se o CPF tem todos os números iguais, ex: 111.111.111-11
-    #  Esses CPFs são considerados inválidos mas passam na validação dos dígitos
-    #  Antigo código para referência: if all(cpf[i] == cpf[i+1] for i in range (0, len(cpf)-1))
-    if cpf == cpf[::-1]:
-        return False
+#     #  Verifica se o CPF tem todos os números iguais, ex: 111.111.111-11
+#     #  Esses CPFs são considerados inválidos mas passam na validação dos dígitos
+#     #  Antigo código para referência: if all(cpf[i] == cpf[i+1] for i in range (0, len(cpf)-1))
+#     if cpf == cpf[::-1]:
+#         return False
 
-    #  Valida os dois dígitos verificadores
-    for i in range(9, 11):
-        value = sum((cpf[num] * ((i+1) - num) for num in range(0, i)))
-        digit = ((value * 10) % 11) % 10
-        if digit != cpf[i]:
-            return False
-    return True
+#     #  Valida os dois dígitos verificadores
+#     for i in range(9, 11):
+#         value = sum((cpf[num] * ((i+1) - num) for num in range(0, i)))
+#         digit = ((value * 10) % 11) % 10
+#         if digit != cpf[i]:
+#             return False
+#     return True
 
 @app.put("/plano_trabalho/{cod_plano}",
          response_model=schemas.PlanoTrabalhoSchema
@@ -137,12 +137,7 @@ async def create_or_update_plano_trabalho(
         raise HTTPException(
             400,
             detail="Data fim do Plano de Trabalho deve ser maior ou igual" \
-                   " que Data início.")
-
-    if not cpf_validate(plano_trabalho.cpf):
-        raise HTTPException(
-            400,
-            detail="CPF inválido.")
+                   " que Data início.")   
 
     for atividade in plano_trabalho.atividades:
         if plano_trabalho.data_fim > atividade.data_avaliacao:

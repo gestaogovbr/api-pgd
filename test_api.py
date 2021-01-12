@@ -332,15 +332,12 @@ def test_update_pt_different_cod_unidade(input_pt,
 
 @pytest.mark.parametrize("cod_plano, cpf",
                           [
-                            (100, '04811556430'),
-                            (101, '01111556430'),
-                            (102, '02211556430'),
-                            (103, '03311556430'),
-                            (104, '04411556430'),
-                            (104, '0441155643'),
-                            (104, '4411556430'),
-                            (104, '048.115.564-37'),
-                            (104, '044.115.564-30'),
+                            (100, '11111111111'),
+                            (101, '22222222222'),
+                            (102, '33333333333'),
+                            (103, '44444444444'),                          
+                            # (103, '444-444-444.44'),                          
+                            # (103, '444.444.444-44'),                          
                             ])
 def test_create_pt_invalid_cpf(input_pt,
                                cod_plano,
@@ -354,9 +351,9 @@ def test_create_pt_invalid_cpf(input_pt,
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
                           headers=authed_header_user_1)
-    assert response.status_code == 400
-    detail_msg = "CPF inválido."
-    assert response.json().get("detail", None) == detail_msg
+    assert response.status_code == 422
+    detail_msg = "CPF inválido"
+    assert response.json().get("detail")[0]["msg"] == detail_msg
 
     
 @pytest.mark.parametrize("cod_plano, modalidade_execucao",
