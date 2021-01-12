@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel, Field, ValidationError, validator
+from pydantic import BaseModel, Field, ValidationError, validator, root_validator
 from datetime import date
 from enum import IntEnum
 
@@ -43,6 +43,14 @@ class PlanoTrabalhoSchema(BaseModel):
     horas_homologadas: float
     atividades: List[AtividadeSchema] # = []
     
+    @root_validator
+    def data_validate(cls, values):
+        data_inicio = values.get('data_inicio', None)
+        data_fim = values.get('data_fim', None)
+        if data_inicio > data_fim:
+            raise ValueError("Data fim do Plano de Trabalho deve ser maior" \
+                     " ou igual que Data início.")
+        return values
     
     @validator('cpf')
     def cpf_validate(input_cpf):
@@ -52,8 +60,7 @@ class PlanoTrabalhoSchema(BaseModel):
         except:
             return False
 
-        cpf = [int(char) for char in input_cpf if char.isdigit()]
-        
+        cpf = [int(char) for char in input_cpf if char.isdigit()]        
 
         #  Verifica se o CPF tem 11 dígitos
         if len(cpf) != 11:
@@ -77,29 +84,21 @@ class PlanoTrabalhoSchema(BaseModel):
             
         str_cpf = ''.join([str(i) for i in input_cpf])
         return str_cpf
-    
+
     # @validator('atividades', 'carga_horaria_total')
     # def must_be_sum_activits(cls, values):        
     #     print(values)
         # for a in atividades.__dict__.items():
         #     tempo_total += getattr(a, 'tempo_exec_presencial') + getattr(a, 'tempo_exec_teletrabalho')
         # if tempo_total != carga_horaria_total:
-        #     raise ValueError('testes')  
-    
+        #     raise ValueError('testes')    
         
-    
-    # @validator('cod_plano')
-       
-   
     @validator('carga_horaria_total')
     def must_be_less(cls, carga_horaria_total):        
         # print(carga_horaria_total)
         if carga_horaria_total >= 40:
             raise ValueError('Valor precisa ser menor ou igual a 40')
         return carga_horaria_total
-
+    
     class Config:
         orm_mode = True
-        
-
-

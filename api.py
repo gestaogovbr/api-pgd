@@ -133,12 +133,6 @@ async def create_or_update_plano_trabalho(
             400,
             detail="Parâmetro cod_plano diferente do conteúdo do JSON")
 
-    if plano_trabalho.data_inicio > plano_trabalho.data_fim:
-        raise HTTPException(
-            400,
-            detail="Data fim do Plano de Trabalho deve ser maior ou igual" \
-                   " que Data início.")   
-
     for atividade in plano_trabalho.atividades:
         if plano_trabalho.data_fim > atividade.data_avaliacao:
             raise HTTPException(

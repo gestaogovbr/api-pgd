@@ -29,7 +29,7 @@ def input_pt():
   "modalidade_execucao": 1,
   "carga_horaria_semanal": 0,
   "data_inicio": "2021-01-07",
-  "data_fim": "2021-01-07",
+  "data_fim": "2021-01-12",
   "carga_horaria_total": 0,
   "data_interrupcao": "2021-01-07",
   "entregue_no_prazo": True,
@@ -47,7 +47,7 @@ def input_pt():
       "qtde_entregas": 0,
       "qtde_entregas_efetivas": 0,
       "avaliacao": 0,
-      "data_avaliacao": "2021-01-07",
+      "data_avaliacao": "2021-01-15",
       "justificativa": "string"
     },
     {
@@ -62,7 +62,7 @@ def input_pt():
       "qtde_entregas": 0,
       "qtde_entregas_efetivas": 0,
       "avaliacao": 0,
-      "data_avaliacao": "2021-01-07",
+      "data_avaliacao": "2021-01-15",
       "justificativa": "string"
     }
   ]
@@ -191,6 +191,7 @@ def test_create_plano_trabalho(input_pt,
                           data=json.dumps(input_pt),
                           headers=authed_header_user_1)
     assert response.status_code == 200
+    assert response.json().get("detail", None) == None
     assert response.json() == input_pt
 
 def test_create_pt_cod_plano_inconsistent(input_pt,
@@ -223,7 +224,6 @@ def test_get_pt_inexistente(authed_header_user_1, client):
                             ("2020-06-04", "2020-04-01", 77, 333, 334),
                             ("2020-06-04", "2020-04-01", 78, 335, 336),
                             ("2020-06-04", "2020-04-01", 79, 337, 338),
-                            ("2020-04-01", "2020-06-04", 80, 339, 340),
                             ])
 def test_create_pt_invalid_dates(input_pt,
                                  data_inicio,
@@ -244,10 +244,10 @@ def test_create_pt_invalid_dates(input_pt,
                           json=input_pt,
                           headers=authed_header_user_1)
     if data_inicio > data_fim:
-        assert response.status_code == 400
+        assert response.status_code == 422
         detail_msg = "Data fim do Plano de Trabalho deve ser maior" \
                      " ou igual que Data início."
-        assert response.json().get("detail", None) == detail_msg
+        assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
         assert response.status_code == 200
 
