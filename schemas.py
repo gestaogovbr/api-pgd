@@ -47,10 +47,16 @@ class PlanoTrabalhoSchema(BaseModel):
     def data_validate(cls, values):
         data_inicio = values.get('data_inicio', None)
         data_fim = values.get('data_fim', None)
+        atividades = values.get('atividades')[0]
+        print(atividades.data_avaliacao)
         if data_inicio > data_fim:
             raise ValueError("Data fim do Plano de Trabalho deve ser maior" \
                      " ou igual que Data início.")
+        if data_fim > atividades.data_avaliacao:
+             raise ValueError("Data de avaliação da atividade deve ser maior ou igual" \
+                     " que a Data Fim do Plano de Trabalho.")
         return values
+        
     
     @validator('cpf')
     def cpf_validate(input_cpf):
@@ -87,7 +93,6 @@ class PlanoTrabalhoSchema(BaseModel):
 
     # @validator('atividades', 'carga_horaria_total')
     # def must_be_sum_activits(cls, values):        
-    #     print(values)
         # for a in atividades.__dict__.items():
         #     tempo_total += getattr(a, 'tempo_exec_presencial') + getattr(a, 'tempo_exec_teletrabalho')
         # if tempo_total != carga_horaria_total:
@@ -95,7 +100,6 @@ class PlanoTrabalhoSchema(BaseModel):
         
     @validator('carga_horaria_total')
     def must_be_less(cls, carga_horaria_total):        
-        # print(carga_horaria_total)
         if carga_horaria_total >= 40:
             raise ValueError('Valor precisa ser menor ou igual a 40')
         return carga_horaria_total

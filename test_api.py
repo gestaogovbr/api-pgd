@@ -256,7 +256,7 @@ def test_create_pt_invalid_dates(input_pt,
     [
       ("2020-06-04", "2020-04-01", "2020-04-01", 77, 333, 334),
       ("2020-06-04", "2020-04-01", "2021-04-01", 78, 335, 336),
-      ("2020-06-04", "2020-10-01", "2019-04-01", 79, 337, 338),
+      ("2020-06-04", "2020-04-01", "2019-04-01", 79, 337, 338),
       ("2020-04-01", "2020-04-01", "2020-06-04", 80, 339, 340),
       ("2020-04-01", "2020-04-01", "2020-04-01", 81, 341, 342),
       ("2020-04-01", "2020-02-01", "2020-01-04", 82, 343, 344),
@@ -283,10 +283,10 @@ def test_create_pt_invalid_data_avaliacao(input_pt,
                           json=input_pt,
                           headers=authed_header_user_1)
     if data_fim > data_avaliacao_1 or data_fim > data_avaliacao_2:
-        assert response.status_code == 400
+        assert response.status_code == 422
         detail_msg = "Data de avaliação da atividade deve ser maior ou igual" \
                      " que a Data Fim do Plano de Trabalho."
-        assert response.json().get("detail", None) == detail_msg
+        assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
         assert response.status_code == 200
 
