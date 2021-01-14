@@ -312,9 +312,9 @@ def test_create_pt_duplicate_atividade(input_pt,
                           json=input_pt,
                           headers=authed_header_user_1)
     if id_ati_1 == id_ati_2:
-        assert response.status_code == 400
+        assert response.status_code == 422
         detail_msg = "Atividades devem possuir id_atividade diferentes."
-        assert response.json().get("detail", None) == detail_msg
+        assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
         assert response.status_code == 200
 

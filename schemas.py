@@ -47,17 +47,27 @@ class PlanoTrabalhoSchema(BaseModel):
     def data_validate(cls, values):
         data_inicio = values.get('data_inicio', None)
         data_fim = values.get('data_fim', None)
-        atividades = values.get('atividades')[0]
-        print(atividades.data_avaliacao)
+        atividades = values.get('atividades')[0]        
         if data_inicio > data_fim:
             raise ValueError("Data fim do Plano de Trabalho deve ser maior" \
                      " ou igual que Data início.")
         if data_fim > atividades.data_avaliacao:
-             raise ValueError("Data de avaliação da atividade deve ser maior ou igual" \
-                     " que a Data Fim do Plano de Trabalho.")
+            raise ValueError("Data de avaliação da atividade deve ser maior ou igual" \
+                     " que a Data Fim do Plano de Trabalho.")      
         return values
-        
     
+    @validator('atividades')
+    def valida_atividades(cls, atividades):     
+        ids_atividades = [a.id_atividade for a in atividades]
+        duplicados = []
+        for id_atividade in ids_atividades:                   
+            if id_atividade not in duplicados:                
+                duplicados.append(id_atividade)
+            else:
+                raise ValueError("Atividades devem possuir id_atividade diferentes.")
+        return atividades
+        
+       
     @validator('cpf')
     def cpf_validate(input_cpf):
     #  Obtém os números do CPF e igcod_planoora outros caracteres

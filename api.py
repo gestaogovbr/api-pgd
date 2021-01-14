@@ -36,7 +36,7 @@ app = FastAPI(
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
 
 def on_after_register(user: UserDB, request: Request):
-    print(f"User {user.id} has registered.")
+    print(f"User {user.id} has registered.")  
 
 
 def on_after_forgot_password(user: UserDB, token: str, request: Request):
@@ -127,6 +127,7 @@ async def create_or_update_plano_trabalho(
     token: str = Depends(oauth2_scheme),
     user: User = Depends(fastapi_users.get_current_user)
     ):
+    # print(plano_trabalho.atividades)
     # Validações da entrada conforme regras de negócio
     if cod_plano != plano_trabalho.cod_plano:
         raise HTTPException(
@@ -140,11 +141,11 @@ async def create_or_update_plano_trabalho(
     #             detail="Data de avaliação da atividade deve ser maior ou" \
     #              " igual que a Data Fim do Plano de Trabalho.")
 
-    ids_atividades = [a.id_atividade for a in plano_trabalho.atividades]
-    if len(ids_atividades) != len(set(ids_atividades)):
-            raise HTTPException(
-                400,
-                detail="Atividades devem possuir id_atividade diferentes.")
+    # ids_atividades = [a.id_atividade for a in plano_trabalho.atividades]
+    # if len(ids_atividades) != len(set(ids_atividades)):
+    #         raise HTTPException(
+    #             400,
+    #             detail="Atividades devem possuir id_atividade diferentes.")
 
     db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
 
