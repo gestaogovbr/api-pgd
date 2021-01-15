@@ -36,7 +36,7 @@ app = FastAPI(
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
 
 def on_after_register(user: UserDB, request: Request):
-    print(f"User {user.id} has registered.")  
+    print(f"User {user.id} has registered.")
 
 
 def on_after_forgot_password(user: UserDB, token: str, request: Request):
@@ -89,34 +89,6 @@ async def startup():
 async def shutdown():
     await auth_db.disconnect()
 
-# TODO Mover esta função para arquivo específico
-# def cpf_validate(numbers):
-#     #  Obtém os números do CPF e ignora outros caracteres
-#     try:
-#         int(numbers)
-#     except:
-#         return False
-
-#     cpf = [int(char) for char in numbers]
-
-#     #  Verifica se o CPF tem 11 dígitos
-#     if len(cpf) != 11:
-#         return False
-
-#     #  Verifica se o CPF tem todos os números iguais, ex: 111.111.111-11
-#     #  Esses CPFs são considerados inválidos mas passam na validação dos dígitos
-#     #  Antigo código para referência: if all(cpf[i] == cpf[i+1] for i in range (0, len(cpf)-1))
-#     if cpf == cpf[::-1]:
-#         return False
-
-#     #  Valida os dois dígitos verificadores
-#     for i in range(9, 11):
-#         value = sum((cpf[num] * ((i+1) - num) for num in range(0, i)))
-#         digit = ((value * 10) % 11) % 10
-#         if digit != cpf[i]:
-#             return False
-#     return True
-
 @app.put("/plano_trabalho/{cod_plano}",
          response_model=schemas.PlanoTrabalhoSchema
          )
@@ -127,28 +99,13 @@ async def create_or_update_plano_trabalho(
     token: str = Depends(oauth2_scheme),
     user: User = Depends(fastapi_users.get_current_user)
     ):
-    # print(plano_trabalho.atividades)
     # Validações da entrada conforme regras de negócio
     if cod_plano != plano_trabalho.cod_plano:
         raise HTTPException(
             400,
             detail="Parâmetro cod_plano diferente do conteúdo do JSON")
 
-    # for atividade in plano_trabalho.atividades:
-    #     if plano_trabalho.data_fim > atividade.data_avaliacao:
-    #         raise HTTPException(
-    #             400,
-    #             detail="Data de avaliação da atividade deve ser maior ou" \
-    #              " igual que a Data Fim do Plano de Trabalho.")
-
-    # ids_atividades = [a.id_atividade for a in plano_trabalho.atividades]
-    # if len(ids_atividades) != len(set(ids_atividades)):
-    #         raise HTTPException(
-    #             400,
-    #             detail="Atividades devem possuir id_atividade diferentes.")
-
     db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
-
     if db_plano_trabalho is None:
         crud.create_plano_tabalho(db, plano_trabalho, user.cod_unidade)
     else:
