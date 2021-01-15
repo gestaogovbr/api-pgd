@@ -104,11 +104,11 @@ class PlanoTrabalhoSchema(BaseModel):
         # if tempo_total != carga_horaria_total:
         #     raise ValueError('testes')
 
-    @validator('carga_horaria_total')
-    def must_be_less(cls, carga_horaria_total):
-        if carga_horaria_total >= 40:
-            raise ValueError('Valor precisa ser menor ou igual a 40')
-        return carga_horaria_total
+    @validator('carga_horaria_semanal')
+    def must_be_less(cls, carga_horaria_semanal):
+        if carga_horaria_semanal > 40 or carga_horaria_semanal <= 0:
+            raise ValueError('Carga horária semanal deve ser entre 1 e 40')
+        return carga_horaria_semanal
 
     class Config:
         orm_mode = True
