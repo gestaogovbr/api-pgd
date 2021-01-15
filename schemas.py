@@ -43,6 +43,7 @@ class PlanoTrabalhoSchema(BaseModel):
     horas_homologadas: float
     atividades: List[AtividadeSchema] # = []
 
+    # Validações
     @root_validator
     def data_validate(cls, values):
         data_inicio = values.get('data_inicio', None)
@@ -77,18 +78,14 @@ class PlanoTrabalhoSchema(BaseModel):
             return False
 
         cpf = [int(char) for char in input_cpf if char.isdigit()]
-
         #  Verifica se o CPF tem 11 dígitos
         if len(cpf) != 11:
             raise ValueError('CPF precisa ter 11 digitos')
-            return False
 
         #  Verifica se o CPF tem todos os números iguais, ex: 111.111.111-11
         #  Esses CPFs são considerados inválidos mas passam na validação dos dígitos
-        #  Antigo código para referência: if all(cpf[i] == cpf[i+1] for i in range (0, len(cpf)-1))
         if cpf == cpf[::-1]:
             raise ValueError('CPF inválido')
-            return False
 
         #  Valida os dois dígitos verificadores
         for i in range(9, 11):
@@ -96,7 +93,6 @@ class PlanoTrabalhoSchema(BaseModel):
             digit = ((value * 10) % 11) % 10
             if digit != cpf[i]:
                 raise ValueError('Digitos verificadores do CPF inválidos!')
-                return False
 
         str_cpf = ''.join([str(i) for i in input_cpf])
         return str_cpf
