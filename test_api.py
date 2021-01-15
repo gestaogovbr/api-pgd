@@ -190,6 +190,7 @@ def test_create_plano_trabalho(input_pt,
     response = client.put(f"/plano_trabalho/555",
                           data=json.dumps(input_pt),
                           headers=authed_header_user_1)
+
     assert response.status_code == 200
     assert response.json().get("detail", None) == None
     assert response.json() == input_pt
@@ -399,3 +400,37 @@ def test_create_pt_invalid_carga_horaria_semanal(input_pt,
     assert response.status_code == 422
     detail_msg = "Carga horária semanal deve ser entre 1 e 40"
     assert response.json().get("detail")[0]["msg"] == detail_msg
+
+
+@pytest.mark.parametrize("carga_horaria_total, tempo_pres_1, tempo_tel_1, tempo_pres_2, tempo_tel_2",
+                          [(56, 2, 3, 4, 5),
+                           (-2, 2, 3, 4.3, 5),
+                           (0, 2, 3, 4.2, 5),
+                           ])
+def test_create_pt_invalid_carga_horaria_total(input_pt,
+                                                 carga_horaria_total,
+                                                 tempo_pres_1,
+                                                 tempo_tel_1,
+                                                 tempo_pres_2,
+                                                 tempo_tel_2,
+                                                 authed_header_user_1,
+                                                 truncate_planos_trabalho,
+                                                 client):
+    cod_plano = 767677
+    input_pt['cod_plano'] = cod_plano
+    input_pt['carga_horaria_total'] = carga_horaria_total
+    input_pt['atividades'][0]['tempo_exec_presencial'] = tempo_pres_1
+    input_pt['atividades'][0]['tempo_exec_teletrabalho'] = tempo_tel_1
+    input_pt['atividades'][1]['tempo_exec_presencial'] = tempo_pres_2
+    input_pt['atividades'][1]['tempo_exec_teletrabalho'] = tempo_tel_2
+
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=authed_header_user_1)
+
+    assert response.status_code == 422
+    detail_msg = 'A soma dos tempos de execução presencial e ' \
+                 'teletrabalho das atividades deve ser igual à ' \
+                 'carga_horaria_total.'
+    assert response.json().get("detail")[0]["msg"] == detail_msg
+
