@@ -27,7 +27,7 @@ def input_pt():
   "cod_unidade_exercicio": 0,
   "nome_unidade_exercicio": "string",
   "modalidade_execucao": 1,
-  "carga_horaria_semanal": 0,
+  "carga_horaria_semanal": 10,
   "data_inicio": "2021-01-07",
   "data_fim": "2021-01-12",
   "carga_horaria_total": 0,
@@ -369,13 +369,33 @@ def test_create_pt_invalid_modalidade_execucao(input_pt,
                                truncate_planos_trabalho,
                                client):
     input_pt['cod_plano'] = cod_plano
-    input_pt['modalidade_execucao']= modalidade_execucao
-    # print(input_pt)
+    input_pt['modalidade_execucao'] = modalidade_execucao
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
                           headers=authed_header_user_1)
-    # print(response)
 
     assert response.status_code == 422
     detail_msg = "value is not a valid enumeration member; permitted: 1, 2, 3"
+    assert response.json().get("detail")[0]["msg"] == detail_msg
+
+@pytest.mark.parametrize("carga_horaria_semanal",
+                          [
+                            (56),
+                            (-2),
+                            (0),
+                            ])
+def test_create_pt_invalid_carga_horaria_semanal(input_pt,
+                                                 carga_horaria_semanal,
+                                                 authed_header_user_1,
+                                                 truncate_planos_trabalho,
+                                                 client):
+    cod_plano = 767676
+    input_pt['cod_plano'] = cod_plano
+    input_pt['carga_horaria_semanal'] = carga_horaria_semanal
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=authed_header_user_1)
+
+    assert response.status_code == 422
+    detail_msg = "Carga horária semanal deve ser entre 1 e 40"
     assert response.json().get("detail")[0]["msg"] == detail_msg
