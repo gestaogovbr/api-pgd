@@ -118,7 +118,7 @@ def authed_header_user_1(register_user_1):
     # my_cmd = os.popen(shell_cmd).read()
     # response = json.loads(my_cmd)
     # token_user_1 = response.get('access_token')
-    
+
     url = "http://localhost:5057/auth/jwt/login"
 
     payload='accept=application%2Fjson&Content-Type=application%2Fjson&username=test1%40api.com&password=api'
@@ -130,7 +130,7 @@ def authed_header_user_1(register_user_1):
     response_dict = json.loads(response.text)
     token_user_1 = response_dict.get('access_token')
     print(token_user_1)
-    
+
     header = {
         'Authorization': f'Bearer {token_user_1}',
         'accept': 'application/json',
@@ -154,7 +154,7 @@ def authed_header_user_2(register_user_2):
     response_dict = json.loads(response.text)
     token_user_1 = response_dict.get('access_token')
     print(token_user_1)
-    
+
     header = {
         'Authorization': f'Bearer {token_user_1}',
         'accept': 'application/json',
@@ -335,9 +335,9 @@ def test_update_pt_different_cod_unidade(input_pt,
                             (100, '11111111111'),
                             (101, '22222222222'),
                             (102, '33333333333'),
-                            (103, '44444444444'),                          
-                            # (103, '444-444-444.44'),                          
-                            # (103, '444.444.444-44'),                          
+                            (103, '44444444444'),
+                            # (103, '444-444-444.44'),
+                            # (103, '444.444.444-44'),
                             ])
 def test_create_pt_invalid_cpf(input_pt,
                                cod_plano,
@@ -355,19 +355,19 @@ def test_create_pt_invalid_cpf(input_pt,
     detail_msg = "CPF inválido"
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
-    
+
 @pytest.mark.parametrize("cod_plano, modalidade_execucao",
                           [
                             (556, -1),
                             (81, -2),
-                            (82, -3)                                                      
+                            (82, -3)
                             ])
-def test_create_pt_invalid_modalidade_execucao(input_pt, 
-                               cod_plano,                                              
+def test_create_pt_invalid_modalidade_execucao(input_pt,
+                               cod_plano,
                                modalidade_execucao,
                                authed_header_user_1,
                                truncate_planos_trabalho,
-                               client):  
+                               client):
     input_pt['cod_plano'] = cod_plano
     input_pt['modalidade_execucao']= modalidade_execucao
     # print(input_pt)
@@ -375,7 +375,7 @@ def test_create_pt_invalid_modalidade_execucao(input_pt,
                           json=input_pt,
                           headers=authed_header_user_1)
     # print(response)
- 
+
     assert response.status_code == 422
     detail_msg = "value is not a valid enumeration member; permitted: 1, 2, 3"
     assert response.json().get("detail")[0]["msg"] == detail_msg
