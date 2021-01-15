@@ -57,6 +57,18 @@ class PlanoTrabalhoSchema(BaseModel):
                      " que a Data Fim do Plano de Trabalho.")
         return values
 
+    @root_validator
+    def validate_carga_horaria_total(cls, values):
+        total_sum = 0
+        for a in values.get('atividades'):
+            total_sum += (getattr(a, 'tempo_exec_presencial') +
+                          getattr(a, 'tempo_exec_teletrabalho'))
+        if total_sum != values.get('carga_horaria_total'):
+            raise ValueError('A soma dos tempos de execução presencial e ' \
+                             'teletrabalho das atividades deve ser igual à ' \
+                             'carga_horaria_total.')
+        return values
+
     @validator('atividades')
     def valida_atividades(cls, atividades):
         ids_atividades = [a.id_atividade for a in atividades]
@@ -96,13 +108,6 @@ class PlanoTrabalhoSchema(BaseModel):
 
         str_cpf = ''.join([str(i) for i in input_cpf])
         return str_cpf
-
-    # @validator('atividades', 'carga_horaria_total')
-    # def must_be_sum_activits(cls, values):
-        # for a in atividades.__dict__.items():
-        #     tempo_total += getattr(a, 'tempo_exec_presencial') + getattr(a, 'tempo_exec_teletrabalho')
-        # if tempo_total != carga_horaria_total:
-        #     raise ValueError('testes')
 
     @validator('carga_horaria_semanal')
     def must_be_less(cls, carga_horaria_semanal):
