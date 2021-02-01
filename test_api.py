@@ -447,3 +447,42 @@ def test_create_pt_invalid_carga_horaria_total(input_pt,
                  'carga_horaria_total.'
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
+@pytest.mark.parametrize(
+    "id_atividade, nome_atividade, faixa_complexidade, "\
+    "tempo_exec_presencial, tempo_exec_teletrabalho, qtde_entregas",
+                          [
+                              (None, 'asd', 'asd', 0, 0, 3),
+                              (123123, None, 'asd', 0, 0, 3),
+                              (123123, 'asd', None, 0, 0, 3),
+                              (123123, 'asd', 'asd', None, 0, 3),
+                              (123123, 'asd', 'asd', 0, None, 3),
+                              (123123, 'asd', 'asd', 0, 0, None),
+                           ])
+def test_create_pt_missed_values_atividade(input_pt,
+
+                                           id_atividade,
+                                           nome_atividade,
+                                           faixa_complexidade,
+                                           tempo_exec_presencial,
+                                           tempo_exec_teletrabalho,
+                                           qtde_entregas,
+
+                                           authed_header_user_1,
+                                           truncate_planos_trabalho,
+                                           client):
+    cod_plano = 111222333
+    input_pt['cod_plano'] = cod_plano
+    input_pt['atividades'][0]['id_atividade'] = id_atividade
+    input_pt['atividades'][0]['nome_atividade'] = nome_atividade
+    input_pt['atividades'][0]['faixa_complexidade'] = faixa_complexidade
+    input_pt['atividades'][0]['tempo_exec_presencial'] = tempo_exec_presencial
+    input_pt['atividades'][0]['tempo_exec_teletrabalho'] = tempo_exec_teletrabalho
+    input_pt['atividades'][0]['qtde_entregas'] = qtde_entregas
+
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=authed_header_user_1)
+    assert response.status_code == 422
+    #TODO: Melhorar resposta automática do Pydantic para deixar claro qual campo não passou na validação
+    detail_msg = 'none is not an allowed value'
+    assert response.json().get("detail")[0]["msg"] == detail_msg
