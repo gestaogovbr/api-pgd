@@ -83,28 +83,25 @@ class PlanoTrabalhoSchema(BaseModel):
 
     @validator('cpf')
     def cpf_validate(input_cpf):
-    #  Obtém os números do CPF e igcod_planoora outros caracteres
-        try:
-            int(input_cpf)
-        except:
-            return False
+        if not input_cpf.isdigit():
+            raise ValueError('CPF deve conter apenas digitos.')
 
         cpf = [int(char) for char in input_cpf if char.isdigit()]
         #  Verifica se o CPF tem 11 dígitos
         if len(cpf) != 11:
-            raise ValueError('CPF precisa ter 11 digitos')
+            raise ValueError('CPF precisa ter 11 digitos.')
 
         #  Verifica se o CPF tem todos os números iguais, ex: 111.111.111-11
         #  Esses CPFs são considerados inválidos mas passam na validação dos dígitos
         if cpf == cpf[::-1]:
-            raise ValueError('CPF inválido')
+            raise ValueError('CPF inválido.')
 
         #  Valida os dois dígitos verificadores
         for i in range(9, 11):
             value = sum((cpf[num] * ((i+1) - num) for num in range(0, i)))
             digit = ((value * 10) % 11) % 10
             if digit != cpf[i]:
-                raise ValueError('Digitos verificadores do CPF inválidos!')
+                raise ValueError('Digitos verificadores do CPF inválidos.')
 
         str_cpf = ''.join([str(i) for i in input_cpf])
         return str_cpf

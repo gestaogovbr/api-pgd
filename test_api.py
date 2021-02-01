@@ -337,8 +337,16 @@ def test_update_pt_different_cod_unidade(input_pt,
                             (101, '22222222222'),
                             (102, '33333333333'),
                             (103, '44444444444'),
-                            # (103, '444-444-444.44'),
-                            # (103, '444.444.444-44'),
+                            (104, '04811556435'),
+                            (103, '444-444-444.44'),
+                            (108, '-44444444444'),
+                            (111, '444444444'),
+                            (112, '-444 4444444'),
+                            (112, '4811556437'),
+                            (112, '048115564-37'),
+                            (112, '04811556437     '),
+                            (112, '    04811556437     '),
+                            (112, ''),
                             ])
 def test_create_pt_invalid_cpf(input_pt,
                                cod_plano,
@@ -353,8 +361,13 @@ def test_create_pt_invalid_cpf(input_pt,
                           json=input_pt,
                           headers=authed_header_user_1)
     assert response.status_code == 422
-    detail_msg = "CPF inválido"
-    assert response.json().get("detail")[0]["msg"] == detail_msg
+    detail_msg = [
+        'Digitos verificadores do CPF inválidos.',
+        'CPF inválido.',
+        'CPF precisa ter 11 digitos.',
+        'CPF deve conter apenas digitos.',
+    ]
+    assert response.json().get("detail")[0]["msg"] in detail_msg
 
 
 @pytest.mark.parametrize("cod_plano, modalidade_execucao",
