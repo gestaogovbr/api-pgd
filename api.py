@@ -25,6 +25,24 @@ instituição. A submissão deve ser realizada através desta **API**.
 [melhorar estes textos!!]
 
 Para solicitar credenciais para submissão de dados, entre em contato com [email-do-suporte@economia.gov.br](mailto:email-do-suporte@economia.gov.br)
+
+-------
+
+Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
+* O `cod_plano` deve ser único para cada Plano de Trabalho.
+* Ao utilizar o método PUT do Plano de Trabalho, o `cod_plano` que compõe a URL deve ser igual ao fornecido no JSON.
+* A `data_inicio` do Plano de Trabalho deve ser menor ou igual à `data_fim`.
+* A `data_avaliacao` da atividade deve ser maior ou igual que a `data_fim` do Plano de Trabalho.
+* As atividades de um mesmo Plano de Trabalho devem possuir `id_atividade` diferentes.
+* O `cpf` deve possuir exatamente 11 dígitos e sem máscaras.
+* Valores permitidos para a `modalidade_execucao`:
+  * **1** - Presencial
+  * **2** - Semipresencial
+  * **3** - Teletrabalho
+* `carga_horaria_semanal` deve ser entre 1 e 40.
+* A soma dos tempos `tempo_exec_presencial` e `tempo_exec_teletrabalho` das atividades deve ser igual à `carga_horaria_total` do Plano de Trabalho.
+* Explore a seção [**Schemas**](#model-AtividadeSchema) nesta documentação para descobrir quais campos são obrigatórios para as Atividades e os Planos de Trabalho.
+
 """
 
 app = FastAPI(
