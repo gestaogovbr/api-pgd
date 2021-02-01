@@ -13,9 +13,9 @@ class AtividadeSchema(BaseModel):
     tempo_exec_teletrabalho: float
     entrega_esperada: Optional[str]
     qtde_entregas: int
-    qtde_entregas_efetivas: int
-    avaliacao: int
-    data_avaliacao: date
+    qtde_entregas_efetivas: Optional[int]
+    avaliacao: Optional[int]
+    data_avaliacao: Optional[date]
     justificativa: Optional[str]
 
     class Config:
@@ -38,9 +38,9 @@ class PlanoTrabalhoSchema(BaseModel):
     data_inicio: date
     data_fim: date
     carga_horaria_total: float
-    data_interrupcao: date
+    data_interrupcao: Optional[date]
     entregue_no_prazo: Optional[bool] = None #TODO Na especificação está como Int e usa 1 e 2 para sim e não. Não seria melhor usar bool?
-    horas_homologadas: float
+    horas_homologadas: Optional[float]
     atividades: List[AtividadeSchema] # = []
 
     # Validações
