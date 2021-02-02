@@ -61,6 +61,8 @@ O arquivo `docker-compose.yml` descreve a receita dos conteiners que compõem a 
 * Caso a modelagem ORM seja alterada, pode ser mais simples remover (dropar) o BD e recriá-lo novamente apenas subindo a solução. Para remover o BD utilize o PgAdmin
 
 ## Rodando testes
+É necessário entrar no container para rodar os testes:
+> ```$ docker exec -it api-pgd_web_1 /bin/bash```
 
 Para rodar os testes execute:
 > ```$ pytest test_api.py```

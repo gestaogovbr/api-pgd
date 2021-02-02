@@ -27,7 +27,7 @@ def input_pt():
   "cod_unidade_exercicio": 0,
   "nome_unidade_exercicio": "string",
   "modalidade_execucao": 1,
-  "carga_horaria_semanal": 0,
+  "carga_horaria_semanal": 10,
   "data_inicio": "2021-01-07",
   "data_fim": "2021-01-12",
   "carga_horaria_total": 0,
@@ -118,8 +118,13 @@ def authed_header_user_1(register_user_1):
     # my_cmd = os.popen(shell_cmd).read()
     # response = json.loads(my_cmd)
     # token_user_1 = response.get('access_token')
+<<<<<<< HEAD
     
     url = "http://localhost:8080/auth/jwt/login"
+=======
+
+    url = "http://localhost:5057/auth/jwt/login"
+>>>>>>> 0d424f160408dd943ce077c2167a9abd97c56f2e
 
     payload='accept=application%2Fjson&Content-Type=application%2Fjson&username=test1%40api.com&password=api'
     headers = {
@@ -131,7 +136,7 @@ def authed_header_user_1(register_user_1):
     # print(response_dict)
     token_user_1 = response_dict.get('access_token')
     print(token_user_1)
-    
+
     header = {
         'Authorization': f'Bearer {token_user_1}',
         'accept': 'application/json',
@@ -155,7 +160,7 @@ def authed_header_user_2(register_user_2):
     response_dict = json.loads(response.text)
     token_user_1 = response_dict.get('access_token')
     print(token_user_1)
-    
+
     header = {
         'Authorization': f'Bearer {token_user_1}',
         'accept': 'application/json',
@@ -191,6 +196,7 @@ def test_create_plano_trabalho(input_pt,
     response = client.put(f"/plano_trabalho/555",
                           data=json.dumps(input_pt),
                           headers=authed_header_user_1)
+
     assert response.status_code == 200
     assert response.json().get("detail", None) == None
     assert response.json() == input_pt
@@ -336,9 +342,17 @@ def test_update_pt_different_cod_unidade(input_pt,
                             (100, '11111111111'),
                             (101, '22222222222'),
                             (102, '33333333333'),
-                            (103, '44444444444'),                          
-                            # (103, '444-444-444.44'),                          
-                            # (103, '444.444.444-44'),                          
+                            (103, '44444444444'),
+                            (104, '04811556435'),
+                            (103, '444-444-444.44'),
+                            (108, '-44444444444'),
+                            (111, '444444444'),
+                            (112, '-444 4444444'),
+                            (112, '4811556437'),
+                            (112, '048115564-37'),
+                            (112, '04811556437     '),
+                            (112, '    04811556437     '),
+                            (112, ''),
                             ])
 def test_create_pt_invalid_cpf(input_pt,
                                cod_plano,
@@ -353,30 +367,128 @@ def test_create_pt_invalid_cpf(input_pt,
                           json=input_pt,
                           headers=authed_header_user_1)
     assert response.status_code == 422
-    detail_msg = "CPF inválido"
-    assert response.json().get("detail")[0]["msg"] == detail_msg
+    detail_msg = [
+        'Digitos verificadores do CPF inválidos.',
+        'CPF inválido.',
+        'CPF precisa ter 11 digitos.',
+        'CPF deve conter apenas digitos.',
+    ]
+    assert response.json().get("detail")[0]["msg"] in detail_msg
 
-    
+
 @pytest.mark.parametrize("cod_plano, modalidade_execucao",
                           [
                             (556, -1),
                             (81, -2),
-                            (82, -3)                                                      
+                            (82, -3)
                             ])
-def test_create_pt_invalid_modalidade_execucao(input_pt, 
-                               cod_plano,                                              
+def test_create_pt_invalid_modalidade_execucao(input_pt,
+                               cod_plano,
                                modalidade_execucao,
                                authed_header_user_1,
                                truncate_planos_trabalho,
-                               client):  
+                               client):
     input_pt['cod_plano'] = cod_plano
-    input_pt['modalidade_execucao']= modalidade_execucao
-    # print(input_pt)
+    input_pt['modalidade_execucao'] = modalidade_execucao
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
                           headers=authed_header_user_1)
-    # print(response)
- 
+
     assert response.status_code == 422
     detail_msg = "value is not a valid enumeration member; permitted: 1, 2, 3"
+    assert response.json().get("detail")[0]["msg"] == detail_msg
+
+@pytest.mark.parametrize("carga_horaria_semanal",
+                          [
+                            (56),
+                            (-2),
+                            (0),
+                            ])
+def test_create_pt_invalid_carga_horaria_semanal(input_pt,
+                                                 carga_horaria_semanal,
+                                                 authed_header_user_1,
+                                                 truncate_planos_trabalho,
+                                                 client):
+    cod_plano = 767676
+    input_pt['cod_plano'] = cod_plano
+    input_pt['carga_horaria_semanal'] = carga_horaria_semanal
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=authed_header_user_1)
+
+    assert response.status_code == 422
+    detail_msg = "Carga horária semanal deve ser entre 1 e 40"
+    assert response.json().get("detail")[0]["msg"] == detail_msg
+
+
+@pytest.mark.parametrize("carga_horaria_total, tempo_pres_1, tempo_tel_1, tempo_pres_2, tempo_tel_2",
+                          [(56, 2, 3, 4, 5),
+                           (-2, 2, 3, 4.3, 5),
+                           (0, 2, 3, 4.2, 5),
+                           ])
+def test_create_pt_invalid_carga_horaria_total(input_pt,
+                                                 carga_horaria_total,
+                                                 tempo_pres_1,
+                                                 tempo_tel_1,
+                                                 tempo_pres_2,
+                                                 tempo_tel_2,
+                                                 authed_header_user_1,
+                                                 truncate_planos_trabalho,
+                                                 client):
+    cod_plano = 767677
+    input_pt['cod_plano'] = cod_plano
+    input_pt['carga_horaria_total'] = carga_horaria_total
+    input_pt['atividades'][0]['tempo_exec_presencial'] = tempo_pres_1
+    input_pt['atividades'][0]['tempo_exec_teletrabalho'] = tempo_tel_1
+    input_pt['atividades'][1]['tempo_exec_presencial'] = tempo_pres_2
+    input_pt['atividades'][1]['tempo_exec_teletrabalho'] = tempo_tel_2
+
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=authed_header_user_1)
+
+    assert response.status_code == 422
+    detail_msg = 'A soma dos tempos de execução presencial e ' \
+                 'teletrabalho das atividades deve ser igual à ' \
+                 'carga_horaria_total.'
+    assert response.json().get("detail")[0]["msg"] == detail_msg
+
+@pytest.mark.parametrize(
+    "id_atividade, nome_atividade, faixa_complexidade, "\
+    "tempo_exec_presencial, tempo_exec_teletrabalho, qtde_entregas",
+                          [
+                              (None, 'asd', 'asd', 0, 0, 3),
+                              (123123, None, 'asd', 0, 0, 3),
+                              (123123, 'asd', None, 0, 0, 3),
+                              (123123, 'asd', 'asd', None, 0, 3),
+                              (123123, 'asd', 'asd', 0, None, 3),
+                              (123123, 'asd', 'asd', 0, 0, None),
+                           ])
+def test_create_pt_missed_values_atividade(input_pt,
+
+                                           id_atividade,
+                                           nome_atividade,
+                                           faixa_complexidade,
+                                           tempo_exec_presencial,
+                                           tempo_exec_teletrabalho,
+                                           qtde_entregas,
+
+                                           authed_header_user_1,
+                                           truncate_planos_trabalho,
+                                           client):
+    cod_plano = 111222333
+    input_pt['cod_plano'] = cod_plano
+    input_pt['atividades'][0]['id_atividade'] = id_atividade
+    input_pt['atividades'][0]['nome_atividade'] = nome_atividade
+    input_pt['atividades'][0]['faixa_complexidade'] = faixa_complexidade
+    input_pt['atividades'][0]['tempo_exec_presencial'] = tempo_exec_presencial
+    input_pt['atividades'][0]['tempo_exec_teletrabalho'] = tempo_exec_teletrabalho
+    input_pt['atividades'][0]['qtde_entregas'] = qtde_entregas
+
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=authed_header_user_1)
+    assert response.status_code == 422
+    #TODO: Melhorar resposta automática do Pydantic para deixar claro qual campo não passou na validação
+    detail_msg = 'none is not an allowed value'
     assert response.json().get("detail")[0]["msg"] == detail_msg

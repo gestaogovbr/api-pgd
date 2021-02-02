@@ -25,6 +25,25 @@ instituição. A submissão deve ser realizada através desta **API**.
 [melhorar estes textos!!]
 
 Para solicitar credenciais para submissão de dados, entre em contato com [email-do-suporte@economia.gov.br](mailto:email-do-suporte@economia.gov.br)
+
+-------
+
+Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
+* O `cod_plano` deve ser único para cada Plano de Trabalho.
+* Ao utilizar o método PUT do Plano de Trabalho, o `cod_plano` que compõe a URL deve ser igual ao fornecido no JSON.
+* A `data_inicio` do Plano de Trabalho deve ser menor ou igual à `data_fim`.
+* A `data_avaliacao` da atividade deve ser maior ou igual que a `data_fim` do Plano de Trabalho.
+* As atividades de um mesmo Plano de Trabalho devem possuir `id_atividade` diferentes.
+* O `cpf` deve possuir exatamente 11 dígitos e sem máscaras.
+* Valores permitidos para a `modalidade_execucao`:
+  * **1** - Presencial
+  * **2** - Semipresencial
+  * **3** - Teletrabalho
+* `carga_horaria_semanal` deve ser entre 1 e 40.
+* A soma dos tempos `tempo_exec_presencial` e `tempo_exec_teletrabalho` das atividades deve ser igual à `carga_horaria_total` do Plano de Trabalho.
+* Os campos `quantidade_entregas`, `quantidade_entregas_efetivas`, `tempo_exec_presencial`, `tempo_exec_teletrabalho` da Atividade e `horas_homologadas` do Plano de Trabalho devem ser maiores que zero.* `entregue_no_prazo` não é obrigatório e deve ser `True` ou `False` caso esteja preenchido.
+* Explore a seção [**Schemas**](#model-AtividadeSchema) nesta documentação para descobrir quais campos são obrigatórios para as Atividades e os Planos de Trabalho.
+
 """
 
 app = FastAPI(
@@ -36,7 +55,7 @@ app = FastAPI(
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
 
 def on_after_register(user: UserDB, request: Request):
-    print(f"User {user.id} has registered.")  
+    print(f"User {user.id} has registered.")
 
 
 def on_after_forgot_password(user: UserDB, token: str, request: Request):
@@ -89,34 +108,6 @@ async def startup():
 async def shutdown():
     await auth_db.disconnect()
 
-# TODO Mover esta função para arquivo específico
-# def cpf_validate(numbers):
-#     #  Obtém os números do CPF e ignora outros caracteres
-#     try:
-#         int(numbers)
-#     except:
-#         return False
-
-#     cpf = [int(char) for char in numbers]
-
-#     #  Verifica se o CPF tem 11 dígitos
-#     if len(cpf) != 11:
-#         return False
-
-#     #  Verifica se o CPF tem todos os números iguais, ex: 111.111.111-11
-#     #  Esses CPFs são considerados inválidos mas passam na validação dos dígitos
-#     #  Antigo código para referência: if all(cpf[i] == cpf[i+1] for i in range (0, len(cpf)-1))
-#     if cpf == cpf[::-1]:
-#         return False
-
-#     #  Valida os dois dígitos verificadores
-#     for i in range(9, 11):
-#         value = sum((cpf[num] * ((i+1) - num) for num in range(0, i)))
-#         digit = ((value * 10) % 11) % 10
-#         if digit != cpf[i]:
-#             return False
-#     return True
-
 @app.put("/plano_trabalho/{cod_plano}",
          response_model=schemas.PlanoTrabalhoSchema
          )
@@ -127,28 +118,13 @@ async def create_or_update_plano_trabalho(
     token: str = Depends(oauth2_scheme),
     user: User = Depends(fastapi_users.get_current_user)
     ):
-    # print(plano_trabalho.atividades)
     # Validações da entrada conforme regras de negócio
     if cod_plano != plano_trabalho.cod_plano:
         raise HTTPException(
             400,
             detail="Parâmetro cod_plano diferente do conteúdo do JSON")
 
-    # for atividade in plano_trabalho.atividades:
-    #     if plano_trabalho.data_fim > atividade.data_avaliacao:
-    #         raise HTTPException(
-    #             400,
-    #             detail="Data de avaliação da atividade deve ser maior ou" \
-    #              " igual que a Data Fim do Plano de Trabalho.")
-
-    # ids_atividades = [a.id_atividade for a in plano_trabalho.atividades]
-    # if len(ids_atividades) != len(set(ids_atividades)):
-    #         raise HTTPException(
-    #             400,
-    #             detail="Atividades devem possuir id_atividade diferentes.")
-
     db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
-
     if db_plano_trabalho is None:
         crud.create_plano_tabalho(db, plano_trabalho, user.cod_unidade)
     else:
