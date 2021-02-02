@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  db:
+  db-api-pgd:
     image: postgres:11
     ports:
       - "5432:5432"
@@ -19,7 +19,7 @@ services:
     volumes:
         - ./:/home/api-pgd
     depends_on:
-      - db
+      - db-api-pgd
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
@@ -32,4 +32,4 @@ services:
       - ./pgadmin_data/servers.json:/pgadmin4/servers.json
       - ./pgadmin_data/pgadmin:/var/lib/pgadmin
     depends_on:
-      - db
+      - db-api-pgd

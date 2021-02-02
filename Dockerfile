@@ -17,4 +17,6 @@ RUN \
         /usr/share/doc \
         /usr/share/doc-base
 RUN chown -R api-pgd:api-pgd ./
+COPY ./ /home/api-pgd
 USER api-pgd
+
