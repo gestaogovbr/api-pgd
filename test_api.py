@@ -118,13 +118,8 @@ def authed_header_user_1(register_user_1):
     # my_cmd = os.popen(shell_cmd).read()
     # response = json.loads(my_cmd)
     # token_user_1 = response.get('access_token')
-<<<<<<< HEAD
-    
-    url = "http://localhost:8080/auth/jwt/login"
-=======
 
     url = "http://localhost:5057/auth/jwt/login"
->>>>>>> 0d424f160408dd943ce077c2167a9abd97c56f2e
 
     payload='accept=application%2Fjson&Content-Type=application%2Fjson&username=test1%40api.com&password=api'
     headers = {
