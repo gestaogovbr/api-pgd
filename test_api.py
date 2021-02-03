@@ -144,7 +144,7 @@ def authed_header_user_2(register_user_2):
     """Authenticate in the API and return a dict with bearer header
     parameter to be passed to apis requests."""
 
-    url = "http://localhost:8080/auth/jwt/login"
+    url = "http://localhost:5057/auth/jwt/login"
 
     payload='accept=application%2Fjson&Content-Type=application%2Fjson&username=test2%40api.com&password=api'
     headers = {
