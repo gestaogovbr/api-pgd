@@ -93,7 +93,7 @@ class PlanoTrabalhoSchema(BaseModel):
 
         #  Verifica se o CPF tem todos os números iguais, ex: 111.111.111-11
         #  Esses CPFs são considerados inválidos mas passam na validação dos dígitos
-        if cpf == cpf[::-1]:
+        if len(set(cpf)) == 1:
             raise ValueError('CPF inválido.')
 
         #  Valida os dois dígitos verificadores
