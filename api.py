@@ -24,7 +24,7 @@ as informações sobre os Planos de Trabalho que estão sendo realizados naquela
 instituição. A submissão deve ser realizada através desta **API**.
 [melhorar estes textos!!]
 
-Para solicitar credenciais para submissão de dados, entre em contato com [email-do-suporte@economia.gov.br](mailto:email-do-suporte@economia.gov.br)
+Para solicitar credenciais para submissão de dados, entre em contato com [email-de-apoio@economia.gov.br](mailto:email-do-suporte@economia.gov.br)
 
 -------
 
