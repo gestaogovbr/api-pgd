@@ -228,11 +228,17 @@ def test_create_pt_cod_plano_inconsistent(input_pt,
     detail_msg = "Parâmetro cod_plano diferente do conteúdo do JSON"
     assert response.json().get("detail", None) == detail_msg
 
-# def test_get_plano_trabalho(insert_one_pt, authed_header_user_1):
-def test_get_plano_trabalho(authed_header_user_1, client):
+def test_get_plano_trabalho(input_pt,
+                            authed_header_user_1,
+                            truncate_planos_trabalho,
+                            client):
+    response = client.put(f"/plano_trabalho/555",
+                          data=json.dumps(input_pt),
+                          headers=authed_header_user_1)
     response = client.get("/plano_trabalho/555",
                           headers=authed_header_user_1)
     assert response.status_code == 200
+    assert response.json() == input_pt
 
 def test_get_pt_inexistente(authed_header_user_1, client):
     response = client.get("/plano_trabalho/888888888",
