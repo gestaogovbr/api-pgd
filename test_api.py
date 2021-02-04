@@ -184,10 +184,10 @@ def test_authenticate(authed_header_user_1):
     assert type(token) is str
     assert "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." in token
 
-def test_create_plano_trabalho(input_pt,
-                               authed_header_user_1,
-                               truncate_planos_trabalho,
-                               client):
+def test_create_plano_trabalho_completo(input_pt,
+                                        authed_header_user_1,
+                                        truncate_planos_trabalho,
+                                        client):
     response = client.put(f"/plano_trabalho/555",
                           data=json.dumps(input_pt),
                           headers=authed_header_user_1)
@@ -195,6 +195,26 @@ def test_create_plano_trabalho(input_pt,
     assert response.status_code == 200
     assert response.json().get("detail", None) == None
     assert response.json() == input_pt
+
+@pytest.mark.parametrize("missed_fiels",
+                         [
+                             (["data_interrupcao"]),
+                             (["data_interrupcao", "entregue_no_prazo"]),
+                             (["entregue_no_prazo"]),
+                         ])
+def test_create_plano_trabalho_missed_fileds(input_pt,
+                                             missed_fiels,
+                                             authed_header_user_1,
+                                             truncate_planos_trabalho,
+                                             client):
+    for field in missed_fiels:
+        del input_pt[field]
+
+    input_pt['cod_plano'] = 557
+    response = client.put(f"/plano_trabalho/557",
+                          data=json.dumps(input_pt),
+                          headers=authed_header_user_1)
+    assert response.status_code == 200
 
 def test_create_pt_cod_plano_inconsistent(input_pt,
                                           authed_header_user_1,
