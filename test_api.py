@@ -70,7 +70,7 @@ def input_pt():
     return pt_json
 
 @pytest.fixture(scope="module")
-def truncate_planos_trabalho(client):
+def truncate_pt(client):
     client.post(f"/truncate_pts_atividades")
 
 @pytest.fixture(scope="module")
@@ -95,7 +95,7 @@ def register_user_2(client, truncate_users):
     return register_user(client, "test2@api.com", "api", 2)
 
 @pytest.fixture(scope="module")
-def authed_header_user_1(register_user_1):
+def header_usr_1(register_user_1):
     """Authenticate in the API and return a dict with bearer header
     parameter to be passed to apis requests."""
     #TODO: Refatorar e resolver utilizando o objeto TestClient
@@ -140,7 +140,7 @@ def authed_header_user_1(register_user_1):
 
     return header
 @pytest.fixture(scope="module")
-def authed_header_user_2(register_user_2):
+def header_usr_2(register_user_2):
     """Authenticate in the API and return a dict with bearer header
     parameter to be passed to apis requests."""
 
@@ -165,10 +165,10 @@ def authed_header_user_2(register_user_2):
     return header
 
 # @pytest.fixture(scope="module")
-# def insert_pt_user_1(authed_header_user_1, client):
+# def insert_pt_user_1(header_usr_1, client):
 #     client.put(f"/plano_trabalho/888888888",
 #                json=input_pt,
-#                headers=authed_header_user_1)
+#                headers=header_usr_1)
 
 # Tests
 def test_register_user(truncate_users, client):
@@ -179,18 +179,18 @@ def test_register_user(truncate_users, client):
     assert user_2.status_code == 400
     assert user_2.json().get("detail", None) == "REGISTER_USER_ALREADY_EXISTS"
 
-def test_authenticate(authed_header_user_1):
-    token = authed_header_user_1.get("Authorization")
+def test_authenticate(header_usr_1):
+    token = header_usr_1.get("Authorization")
     assert type(token) is str
     assert "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." in token
 
 def test_create_plano_trabalho_completo(input_pt,
-                                        authed_header_user_1,
-                                        truncate_planos_trabalho,
+                                        header_usr_1,
+                                        truncate_pt,
                                         client):
     response = client.put(f"/plano_trabalho/555",
                           data=json.dumps(input_pt),
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
 
     assert response.status_code == 200
     assert response.json().get("detail", None) == None
@@ -204,8 +204,8 @@ def test_create_plano_trabalho_completo(input_pt,
                          ])
 def test_create_plano_trabalho_missed_fileds(input_pt,
                                              missed_fiels,
-                                             authed_header_user_1,
-                                             truncate_planos_trabalho,
+                                             header_usr_1,
+                                             truncate_pt,
                                              client):
     for field in missed_fiels:
         del input_pt[field]
@@ -213,36 +213,35 @@ def test_create_plano_trabalho_missed_fileds(input_pt,
     input_pt['cod_plano'] = 557
     response = client.put(f"/plano_trabalho/557",
                           data=json.dumps(input_pt),
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
     assert response.status_code == 200
 
 def test_create_pt_cod_plano_inconsistent(input_pt,
-                                          authed_header_user_1,
-                                          truncate_planos_trabalho,
+                                          header_usr_1,
+                                          truncate_pt,
                                           client):
     input_pt["cod_plano"] = 110
     response = client.put("/plano_trabalho/111",
                           json=input_pt,
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
     assert response.status_code == 400
     detail_msg = "Parâmetro cod_plano diferente do conteúdo do JSON"
     assert response.json().get("detail", None) == detail_msg
 
 def test_get_plano_trabalho(input_pt,
-                            authed_header_user_1,
-                            truncate_planos_trabalho,
+                            header_usr_1,
+                            truncate_pt,
                             client):
     response = client.put(f"/plano_trabalho/555",
                           data=json.dumps(input_pt),
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
     response = client.get("/plano_trabalho/555",
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
     assert response.status_code == 200
-    assert response.json() == input_pt
 
-def test_get_pt_inexistente(authed_header_user_1, client):
+def test_get_pt_inexistente(header_usr_1, client):
     response = client.get("/plano_trabalho/888888888",
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
     assert response.status_code == 404
 
     assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
@@ -259,8 +258,8 @@ def test_create_pt_invalid_dates(input_pt,
                                  cod_plano,
                                  id_ati_1,
                                  id_ati_2,
-                                 authed_header_user_1,
-                                 truncate_planos_trabalho,
+                                 header_usr_1,
+                                 truncate_pt,
                                  client):
     input_pt['data_inicio'] = data_inicio
     input_pt['data_fim'] = data_fim
@@ -270,7 +269,7 @@ def test_create_pt_invalid_dates(input_pt,
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
     if data_inicio > data_fim:
         assert response.status_code == 422
         detail_msg = "Data fim do Plano de Trabalho deve ser maior" \
@@ -280,7 +279,7 @@ def test_create_pt_invalid_dates(input_pt,
         assert response.status_code == 200
 
 @pytest.mark.parametrize(
-    "data_fim, data_avaliacao_1, data_avaliacao_2, cod_plano, id_ati_1, id_ati_2",
+    "dt_fim, dt_avaliacao_1, dt_avaliacao_2, cod_plano, id_ati_1, id_ati_2",
     [
       ("2020-06-04", "2020-04-01", "2020-04-01", 77, 333, 334),
       ("2020-06-04", "2020-04-01", "2021-04-01", 78, 335, 336),
@@ -290,27 +289,27 @@ def test_create_pt_invalid_dates(input_pt,
       ("2020-04-01", "2020-02-01", "2020-01-04", 82, 343, 344),
       ])
 def test_create_pt_invalid_data_avaliacao(input_pt,
-                                          data_fim,
-                                          data_avaliacao_1,
-                                          data_avaliacao_2,
+                                          dt_fim,
+                                          dt_avaliacao_1,
+                                          dt_avaliacao_2,
                                           cod_plano,
                                           id_ati_1,
                                           id_ati_2,
-                                          authed_header_user_1,
-                                          truncate_planos_trabalho,
+                                          header_usr_1,
+                                          truncate_pt,
                                           client):
     input_pt['data_inicio'] = "2020-01-01"
-    input_pt['data_fim'] = data_fim
+    input_pt['data_fim'] = dt_fim
     input_pt['cod_plano'] = cod_plano
     input_pt['atividades'][0]['id_atividade'] = id_ati_1
-    input_pt['atividades'][0]['data_avaliacao'] = data_avaliacao_1
+    input_pt['atividades'][0]['data_avaliacao'] = dt_avaliacao_1
     input_pt['atividades'][1]['id_atividade'] = id_ati_2
-    input_pt['atividades'][1]['data_avaliacao'] = data_avaliacao_2
+    input_pt['atividades'][1]['data_avaliacao'] = dt_avaliacao_2
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
-                          headers=authed_header_user_1)
-    if data_fim > data_avaliacao_1 or data_fim > data_avaliacao_2:
+                          headers=header_usr_1)
+    if dt_fim > dt_avaliacao_1 or dt_fim > dt_avaliacao_2:
         assert response.status_code == 422
         detail_msg = "Data de avaliação da atividade deve ser maior ou igual" \
                      " que a Data Fim do Plano de Trabalho."
@@ -329,8 +328,8 @@ def test_create_pt_duplicate_atividade(input_pt,
                                        cod_plano,
                                        id_ati_1,
                                        id_ati_2,
-                                       authed_header_user_1,
-                                       truncate_planos_trabalho,
+                                       header_usr_1,
+                                       truncate_pt,
                                        client):
     input_pt['cod_plano'] = cod_plano
     input_pt['atividades'][0]['id_atividade'] = id_ati_1
@@ -338,7 +337,7 @@ def test_create_pt_duplicate_atividade(input_pt,
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
     if id_ati_1 == id_ati_2:
         assert response.status_code == 422
         detail_msg = "Atividades devem possuir id_atividade diferentes."
@@ -347,12 +346,12 @@ def test_create_pt_duplicate_atividade(input_pt,
         assert response.status_code == 200
 
 def test_update_pt_different_cod_unidade(input_pt,
-                                         authed_header_user_2,
+                                         header_usr_2,
                                          client):
     cod_plano = 555
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
-                          headers=authed_header_user_2)
+                          headers=header_usr_2)
 
     assert response.status_code == 403
     detail_msg = "Usuário não pode alterar Plano de Trabalho de outra unidade."
@@ -378,15 +377,15 @@ def test_update_pt_different_cod_unidade(input_pt,
 def test_create_pt_invalid_cpf(input_pt,
                                cod_plano,
                                cpf,
-                               authed_header_user_1,
-                               truncate_planos_trabalho,
+                               header_usr_1,
+                               truncate_pt,
                                client):
     input_pt['cod_plano'] = cod_plano
     input_pt['cpf'] = cpf
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
     assert response.status_code == 422
     detail_msg = [
         'Digitos verificadores do CPF inválidos.',
@@ -406,14 +405,14 @@ def test_create_pt_invalid_cpf(input_pt,
 def test_create_pt_invalid_modalidade_execucao(input_pt,
                                cod_plano,
                                modalidade_execucao,
-                               authed_header_user_1,
-                               truncate_planos_trabalho,
+                               header_usr_1,
+                               truncate_pt,
                                client):
     input_pt['cod_plano'] = cod_plano
     input_pt['modalidade_execucao'] = modalidade_execucao
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
 
     assert response.status_code == 422
     detail_msg = "value is not a valid enumeration member; permitted: 1, 2, 3"
@@ -427,15 +426,15 @@ def test_create_pt_invalid_modalidade_execucao(input_pt,
                             ])
 def test_create_pt_invalid_carga_horaria_semanal(input_pt,
                                                  carga_horaria_semanal,
-                                                 authed_header_user_1,
-                                                 truncate_planos_trabalho,
+                                                 header_usr_1,
+                                                 truncate_pt,
                                                  client):
     cod_plano = 767676
     input_pt['cod_plano'] = cod_plano
     input_pt['carga_horaria_semanal'] = carga_horaria_semanal
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
 
     assert response.status_code == 422
     detail_msg = "Carga horária semanal deve ser entre 1 e 40"
@@ -453,8 +452,8 @@ def test_create_pt_invalid_carga_horaria_total(input_pt,
                                                  tempo_tel_1,
                                                  tempo_pres_2,
                                                  tempo_tel_2,
-                                                 authed_header_user_1,
-                                                 truncate_planos_trabalho,
+                                                 header_usr_1,
+                                                 truncate_pt,
                                                  client):
     cod_plano = 767677
     input_pt['cod_plano'] = cod_plano
@@ -466,7 +465,7 @@ def test_create_pt_invalid_carga_horaria_total(input_pt,
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
 
     assert response.status_code == 422
     detail_msg = 'A soma dos tempos de execução presencial e ' \
@@ -494,8 +493,8 @@ def test_create_pt_missed_values_atividade(input_pt,
                                            tempo_exec_teletrabalho,
                                            qtde_entregas,
 
-                                           authed_header_user_1,
-                                           truncate_planos_trabalho,
+                                           header_usr_1,
+                                           truncate_pt,
                                            client):
     cod_plano = 111222333
     input_pt['cod_plano'] = cod_plano
@@ -508,7 +507,7 @@ def test_create_pt_missed_values_atividade(input_pt,
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
-                          headers=authed_header_user_1)
+                          headers=header_usr_1)
     assert response.status_code == 422
     #TODO: Melhorar resposta automática do Pydantic para deixar claro qual campo não passou na validação
     detail_msg = 'none is not an allowed value'
