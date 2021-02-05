@@ -221,7 +221,7 @@ def test_create_pt_cod_plano_inconsistent(input_pt,
                                           truncate_pt,
                                           client):
     input_pt["cod_plano"] = 110
-    response = client.put("/plano_trabalho/111",
+    response = client.put("/plano_trabalho/111", # diferente de 110
                           json=input_pt,
                           headers=header_usr_1)
     assert response.status_code == 400
