@@ -14,10 +14,20 @@ def list_users(connection: sa.engine.Connection, cod_unidade: int = None):
     Caso seja omitido, mostra os usuários de todas as unidades.
     """
     # TODO: implementar filtro de cod_unidade
-    result = connection.execute('select count(*) from public.user')
+    if cod_unidade is None:
+        result = connection.execute('select count(*) from public.user')
+    else:
+        result = connection.execute(
+            'select count(*) from public.user where '
+            f"cod_unidade='{cod_unidade}'"
+        )
     user_quantity = result.scalar()
     if user_quantity < 1:
-        print('Não há usuários cadastrados.')
+        print(
+            'Não há usuários cadastrados'
+            ' na unidade' if cod_unidade is not None else ''
+            '.'
+        )
         return
     plural = 's' if user_quantity > 1 else ''
     print (f'Há {user_quantity} usuário{plural} cadastrado{plural}: \n')
