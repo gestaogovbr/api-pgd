@@ -5,6 +5,8 @@ Ferramenta de administração da API-PGD.
 
 # dependências
 import argparse
+import getpass
+import uuid
 import sqlalchemy as sa
 
 engine = sa.create_engine('postgresql://postgres:postgres@db-api-pgd:5432/api_pgd')
@@ -58,13 +60,32 @@ def grant_superuser(connection: sa.engine.Connection, email: str):
     )
     if not result:
         raise IOError ('Erro ao gravar no banco de dados.')
+    print(
+        'Permissão de superusuário concedida ao usuário '
+        f'com o e-mail {email}.'
+    )
+
+def hashed(password):
+    " Implementar."
+    return password
 
 def create_superuser(connection: sa.engine.Connection):
     " Cria um novo superusuário."
-    print(' Preencha os dados do usuário.')
-    email = input('  e-mail:') 
-    cod_unidade = input ('  código da unidade:')
-    # TODO: sql insert
+    print(' Preencha os dados do usuário:\n')
+    email = input('  e-mail: ') 
+    cod_unidade = input ('  código da unidade: ')
+    password = getpass.getpass(prompt='  senha: ')
+    confirm_password = getpass.getpass(prompt='  confirmação da senha: ')
+    if password != confirm_password:
+        raise ValueError('As senhas informadas são diferentes.')
+    user_id = str(uuid.uuid4())
+    result = connection.execute(
+        'insert into public.user values ' +
+        str((user_id, email, hashed(password), True, True, cod_unidade))
+    )
+    if not result:
+        raise IOError ('Erro ao gravar no banco de dados.')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -86,8 +107,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--create_superuser',
         help=create_superuser.__doc__,
-        nargs=1,
-        metavar='USER_EMAIL'
+        action='store_true'
     )
 
     args = parser.parse_args()
