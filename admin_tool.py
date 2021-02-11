@@ -44,11 +44,20 @@ def grant_superuser(connection: sa.engine.Connection, email: str):
     " Dá permissão de superusuário ao usuário com o e-mail especificado."
     # precaução contra injection
     email = email.replace('"', '').replace("'", "")
-    print(email)
     user = connection.execute(
         f"select * from public.user where email='{email}'"
     ).fetchone()
-    # TODO: sql update
+    if user is None:
+        print(f'Nenhum usuário não encontrado com o e-mail {email}')
+        return
+    if user['is_superuser']:
+        print(f'Usuário com o e-mail {email} já é superusuário.')
+    result = connection.execute(
+        'update public.user set is_superuser=true '
+        f"WHERE id='{user['id']}'"
+    )
+    if not result:
+        raise IOError ('Erro ao gravar no banco de dados.')
 
 def create_superuser(connection: sa.engine.Connection):
     " Cria um novo superusuário."
@@ -90,7 +99,7 @@ if __name__ == '__main__':
             else:
                 list_users(connection, args.list_users)
         elif args.grant_superuser:
-            grant_superuser(connection, args.grant_superuser)
+            grant_superuser(connection, args.grant_superuser.pop())
         elif args.create_superuser:
             create_superuser(connection)
         else:
