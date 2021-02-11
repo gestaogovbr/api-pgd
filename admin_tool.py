@@ -8,8 +8,15 @@ import argparse
 import getpass
 import uuid
 import sqlalchemy as sa
+from passlib.context import CryptContext
 
 engine = sa.create_engine('postgresql://postgres:postgres@db-api-pgd:5432/api_pgd')
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hashed(password):
+    " Retorna o hash para a senha especificada."
+    return pwd_context.hash(password)
 
 def list_users(connection: sa.engine.Connection, cod_unidade: int = None):
     """ Lista os usuários presentes no banco para a unidade COD_UNIDADE.
@@ -64,10 +71,6 @@ def grant_superuser(connection: sa.engine.Connection, email: str):
         'Permissão de superusuário concedida ao usuário '
         f'com o e-mail {email}.'
     )
-
-def hashed(password):
-    " Implementar."
-    return password
 
 def create_superuser(connection: sa.engine.Connection):
     " Cria um novo superusuário."
