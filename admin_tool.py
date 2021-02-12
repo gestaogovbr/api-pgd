@@ -22,7 +22,6 @@ def list_users(connection: sa.engine.Connection, cod_unidade: int = None):
     """ Lista os usuários presentes no banco para a unidade COD_UNIDADE.
     Caso seja omitido, mostra os usuários de todas as unidades.
     """
-    # TODO: implementar filtro de cod_unidade
     if cod_unidade is None:
         result = connection.execute('select count(*) from public.user')
     else:
@@ -33,13 +32,17 @@ def list_users(connection: sa.engine.Connection, cod_unidade: int = None):
     user_quantity = result.scalar()
     if user_quantity < 1:
         print(
-            'Não há usuários cadastrados'
-            ' na unidade' if cod_unidade is not None else ''
+            'Não há usuários cadastrados' +
+            (f' na unidade {cod_unidade}' if cod_unidade is not None else '') +
             '.'
         )
         return
     plural = 's' if user_quantity > 1 else ''
-    print (f'Há {user_quantity} usuário{plural} cadastrado{plural}: \n')
+    print (
+        f'Há {user_quantity} usuário{plural} cadastrado{plural}' +
+        (f' na unidade {cod_unidade}' if cod_unidade is not None else '') +
+        ': \n'
+    )
     result = connection.execute('select * from public.user')
     for row in result:
         print(f"\tid: {row['id']}")
@@ -75,6 +78,7 @@ def grant_superuser(connection: sa.engine.Connection, email: str):
 def create_superuser(connection: sa.engine.Connection):
     " Cria um novo superusuário."
     print(' Preencha os dados do usuário:\n')
+    # TODO: validar e-mail com pydantic, senão não funciona depois
     email = input('  e-mail: ') 
     cod_unidade = input ('  código da unidade: ')
     password = getpass.getpass(prompt='  senha: ')
@@ -98,7 +102,7 @@ if __name__ == '__main__':
         '--list_users',
         help=list_users.__doc__,
         nargs='?',
-        const=True, # valor quando se omite o parâmetro
+        const=True, # valor quando se usa o argumento sem COD_UNIDADE
         metavar='COD_UNIDADE'
     )
     parser.add_argument(
@@ -120,7 +124,8 @@ if __name__ == '__main__':
             if args.list_users==True:
                 list_users(connection)
             else:
-                list_users(connection, args.list_users)
+                cod_unidade = args.list_users
+                list_users(connection, cod_unidade)
         elif args.grant_superuser:
             grant_superuser(connection, args.grant_superuser.pop())
         elif args.create_superuser:
