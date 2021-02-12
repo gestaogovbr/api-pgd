@@ -10,8 +10,6 @@ import uuid
 import sqlalchemy as sa
 from passlib.context import CryptContext
 
-engine = sa.create_engine('postgresql://postgres:postgres@db-api-pgd:5432/api_pgd')
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hashed(password):
@@ -43,7 +41,13 @@ def list_users(connection: sa.engine.Connection, cod_unidade: int = None):
         (f' na unidade {cod_unidade}' if cod_unidade is not None else '') +
         ': \n'
     )
-    result = connection.execute('select * from public.user')
+    if cod_unidade is None:
+        result = connection.execute('select * from public.user')
+    else:
+        result = connection.execute(
+            'select * from public.user where '
+            f"cod_unidade='{cod_unidade}'"
+        )
     for row in result:
         print(f"\tid: {row['id']}")
         print(f"\temail: {row['email']}")
@@ -116,6 +120,8 @@ if __name__ == '__main__':
         help=create_superuser.__doc__,
         action='store_true'
     )
+
+    engine = sa.create_engine('postgresql://postgres:postgres@db-api-pgd:5432/api_pgd')
 
     args = parser.parse_args()
 
