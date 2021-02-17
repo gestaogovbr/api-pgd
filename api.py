@@ -113,7 +113,7 @@ async def create_or_update_plano_trabalho(
     plano_trabalho: schemas.PlanoTrabalhoSchema,
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme),
-    user: User = Depends(fastapi_users.get_current_user)
+    user: User = Depends(fastapi_users.current_user(active=True))
     ):
     # Validações da entrada conforme regras de negócio
     if cod_plano != plano_trabalho.cod_plano:
@@ -139,7 +139,7 @@ async def create_or_update_plano_trabalho(
 def get_plano_trabalho(cod_plano: str,
                        db: Session = Depends(get_db),
                        token: str = Depends(oauth2_scheme),
-                    #    user: User = Depends(fastapi_users.get_current_user)
+                    #    user: User = Depends(fastapi_users.current_user())
                        ):
     db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
     if db_plano_trabalho is None:
