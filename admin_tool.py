@@ -6,15 +6,29 @@ Ferramenta de administração da API-PGD.
 # dependências
 import argparse
 import getpass
-import uuid
+import asyncio
 import sqlalchemy as sa
-from passlib.context import CryptContext
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from fastapi_users import FastAPIUsers
+from fastapi_users.authentication import JWTAuthentication
 
-def hashed(password):
-    " Retorna o hash para a senha especificada."
-    return pwd_context.hash(password)
+from auth import (user_db, User, UserCreate, UserUpdate, UserDB,
+                    SECRET_KEY, database)
+
+jwt_authentication = JWTAuthentication(
+    secret=SECRET_KEY,
+    lifetime_seconds=3600,
+    tokenUrl="/auth/jwt/login"
+)
+
+fastapi_users = FastAPIUsers(
+    user_db,
+    [jwt_authentication],
+    User,
+    UserCreate,
+    UserUpdate,
+    UserDB,
+)
 
 def list_users(connection: sa.engine.Connection, cod_unidade: int = None):
     """ Lista os usuários presentes no banco para a unidade COD_UNIDADE.
@@ -79,22 +93,27 @@ def grant_superuser(connection: sa.engine.Connection, email: str):
         f'com o e-mail {email}.'
     )
 
-def create_superuser(connection: sa.engine.Connection):
+async def create_superuser(fastapi_users: FastAPIUsers):
     " Cria um novo superusuário."
     print(' Preencha os dados do usuário:\n')
-    # TODO: validar e-mail com pydantic, senão não funciona depois
     email = input('  e-mail: ') 
     cod_unidade = input ('  código da unidade: ')
     password = getpass.getpass(prompt='  senha: ')
     confirm_password = getpass.getpass(prompt='  confirmação da senha: ')
     if password != confirm_password:
         raise ValueError('As senhas informadas são diferentes.')
-    user_id = str(uuid.uuid4())
-    result = connection.execute(
-        'insert into public.user values ' +
-        str((user_id, email, hashed(password), True, True, cod_unidade))
+    
+    await database.connect()
+    superuser = await fastapi_users.create_user(
+        UserCreate(
+            email=email,
+            password=password,
+            cod_unidade=cod_unidade,
+            is_superuser=True
+        )
     )
-    if not result:
+    await database.disconnect()
+    if not superuser:
         raise IOError ('Erro ao gravar no banco de dados.')
 
 
@@ -135,6 +154,9 @@ if __name__ == '__main__':
         elif args.grant_superuser:
             grant_superuser(connection, args.grant_superuser.pop())
         elif args.create_superuser:
-            create_superuser(connection)
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(
+                create_superuser(fastapi_users)
+            )
         else:
             parser.print_help()
