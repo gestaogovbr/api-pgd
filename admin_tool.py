@@ -98,8 +98,11 @@ async def create_superuser(fastapi_users: FastAPIUsers):
     print(' Preencha os dados do usuário:\n')
     email = input('  e-mail: ') 
     cod_unidade = input ('  código da unidade: ')
-    password = getpass.getpass(prompt='  senha: ')
-    confirm_password = getpass.getpass(prompt='  confirmação da senha: ')
+    # TODO: parametrizar abaixo
+    # password = getpass.getpass(prompt='  senha: ')
+    # confirm_password = getpass.getpass(prompt='  confirmação da senha: ')
+    password = input('  senha: ')
+    confirm_password = input('  confirmação da senha: ')
     if password != confirm_password:
         raise ValueError('As senhas informadas são diferentes.')
     

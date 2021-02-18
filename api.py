@@ -81,7 +81,8 @@ app.include_router(
 app.include_router(
     fastapi_users.get_register_router(on_after_register),
     prefix="/auth",
-    tags=["auth"]
+    tags=["auth"],
+    dependencies=[Depends(fastapi_users.current_user(active=True, superuser=True))]
 )
 app.include_router(
     fastapi_users.get_reset_password_router(

@@ -1,7 +1,7 @@
 """
 Testes automáticos da API
 """
-import os
+import os, subprocess
 import json
 from types import GeneratorType as Generator
 import requests
@@ -77,23 +77,66 @@ def truncate_pt(client):
 def truncate_users(client):
     client.post(f"/truncate_users")
 
-def register_user(client, email, password, cod_unidade):
+@pytest.fixture(scope="module")
+#def register_admin(email, password, cod_unidade):
+def register_admin(truncate_users):
+    email = "admin@api.com"
+    cod_unidade = "1"
+    password = "1234"    
+    p = subprocess.Popen(
+        ['/usr/local/bin/python', '/home/api-pgd/admin_tool.py', '--create_superuser'],
+        stdout=subprocess.PIPE,
+        stdin=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    p.communicate(input='\n'.join([
+        email, cod_unidade, password, password
+    ]))[0]
+
+def register_user(client, email, password, cod_unidade, headers):
     data = {
         "email":email,
         "password":password,
         "cod_unidade": cod_unidade,
     }
-    return client.post(f"/auth/register", data=json.dumps(data))
+    return client.post(
+        f"/auth/register",
+        data=json.dumps(data),
+        headers=headers
+    )
 
 
 @pytest.fixture(scope="module")
-def register_user_1(client, truncate_users):
-    return register_user(client, "test1@api.com", "api", 1)
+def register_user_1(client, truncate_users, register_admin, header_admin):
+    return register_user(client, "test1@api.com", "api", 1, header_admin)
 
 @pytest.fixture(scope="module")
-def register_user_2(client, truncate_users):
-    return register_user(client, "test2@api.com", "api", 2)
+def register_user_2(client, truncate_users, register_admin, header_admin):
+    return register_user(client, "test2@api.com", "api", 2, header_admin)
 
+# TODO: refatorar headers com parametrização de login e senha
+@pytest.fixture(scope="module")
+def header_admin(register_admin):
+    url = "http://localhost:5057/auth/jwt/login"
+
+    payload='accept=application%2Fjson&Content-Type=application%2Fjson&username=admin%40api.com&password=1234'
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+    response_dict = json.loads(response.text)
+    token_user_1 = response_dict.get('access_token')
+    print(token_user_1)
+
+    header = {
+        'Authorization': f'Bearer {token_user_1}',
+        'accept': 'application/json',
+        'Content-Type': 'application/json'
+        }
+
+    return header
 @pytest.fixture(scope="module")
 def header_usr_1(register_user_1):
     """Authenticate in the API and return a dict with bearer header
@@ -171,11 +214,12 @@ def header_usr_2(register_user_2):
 #                headers=header_usr_1)
 
 # Tests
-def test_register_user(truncate_users, client):
-    user_1 = register_user(client, "testx@api.com", "api", 0)
+# TODO: teste registrar usuário sem senha de admin
+def test_register_user(truncate_users, client, header_admin):
+    user_1 = register_user(client, "testx@api.com", "api", 0, header_admin)
     assert user_1.status_code == 201
 
-    user_2 = register_user(client, "testx@api.com", "api", 0)
+    user_2 = register_user(client, "testx@api.com", "api", 0, header_admin)
     assert user_2.status_code == 400
     assert user_2.json().get("detail", None) == "REGISTER_USER_ALREADY_EXISTS"
 
