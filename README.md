@@ -90,3 +90,4 @@ Para rodar no modo verboso útil para debugar:
 Para rodar um teste específico utilize o parâmetro `-k`. Este exemplo
 roda apenas o teste `test_create_pt_invalid_cpf`:
 > ```$ pytest test_api.py -k test_create_pt_invalid_cpf -vv```
+
