@@ -268,7 +268,7 @@ def test_patch_user_self_change_cod_unidade(client, header_usr_1):
     " Testa se o usuário pode alterar o seu próprio cod_unidade."
     response = client.patch(
         '/users/me',
-        json={'cod_unidade': 2},
+        json={'cod_unidade': 3},
         headers=header_usr_1
     )
     print(response.json())
