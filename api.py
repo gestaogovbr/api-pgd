@@ -51,11 +51,11 @@ app = FastAPI(
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
 
-def on_after_register(user: UserDB, request: Request):
+async def on_after_register(user: UserDB, request: Request):
     print(f"User {user.id} has registered.")
 
 
-def on_after_forgot_password(user: UserDB, token: str, request: Request):
+async def on_after_forgot_password(user: UserDB, token: str, request: Request):
     print(f"User {user.id} has forgot their password. Reset token: {token}")
 
 jwt_authentication = JWTAuthentication(
@@ -137,7 +137,7 @@ async def create_or_update_plano_trabalho(
 @app.get("/plano_trabalho/{cod_plano}",
          response_model=schemas.PlanoTrabalhoSchema
         )
-def get_plano_trabalho(cod_plano: str,
+async def get_plano_trabalho(cod_plano: str,
                        db: Session = Depends(get_db),
                        token: str = Depends(oauth2_scheme),
                     #    user: User = Depends(fastapi_users.current_user())
@@ -149,7 +149,7 @@ def get_plano_trabalho(cod_plano: str,
     return plano_trabalho.__dict__
 
 @app.post("/truncate_pts_atividades")
-def truncate_pts_atividades(
+async def truncate_pts_atividades(
         db: Session = Depends(get_db),
         user: User = Depends(fastapi_users.current_user(
             active=True,
@@ -158,5 +158,5 @@ def truncate_pts_atividades(
     crud.truncate_pts_atividades(db)
 
 @app.post("/truncate_users")
-def truncate_users(db: Session = Depends(get_db)):
+async def truncate_users(db: Session = Depends(get_db)):
     crud.truncate_users(db)
