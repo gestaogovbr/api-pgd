@@ -74,7 +74,23 @@ def admin_credentials():
     return {
         'username': 'admin@api.com',
         'password': '1234',
-        'cod_unidade': '1'
+        'cod_unidade': 1
+    }
+
+@pytest.fixture(scope="module")
+def user1_credentials():
+    return {
+        'username': 'test1@api.com',
+        'password': 'api',
+        'cod_unidade': 1
+    }
+
+@pytest.fixture(scope="module")
+def user2_credentials():
+    return {
+        'username': 'test2@api.com',
+        'password': 'api',
+        'cod_unidade': 2
     }
 
 @pytest.fixture(scope="module")
@@ -102,7 +118,7 @@ def register_admin(truncate_users, admin_credentials):
         text=True
     )
     p.communicate(input='\n'.join([
-        email, cod_unidade, password, password
+        email, str(cod_unidade), password, password
     ]))[0]
 
 def register_user(client, email, password, cod_unidade, headers):
@@ -119,14 +135,18 @@ def register_user(client, email, password, cod_unidade, headers):
 
 
 @pytest.fixture(scope="module")
-def register_user_1(client, truncate_users, register_admin, header_admin):
-    return register_user(client, "test1@api.com", "api", 1, header_admin)
+def register_user_1(client, truncate_users, register_admin,
+        header_admin, user1_credentials):
+    return register_user(client, user1_credentials['username'],
+        user1_credentials['password'], user1_credentials['cod_unidade'],
+        header_admin)
 
 @pytest.fixture(scope="module")
-def register_user_2(client, truncate_users, register_admin, header_admin):
-    return register_user(client, "test2@api.com", "api", 2, header_admin)
-
-# TODO: refatorar headers com parametrização de login e senha
+def register_user_2(client, truncate_users, register_admin,
+        header_admin, user2_credentials):
+    return register_user(client, user2_credentials['username'],
+        user2_credentials['password'], user2_credentials['cod_unidade'],
+        header_admin)
 
 def prepare_header(username: str, password: str):
     token_user = None
@@ -170,11 +190,10 @@ def header_admin(register_admin, admin_credentials):
         username=admin_credentials['username'],
         password=admin_credentials['password'])
 
-# TODO: refatorar header_usr_1 e header_usr_2 para usar prepare_header
 @pytest.fixture(scope="module")
-def header_usr_1(register_user_1):
-    """Authenticate in the API and return a dict with bearer header
-    parameter to be passed to apis requests."""
+def header_usr_1(register_user_1, user1_credentials):
+    """Authenticate in the API as user1 and return a dict with bearer
+    header parameter to be passed to apis requests."""
     #TODO: Refatorar e resolver utilizando o objeto TestClient
     # data = {
     #     'grant_type': '',
@@ -195,51 +214,17 @@ def header_usr_1(register_user_1):
     # my_cmd = os.popen(shell_cmd).read()
     # response = json.loads(my_cmd)
     # token_user_1 = response.get('access_token')
+    return prepare_header(
+        username=user1_credentials['username'],
+        password=user1_credentials['password'])
 
-    url = "http://localhost:5057/auth/jwt/login"
-
-    payload='accept=application%2Fjson&Content-Type=application%2Fjson&username=test1%40api.com&password=api'
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-    response_dict = json.loads(response.text)
-    # print(response_dict)
-    token_user_1 = response_dict.get('access_token')
-    print(token_user_1)
-
-    header = {
-        'Authorization': f'Bearer {token_user_1}',
-        'accept': 'application/json',
-        'Content-Type': 'application/json'
-        }
-
-    return header
 @pytest.fixture(scope="module")
-def header_usr_2(register_user_2):
-    """Authenticate in the API and return a dict with bearer header
-    parameter to be passed to apis requests."""
-
-    url = "http://localhost:5057/auth/jwt/login"
-
-    payload='accept=application%2Fjson&Content-Type=application%2Fjson&username=test2%40api.com&password=api'
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-    response_dict = json.loads(response.text)
-    token_user_1 = response_dict.get('access_token')
-    print(token_user_1)
-
-    header = {
-        'Authorization': f'Bearer {token_user_1}',
-        'accept': 'application/json',
-        'Content-Type': 'application/json'
-        }
-
-    return header
+def header_usr_2(register_user_2, user2_credentials):
+    """Authenticate in the API as user2 and return a dict with bearer
+    header parameter to be passed to apis requests."""
+    return prepare_header(
+        username=user2_credentials['username'],
+        password=user2_credentials['password'])
 
 # @pytest.fixture(scope="module")
 # def insert_pt_user_1(header_usr_1, client):
