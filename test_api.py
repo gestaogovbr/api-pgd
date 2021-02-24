@@ -237,14 +237,14 @@ def header_usr_2(register_user_2, user2_credentials):
 def test_register_user_not_logged_in(
         truncate_users, client, header_not_logged_in):
     user_1 = register_user(client, "testx@api.com", "api", 0, header_not_logged_in)
-    assert user_1.status_code == 401
+    assert user_1.status_code == status.HTTP_401_UNAUTHORIZED
 
 def test_register_user(truncate_users, client, header_admin):
     user_1 = register_user(client, "testx@api.com", "api", 0, header_admin)
-    assert user_1.status_code == 201
+    assert user_1.status_code == status.HTTP_201_CREATED
 
     user_2 = register_user(client, "testx@api.com", "api", 0, header_admin)
-    assert user_2.status_code == 400
+    assert user_2.status_code == status.HTTP_400_BAD_REQUEST
     assert user_2.json().get("detail", None) == "REGISTER_USER_ALREADY_EXISTS"
 
 def test_authenticate(header_usr_1):
@@ -254,11 +254,11 @@ def test_authenticate(header_usr_1):
 
 def test_get_user_self_not_logged_in(client, header_not_logged_in):
     response = client.get('/users/me', headers=header_not_logged_in)
-    assert response.status_code == 401
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 def test_get_user_self_logged_in(client, user1_credentials, header_usr_1):
     response = client.get('/users/me', headers=header_usr_1)
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert data.get("email", None) == user1_credentials['username']
     assert data.get("cod_unidade", None) == user1_credentials['cod_unidade']
@@ -282,7 +282,7 @@ def test_create_plano_trabalho_completo(input_pt,
                           data=json.dumps(input_pt),
                           headers=header_usr_1)
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json().get("detail", None) == None
     assert response.json() == input_pt
 
@@ -304,7 +304,7 @@ def test_create_plano_trabalho_missing_fileds(input_pt,
     response = client.put(f"/plano_trabalho/557",
                           data=json.dumps(input_pt),
                           headers=header_usr_1)
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
 
 def test_create_pt_cod_plano_inconsistent(input_pt,
                                           header_usr_1,
@@ -314,7 +314,7 @@ def test_create_pt_cod_plano_inconsistent(input_pt,
     response = client.put("/plano_trabalho/111", # diferente de 110
                           json=input_pt,
                           headers=header_usr_1)
-    assert response.status_code == 400
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
     detail_msg = "Parâmetro cod_plano diferente do conteúdo do JSON"
     assert response.json().get("detail", None) == detail_msg
 
@@ -327,7 +327,7 @@ def test_get_plano_trabalho(input_pt,
                           headers=header_usr_1)
     response = client.get("/plano_trabalho/555",
                           headers=header_usr_1)
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
 
 def test_get_pt_inexistente(header_usr_1, client):
     response = client.get("/plano_trabalho/888888888",
@@ -366,7 +366,7 @@ def test_create_pt_invalid_dates(input_pt,
                      " ou igual que Data início."
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
 
 @pytest.mark.parametrize(
     "dt_fim, dt_avaliacao_1, dt_avaliacao_2, cod_plano, id_ati_1, id_ati_2",
@@ -405,7 +405,7 @@ def test_create_pt_invalid_data_avaliacao(input_pt,
                      " que a Data Fim do Plano de Trabalho."
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
 
 @pytest.mark.parametrize("cod_plano, id_ati_1, id_ati_2",
                           [
@@ -433,7 +433,7 @@ def test_create_pt_duplicate_atividade(input_pt,
         detail_msg = "Atividades devem possuir id_atividade diferentes."
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
 
 def test_update_pt_different_cod_unidade(input_pt,
                                          header_usr_2,
