@@ -263,18 +263,18 @@ def test_create_plano_trabalho_completo(input_pt,
     assert response.json().get("detail", None) == None
     assert response.json() == input_pt
 
-@pytest.mark.parametrize("missed_fiels",
+@pytest.mark.parametrize("missing_fields",
                          [
                              (["data_interrupcao"]),
                              (["data_interrupcao", "entregue_no_prazo"]),
                              (["entregue_no_prazo"]),
                          ])
-def test_create_plano_trabalho_missed_fileds(input_pt,
-                                             missed_fiels,
+def test_create_plano_trabalho_missing_fileds(input_pt,
+                                             missing_fields,
                                              header_usr_1,
                                              truncate_pt,
                                              client):
-    for field in missed_fiels:
+    for field in missing_fields:
         del input_pt[field]
 
     input_pt['cod_plano'] = 557
