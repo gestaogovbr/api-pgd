@@ -117,6 +117,14 @@ def register_user_2(client, truncate_users, register_admin, header_admin):
 
 # TODO: refatorar headers com parametrização de login e senha
 @pytest.fixture(scope="module")
+def header_not_logged_in():
+    header = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json'
+        }
+    return header
+
+@pytest.fixture(scope="module")
 def header_admin(register_admin):
     url = "http://localhost:5057/auth/jwt/login"
 
@@ -215,6 +223,11 @@ def header_usr_2(register_user_2):
 
 # Tests
 # TODO: teste registrar usuário sem senha de admin
+def test_register_user_not_logged_in(
+        truncate_users, client, header_not_logged_in):
+    user_1 = register_user(client, "testx@api.com", "api", 0, header_not_logged_in)
+    assert user_1.status_code == 401
+
 def test_register_user(truncate_users, client, header_admin):
     user_1 = register_user(client, "testx@api.com", "api", 0, header_admin)
     assert user_1.status_code == 201
