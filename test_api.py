@@ -251,6 +251,18 @@ def test_authenticate(header_usr_1):
     assert type(token) is str
     assert "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." in token
 
+def test_get_user_self_not_logged_in(client, header_not_logged_in):
+    response = client.get('/users/me', headers=header_not_logged_in)
+    assert response.status_code == 401
+
+def test_get_user_self_logged_in(client, user1_credentials, header_usr_1):
+    response = client.get('/users/me', headers=header_usr_1)
+    assert response.status_code == 200
+    data = response.json()
+    assert data.get("email", None) == user1_credentials['username']
+    assert data.get("cod_unidade", None) == user1_credentials['cod_unidade']
+    assert data.get("is_active", None) == True
+
 def test_create_plano_trabalho_completo(input_pt,
                                         header_usr_1,
                                         truncate_pt,
