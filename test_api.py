@@ -70,6 +70,10 @@ def input_pt():
     return pt_json
 
 @pytest.fixture(scope="module")
+def admin_credentials():
+    return {'username': 'admin@api.com', 'password': '1234', 'cod_unidade': '1'}
+
+@pytest.fixture(scope="module")
 def truncate_pt(client):
     client.post(f"/truncate_pts_atividades")
 
@@ -78,11 +82,10 @@ def truncate_users(client):
     client.post(f"/truncate_users")
 
 @pytest.fixture(scope="module")
-#def register_admin(email, password, cod_unidade):
-def register_admin(truncate_users):
-    email = "admin@api.com"
-    cod_unidade = "1"
-    password = "1234"    
+def register_admin(truncate_users, admin_credentials):
+    email = admin_credentials['username']
+    cod_unidade = admin_credentials['cod_unidade']
+    password = admin_credentials['password']
     p = subprocess.Popen(
         ['/usr/local/bin/python', '/home/api-pgd/admin_tool.py', '--create_superuser'],
         stdout=subprocess.PIPE,
@@ -116,35 +119,50 @@ def register_user_2(client, truncate_users, register_admin, header_admin):
     return register_user(client, "test2@api.com", "api", 2, header_admin)
 
 # TODO: refatorar headers com parametrização de login e senha
+
+def prepare_header(username: str, password: str):
+    token_user = None
+
+    if username and password:
+        # usuário especificado, é necessário fazer login
+        url = "http://localhost:5057/auth/jwt/login"
+
+        headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }
+
+        payload='&'.join([
+            'accept=application%2Fjson',
+            'Content-Type=application%2Fjson',
+            f'username={username}',
+            f'password={password}'
+        ])
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+        response_dict = json.loads(response.text)
+        token_user = response_dict.get('access_token')
+        print(token_user)
+
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json'
+    }
+    if token_user:
+        headers['Authorization'] = f'Bearer {token_user}'
+    
+    return headers
+
 @pytest.fixture(scope="module")
 def header_not_logged_in():
-    header = {
-        'accept': 'application/json',
-        'Content-Type': 'application/json'
-        }
-    return header
+    return prepare_header(username=None, password=None)
 
 @pytest.fixture(scope="module")
-def header_admin(register_admin):
-    url = "http://localhost:5057/auth/jwt/login"
+def header_admin(register_admin, admin_credentials):
+    return prepare_header(
+        username=admin_credentials['username'],
+        password=admin_credentials['password'])
 
-    payload='accept=application%2Fjson&Content-Type=application%2Fjson&username=admin%40api.com&password=1234'
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-    response_dict = json.loads(response.text)
-    token_user_1 = response_dict.get('access_token')
-    print(token_user_1)
-
-    header = {
-        'Authorization': f'Bearer {token_user_1}',
-        'accept': 'application/json',
-        'Content-Type': 'application/json'
-        }
-
-    return header
+# TODO: refatorar header_usr_1 e header_usr_2 para usar prepare_header
 @pytest.fixture(scope="module")
 def header_usr_1(register_user_1):
     """Authenticate in the API and return a dict with bearer header
@@ -222,7 +240,6 @@ def header_usr_2(register_user_2):
 #                headers=header_usr_1)
 
 # Tests
-# TODO: teste registrar usuário sem senha de admin
 def test_register_user_not_logged_in(
         truncate_users, client, header_not_logged_in):
     user_1 = register_user(client, "testx@api.com", "api", 0, header_not_logged_in)
