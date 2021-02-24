@@ -71,7 +71,11 @@ def input_pt():
 
 @pytest.fixture(scope="module")
 def admin_credentials():
-    return {'username': 'admin@api.com', 'password': '1234', 'cod_unidade': '1'}
+    return {
+        'username': 'admin@api.com',
+        'password': '1234',
+        'cod_unidade': '1'
+    }
 
 @pytest.fixture(scope="module")
 def truncate_pt(client):
@@ -87,7 +91,11 @@ def register_admin(truncate_users, admin_credentials):
     cod_unidade = admin_credentials['cod_unidade']
     password = admin_credentials['password']
     p = subprocess.Popen(
-        ['/usr/local/bin/python', '/home/api-pgd/admin_tool.py', '--create_superuser'],
+        [
+            '/usr/local/bin/python',
+            '/home/api-pgd/admin_tool.py',
+            '--create_superuser'
+        ],
         stdout=subprocess.PIPE,
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE,
