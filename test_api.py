@@ -94,8 +94,8 @@ def user2_credentials():
     }
 
 @pytest.fixture(scope="module")
-def truncate_pt(client):
-    client.post(f"/truncate_pts_atividades")
+def truncate_pt(client, header_admin):
+    client.post(f"/truncate_pts_atividades", headers=header_admin)
 
 @pytest.fixture(scope="module")
 def truncate_users(client):

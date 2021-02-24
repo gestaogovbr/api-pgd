@@ -149,9 +149,19 @@ def get_plano_trabalho(cod_plano: str,
     return plano_trabalho.__dict__
 
 @app.post("/truncate_pts_atividades")
-def truncate_pts_atividades(db: Session = Depends(get_db)):
+def truncate_pts_atividades(
+        db: Session = Depends(get_db),
+        user: User = Depends(fastapi_users.current_user(
+            active=True,
+            superuser=True
+        ))):
     crud.truncate_pts_atividades(db)
 
 @app.post("/truncate_users")
-def truncate_users(db: Session = Depends(get_db)):
+def truncate_users(
+        db: Session = Depends(get_db),
+        user: User = Depends(fastapi_users.current_user(
+            active=True,
+            #superuser=True # cria dependência recursiva nas fixtures
+        ))):
     crud.truncate_users(db)
