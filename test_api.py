@@ -130,7 +130,7 @@ def register_user(client, email, password, cod_unidade, headers):
     }
     return client.post(
         f"/auth/register",
-        data=json.dumps(data),
+        json=data,
         headers=headers
     )
 
@@ -279,7 +279,7 @@ def test_create_plano_trabalho_completo(input_pt,
                                         truncate_pt,
                                         client):
     response = client.put(f"/plano_trabalho/555",
-                          data=json.dumps(input_pt),
+                          json=input_pt,
                           headers=header_usr_1)
 
     assert response.status_code == status.HTTP_200_OK
@@ -302,7 +302,7 @@ def test_create_plano_trabalho_missing_fileds(input_pt,
 
     input_pt['cod_plano'] = 557
     response = client.put(f"/plano_trabalho/557",
-                          data=json.dumps(input_pt),
+                          json=input_pt,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
 
@@ -323,7 +323,7 @@ def test_get_plano_trabalho(input_pt,
                             truncate_pt,
                             client):
     response = client.put(f"/plano_trabalho/555",
-                          data=json.dumps(input_pt),
+                          json=input_pt,
                           headers=header_usr_1)
     response = client.get("/plano_trabalho/555",
                           headers=header_usr_1)
