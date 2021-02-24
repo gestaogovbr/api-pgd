@@ -158,10 +158,5 @@ def truncate_pts_atividades(
     crud.truncate_pts_atividades(db)
 
 @app.post("/truncate_users")
-def truncate_users(
-        db: Session = Depends(get_db),
-        user: User = Depends(fastapi_users.current_user(
-            active=True,
-            #superuser=True # cria dependência recursiva nas fixtures
-        ))):
+def truncate_users(db: Session = Depends(get_db)):
     crud.truncate_users(db)
