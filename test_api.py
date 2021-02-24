@@ -7,6 +7,7 @@ from types import GeneratorType as Generator
 import requests
 
 from fastapi.testclient import TestClient
+from fastapi import status
 from api import app
 import pytest
 
@@ -262,6 +263,16 @@ def test_get_user_self_logged_in(client, user1_credentials, header_usr_1):
     assert data.get("email", None) == user1_credentials['username']
     assert data.get("cod_unidade", None) == user1_credentials['cod_unidade']
     assert data.get("is_active", None) == True
+
+def test_patch_user_self_change_cod_unidade(client, header_usr_1):
+    " Testa se o usuário pode alterar o seu próprio cod_unidade."
+    response = client.patch(
+        '/users/me',
+        json={'cod_unidade': 2},
+        headers=header_usr_1
+    )
+    print(response.json())
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 def test_create_plano_trabalho_completo(input_pt,
                                         header_usr_1,
