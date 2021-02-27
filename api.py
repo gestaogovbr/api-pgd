@@ -10,7 +10,7 @@ from fastapi_users.authentication import JWTAuthentication
 import models, schemas, crud
 from database import engine, get_db
 from auth import user_db, User, UserCreate, UserUpdate, UserDB, SECRET_KEY
-from auth import database as auth_db
+from auth import database_meta as auth_db
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

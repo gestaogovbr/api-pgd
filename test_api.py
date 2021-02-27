@@ -99,8 +99,18 @@ def truncate_pt(client, header_admin):
     client.post(f"/truncate_pts_atividades", headers=header_admin)
 
 @pytest.fixture(scope="module")
-def truncate_users(client, header_not_logged_in):
-    client.post(f"/truncate_users", headers=header_not_logged_in)
+def truncate_users():
+    p = subprocess.Popen(
+        [
+            '/usr/local/bin/python',
+            '/home/api-pgd/admin_tool.py',
+            '--truncate-users'
+        ],
+        stdout=subprocess.PIPE,
+        stdin=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
 
 @pytest.fixture(scope="module")
 def register_admin(truncate_users, admin_credentials):

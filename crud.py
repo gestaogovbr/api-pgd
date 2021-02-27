@@ -65,8 +65,3 @@ def truncate_pts_atividades(db: Session):
     "Trunca as tabelas principais. Útil para zerar BD para executar testes."
     db.execute(sa_text('TRUNCATE TABLE plano_trabalho CASCADE'))
     db.commit()
-
-def truncate_users(db: Session):
-    "Trunca a tabela de usuários."
-    db.execute(sa_text('TRUNCATE TABLE "user"'))
-    db.commit()

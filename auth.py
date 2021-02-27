@@ -53,7 +53,7 @@ class UserUpdate(User, user_models.BaseUserUpdate):
 class UserDB(User, user_models.BaseUserDB):
     pass
 
-database = databases.Database(SQLALCHEMY_DATABASE_URL)
+database_meta = databases.Database(SQLALCHEMY_DATABASE_URL)
 
 Base: DeclarativeMeta = declarative_base()
 
@@ -62,7 +62,7 @@ class UserTable(Base, SQLAlchemyBaseUserTable):
     pass
 
 users = UserTable.__table__
-user_db = SQLAlchemyUserDatabase(UserDB, database, users)
+user_db = SQLAlchemyUserDatabase(UserDB, database_meta, users)
 
 engine = sqlalchemy.create_engine(SQLALCHEMY_DATABASE_URL)
 

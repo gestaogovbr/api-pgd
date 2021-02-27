@@ -8,12 +8,14 @@ import argparse
 import getpass
 import asyncio
 import sqlalchemy as sa
+from sqlalchemy.sql import text as sa_text
 
 from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import JWTAuthentication
 
 from auth import (user_db, User, UserCreate, UserUpdate, UserDB,
-                    SECRET_KEY, database)
+                    SECRET_KEY, database_meta)
+import crud
 
 jwt_authentication = JWTAuthentication(
     secret=SECRET_KEY,
@@ -106,7 +108,7 @@ async def create_superuser(fastapi_users: FastAPIUsers):
     if password != confirm_password:
         raise ValueError('As senhas informadas são diferentes.')
     
-    await database.connect()
+    await database_meta.connect()
     superuser = await fastapi_users.create_user(
         UserCreate(
             email=email,
@@ -115,10 +117,14 @@ async def create_superuser(fastapi_users: FastAPIUsers):
             is_superuser=True
         )
     )
-    await database.disconnect()
+    await database_meta.disconnect()
     if not superuser:
         raise IOError ('Erro ao gravar no banco de dados.')
 
+async def truncate_users(connection: sa.engine.Connection):
+    " Expurga todos os usuários do banco de dados."
+    connection.execute(sa_text('TRUNCATE TABLE "user"'))
+    print("Tabela de usuários truncada.")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -142,6 +148,11 @@ if __name__ == '__main__':
         help=create_superuser.__doc__,
         action='store_true'
     )
+    parser.add_argument(
+        '--truncate-users',
+        help=truncate_users.__doc__,
+        action='store_true'
+    )
 
     engine = sa.create_engine('postgresql://postgres:postgres@db-api-pgd:5432/api_pgd')
 
@@ -160,6 +171,11 @@ if __name__ == '__main__':
             loop = asyncio.get_event_loop()
             loop.run_until_complete(
                 create_superuser(fastapi_users)
+            )
+        elif args.truncate_users:
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(
+                truncate_users(connection)
             )
         else:
             parser.print_help()
