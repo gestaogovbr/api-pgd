@@ -156,7 +156,3 @@ async def truncate_pts_atividades(
             superuser=True
         ))):
     crud.truncate_pts_atividades(db)
-
-@app.post("/truncate_users")
-async def truncate_users(db: Session = Depends(get_db)):
-    crud.truncate_users(db)
