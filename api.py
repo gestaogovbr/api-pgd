@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import JWTAuthentication
+from fastapi.openapi.utils import get_openapi
 
 import models, schemas, crud
 from database import engine, get_db
@@ -156,3 +157,24 @@ async def truncate_pts_atividades(
             superuser=True
         ))):
     crud.truncate_pts_atividades(db)
+
+
+# Esconde alguns métodos da interface OpenAPI
+
+def public_facing_openapi():
+    " Cria o esquema da OpenAPI disponível ao público externo."
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title = app.title,
+        description = app.description,
+        version = app.version,
+        routes = app.routes
+    )
+    paths = openapi_schema['paths']
+    del paths['/truncate_pts_atividades']
+    del paths['/users/{id}']
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = public_facing_openapi
