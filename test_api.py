@@ -567,15 +567,15 @@ def test_create_pt_invalid_carga_horaria_semanal(input_pt: dict,
                            (-2, 2, 3, 4.3, 5),
                            (0, 2, 3, 4.2, 5),
                            ])
-def test_create_pt_invalid_carga_horaria_total(input_pt,
-                                                 carga_horaria_total,
-                                                 tempo_pres_1,
-                                                 tempo_tel_1,
-                                                 tempo_pres_2,
-                                                 tempo_tel_2,
-                                                 header_usr_1,
+def test_create_pt_invalid_carga_horaria_total(input_pt: dict,
+                                                 carga_horaria_total: float,
+                                                 tempo_pres_1: float,
+                                                 tempo_tel_1: float,
+                                                 tempo_pres_2: float,
+                                                 tempo_tel_2: float,
+                                                 header_usr_1: dict,
                                                  truncate_pt,
-                                                 client):
+                                                 client: Session):
     cod_plano = 767677
     input_pt['cod_plano'] = cod_plano
     input_pt['carga_horaria_total'] = carga_horaria_total
@@ -605,19 +605,19 @@ def test_create_pt_invalid_carga_horaria_total(input_pt,
                               (123123, 'asd', 'asd', 0, None, 3),
                               (123123, 'asd', 'asd', 0, 0, None),
                            ])
-def test_create_pt_missed_values_atividade(input_pt,
+def test_create_pt_missed_values_atividade(input_pt: dict,
 
-                                           id_atividade,
-                                           nome_atividade,
-                                           faixa_complexidade,
-                                           tempo_exec_presencial,
-                                           tempo_exec_teletrabalho,
-                                           qtde_entregas,
+                                           id_atividade: int,
+                                           nome_atividade: str,
+                                           faixa_complexidade: str,
+                                           tempo_exec_presencial: float,
+                                           tempo_exec_teletrabalho: float,
+                                           qtde_entregas: int,
 
-                                           header_usr_1,
+                                           header_usr_1: dict,
                                            truncate_pt,
-                                           client):
-    cod_plano = 111222333
+                                           client: Session):
+    cod_plano = '111222333'
     input_pt['cod_plano'] = cod_plano
     input_pt['atividades'][0]['id_atividade'] = id_atividade
     input_pt['atividades'][0]['nome_atividade'] = nome_atividade
