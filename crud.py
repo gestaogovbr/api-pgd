@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text as sa_text
 import models, schemas
 
-def get_plano_trabalho(db: Session, cod_plano: int):
+def get_plano_trabalho(db: Session, cod_plano: str):
     "Traz um plano de trabalho a partir do banco de dados."
     db_plano_trabalho = (
         db
