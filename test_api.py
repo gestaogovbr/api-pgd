@@ -13,6 +13,59 @@ from fastapi import status
 from api import app
 import pytest
 
+# Helper functions
+
+def register_user(
+        client: Session,
+        email: str,
+        password: str,
+        cod_unidade: int,
+        headers: dict
+    ) -> HTTPResponse:
+    data = {
+        "email": email,
+        "password": password,
+        "cod_unidade": cod_unidade,
+    }
+    return client.post(
+        f"/auth/register",
+        json=data,
+        headers=headers
+    )
+
+def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
+    token_user = None
+
+    if username and password:
+        # usuário especificado, é necessário fazer login
+        url = "http://localhost:5057/auth/jwt/login"
+
+        headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }
+
+        payload='&'.join([
+            'accept=application%2Fjson',
+            'Content-Type=application%2Fjson',
+            f'username={username}',
+            f'password={password}'
+        ])
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+        response_dict = json.loads(response.text)
+        token_user = response_dict.get('access_token')
+        print(token_user)
+
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json'
+    }
+    if token_user:
+        headers['Authorization'] = f'Bearer {token_user}'
+    
+    return headers
+
+
 # Fixtures
 
 @pytest.fixture(scope="module")
@@ -134,25 +187,6 @@ def register_admin(truncate_users, admin_credentials: dict):
         email, str(cod_unidade), password, password
     ]))[0]
 
-def register_user(
-        client: Session,
-        email: str,
-        password: str,
-        cod_unidade: int,
-        headers: dict
-    ) -> HTTPResponse:
-    data = {
-        "email": email,
-        "password": password,
-        "cod_unidade": cod_unidade,
-    }
-    return client.post(
-        f"/auth/register",
-        json=data,
-        headers=headers
-    )
-
-
 @pytest.fixture(scope="module")
 def register_user_1(
     client: Session,
@@ -176,38 +210,6 @@ def register_user_2(
     return register_user(client, user2_credentials['username'],
         user2_credentials['password'], user2_credentials['cod_unidade'],
         header_admin)
-
-def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
-    token_user = None
-
-    if username and password:
-        # usuário especificado, é necessário fazer login
-        url = "http://localhost:5057/auth/jwt/login"
-
-        headers = {
-        'Content-Type': 'application/x-www-form-urlencoded'
-        }
-
-        payload='&'.join([
-            'accept=application%2Fjson',
-            'Content-Type=application%2Fjson',
-            f'username={username}',
-            f'password={password}'
-        ])
-
-        response = requests.request("POST", url, headers=headers, data=payload)
-        response_dict = json.loads(response.text)
-        token_user = response_dict.get('access_token')
-        print(token_user)
-
-    headers = {
-        'accept': 'application/json',
-        'Content-Type': 'application/json'
-    }
-    if token_user:
-        headers['Authorization'] = f'Bearer {token_user}'
-    
-    return headers
 
 @pytest.fixture(scope="module")
 def header_not_logged_in() -> dict:
@@ -261,7 +263,9 @@ def header_usr_2(register_user_2, user2_credentials: dict) -> dict:
 #                json=input_pt,
 #                headers=header_usr_1)
 
+
 # Tests
+
 def test_register_user_not_logged_in(
         truncate_users, client: Session, header_not_logged_in: dict):
     user_1 = register_user(client, "testx@api.com", "api", 0, header_not_logged_in)
