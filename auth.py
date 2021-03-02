@@ -40,14 +40,11 @@ fake_users_db = {
 
 class User(user_models.BaseUser):
     cod_unidade: int
-    pass
 
 class UserCreate(user_models.BaseUserCreate):
     cod_unidade: int
-    pass
 
 class UserUpdate(User, user_models.BaseUserUpdate):
-    cod_unidade: int
     pass
 
 class UserDB(User, user_models.BaseUserDB):
