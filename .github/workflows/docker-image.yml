@@ -17,7 +17,7 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag api-pgd:$(date +%s)
     - name: Create pgadmin_data volume
-      run: mkdir -p pgadmin_data && chown -R 5050:5050 ./pgadmin_data/
+      run: sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
     - name: Run docker-compose
       run: docker-compose up -d
     - name: run tests
