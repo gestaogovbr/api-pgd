@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag api-pgd:$(date +%s)
+      run: docker build . --file Dockerfile --tag api-pgd
     - name: Create pgadmin_data volume
       run: sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
     - name: Run docker-compose

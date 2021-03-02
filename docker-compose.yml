@@ -20,6 +20,7 @@ services:
         - ./:/home/api-pgd
     depends_on:
       - db-api-pgd
+    build: ./
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
