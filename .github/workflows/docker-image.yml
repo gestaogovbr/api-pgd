@@ -21,4 +21,4 @@ jobs:
     - name: Run docker-compose
       run: docker-compose up -d
     - name: run tests
-      run: docker exec -it api_pgd_web_1 /usr/local/bin/pytest /home/api-pgd/ test_api.py -k-test_patch_user_self_change_cod_unidade
+      run: docker exec -it api-pgd_web_1 /usr/local/bin/pytest /home/api-pgd/ test_api.py -k-test_patch_user_self_change_cod_unidade
