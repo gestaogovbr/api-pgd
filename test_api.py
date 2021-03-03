@@ -306,7 +306,6 @@ def test_patch_user_self_change_cod_unidade(client: Session,
         json={'cod_unidade': 3},
         headers=header_usr_1
     )
-    print(response.json())
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 def test_create_plano_trabalho_completo(input_pt: dict,

@@ -45,7 +45,16 @@ class UserCreate(user_models.BaseUserCreate):
     cod_unidade: int
 
 class UserUpdate(User, user_models.BaseUserUpdate):
-    pass
+    cod_unidade: int
+
+    def create_update_dict(self) -> dict:
+        d = super().create_update_dict()
+        p = d.pop("cod_unidade", None)
+        if p:
+            raise HTTPException(
+                status.HTTP_401_UNAUTHORIZED,
+                detail=f'Não tem permissão para alterar o atributo.')
+        return d
 
 class UserDB(User, user_models.BaseUserDB):
     pass
