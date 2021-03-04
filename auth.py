@@ -47,6 +47,10 @@ class UserCreate(user_models.BaseUserCreate):
 class UserUpdate(User, user_models.BaseUserUpdate):
     cod_unidade: int
 
+    # O superusuário usa o método create_update_dict_superuser, então
+    # não é afetado pelo código abaixo. Essa foi a solução encontrada
+    # para proibir o usuário comum de alterar a propriedade.
+    # Vide https://github.com/frankie567/fastapi-users/discussions/537
     def create_update_dict(self) -> dict:
         d = super().create_update_dict()
         p = d.pop("cod_unidade", None)
