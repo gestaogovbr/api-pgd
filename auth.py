@@ -50,7 +50,7 @@ class UserUpdate(User, user_models.BaseUserUpdate):
     def create_update_dict(self) -> dict:
         d = super().create_update_dict()
         p = d.pop("cod_unidade", None)
-        if p:
+        if p is not None:
             raise HTTPException(
                 status.HTTP_401_UNAUTHORIZED,
                 detail=f'Não tem permissão para alterar o atributo.')
