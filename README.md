@@ -2,7 +2,7 @@
 
 Repositório com o código-fonte da API do Programa de Gestão (PGD).
 
-[![Docker Image CI](https://github.com/economiagovbr/api-pgd/actions/workflows/docker-image.yml/badge.svg)](https://github.com/economiagovbr/api-pgd/actions/workflows/docker-image.yml)
+[![Tests](https://github.com/economiagovbr/api-pgd/actions/workflows/docker-image.yml/badge.svg)](https://github.com/economiagovbr/api-pgd/actions/workflows/docker-image.yml)
 
 ## Rodando a API
 
