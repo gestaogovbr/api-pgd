@@ -9,8 +9,7 @@ pipeline {
                     branches: [[name: '*/master']],
                     doGenerateSubmoduleConfigurations: false,
                     extensions: [], submoduleCfg: [],
-                    userRemoteConfigs: [[credentialsId: 'jenkins git',
-                    url: 'http://git.planejamento.gov.br/seges-cginf/api-pgd.git']]])
+                    userRemoteConfigs: [[url: 'https://github.com/economiagovbr/api-pgd.git']]])
                 sh 'ls'
                 sh 'pwd'
             }
