@@ -18,7 +18,7 @@ pipeline {
             steps {
                     echo 'Building..'
                     sh 'pwd'
-                    sh 'docker build -f "Dockerfile" -t registry.docker.planejamento.gov.br/seges-cginf/api-pgd:latest .'
+                    sh 'docker build --rm -f "Dockerfile" -t registry.docker.planejamento.gov.br/seges-cginf/api-pgd:latest .'
             }
         }
         stage('Push image') {
