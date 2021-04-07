@@ -39,9 +39,11 @@ Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
   * **3** - Teletrabalho
 * `carga_horaria_semanal` deve ser entre 1 e 40.
 * A soma dos tempos `tempo_exec_presencial` e `tempo_exec_teletrabalho` das atividades deve ser igual à `carga_horaria_total` do Plano de Trabalho.
-* Os campos `quantidade_entregas`, `quantidade_entregas_efetivas`, `tempo_exec_presencial`, `tempo_exec_teletrabalho` da Atividade e `horas_homologadas` do Plano de Trabalho devem ser maiores que zero.* `entregue_no_prazo` não é obrigatório e deve ser `True` ou `False` caso esteja preenchido.
+* Os campos `quantidade_entregas`, `quantidade_entregas_efetivas`, `tempo_exec_presencial`, `tempo_exec_teletrabalho` da Atividade e `horas_homologadas` do Plano de Trabalho devem ser maiores que zero.
+* `entregue_no_prazo` não é obrigatório e deve ser `True` ou `False` caso esteja preenchido.
 * Explore a seção [**Schemas**](#model-AtividadeSchema) nesta documentação para descobrir quais campos são obrigatórios para as Atividades e os Planos de Trabalho.
 
+Para reportar erros na aplicação e interagir com a equipe de desenvolvimento [acesse aqui](https://github.com/economiagovbr/api-pgd/issues).
 """
 
 app = FastAPI(
