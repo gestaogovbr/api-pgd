@@ -33,7 +33,7 @@ class PlanoTrabalhoSchema(BaseModel):
     nome_participante: str
     cod_unidade_exercicio: int
     nome_unidade_exercicio: str
-    modalidade_execucao: ModalidadeEnum = Field(None, alias='modalidade_execucao')
+    modalidade_execucao: ModalidadeEnum = Field(..., alias='modalidade_execucao')
     carga_horaria_semanal: int
     data_inicio: date
     data_fim: date

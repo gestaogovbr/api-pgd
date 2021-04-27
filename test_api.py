@@ -326,7 +326,7 @@ def test_create_plano_trabalho_completo(input_pt: dict,
                              (["data_interrupcao", "entregue_no_prazo"]),
                              (["entregue_no_prazo"]),
                          ])
-def test_create_plano_trabalho_omit_optional_fileds(input_pt: dict,
+def test_create_plano_trabalho_omit_optional_fields(input_pt: dict,
                                              omitted_fields: list,
                                              header_usr_1: dict,
                                              truncate_pt,
@@ -341,19 +341,19 @@ def test_create_plano_trabalho_omit_optional_fileds(input_pt: dict,
     assert response.status_code == status.HTTP_200_OK
 
 @pytest.mark.parametrize("missing_fields",
-                         [
-                             (["matricula_siape"]),
-                             (["cpf"]),
-                             (["nome_participante"]),
-                             (["cod_unidade_exercicio"]),
-                             (["nome_unidade_exercicio"]),
-                             (["modalidade_execucao"]),
-                             (["carga_horaria_semanal"]),
-                             (["data_inicio"]),
-                             (["data_fim"]),
-                             (["carga_horaria_total"]),
-                         ])
-def test_create_plano_trabalho_missing_mandatory_fileds(input_pt: dict,
+                         enumerate((
+                             ["matricula_siape"],
+                             ["cpf"],
+                             ["nome_participante"],
+                             ["cod_unidade_exercicio"],
+                             ["nome_unidade_exercicio"],
+                             ["modalidade_execucao"],
+                             ["carga_horaria_semanal"],
+                             ["data_inicio"],
+                             ["data_fim"],
+                             ["carga_horaria_total"],
+                         )))
+def test_create_plano_trabalho_missing_mandatory_fields(input_pt: dict,
                                              missing_fields: list,
                                              header_usr_1: dict,
                                              truncate_pt,
@@ -364,11 +364,12 @@ def test_create_plano_trabalho_missing_mandatory_fileds(input_pt: dict,
     interpretado como um campo que não será atualizado, ainda que seja
     obrigatório para a criação.
     """
-    for field in missing_fields:
+    offset, field_list = missing_fields
+    for field in field_list:
         del input_pt[field]
 
-    input_pt['cod_plano'] = 1801 # precisa ser um novo plano
-    response = client.put(f"/plano_trabalho/1801",
+    input_pt['cod_plano'] = 1800 + offset # precisa ser um novo plano
+    response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
