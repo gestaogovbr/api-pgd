@@ -321,21 +321,22 @@ def test_create_plano_trabalho_completo(input_pt: dict,
     assert response.json() == input_pt
 
 @pytest.mark.parametrize("omitted_fields",
-                         [
-                             (["data_interrupcao"]),
-                             (["data_interrupcao", "entregue_no_prazo"]),
-                             (["entregue_no_prazo"]),
-                         ])
+                         enumerate((
+                             ["data_interrupcao"],
+                             ["data_interrupcao", "entregue_no_prazo"],
+                             ["entregue_no_prazo"],
+                         )))
 def test_create_plano_trabalho_omit_optional_fields(input_pt: dict,
                                              omitted_fields: list,
                                              header_usr_1: dict,
                                              truncate_pt,
                                              client: Session):
-    for field in omitted_fields:
+    offset, field_list = omitted_fields
+    for field in field_list:
         del input_pt[field]
 
-    input_pt['cod_plano'] = 557
-    response = client.put(f"/plano_trabalho/557",
+    input_pt['cod_plano'] = 557 + offset
+    response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
