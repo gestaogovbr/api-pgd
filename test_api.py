@@ -375,6 +375,39 @@ def test_create_plano_trabalho_missing_mandatory_fields(input_pt: dict,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
+@pytest.mark.parametrize("missing_fields",
+                         (
+                             ["matricula_siape"],
+                             ["cpf"],
+                             ["nome_participante"],
+                             ["cod_unidade_exercicio"],
+                             ["nome_unidade_exercicio"],
+                             ["modalidade_execucao"],
+                             ["carga_horaria_semanal"],
+                             ["data_inicio"],
+                             ["data_fim"],
+                             ["carga_horaria_total"],
+                         ))
+def test_update_plano_trabalho_missing_mandatory_fields(input_pt: dict,
+                                             missing_fields: list,
+                                             header_usr_1: dict,
+                                             truncate_pt,
+                                             client: Session):
+    """Tenta atualizar um plano de trabalho, faltando campos
+    obrigatórios. Tem que ser um plano de trabalho existente para ser
+    interpretado como update. O campo que ficar faltando será
+    interpretado como um campo que não será atualizado, ainda que seja
+    obrigatório no momento de sua criação.
+    """
+    for field in missing_fields:
+        del input_pt[field]
+
+    input_pt['cod_plano'] = 1800
+    response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
+                          json=input_pt,
+                          headers=header_usr_1)
+    assert response.status_code == status.HTTP_200_OK
+
 def test_create_pt_cod_plano_inconsistent(input_pt: dict,
                                           header_usr_1: dict,
                                           truncate_pt,
