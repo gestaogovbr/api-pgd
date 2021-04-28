@@ -149,6 +149,12 @@ def user2_credentials() -> dict:
         'cod_unidade': 2
     }
 
+@pytest.fixture()
+def example_pt(client: Session, input_pt: dict, header_usr_1: dict):
+    client.put(f"/plano_trabalho/555",
+                          json=input_pt,
+                          headers=header_usr_1)
+
 @pytest.fixture(scope="module")
 def truncate_pt(client: Session, header_admin: dict):
     client.post(f"/truncate_pts_atividades", headers=header_admin)
@@ -388,11 +394,11 @@ def test_create_plano_trabalho_missing_mandatory_fields(input_pt: dict,
                              ["data_fim"],
                              ["carga_horaria_total"],
                          ))
-def test_update_plano_trabalho_missing_mandatory_fields(input_pt: dict,
-                                             missing_fields: list,
-                                             header_usr_1: dict,
-                                             truncate_pt,
-                                             client: Session):
+def test_update_plano_trabalho_missing_mandatory_fields(example_pt,
+                                            input_pt: dict,
+                                            missing_fields: list,
+                                            header_usr_1: dict,
+                                            client: Session):
     """Tenta atualizar um plano de trabalho, faltando campos
     obrigatórios. Tem que ser um plano de trabalho existente para ser
     interpretado como update. O campo que ficar faltando será
@@ -402,7 +408,7 @@ def test_update_plano_trabalho_missing_mandatory_fields(input_pt: dict,
     for field in missing_fields:
         del input_pt[field]
 
-    input_pt['cod_plano'] = 1800
+    input_pt['cod_plano'] = 555 # precisa ser um plano existente
     response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
@@ -416,17 +422,14 @@ def test_create_pt_cod_plano_inconsistent(input_pt: dict,
     response = client.put("/plano_trabalho/111", # diferente de 110
                           json=input_pt,
                           headers=header_usr_1)
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "Parâmetro cod_plano diferente do conteúdo do JSON"
     assert response.json().get("detail", None) == detail_msg
 
-def test_get_plano_trabalho(input_pt: dict,
-                            header_usr_1: dict,
+def test_get_plano_trabalho(header_usr_1: dict,
                             truncate_pt,
+                            example_pt,
                             client: Session):
-    response = client.put(f"/plano_trabalho/555",
-                          json=input_pt,
-                          headers=header_usr_1)
     response = client.get("/plano_trabalho/555",
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
@@ -540,12 +543,12 @@ def test_create_pt_duplicate_atividade(input_pt: dict,
 def test_update_pt_different_cod_unidade(input_pt: dict,
                                          header_usr_2: dict,
                                          client: Session):
-    cod_plano = '555'
+    cod_plano = 555
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
                           headers=header_usr_2)
 
-    assert response.status_code == 403
+    assert response.status_code == status.HTTP_403_FORBIDDEN
     detail_msg = "Usuário não pode alterar Plano de Trabalho de outra unidade."
     assert response.json().get("detail", None) == detail_msg
 

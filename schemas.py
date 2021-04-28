@@ -114,3 +114,22 @@ class PlanoTrabalhoSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+class PlanoTrabalhoUpdateSchema(BaseModel):
+    """Esquema para atualização do plano de trabalho. Na atualização,
+    todos os campos são opcionais, exceto cod_plano."""
+    cod_plano: str
+    matricula_siape: Optional[int]
+    cpf: Optional[str]
+    nome_participante: Optional[str]
+    cod_unidade_exercicio: Optional[int]
+    nome_unidade_exercicio: Optional[str]
+    modalidade_execucao: ModalidadeEnum = Field(None, alias='modalidade_execucao')
+    carga_horaria_semanal: Optional[int]
+    data_inicio: Optional[date]
+    data_fim: Optional[date]
+    carga_horaria_total: Optional[float]
+    data_interrupcao: Optional[date]
+    entregue_no_prazo: Optional[bool] = None
+    horas_homologadas: Optional[float]
+    atividades: List[AtividadeSchema] # = []

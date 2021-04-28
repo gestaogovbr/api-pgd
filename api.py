@@ -1,5 +1,7 @@
 from datetime import timedelta
+import json
 
+from pydantic import ValidationError
 from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -112,7 +114,7 @@ async def shutdown():
          )
 async def create_or_update_plano_trabalho(
     cod_plano: str,
-    plano_trabalho: schemas.PlanoTrabalhoSchema,
+    plano_trabalho: schemas.PlanoTrabalhoUpdateSchema,
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme),
     user: User = Depends(fastapi_users.current_user(active=True))
@@ -120,19 +122,44 @@ async def create_or_update_plano_trabalho(
     # Validações da entrada conforme regras de negócio
     if cod_plano != plano_trabalho.cod_plano:
         raise HTTPException(
-            400,
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Parâmetro cod_plano diferente do conteúdo do JSON")
 
     db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
-    if db_plano_trabalho is None:
-        crud.create_plano_tabalho(db, plano_trabalho, user.cod_unidade)
-    else:
+    if db_plano_trabalho is None: # create
+        try:
+            novo_plano_trabalho = schemas.PlanoTrabalhoSchema(
+                                                **plano_trabalho.dict())
+            crud.create_plano_tabalho(db, novo_plano_trabalho,
+                                                    user.cod_unidade)
+        except ValidationError as e:
+            raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=json.loads(e.json())
+        )
+    else: # update
         if db_plano_trabalho.cod_unidade == user.cod_unidade:
+            try:
+                merged_plano_trabalho = {
+                    k: v
+                    for k, v in db_plano_trabalho.__dict__.items()
+                    if k[0] != '_'
+                }
+                merged_plano_trabalho.update(
+                    plano_trabalho.dict(exclude_unset=True))
+                schemas.PlanoTrabalhoSchema(**merged_plano_trabalho)
+            except ValidationError as e:
+                raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=json.loads(e.json())
+            )
             crud.update_plano_tabalho(db, plano_trabalho)
+            return merged_plano_trabalho
         else:
             raise HTTPException(
-                403,
-                detail="Usuário não pode alterar Plano de Trabalho de outra unidade.")
+                status.HTTP_403_FORBIDDEN,
+                detail="Usuário não pode alterar Plano de Trabalho"+
+                        " de outra unidade.")
     return plano_trabalho
 
 @app.get("/plano_trabalho/{cod_plano}",
