@@ -112,8 +112,9 @@ async def shutdown():
     await auth_db.disconnect()
 
 @app.put("/plano_trabalho/{cod_plano}",
-         response_model=schemas.PlanoTrabalhoSchema
-         )
+        summary="Cria ou substitui plano de trabalho",
+        response_model=schemas.PlanoTrabalhoSchema
+        )
 async def create_or_update_plano_trabalho(
     cod_plano: str,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
@@ -153,8 +154,9 @@ async def create_or_update_plano_trabalho(
     return plano_trabalho
 
 @app.patch("/plano_trabalho/{cod_plano}",
-         response_model=schemas.PlanoTrabalhoSchema
-         )
+        summary="Atualiza plano de trabalho",
+        response_model=schemas.PlanoTrabalhoSchema
+        )
 async def patch_plano_trabalho(
     cod_plano: str,
     plano_trabalho: schemas.PlanoTrabalhoUpdateSchema,
@@ -200,13 +202,15 @@ async def patch_plano_trabalho(
                         " de outra unidade.")
 
 @app.get("/plano_trabalho/{cod_plano}",
-         response_model=schemas.PlanoTrabalhoSchema
+        summary="Consulta plano de trabalho",
+        response_model=schemas.PlanoTrabalhoSchema
         )
 async def get_plano_trabalho(cod_plano: str,
                        db: Session = Depends(get_db),
                        token: str = Depends(oauth2_scheme),
                     #    user: User = Depends(fastapi_users.current_user())
                        ):
+    "Consulta o plano de trabalho com o código especificado."
     db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
     if db_plano_trabalho is None:
         raise HTTPException(404, detail="Plano de trabalho não encontrado")
