@@ -121,6 +121,8 @@ async def create_or_update_plano_trabalho(
     token: str = Depends(oauth2_scheme),
     user: User = Depends(fastapi_users.current_user(active=True))
     ):
+    """Cria um novo plano de trabalho ou, se existente, substitui um
+    plano de trabalho por um novo com os dados informados."""
     # Validações da entrada conforme regras de negócio
     if cod_plano != plano_trabalho.cod_plano:
         raise HTTPException(
@@ -160,6 +162,7 @@ async def patch_plano_trabalho(
     token: str = Depends(oauth2_scheme),
     user: User = Depends(fastapi_users.current_user(active=True))
     ):
+    "Atualiza um plano de trabalho existente nos campos informados."
     # Validações da entrada conforme regras de negócio
     if cod_plano != plano_trabalho.cod_plano:
         raise HTTPException(
