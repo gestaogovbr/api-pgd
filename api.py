@@ -179,6 +179,7 @@ async def patch_plano_trabalho(
                         " existente.")
     else: # patch
         if db_plano_trabalho.cod_unidade == user.cod_unidade:
+            # TODO: fazer passar testes faltando atividade
             try:
                 merged_plano_trabalho = {
                     k: v

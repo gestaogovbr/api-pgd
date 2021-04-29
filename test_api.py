@@ -327,6 +327,8 @@ def test_create_plano_trabalho_completo(input_pt: dict,
     assert response.json().get("detail", None) == None
     assert response.json() == input_pt
 
+# grupos de campos opcionais e obrigatórios a testar
+
 fields_plano_trabalho = {
     "optional": (
         ["data_interrupcao"],
@@ -344,6 +346,25 @@ fields_plano_trabalho = {
         ["data_inicio"],
         ["data_fim"],
         ["carga_horaria_total"],
+        ["atividades"],
+    )
+}
+
+fields_atividade = {
+    "optional": (
+        ["nome_grupo_atividade"],
+        ["parametros_complexidade"],
+        ["entrega_esperada"],
+        ["qtde_entregas_efetivas"],
+        ["data_avaliacao"],
+        ["justificativa"],
+    ),
+    "mandatory": (
+        ["nome_atividade"],
+        ["faixa_complexidade"],
+        ["tempo_exec_presencial"],
+        ["tempo_exec_teletrabalho"],
+        ["qtde_entregas"],
     )
 }
 
@@ -442,6 +463,48 @@ def test_patch_plano_trabalho_inexistente(truncate_pt,
                           json=input_pt,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+@pytest.mark.parametrize("omitted_fields",
+                         enumerate(fields_atividade['optional']))
+def test_create_atvidades_omit_optional_fields(input_pt: dict,
+                                             omitted_fields: list,
+                                             header_usr_1: dict,
+                                             truncate_pt,
+                                             client: Session):
+    """Tenta criar um plano de trabalho, mas em cada atividade os
+    campos opcionais são omitidos.
+    """
+    offset, field_list = omitted_fields
+    for field in field_list:
+        for atividade in input_pt['atividades']:
+            del atividade[field]
+
+    input_pt['cod_plano'] = 557 + offset
+    response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
+                          json=input_pt,
+                          headers=header_usr_1)
+    assert response.status_code == status.HTTP_200_OK
+
+@pytest.mark.parametrize("missing_fields",
+                         enumerate(fields_atividade['mandatory']))
+def test_create_atividade_missing_mandatory_fields(input_pt: dict,
+                                             missing_fields: list,
+                                             header_usr_1: dict,
+                                             truncate_pt,
+                                             client: Session):
+    """Tenta criar um plano de trabalho, mas em cada atividade os
+    campos obrigatórios são omitidos.
+    """
+    offset, field_list = missing_fields
+    for field in field_list:
+        for atividade in input_pt['atividades']:
+            del atividade[field]
+
+    input_pt['cod_plano'] = 1800 + offset # precisa ser um novo plano
+    response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
+                          json=input_pt,
+                          headers=header_usr_1)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 def test_create_pt_cod_plano_inconsistent(input_pt: dict,
                                           header_usr_1: dict,
