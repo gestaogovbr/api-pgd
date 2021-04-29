@@ -5,6 +5,8 @@ COPY requirements.txt requirements.txt
 RUN \
     apt-get update -yqq && \
     apt-get upgrade -yqq && \
+    python3 -m pip install --upgrade pip
+RUN \
     python3 -m pip install -r requirements.txt --no-cache-dir && \
     apt-get purge --auto-remove -yqq $buildDeps && \
     apt-get autoremove -yqq --purge && \
