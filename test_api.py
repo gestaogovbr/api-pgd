@@ -326,12 +326,28 @@ def test_create_plano_trabalho_completo(input_pt: dict,
     assert response.json().get("detail", None) == None
     assert response.json() == input_pt
 
+fields_plano_trabalho = {
+    "optional": (
+        ["data_interrupcao"],
+        ["data_interrupcao", "entregue_no_prazo"],
+        ["entregue_no_prazo"],
+    ),
+    "mandatory": (
+        ["matricula_siape"],
+        ["cpf"],
+        ["nome_participante"],
+        ["cod_unidade_exercicio"],
+        ["nome_unidade_exercicio"],
+        ["modalidade_execucao"],
+        ["carga_horaria_semanal"],
+        ["data_inicio"],
+        ["data_fim"],
+        ["carga_horaria_total"],
+    )
+}
+
 @pytest.mark.parametrize("omitted_fields",
-                         enumerate((
-                             ["data_interrupcao"],
-                             ["data_interrupcao", "entregue_no_prazo"],
-                             ["entregue_no_prazo"],
-                         )))
+                         enumerate(fields_plano_trabalho['optional']))
 def test_create_plano_trabalho_omit_optional_fields(input_pt: dict,
                                              omitted_fields: list,
                                              header_usr_1: dict,
@@ -348,18 +364,7 @@ def test_create_plano_trabalho_omit_optional_fields(input_pt: dict,
     assert response.status_code == status.HTTP_200_OK
 
 @pytest.mark.parametrize("missing_fields",
-                         enumerate((
-                             ["matricula_siape"],
-                             ["cpf"],
-                             ["nome_participante"],
-                             ["cod_unidade_exercicio"],
-                             ["nome_unidade_exercicio"],
-                             ["modalidade_execucao"],
-                             ["carga_horaria_semanal"],
-                             ["data_inicio"],
-                             ["data_fim"],
-                             ["carga_horaria_total"],
-                         )))
+                         enumerate(fields_plano_trabalho['mandatory']))
 def test_create_plano_trabalho_missing_mandatory_fields(input_pt: dict,
                                              missing_fields: list,
                                              header_usr_1: dict,
@@ -382,18 +387,7 @@ def test_create_plano_trabalho_missing_mandatory_fields(input_pt: dict,
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 @pytest.mark.parametrize("missing_fields",
-                         (
-                             ["matricula_siape"],
-                             ["cpf"],
-                             ["nome_participante"],
-                             ["cod_unidade_exercicio"],
-                             ["nome_unidade_exercicio"],
-                             ["modalidade_execucao"],
-                             ["carga_horaria_semanal"],
-                             ["data_inicio"],
-                             ["data_fim"],
-                             ["carga_horaria_total"],
-                         ))
+                            fields_plano_trabalho['mandatory'])
 def test_update_plano_trabalho_missing_mandatory_fields(example_pt,
                                             input_pt: dict,
                                             missing_fields: list,
