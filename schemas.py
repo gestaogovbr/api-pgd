@@ -4,7 +4,7 @@ from datetime import date
 from enum import IntEnum
 
 class AtividadeSchema(BaseModel):
-    id_atividade: int
+    id_atividade: int = Field(title='id da atividade')
     nome_grupo_atividade: Optional[str]
     nome_atividade: str
     faixa_complexidade: str
@@ -27,9 +27,13 @@ class ModalidadeEnum(IntEnum):
     teletrabalho = 3
 
 class PlanoTrabalhoSchema(BaseModel):
-    cod_plano: str
-    matricula_siape: int
-    cpf: str
+    cod_plano: str = Field(title='código do plano')
+    matricula_siape: int = Field(title='Matrícula SIAPE')
+    cpf: str = Field(
+        title='CPF',
+        description='Cadastro da pessoa física na Receita Federal do Brasil.\n'
+            '\n'
+            'Deve conter apenas dígitos.')
     nome_participante: str
     cod_unidade_exercicio: int
     nome_unidade_exercicio: str

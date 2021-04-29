@@ -112,15 +112,18 @@ async def shutdown():
     await auth_db.disconnect()
 
 @app.put("/plano_trabalho/{cod_plano}",
-         response_model=schemas.PlanoTrabalhoSchema
-         )
+        summary="Cria ou substitui plano de trabalho",
+        response_model=schemas.PlanoTrabalhoSchema
+        )
 async def create_or_update_plano_trabalho(
     cod_plano: str,
-    plano_trabalho: schemas.PlanoTrabalhoUpdateSchema,
+    plano_trabalho: schemas.PlanoTrabalhoSchema,
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme),
     user: User = Depends(fastapi_users.current_user(active=True))
     ):
+    """Cria um novo plano de trabalho ou, se existente, substitui um
+    plano de trabalho por um novo com os dados informados."""
     # Validações da entrada conforme regras de negócio
     if cod_plano != plano_trabalho.cod_plano:
         raise HTTPException(
@@ -140,6 +143,41 @@ async def create_or_update_plano_trabalho(
             detail=json.loads(e.json())
         )
     else: # update
+        if db_plano_trabalho.cod_unidade == user.cod_unidade:
+            crud.update_plano_tabalho(db, plano_trabalho)
+            return plano_trabalho
+        else:
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN,
+                detail="Usuário não pode alterar Plano de Trabalho"+
+                        " de outra unidade.")
+    return plano_trabalho
+
+@app.patch("/plano_trabalho/{cod_plano}",
+        summary="Atualiza plano de trabalho",
+        response_model=schemas.PlanoTrabalhoSchema
+        )
+async def patch_plano_trabalho(
+    cod_plano: str,
+    plano_trabalho: schemas.PlanoTrabalhoUpdateSchema,
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme),
+    user: User = Depends(fastapi_users.current_user(active=True))
+    ):
+    "Atualiza um plano de trabalho existente nos campos informados."
+    # Validações da entrada conforme regras de negócio
+    if cod_plano != plano_trabalho.cod_plano:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Parâmetro cod_plano diferente do conteúdo do JSON")
+
+    db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
+    if db_plano_trabalho is None:
+        raise HTTPException(
+                status.HTTP_404_NOT_FOUND,
+                detail="Só é possível aplicar PATCH em um recurso"+
+                        " existente.")
+    else: # patch
         if db_plano_trabalho.cod_unidade == user.cod_unidade:
             try:
                 merged_plano_trabalho = {
@@ -162,16 +200,17 @@ async def create_or_update_plano_trabalho(
                 status.HTTP_403_FORBIDDEN,
                 detail="Usuário não pode alterar Plano de Trabalho"+
                         " de outra unidade.")
-    return plano_trabalho
 
 @app.get("/plano_trabalho/{cod_plano}",
-         response_model=schemas.PlanoTrabalhoSchema
+        summary="Consulta plano de trabalho",
+        response_model=schemas.PlanoTrabalhoSchema
         )
 async def get_plano_trabalho(cod_plano: str,
                        db: Session = Depends(get_db),
                        token: str = Depends(oauth2_scheme),
                     #    user: User = Depends(fastapi_users.current_user())
                        ):
+    "Consulta o plano de trabalho com o código especificado."
     db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
     if db_plano_trabalho is None:
         raise HTTPException(404, detail="Plano de trabalho não encontrado")
