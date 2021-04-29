@@ -3,6 +3,7 @@ Testes automáticos da API
 """
 import os, subprocess
 import json
+import itertools
 from typing import Callable, Generator, Optional
 from requests.models import Response as HTTPResponse
 import requests
@@ -386,50 +387,39 @@ def test_create_plano_trabalho_missing_mandatory_fields(input_pt: dict,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
-@pytest.mark.parametrize("missing_fields",
-                            fields_plano_trabalho['mandatory'])
-def test_update_plano_trabalho_missing_mandatory_fields(example_pt,
+@pytest.mark.parametrize("verb, missing_fields",
+                    itertools.product( # todas as combinações entre
+                        ('put', 'patch'), # verb
+                        fields_plano_trabalho['mandatory'] # missing_fields
+                    ))
+def test_update_plano_trabalho_missing_mandatory_fields(verb: str,
+                                            example_pt,
                                             input_pt: dict,
                                             missing_fields: list,
                                             header_usr_1: dict,
                                             client: Session):
-    """Tenta atualizar um plano de trabalho com PUT faltando campos
+    """Tenta atualizar um plano de trabalho faltando campos
     obrigatórios.
-    
+
     Para usar o verbo PUT é necessário passar a representação completa
     do recurso. Por isso, os campos obrigatórios não podem estar
     faltando. Para realizar uma atualização parcial, use o método PATCH.
-    """
-    for field in missing_fields:
-        del input_pt[field]
 
-    input_pt['cod_plano'] = 555 # precisa ser um plano existente
-    response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
-                          json=input_pt,
-                          headers=header_usr_1)
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-
-@pytest.mark.parametrize("missing_fields",
-                            fields_plano_trabalho['mandatory'])
-def test_patch_plano_trabalho_missing_mandatory_fields(example_pt,
-                                            input_pt: dict,
-                                            missing_fields: list,
-                                            header_usr_1: dict,
-                                            client: Session):
-    """Tenta atualizar um plano de trabalho com PATCH, faltando campos
-    obrigatórios.
-    
-    Com o verbo PATCH, os campos omitidos são interpretados como sem
+    Já com o verbo PATCH, os campos omitidos são interpretados como sem
     alteração. Por isso, é permitido omitir os campos obrigatórios.
     """
     for field in missing_fields:
         del input_pt[field]
 
     input_pt['cod_plano'] = 555 # precisa ser um plano existente
-    response = client.patch(f"/plano_trabalho/{input_pt['cod_plano']}",
+    call = getattr(client, verb)
+    response = call(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
-    assert response.status_code == status.HTTP_200_OK
+    if verb == 'put':
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    elif verb == 'patch':
+        assert response.status_code == status.HTTP_200_OK
 
 @pytest.mark.parametrize("missing_fields",
                             fields_plano_trabalho['mandatory'])
