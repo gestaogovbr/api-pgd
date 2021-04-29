@@ -155,7 +155,7 @@ def example_pt(client: Session, input_pt: dict, header_usr_1: dict):
                           json=input_pt,
                           headers=header_usr_1)
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def truncate_pt(client: Session, header_admin: dict):
     client.post(f"/truncate_pts_atividades", headers=header_admin)
 
@@ -393,11 +393,12 @@ def test_update_plano_trabalho_missing_mandatory_fields(example_pt,
                                             missing_fields: list,
                                             header_usr_1: dict,
                                             client: Session):
-    """Tenta atualizar um plano de trabalho, faltando campos
-    obrigatórios. Tem que ser um plano de trabalho existente para ser
-    interpretado como update. O campo que ficar faltando será
-    interpretado como um campo que não será atualizado, ainda que seja
-    obrigatório no momento de sua criação.
+    """Tenta atualizar um plano de trabalho com PUT faltando campos
+    obrigatórios.
+    
+    Para usar o verbo PUT é necessário passar a representação completa
+    do recurso. Por isso, os campos obrigatórios não podem estar
+    faltando. Para realizar uma atualização parcial, use o método PATCH.
     """
     for field in missing_fields:
         del input_pt[field]
@@ -406,7 +407,51 @@ def test_update_plano_trabalho_missing_mandatory_fields(example_pt,
     response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+@pytest.mark.parametrize("missing_fields",
+                            fields_plano_trabalho['mandatory'])
+def test_patch_plano_trabalho_missing_mandatory_fields(example_pt,
+                                            input_pt: dict,
+                                            missing_fields: list,
+                                            header_usr_1: dict,
+                                            client: Session):
+    """Tenta atualizar um plano de trabalho com PATCH, faltando campos
+    obrigatórios.
+    
+    Com o verbo PATCH, os campos omitidos são interpretados como sem
+    alteração. Por isso, é permitido omitir os campos obrigatórios.
+    """
+    for field in missing_fields:
+        del input_pt[field]
+
+    input_pt['cod_plano'] = 555 # precisa ser um plano existente
+    response = client.patch(f"/plano_trabalho/{input_pt['cod_plano']}",
+                          json=input_pt,
+                          headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
+
+@pytest.mark.parametrize("missing_fields",
+                            fields_plano_trabalho['mandatory'])
+def test_patch_plano_trabalho_inexistente(truncate_pt,
+                                            input_pt: dict,
+                                            missing_fields: list,
+                                            header_usr_1: dict,
+                                            client: Session):
+    """Tenta atualizar um plano de trabalho com PATCH, faltando campos
+    obrigatórios.
+    
+    Com o verbo PATCH, os campos omitidos são interpretados como sem
+    alteração. Por isso, é permitido omitir os campos obrigatórios.
+    """
+    for field in missing_fields:
+        del input_pt[field]
+
+    input_pt['cod_plano'] = 999 # precisa ser um plano inexistente
+    response = client.patch(f"/plano_trabalho/{input_pt['cod_plano']}",
+                          json=input_pt,
+                          headers=header_usr_1)
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 def test_create_pt_cod_plano_inconsistent(input_pt: dict,
                                           header_usr_1: dict,
@@ -534,7 +579,9 @@ def test_create_pt_duplicate_atividade(input_pt: dict,
     else:
         assert response.status_code == status.HTTP_200_OK
 
-def test_update_pt_different_cod_unidade(input_pt: dict,
+def test_update_pt_different_cod_unidade(truncate_pt,
+                                         example_pt, # criado por usr_1
+                                         input_pt: dict,
                                          header_usr_2: dict,
                                          client: Session):
     cod_plano = 555
