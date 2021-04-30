@@ -433,7 +433,7 @@ def test_update_plano_trabalho_missing_mandatory_fields(verb: str,
         del input_pt[field]
 
     input_pt['cod_plano'] = 555 # precisa ser um plano existente
-    call = getattr(client, verb)
+    call = getattr(client, verb) # put ou patch
     response = call(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
@@ -487,7 +487,7 @@ def test_create_atvidades_omit_optional_fields(input_pt: dict,
 
 @pytest.mark.parametrize("missing_fields",
                          enumerate(fields_atividade['mandatory']))
-def test_create_atividade_missing_mandatory_fields(input_pt: dict,
+def test_create_atividades_missing_mandatory_fields(input_pt: dict,
                                              missing_fields: list,
                                              header_usr_1: dict,
                                              truncate_pt,
@@ -505,6 +505,41 @@ def test_create_atividade_missing_mandatory_fields(input_pt: dict,
                           json=input_pt,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+@pytest.mark.parametrize("verb, missing_fields",
+                    itertools.product( # todas as combinações entre
+                        ('put', 'patch'), # verb
+                        fields_atividade['mandatory'] # missing_fields
+                    ))
+def test_update_atividades_missing_mandatory_fields(verb: str,
+                                            example_pt,
+                                            input_pt: dict,
+                                            missing_fields: list,
+                                            header_usr_1: dict,
+                                            client: Session):
+    """Tenta atualizar as atividades de um plano de trabalho faltando
+    campos obrigatórios.
+
+    Para usar o verbo PUT é necessário passar a representação completa
+    do recurso. Por isso, os campos obrigatórios não podem estar
+    faltando. Para realizar uma atualização parcial, use o método PATCH.
+
+    Já com o verbo PATCH, os campos omitidos são interpretados como sem
+    alteração. Por isso, é permitido omitir os campos obrigatórios.
+    """
+    for field in missing_fields:
+        for atividade in input_pt['atividades']:
+            del atividade[field]
+
+    input_pt['cod_plano'] = 555 # precisa ser um plano existente
+    call = getattr(client, verb) # put ou patch
+    response = call(f"/plano_trabalho/{input_pt['cod_plano']}",
+                          json=input_pt,
+                          headers=header_usr_1)
+    if verb == 'put':
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    elif verb == 'patch':
+        assert response.status_code == status.HTTP_200_OK
 
 def test_create_pt_cod_plano_inconsistent(input_pt: dict,
                                           header_usr_1: dict,
