@@ -592,6 +592,39 @@ def test_append_atividades_list(truncate_pt,
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == input_pt
 
+@pytest.mark.parametrize("verb",
+                            ("put", "patch")
+                        )
+def test_modify_atividade(truncate_pt,
+                            example_pt,
+                            verb: str,
+                            input_pt: dict,
+                            header_usr_1: dict,
+                            client: Session):
+    "Modifica uma atividade existente com put e patch."
+    atividade = input_pt['atividades'][-1] # pega a última atividade
+    atividade["data_avaliacao"] = "2021-03-01"
+
+    if verb == "put":
+        response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
+                          json=input_pt,
+                          headers=header_usr_1)
+    elif verb == "patch":
+        atividade_patch = {
+            "atividades": [
+                {
+                    "id_atividade": 3,
+                    "data_avaliacao": "2021-03-01"
+                }
+            ]
+        }
+        response = client.patch(f"/plano_trabalho/{input_pt['cod_plano']}",
+                          json=atividade_patch,
+                          headers=header_usr_1)
+    
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == input_pt
+
 def test_create_pt_cod_plano_inconsistent(input_pt: dict,
                                           header_usr_1: dict,
                                           truncate_pt,
