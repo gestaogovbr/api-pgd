@@ -512,6 +512,7 @@ def test_create_atividades_missing_mandatory_fields(input_pt: dict,
                         fields_atividade['mandatory'] # missing_fields
                     ))
 def test_update_atividades_missing_mandatory_fields(verb: str,
+                                            truncate_pt,
                                             example_pt,
                                             input_pt: dict,
                                             missing_fields: list,
@@ -540,6 +541,56 @@ def test_update_atividades_missing_mandatory_fields(verb: str,
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     elif verb == 'patch':
         assert response.status_code == status.HTTP_200_OK
+
+def test_substitute_atividades_list(truncate_pt,
+                                    example_pt,
+                                    input_pt: dict,
+                                    header_usr_1: dict,
+                                    client: Session):
+    "Substitui a lista de atividades existentes por uma nova lista."
+    input_pt['atividades'].pop() # remove a última atividade
+
+    response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
+                            json=input_pt,
+                            headers=header_usr_1)
+    
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == input_pt
+
+def test_append_atividades_list(truncate_pt,
+                                example_pt,
+                                input_pt: dict,
+                                header_usr_1: dict,
+                                client: Session):
+    "Acrescenta uma nova atividade à lista de atividades existentes."
+    nova_atividade = {
+      "id_atividade": 4,
+      "nome_grupo_atividade": "string",
+      "nome_atividade": "string",
+      "faixa_complexidade": "string",
+      "parametros_complexidade": "string",
+      "tempo_exec_presencial": 0,
+      "tempo_exec_teletrabalho": 0,
+      "entrega_esperada": "string",
+      "qtde_entregas": 0,
+      "qtde_entregas_efetivas": 0,
+      "avaliacao": 0,
+      "data_avaliacao": "2021-02-15",
+      "justificativa": "string"
+    }
+
+    patch_input = {
+        "atividades": [nova_atividade]
+    }
+
+    response = client.patch(f"/plano_trabalho/{input_pt['cod_plano']}",
+                            json=patch_input,
+                            headers=header_usr_1)
+    
+    input_pt["atividades"].append(nova_atividade)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == input_pt
 
 def test_create_pt_cod_plano_inconsistent(input_pt: dict,
                                           header_usr_1: dict,
