@@ -119,6 +119,21 @@ class PlanoTrabalhoSchema(BaseModel):
     class Config:
         orm_mode = True
 
+class AtividadeUpdateSchema(BaseModel):
+    id_atividade: int = Field(title='id da atividade')
+    nome_grupo_atividade: Optional[str]
+    nome_atividade: Optional[str]
+    faixa_complexidade: Optional[str]
+    parametros_complexidade: Optional[str]
+    tempo_exec_presencial: Optional[float]
+    tempo_exec_teletrabalho: Optional[float]
+    entrega_esperada: Optional[str]
+    qtde_entregas: Optional[int]
+    qtde_entregas_efetivas: Optional[int]
+    avaliacao: Optional[int]
+    data_avaliacao: Optional[date]
+    justificativa: Optional[str]
+    
 class PlanoTrabalhoUpdateSchema(BaseModel):
     """Esquema para atualização do plano de trabalho. Na atualização,
     todos os campos são opcionais, exceto cod_plano."""
@@ -136,4 +151,4 @@ class PlanoTrabalhoUpdateSchema(BaseModel):
     data_interrupcao: Optional[date]
     entregue_no_prazo: Optional[bool] = None
     horas_homologadas: Optional[float]
-    atividades: List[AtividadeSchema] # = []
+    atividades: Optional[List[AtividadeUpdateSchema]] # = []
