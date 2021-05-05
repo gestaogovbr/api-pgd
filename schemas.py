@@ -52,13 +52,14 @@ class PlanoTrabalhoSchema(BaseModel):
     def data_validate(cls, values):
         data_inicio = values.get('data_inicio', None)
         data_fim = values.get('data_fim', None)
-        atividades = values.get('atividades')[0]
         if data_inicio > data_fim:
             raise ValueError("Data fim do Plano de Trabalho deve ser maior" \
                      " ou igual que Data início.")
-        if data_fim > atividades.data_avaliacao:
-            raise ValueError("Data de avaliação da atividade deve ser maior ou igual" \
-                     " que a Data Fim do Plano de Trabalho.")
+        for atividade in values.get('atividades', []):
+            if getattr(atividade, 'data_avaliacao', None) is not None and \
+                data_fim > atividade.data_avaliacao:
+                    raise ValueError("Data de avaliação da atividade deve ser maior ou igual" \
+                        " que a Data Fim do Plano de Trabalho.")
         return values
 
     @root_validator
@@ -133,7 +134,7 @@ class AtividadeUpdateSchema(BaseModel):
     avaliacao: Optional[int]
     data_avaliacao: Optional[date]
     justificativa: Optional[str]
-    
+
 class PlanoTrabalhoUpdateSchema(BaseModel):
     """Esquema para atualização do plano de trabalho. Na atualização,
     todos os campos são opcionais, exceto cod_plano."""

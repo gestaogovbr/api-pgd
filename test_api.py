@@ -5,6 +5,8 @@ import os, subprocess
 import json
 import itertools
 from typing import Callable, Generator, Optional
+from datetime import datetime
+
 from requests.models import Response as HTTPResponse
 import requests
 
@@ -483,6 +485,7 @@ def test_create_atvidades_omit_optional_fields(input_pt: dict,
     response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
+    print(response.json())
     assert response.status_code == status.HTTP_200_OK
 
 @pytest.mark.parametrize("missing_fields",
@@ -592,18 +595,25 @@ def test_append_atividades_list(truncate_pt,
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == input_pt
 
-@pytest.mark.parametrize("verb",
-                            ("put", "patch")
+@pytest.mark.parametrize("verb, data_avaliacao",
+                            itertools.product(
+                                ("put", "patch"),
+                                (
+                                    "2021-01-11", # < data_fim do plano
+                                    "2021-03-01"
+                                )
+                            )
                         )
 def test_modify_atividade(truncate_pt,
                             example_pt,
                             verb: str,
+                            data_avaliacao: str,
                             input_pt: dict,
                             header_usr_1: dict,
                             client: Session):
     "Modifica uma atividade existente com put e patch."
     atividade = input_pt['atividades'][-1] # pega a última atividade
-    atividade["data_avaliacao"] = "2021-03-01"
+    atividade["data_avaliacao"] = data_avaliacao
 
     if verb == "put":
         response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
@@ -611,10 +621,11 @@ def test_modify_atividade(truncate_pt,
                           headers=header_usr_1)
     elif verb == "patch":
         atividade_patch = {
+            "cod_plano": input_pt['cod_plano'],
             "atividades": [
                 {
                     "id_atividade": 3,
-                    "data_avaliacao": "2021-03-01"
+                    "data_avaliacao": data_avaliacao
                 }
             ]
         }
@@ -622,8 +633,15 @@ def test_modify_atividade(truncate_pt,
                           json=atividade_patch,
                           headers=header_usr_1)
     
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() == input_pt
+    if datetime.fromisoformat(data_avaliacao) < datetime.fromisoformat(
+                                                    input_pt['data_fim']):
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_msg = "Data de avaliação da atividade deve ser maior ou igual" \
+                     " que a Data Fim do Plano de Trabalho."
+        assert response.json().get("detail")[0]["msg"] == detail_msg
+    else:
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json() == input_pt
 
 def test_create_pt_cod_plano_inconsistent(input_pt: dict,
                                           header_usr_1: dict,

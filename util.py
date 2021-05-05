@@ -52,5 +52,5 @@ def dict_to_list(d: dict, id_attr: str) -> list:
                 for key, value in prop.items()
             }
         )
-        for item_id, prop in d.items()
+        for item_id, prop in sorted(d.items())
     ]
