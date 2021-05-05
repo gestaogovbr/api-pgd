@@ -583,6 +583,7 @@ def test_append_atividades_list(truncate_pt,
     }
 
     patch_input = {
+        "cod_plano": input_pt["cod_plano"],
         "atividades": [nova_atividade]
     }
 
