@@ -37,6 +37,9 @@ def register_user(
     )
 
 def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
+    """Prepara o cabeçalho para ser utilizado em requisições.
+    """
+    #TODO: Refatorar e resolver utilizando o objeto TestClient
     token_user = None
 
     if username and password:
@@ -234,26 +237,6 @@ def header_admin(register_admin, admin_credentials: dict) -> dict:
 def header_usr_1(register_user_1, user1_credentials: dict) -> dict:
     """Authenticate in the API as user1 and return a dict with bearer
     header parameter to be passed to apis requests."""
-    #TODO: Refatorar e resolver utilizando o objeto TestClient
-    # data = {
-    #     'grant_type': '',
-    #     'username': 'nitai@example.com',
-    #     'password': 'string',
-    #     'scope': '',
-    #     'client_id': '',
-    #     'client_secret': ''
-    # }
-    # response = client.post(f"/auth/jwt/login", data=data)
-    # print(response)
-    # return response.json().get("access_token")
-
-    # shell_cmd = 'curl -X POST "http://192.168.0.206:5057/auth/jwt/login"' \
-    #                 ' -H  "accept: application/json"' \
-    #                 ' -H  "Content-Type: application/json"' \
-    #                 ' -d "grant_type=&username=test1%40api.com&password=api&scope=&client_id=&client_secret="'
-    # my_cmd = os.popen(shell_cmd).read()
-    # response = json.loads(my_cmd)
-    # token_user_1 = response.get('access_token')
     return prepare_header(
         username=user1_credentials['username'],
         password=user1_credentials['password'])
@@ -265,12 +248,6 @@ def header_usr_2(register_user_2, user2_credentials: dict) -> dict:
     return prepare_header(
         username=user2_credentials['username'],
         password=user2_credentials['password'])
-
-# @pytest.fixture(scope="module")
-# def insert_pt_user_1(header_usr_1, client):
-#     client.put(f"/plano_trabalho/888888888",
-#                json=input_pt,
-#                headers=header_usr_1)
 
 
 # Tests
