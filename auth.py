@@ -18,7 +18,7 @@ from database import SessionLocal, engine, SQLALCHEMY_DATABASE_URL
 
 # to get a string like this run:
 # openssl rand -hex 32
-SECRET_KEY = 'e6eecfcf4d966355276ce17554fb58bf0674b20963843d58a4670a85d98e6e2c'
+SECRET_KEY = "e6eecfcf4d966355276ce17554fb58bf0674b20963843d58a4670a85d98e6e2c"
 ALGORITHM = "HS256"
 
 fake_users_db = {
@@ -57,7 +57,7 @@ class UserUpdate(User, user_models.BaseUserUpdate):
         if p is not None:
             raise HTTPException(
                 status.HTTP_401_UNAUTHORIZED,
-                detail=f'Não tem permissão para alterar o atributo.')
+                detail=f"Não tem permissão para alterar o atributo.")
         return d
 
 class UserDB(User, user_models.BaseUserDB):

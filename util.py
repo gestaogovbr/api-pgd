@@ -10,7 +10,7 @@ def sa_obj_to_dict(d: dict) -> dict:
                 for item in v
             ] if isinstance(v, list) and v else v
         for k, v in d.__dict__.items()
-        if not k.startswith('_')
+        if not k.startswith("_")
     }
 
 def merge_dicts(d1: dict, d2:dict) -> dict:

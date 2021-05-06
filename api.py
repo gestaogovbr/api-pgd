@@ -186,8 +186,8 @@ async def patch_plano_trabalho(
     # atualiza os atributos, exceto atividades
     merged_plano_trabalho = util.sa_obj_to_dict(db_plano_trabalho)
     patch_plano_trabalho = plano_trabalho.dict(exclude_unset=True)
-    if patch_plano_trabalho.get('atividades', None):
-        del patch_plano_trabalho['atividades']
+    if patch_plano_trabalho.get("atividades", None):
+        del patch_plano_trabalho["atividades"]
     merged_plano_trabalho.update(patch_plano_trabalho)
 
     # atualiza as atividades
@@ -196,30 +196,30 @@ async def patch_plano_trabalho(
     db_atividades = util.list_to_dict(
         [
             util.sa_obj_to_dict(atividade)
-            for atividade in getattr(db_plano_trabalho, 'atividades',
+            for atividade in getattr(db_plano_trabalho, "atividades",
                                                     list())
         ],
-        'id_atividade'
+        "id_atividade"
     )
 
     # cada atividade a ser modificada
     patch_atividades = util.list_to_dict(
-        plano_trabalho.dict(exclude_unset=True).get('atividades', list()),
-        'id_atividade'
+        plano_trabalho.dict(exclude_unset=True).get("atividades", list()),
+        "id_atividade"
     )
 
     merged_atividades = util.merge_dicts(db_atividades, patch_atividades)
-    merged_plano_trabalho['atividades'] = util.dict_to_list(
+    merged_plano_trabalho["atividades"] = util.dict_to_list(
         merged_atividades,
-        'id_atividade'
+        "id_atividade"
     )
 
     # tenta validar o esquema
 
     # para validar o esquema, é necessário ter o atributo atividades,
     # mesmo que seja uma lista vazia
-    if merged_plano_trabalho.get('atividades', None) is None:
-        merged_plano_trabalho['atividades'] = []
+    if merged_plano_trabalho.get("atividades", None) is None:
+        merged_plano_trabalho["atividades"] = []
     # valida o esquema do plano de trabalho atualizado
     try:
         schemas.PlanoTrabalhoSchema(**merged_plano_trabalho)
@@ -270,9 +270,9 @@ def public_facing_openapi():
         version = app.version,
         routes = app.routes
     )
-    paths = openapi_schema['paths']
-    del paths['/truncate_pts_atividades']
-    del paths['/users/{id}']
+    paths = openapi_schema["paths"]
+    del paths["/truncate_pts_atividades"]
+    del paths["/users/{id}"]
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 

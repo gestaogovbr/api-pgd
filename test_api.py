@@ -50,27 +50,27 @@ def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
         url = "http://localhost:5057/auth/jwt/login"
 
         headers = {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        "Content-Type": "application/x-www-form-urlencoded"
         }
 
-        payload='&'.join([
-            'accept=application%2Fjson',
-            'Content-Type=application%2Fjson',
-            f'username={username}',
-            f'password={password}'
+        payload="&".join([
+            "accept=application%2Fjson",
+            "Content-Type=application%2Fjson",
+            f"username={username}",
+            f"password={password}"
         ])
 
         response = requests.request("POST", url, headers=headers, data=payload)
         response_dict = json.loads(response.text)
-        token_user = response_dict.get('access_token')
+        token_user = response_dict.get("access_token")
         print(token_user)
 
     headers = {
-        'accept': 'application/json',
-        'Content-Type': 'application/json'
+        "accept": "application/json",
+        "Content-Type": "application/json"
     }
     if token_user:
-        headers['Authorization'] = f'Bearer {token_user}'
+        headers["Authorization"] = f"Bearer {token_user}"
     
     return headers
 
@@ -209,25 +209,25 @@ atividades_dict = {
 @pytest.fixture(scope="module")
 def admin_credentials() -> dict:
     return {
-        'username': 'admin@api.com',
-        'password': '1234',
-        'cod_unidade': 1
+        "username": "admin@api.com",
+        "password": "1234",
+        "cod_unidade": 1
     }
 
 @pytest.fixture(scope="module")
 def user1_credentials() -> dict:
     return {
-        'username': 'test1@api.com',
-        'password': 'api',
-        'cod_unidade': 1
+        "username": "test1@api.com",
+        "password": "api",
+        "cod_unidade": 1
     }
 
 @pytest.fixture(scope="module")
 def user2_credentials() -> dict:
     return {
-        'username': 'test2@api.com',
-        'password': 'api',
-        'cod_unidade': 2
+        "username": "test2@api.com",
+        "password": "api",
+        "cod_unidade": 2
     }
 
 @pytest.fixture()
@@ -244,9 +244,9 @@ def truncate_pt(client: Session, header_admin: dict):
 def truncate_users():
     p = subprocess.Popen(
         [
-            '/usr/local/bin/python',
-            '/home/api-pgd/admin_tool.py',
-            '--truncate-users'
+            "/usr/local/bin/python",
+            "/home/api-pgd/admin_tool.py",
+            "--truncate-users"
         ],
         stdout=subprocess.PIPE,
         stdin=subprocess.PIPE,
@@ -256,21 +256,21 @@ def truncate_users():
 
 @pytest.fixture(scope="module")
 def register_admin(truncate_users, admin_credentials: dict):
-    email = admin_credentials['username']
-    cod_unidade = admin_credentials['cod_unidade']
-    password = admin_credentials['password']
+    email = admin_credentials["username"]
+    cod_unidade = admin_credentials["cod_unidade"]
+    password = admin_credentials["password"]
     p = subprocess.Popen(
         [
-            '/usr/local/bin/python',
-            '/home/api-pgd/admin_tool.py',
-            '--create_superuser'
+            "/usr/local/bin/python",
+            "/home/api-pgd/admin_tool.py",
+            "--create_superuser"
         ],
         stdout=subprocess.PIPE,
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
     )
-    p.communicate(input='\n'.join([
+    p.communicate(input="\n".join([
         email, str(cod_unidade), password, password
     ]))[0]
 
@@ -282,8 +282,8 @@ def register_user_1(
     header_admin: dict,
     user1_credentials: dict
     ) -> HTTPResponse:
-    return register_user(client, user1_credentials['username'],
-        user1_credentials['password'], user1_credentials['cod_unidade'],
+    return register_user(client, user1_credentials["username"],
+        user1_credentials["password"], user1_credentials["cod_unidade"],
         header_admin)
 
 @pytest.fixture(scope="module")
@@ -294,8 +294,8 @@ def register_user_2(
     header_admin: dict,
     user2_credentials: dict
     ) -> HTTPResponse:
-    return register_user(client, user2_credentials['username'],
-        user2_credentials['password'], user2_credentials['cod_unidade'],
+    return register_user(client, user2_credentials["username"],
+        user2_credentials["password"], user2_credentials["cod_unidade"],
         header_admin)
 
 @pytest.fixture(scope="module")
@@ -305,24 +305,24 @@ def header_not_logged_in() -> dict:
 @pytest.fixture(scope="module")
 def header_admin(register_admin, admin_credentials: dict) -> dict:
     return prepare_header(
-        username=admin_credentials['username'],
-        password=admin_credentials['password'])
+        username=admin_credentials["username"],
+        password=admin_credentials["password"])
 
 @pytest.fixture(scope="module")
 def header_usr_1(register_user_1, user1_credentials: dict) -> dict:
     """Authenticate in the API as user1 and return a dict with bearer
     header parameter to be passed to apis requests."""
     return prepare_header(
-        username=user1_credentials['username'],
-        password=user1_credentials['password'])
+        username=user1_credentials["username"],
+        password=user1_credentials["password"])
 
 @pytest.fixture(scope="module")
 def header_usr_2(register_user_2, user2_credentials: dict) -> dict:
     """Authenticate in the API as user2 and return a dict with bearer
     header parameter to be passed to apis requests."""
     return prepare_header(
-        username=user2_credentials['username'],
-        password=user2_credentials['password'])
+        username=user2_credentials["username"],
+        password=user2_credentials["password"])
 
 
 # Tests
@@ -349,24 +349,24 @@ def test_authenticate(header_usr_1: dict):
 
 def test_get_user_self_not_logged_in(client: Session,
         header_not_logged_in: dict):
-    response = client.get('/users/me', headers=header_not_logged_in)
+    response = client.get("/users/me", headers=header_not_logged_in)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 def test_get_user_self_logged_in(client: Session, user1_credentials: dict,
         header_usr_1: dict):
-    response = client.get('/users/me', headers=header_usr_1)
+    response = client.get("/users/me", headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
-    assert data.get("email", None) == user1_credentials['username']
-    assert data.get("cod_unidade", None) == user1_credentials['cod_unidade']
+    assert data.get("email", None) == user1_credentials["username"]
+    assert data.get("cod_unidade", None) == user1_credentials["cod_unidade"]
     assert data.get("is_active", None) == True
 
 def test_patch_user_self_change_cod_unidade(client: Session,
         header_usr_1: dict):
     " Testa se o usuário pode alterar o seu próprio cod_unidade."
     response = client.patch(
-        '/users/me',
-        json={'cod_unidade': 3},
+        "/users/me",
+        json={"cod_unidade": 3},
         headers=header_usr_1
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -384,7 +384,7 @@ def test_create_plano_trabalho_completo(input_pt: dict,
     assert response.json() == input_pt
 
 @pytest.mark.parametrize("omitted_fields",
-                         enumerate(fields_plano_trabalho['optional']))
+                         enumerate(fields_plano_trabalho["optional"]))
 def test_create_plano_trabalho_omit_optional_fields(input_pt: dict,
                                              omitted_fields: list,
                                              header_usr_1: dict,
@@ -394,14 +394,14 @@ def test_create_plano_trabalho_omit_optional_fields(input_pt: dict,
     for field in field_list:
         del input_pt[field]
 
-    input_pt['cod_plano'] = 557 + offset
+    input_pt["cod_plano"] = 557 + offset
     response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
 
 @pytest.mark.parametrize("missing_fields",
-                         enumerate(fields_plano_trabalho['mandatory']))
+                         enumerate(fields_plano_trabalho["mandatory"]))
 def test_create_plano_trabalho_missing_mandatory_fields(input_pt: dict,
                                              missing_fields: list,
                                              header_usr_1: dict,
@@ -417,7 +417,7 @@ def test_create_plano_trabalho_missing_mandatory_fields(input_pt: dict,
     for field in field_list:
         del input_pt[field]
 
-    input_pt['cod_plano'] = 1800 + offset # precisa ser um novo plano
+    input_pt["cod_plano"] = 1800 + offset # precisa ser um novo plano
     response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
@@ -425,8 +425,8 @@ def test_create_plano_trabalho_missing_mandatory_fields(input_pt: dict,
 
 @pytest.mark.parametrize("verb, missing_fields",
                     itertools.product( # todas as combinações entre
-                        ('put', 'patch'), # verb
-                        fields_plano_trabalho['mandatory'] # missing_fields
+                        ("put", "patch"), # verb
+                        fields_plano_trabalho["mandatory"] # missing_fields
                     ))
 def test_update_plano_trabalho_missing_mandatory_fields(verb: str,
                                             example_pt,
@@ -447,18 +447,18 @@ def test_update_plano_trabalho_missing_mandatory_fields(verb: str,
     for field in missing_fields:
         del input_pt[field]
 
-    input_pt['cod_plano'] = 555 # precisa ser um plano existente
+    input_pt["cod_plano"] = 555 # precisa ser um plano existente
     call = getattr(client, verb) # put ou patch
     response = call(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
-    if verb == 'put':
+    if verb == "put":
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    elif verb == 'patch':
+    elif verb == "patch":
         assert response.status_code == status.HTTP_200_OK
 
 @pytest.mark.parametrize("missing_fields",
-                            fields_plano_trabalho['mandatory'])
+                            fields_plano_trabalho["mandatory"])
 def test_patch_plano_trabalho_inexistente(truncate_pt,
                                             input_pt: dict,
                                             missing_fields: list,
@@ -473,14 +473,14 @@ def test_patch_plano_trabalho_inexistente(truncate_pt,
     for field in missing_fields:
         del input_pt[field]
 
-    input_pt['cod_plano'] = 999 # precisa ser um plano inexistente
+    input_pt["cod_plano"] = 999 # precisa ser um plano inexistente
     response = client.patch(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 @pytest.mark.parametrize("omitted_fields",
-                         enumerate(fields_atividade['optional']))
+                         enumerate(fields_atividade["optional"]))
 def test_create_atvidades_omit_optional_fields(input_pt: dict,
                                              omitted_fields: list,
                                              header_usr_1: dict,
@@ -491,10 +491,10 @@ def test_create_atvidades_omit_optional_fields(input_pt: dict,
     """
     offset, field_list = omitted_fields
     for field in field_list:
-        for atividade in input_pt['atividades']:
+        for atividade in input_pt["atividades"]:
             del atividade[field]
 
-    input_pt['cod_plano'] = 557 + offset
+    input_pt["cod_plano"] = 557 + offset
     response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
@@ -502,7 +502,7 @@ def test_create_atvidades_omit_optional_fields(input_pt: dict,
     assert response.status_code == status.HTTP_200_OK
 
 @pytest.mark.parametrize("missing_fields",
-                         enumerate(fields_atividade['mandatory']))
+                         enumerate(fields_atividade["mandatory"]))
 def test_create_atividades_missing_mandatory_fields(input_pt: dict,
                                              missing_fields: list,
                                              header_usr_1: dict,
@@ -513,10 +513,10 @@ def test_create_atividades_missing_mandatory_fields(input_pt: dict,
     """
     offset, field_list = missing_fields
     for field in field_list:
-        for atividade in input_pt['atividades']:
+        for atividade in input_pt["atividades"]:
             del atividade[field]
 
-    input_pt['cod_plano'] = 1800 + offset # precisa ser um novo plano
+    input_pt["cod_plano"] = 1800 + offset # precisa ser um novo plano
     response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
@@ -524,8 +524,8 @@ def test_create_atividades_missing_mandatory_fields(input_pt: dict,
 
 @pytest.mark.parametrize("verb, missing_fields",
                     itertools.product( # todas as combinações entre
-                        ('put', 'patch'), # verb
-                        fields_atividade['mandatory'] # missing_fields
+                        ("put", "patch"), # verb
+                        fields_atividade["mandatory"] # missing_fields
                     ))
 def test_update_atividades_missing_mandatory_fields(verb: str,
                                             truncate_pt,
@@ -545,17 +545,17 @@ def test_update_atividades_missing_mandatory_fields(verb: str,
     alteração. Por isso, é permitido omitir os campos obrigatórios.
     """
     for field in missing_fields:
-        for atividade in input_pt['atividades']:
+        for atividade in input_pt["atividades"]:
             del atividade[field]
 
-    input_pt['cod_plano'] = 555 # precisa ser um plano existente
+    input_pt["cod_plano"] = 555 # precisa ser um plano existente
     call = getattr(client, verb) # put ou patch
     response = call(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=input_pt,
                           headers=header_usr_1)
-    if verb == 'put':
+    if verb == "put":
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    elif verb == 'patch':
+    elif verb == "patch":
         assert response.status_code == status.HTTP_200_OK
 
 def test_substitute_atividades_list(truncate_pt,
@@ -564,7 +564,7 @@ def test_substitute_atividades_list(truncate_pt,
                                     header_usr_1: dict,
                                     client: Session):
     "Substitui a lista de atividades existentes por uma nova lista."
-    input_pt['atividades'].pop() # remove a última atividade
+    input_pt["atividades"].pop() # remove a última atividade
 
     response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
                             json=input_pt,
@@ -626,7 +626,7 @@ def test_modify_atividade(truncate_pt,
                             header_usr_1: dict,
                             client: Session):
     "Modifica uma atividade existente com put e patch."
-    atividade = input_pt['atividades'][-1] # pega a última atividade
+    atividade = input_pt["atividades"][-1] # pega a última atividade
     atividade["data_avaliacao"] = data_avaliacao
 
     if verb == "put":
@@ -635,7 +635,7 @@ def test_modify_atividade(truncate_pt,
                           headers=header_usr_1)
     elif verb == "patch":
         atividade_patch = {
-            "cod_plano": input_pt['cod_plano'],
+            "cod_plano": input_pt["cod_plano"],
             "atividades": [
                 {
                     "id_atividade": 3,
@@ -648,7 +648,7 @@ def test_modify_atividade(truncate_pt,
                           headers=header_usr_1)
     
     if datetime.fromisoformat(data_avaliacao) < datetime.fromisoformat(
-                                                    input_pt['data_fim']):
+                                                    input_pt["data_fim"]):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = "Data de avaliação da atividade deve ser maior ou igual" \
                      " que a Data Fim do Plano de Trabalho."
@@ -686,9 +686,9 @@ def test_get_pt_inexistente(header_usr_1: dict, client: Session):
 
 @pytest.mark.parametrize("data_inicio, data_fim, cod_plano, id_ati_1, id_ati_2",
                           [
-                            ("2020-06-04", "2020-04-01", '77', 333, 334),
-                            ("2020-06-04", "2020-04-01", '78', 335, 336),
-                            ("2020-06-04", "2020-04-01", '79', 337, 338),
+                            ("2020-06-04", "2020-04-01", "77", 333, 334),
+                            ("2020-06-04", "2020-04-01", "78", 335, 336),
+                            ("2020-06-04", "2020-04-01", "79", 337, 338),
                             ])
 def test_create_pt_invalid_dates(input_pt: dict,
                                  data_inicio: str,
@@ -699,11 +699,11 @@ def test_create_pt_invalid_dates(input_pt: dict,
                                  header_usr_1: dict,
                                  truncate_pt,
                                  client: Session):
-    input_pt['data_inicio'] = data_inicio
-    input_pt['data_fim'] = data_fim
-    input_pt['cod_plano'] = cod_plano
-    input_pt['atividades'][0]['id_atividade'] = id_ati_1
-    input_pt['atividades'][1]['id_atividade'] = id_ati_2
+    input_pt["data_inicio"] = data_inicio
+    input_pt["data_fim"] = data_fim
+    input_pt["cod_plano"] = cod_plano
+    input_pt["atividades"][0]["id_atividade"] = id_ati_1
+    input_pt["atividades"][1]["id_atividade"] = id_ati_2
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
@@ -719,12 +719,12 @@ def test_create_pt_invalid_dates(input_pt: dict,
 @pytest.mark.parametrize(
     "dt_fim, dt_avaliacao_1, dt_avaliacao_2, cod_plano, id_ati_1, id_ati_2",
     [
-      ("2020-06-04", "2020-04-01", "2020-04-01", '77', 333, 334),
-      ("2020-06-04", "2020-04-01", "2021-04-01", '78', 335, 336),
-      ("2020-06-04", "2020-04-01", "2019-04-01", '79', 337, 338),
-      ("2020-04-01", "2020-04-01", "2020-06-04", '80', 339, 340),
-      ("2020-04-01", "2020-04-01", "2020-04-01", '81', 341, 342),
-      ("2020-04-01", "2020-02-01", "2020-01-04", '82', 343, 344),
+      ("2020-06-04", "2020-04-01", "2020-04-01", "77", 333, 334),
+      ("2020-06-04", "2020-04-01", "2021-04-01", "78", 335, 336),
+      ("2020-06-04", "2020-04-01", "2019-04-01", "79", 337, 338),
+      ("2020-04-01", "2020-04-01", "2020-06-04", "80", 339, 340),
+      ("2020-04-01", "2020-04-01", "2020-04-01", "81", 341, 342),
+      ("2020-04-01", "2020-02-01", "2020-01-04", "82", 343, 344),
       ])
 def test_create_pt_invalid_data_avaliacao(input_pt: dict,
                                           dt_fim: str,
@@ -736,13 +736,13 @@ def test_create_pt_invalid_data_avaliacao(input_pt: dict,
                                           header_usr_1: dict,
                                           truncate_pt,
                                           client: Session):
-    input_pt['data_inicio'] = "2020-01-01"
-    input_pt['data_fim'] = dt_fim
-    input_pt['cod_plano'] = cod_plano
-    input_pt['atividades'][0]['id_atividade'] = id_ati_1
-    input_pt['atividades'][0]['data_avaliacao'] = dt_avaliacao_1
-    input_pt['atividades'][1]['id_atividade'] = id_ati_2
-    input_pt['atividades'][1]['data_avaliacao'] = dt_avaliacao_2
+    input_pt["data_inicio"] = "2020-01-01"
+    input_pt["data_fim"] = dt_fim
+    input_pt["cod_plano"] = cod_plano
+    input_pt["atividades"][0]["id_atividade"] = id_ati_1
+    input_pt["atividades"][0]["data_avaliacao"] = dt_avaliacao_1
+    input_pt["atividades"][1]["id_atividade"] = id_ati_2
+    input_pt["atividades"][1]["data_avaliacao"] = dt_avaliacao_2
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
@@ -757,10 +757,10 @@ def test_create_pt_invalid_data_avaliacao(input_pt: dict,
 
 @pytest.mark.parametrize("cod_plano, id_ati_1, id_ati_2",
                           [
-                            ('90', 401, 402),
-                            ('91', 403, 403), # <<<< IGUAIS
-                            ('92', 404, 404), # <<<< IGUAIS
-                            ('93', 405, 406),
+                            ("90", 401, 402),
+                            ("91", 403, 403), # <<<< IGUAIS
+                            ("92", 404, 404), # <<<< IGUAIS
+                            ("93", 405, 406),
                             ])
 def test_create_pt_duplicate_atividade(input_pt: dict,
                                        cod_plano: str,
@@ -769,9 +769,9 @@ def test_create_pt_duplicate_atividade(input_pt: dict,
                                        header_usr_1: dict,
                                        truncate_pt,
                                        client: Session):
-    input_pt['cod_plano'] = cod_plano
-    input_pt['atividades'][0]['id_atividade'] = id_ati_1
-    input_pt['atividades'][1]['id_atividade'] = id_ati_2
+    input_pt["cod_plano"] = cod_plano
+    input_pt["atividades"][0]["id_atividade"] = id_ati_1
+    input_pt["atividades"][1]["id_atividade"] = id_ati_2
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
@@ -799,20 +799,20 @@ def test_update_pt_different_cod_unidade(truncate_pt,
 
 @pytest.mark.parametrize("cod_plano, cpf",
                           [
-                            ('100', '11111111111'),
-                            ('101', '22222222222'),
-                            ('102', '33333333333'),
-                            ('103', '44444444444'),
-                            ('104', '04811556435'),
-                            ('103', '444-444-444.44'),
-                            ('108', '-44444444444'),
-                            ('111', '444444444'),
-                            ('112', '-444 4444444'),
-                            ('112', '4811556437'),
-                            ('112', '048115564-37'),
-                            ('112', '04811556437     '),
-                            ('112', '    04811556437     '),
-                            ('112', ''),
+                            ("100", "11111111111"),
+                            ("101", "22222222222"),
+                            ("102", "33333333333"),
+                            ("103", "44444444444"),
+                            ("104", "04811556435"),
+                            ("103", "444-444-444.44"),
+                            ("108", "-44444444444"),
+                            ("111", "444444444"),
+                            ("112", "-444 4444444"),
+                            ("112", "4811556437"),
+                            ("112", "048115564-37"),
+                            ("112", "04811556437     "),
+                            ("112", "    04811556437     "),
+                            ("112", ""),
                             ])
 def test_create_pt_invalid_cpf(input_pt: dict,
                                cod_plano: str,
@@ -820,27 +820,27 @@ def test_create_pt_invalid_cpf(input_pt: dict,
                                header_usr_1: dict,
                                truncate_pt,
                                client: Session):
-    input_pt['cod_plano'] = cod_plano
-    input_pt['cpf'] = cpf
+    input_pt["cod_plano"] = cod_plano
+    input_pt["cpf"] = cpf
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = [
-        'Digitos verificadores do CPF inválidos.',
-        'CPF inválido.',
-        'CPF precisa ter 11 digitos.',
-        'CPF deve conter apenas digitos.',
+        "Digitos verificadores do CPF inválidos.",
+        "CPF inválido.",
+        "CPF precisa ter 11 digitos.",
+        "CPF deve conter apenas digitos.",
     ]
     assert response.json().get("detail")[0]["msg"] in detail_msg
 
 
 @pytest.mark.parametrize("cod_plano, modalidade_execucao",
                           [
-                            ('556', -1),
-                            ('81', -2),
-                            ('82', -3)
+                            ("556", -1),
+                            ("81", -2),
+                            ("82", -3)
                             ])
 def test_create_pt_invalid_modalidade_execucao(input_pt: dict,
                                cod_plano: str,
@@ -848,8 +848,8 @@ def test_create_pt_invalid_modalidade_execucao(input_pt: dict,
                                header_usr_1: dict,
                                truncate_pt,
                                client: Session):
-    input_pt['cod_plano'] = cod_plano
-    input_pt['modalidade_execucao'] = modalidade_execucao
+    input_pt["cod_plano"] = cod_plano
+    input_pt["modalidade_execucao"] = modalidade_execucao
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
                           headers=header_usr_1)
@@ -869,9 +869,9 @@ def test_create_pt_invalid_carga_horaria_semanal(input_pt: dict,
                                                  header_usr_1: dict,
                                                  truncate_pt,
                                                  client: Session):
-    cod_plano = '767676'
-    input_pt['cod_plano'] = cod_plano
-    input_pt['carga_horaria_semanal'] = carga_horaria_semanal
+    cod_plano = "767676"
+    input_pt["cod_plano"] = cod_plano
+    input_pt["carga_horaria_semanal"] = carga_horaria_semanal
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
                           headers=header_usr_1)
@@ -896,33 +896,33 @@ def test_create_pt_invalid_carga_horaria_total(input_pt: dict,
                                                  truncate_pt,
                                                  client: Session):
     cod_plano = 767677
-    input_pt['cod_plano'] = cod_plano
-    input_pt['carga_horaria_total'] = carga_horaria_total
-    input_pt['atividades'][0]['tempo_exec_presencial'] = tempo_pres_1
-    input_pt['atividades'][0]['tempo_exec_teletrabalho'] = tempo_tel_1
-    input_pt['atividades'][1]['tempo_exec_presencial'] = tempo_pres_2
-    input_pt['atividades'][1]['tempo_exec_teletrabalho'] = tempo_tel_2
+    input_pt["cod_plano"] = cod_plano
+    input_pt["carga_horaria_total"] = carga_horaria_total
+    input_pt["atividades"][0]["tempo_exec_presencial"] = tempo_pres_1
+    input_pt["atividades"][0]["tempo_exec_teletrabalho"] = tempo_tel_1
+    input_pt["atividades"][1]["tempo_exec_presencial"] = tempo_pres_2
+    input_pt["atividades"][1]["tempo_exec_teletrabalho"] = tempo_tel_2
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
                           headers=header_usr_1)
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = 'A soma dos tempos de execução presencial e ' \
-                 'teletrabalho das atividades deve ser igual à ' \
-                 'carga_horaria_total.'
+    detail_msg = "A soma dos tempos de execução presencial e " \
+                 "teletrabalho das atividades deve ser igual à " \
+                 "carga_horaria_total."
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
 @pytest.mark.parametrize(
     "id_atividade, nome_atividade, faixa_complexidade, "\
     "tempo_exec_presencial, tempo_exec_teletrabalho, qtde_entregas",
                           [
-                              (None, 'asd', 'asd', 0, 0, 3),
-                              (123123, None, 'asd', 0, 0, 3),
-                              (123123, 'asd', None, 0, 0, 3),
-                              (123123, 'asd', 'asd', None, 0, 3),
-                              (123123, 'asd', 'asd', 0, None, 3),
-                              (123123, 'asd', 'asd', 0, 0, None),
+                              (None, "asd", "asd", 0, 0, 3),
+                              (123123, None, "asd", 0, 0, 3),
+                              (123123, "asd", None, 0, 0, 3),
+                              (123123, "asd", "asd", None, 0, 3),
+                              (123123, "asd", "asd", 0, None, 3),
+                              (123123, "asd", "asd", 0, 0, None),
                            ])
 def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
 
@@ -936,20 +936,20 @@ def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
                                            header_usr_1: dict,
                                            truncate_pt,
                                            client: Session):
-    cod_plano = '111222333'
-    input_pt['cod_plano'] = cod_plano
-    input_pt['atividades'][0]['id_atividade'] = id_atividade
-    input_pt['atividades'][0]['nome_atividade'] = nome_atividade
-    input_pt['atividades'][0]['faixa_complexidade'] = faixa_complexidade
-    input_pt['atividades'][0]['tempo_exec_presencial'] = tempo_exec_presencial
-    input_pt['atividades'][0]['tempo_exec_teletrabalho'] = tempo_exec_teletrabalho
-    input_pt['atividades'][0]['qtde_entregas'] = qtde_entregas
+    cod_plano = "111222333"
+    input_pt["cod_plano"] = cod_plano
+    input_pt["atividades"][0]["id_atividade"] = id_atividade
+    input_pt["atividades"][0]["nome_atividade"] = nome_atividade
+    input_pt["atividades"][0]["faixa_complexidade"] = faixa_complexidade
+    input_pt["atividades"][0]["tempo_exec_presencial"] = tempo_exec_presencial
+    input_pt["atividades"][0]["tempo_exec_teletrabalho"] = tempo_exec_teletrabalho
+    input_pt["atividades"][0]["qtde_entregas"] = qtde_entregas
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = 'none is not an allowed value'
+    detail_msg = "none is not an allowed value"
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
 # Unit tests
@@ -960,15 +960,15 @@ def test_merge_dicts(input_pt: dict):
     input1 = input_pt.copy()
     input2 = input_pt.copy()
 
-    del input1['atividades'][0]['qtde_entregas']
-    del input2['atividades'][0]['avaliacao']
+    del input1["atividades"][0]["qtde_entregas"]
+    del input2["atividades"][0]["avaliacao"]
 
     assert util.merge_dicts(input1, input2) == input_pt
 
 def test_list_to_dict(input_pt: dict):
     """Testa a transformação de lista em dicionário.
     """
-    atividades = util.list_to_dict(input_pt['atividades'], "id_atividade")
+    atividades = util.list_to_dict(input_pt["atividades"], "id_atividade")
 
     assert atividades == atividades_dict
 
@@ -977,4 +977,4 @@ def test_dict_to_list(input_pt: dict):
     """
     atividades = util.dict_to_list(atividades_dict, "id_atividade")
 
-    assert atividades == input_pt['atividades']
+    assert atividades == input_pt["atividades"]
