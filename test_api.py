@@ -82,54 +82,95 @@ def client() -> Generator[Session, None, None]:
 @pytest.fixture()
 def input_pt() -> dict:
     pt_json = {
-  "cod_plano": "555",
-  "matricula_siape": 0,
-  "cpf": "99160773120",
-  "nome_participante": "string",
-  "cod_unidade_exercicio": 0,
-  "nome_unidade_exercicio": "string",
-  "modalidade_execucao": 1,
-  "carga_horaria_semanal": 10,
-  "data_inicio": "2021-01-07",
-  "data_fim": "2021-01-12",
-  "carga_horaria_total": 0,
-  "data_interrupcao": "2021-01-07",
-  "entregue_no_prazo": True,
-  "horas_homologadas": 0,
-  "atividades": [
-    {
-      "id_atividade": 2,
-      "nome_grupo_atividade": "string",
-      "nome_atividade": "string",
-      "faixa_complexidade": "string",
-      "parametros_complexidade": "string",
-      "tempo_exec_presencial": 0,
-      "tempo_exec_teletrabalho": 0,
-      "entrega_esperada": "string",
-      "qtde_entregas": 0,
-      "qtde_entregas_efetivas": 0,
-      "avaliacao": 0,
-      "data_avaliacao": "2021-01-15",
-      "justificativa": "string"
-    },
-    {
-      "id_atividade": 3,
-      "nome_grupo_atividade": "string",
-      "nome_atividade": "string",
-      "faixa_complexidade": "string",
-      "parametros_complexidade": "string",
-      "tempo_exec_presencial": 0,
-      "tempo_exec_teletrabalho": 0,
-      "entrega_esperada": "string",
-      "qtde_entregas": 0,
-      "qtde_entregas_efetivas": 0,
-      "avaliacao": 0,
-      "data_avaliacao": "2021-01-15",
-      "justificativa": "string"
+        "cod_plano": "555",
+        "matricula_siape": 0,
+        "cpf": "99160773120",
+        "nome_participante": "string",
+        "cod_unidade_exercicio": 0,
+        "nome_unidade_exercicio": "string",
+        "modalidade_execucao": 1,
+        "carga_horaria_semanal": 10,
+        "data_inicio": "2021-01-07",
+        "data_fim": "2021-01-12",
+        "carga_horaria_total": 0,
+        "data_interrupcao": "2021-01-07",
+        "entregue_no_prazo": True,
+        "horas_homologadas": 0,
+        "atividades": [
+            {
+                "id_atividade": 2,
+                "nome_grupo_atividade": "string",
+                "nome_atividade": "string",
+                "faixa_complexidade": "string",
+                "parametros_complexidade": "string",
+                "tempo_exec_presencial": 0,
+                "tempo_exec_teletrabalho": 0,
+                "entrega_esperada": "string",
+                "qtde_entregas": 0,
+                "qtde_entregas_efetivas": 0,
+                "avaliacao": 0,
+                "data_avaliacao": "2021-01-15",
+                "justificativa": "string"
+            },
+            {
+                "id_atividade": 3,
+                "nome_grupo_atividade": "string",
+                "nome_atividade": "string",
+                "faixa_complexidade": "string",
+                "parametros_complexidade": "string",
+                "tempo_exec_presencial": 0,
+                "tempo_exec_teletrabalho": 0,
+                "entrega_esperada": "string",
+                "qtde_entregas": 0,
+                "qtde_entregas_efetivas": 0,
+                "avaliacao": 0,
+                "data_avaliacao": "2021-01-15",
+                "justificativa": "string"
+            }
+        ]
     }
-  ]
-}
     return pt_json
+
+# grupos de campos opcionais e obrigatórios a testar
+
+fields_plano_trabalho = {
+    "optional": (
+        ["data_interrupcao"],
+        ["data_interrupcao", "entregue_no_prazo"],
+        ["entregue_no_prazo"],
+    ),
+    "mandatory": (
+        ["matricula_siape"],
+        ["cpf"],
+        ["nome_participante"],
+        ["cod_unidade_exercicio"],
+        ["nome_unidade_exercicio"],
+        ["modalidade_execucao"],
+        ["carga_horaria_semanal"],
+        ["data_inicio"],
+        ["data_fim"],
+        ["carga_horaria_total"],
+        ["atividades"],
+    )
+}
+
+fields_atividade = {
+    "optional": (
+        ["nome_grupo_atividade"],
+        ["parametros_complexidade"],
+        ["entrega_esperada"],
+        ["qtde_entregas_efetivas"],
+        ["data_avaliacao"],
+        ["justificativa"],
+    ),
+    "mandatory": (
+        ["nome_atividade"],
+        ["faixa_complexidade"],
+        ["tempo_exec_presencial"],
+        ["tempo_exec_teletrabalho"],
+        ["qtde_entregas"],
+    )
+}
 
 @pytest.fixture(scope="module")
 def admin_credentials() -> dict:
@@ -305,47 +346,6 @@ def test_create_plano_trabalho_completo(input_pt: dict,
     assert response.status_code == status.HTTP_200_OK
     assert response.json().get("detail", None) == None
     assert response.json() == input_pt
-
-# grupos de campos opcionais e obrigatórios a testar
-
-fields_plano_trabalho = {
-    "optional": (
-        ["data_interrupcao"],
-        ["data_interrupcao", "entregue_no_prazo"],
-        ["entregue_no_prazo"],
-    ),
-    "mandatory": (
-        ["matricula_siape"],
-        ["cpf"],
-        ["nome_participante"],
-        ["cod_unidade_exercicio"],
-        ["nome_unidade_exercicio"],
-        ["modalidade_execucao"],
-        ["carga_horaria_semanal"],
-        ["data_inicio"],
-        ["data_fim"],
-        ["carga_horaria_total"],
-        ["atividades"],
-    )
-}
-
-fields_atividade = {
-    "optional": (
-        ["nome_grupo_atividade"],
-        ["parametros_complexidade"],
-        ["entrega_esperada"],
-        ["qtde_entregas_efetivas"],
-        ["data_avaliacao"],
-        ["justificativa"],
-    ),
-    "mandatory": (
-        ["nome_atividade"],
-        ["faixa_complexidade"],
-        ["tempo_exec_presencial"],
-        ["tempo_exec_teletrabalho"],
-        ["qtde_entregas"],
-    )
-}
 
 @pytest.mark.parametrize("omitted_fields",
                          enumerate(fields_plano_trabalho['optional']))
