@@ -14,6 +14,9 @@ from fastapi.testclient import TestClient
 from requests import Session
 from fastapi import status
 from api import app
+
+import util
+
 import pytest
 
 # Helper functions
@@ -172,6 +175,37 @@ fields_atividade = {
     )
 }
 
+atividades_dict = {
+    2: {
+        "nome_grupo_atividade": "string",
+        "nome_atividade": "string",
+        "faixa_complexidade": "string",
+        "parametros_complexidade": "string",
+        "tempo_exec_presencial": 0,
+        "tempo_exec_teletrabalho": 0,
+        "entrega_esperada": "string",
+        "qtde_entregas": 0,
+        "qtde_entregas_efetivas": 0,
+        "avaliacao": 0,
+        "data_avaliacao": "2021-01-15",
+    "justificativa": "string"
+    },
+    3: {
+        "nome_grupo_atividade": "string",
+        "nome_atividade": "string",
+        "faixa_complexidade": "string",
+        "parametros_complexidade": "string",
+        "tempo_exec_presencial": 0,
+        "tempo_exec_teletrabalho": 0,
+        "entrega_esperada": "string",
+        "qtde_entregas": 0,
+        "qtde_entregas_efetivas": 0,
+        "avaliacao": 0,
+        "data_avaliacao": "2021-01-15",
+        "justificativa": "string"
+    }
+}
+
 @pytest.fixture(scope="module")
 def admin_credentials() -> dict:
     return {
@@ -292,6 +326,8 @@ def header_usr_2(register_user_2, user2_credentials: dict) -> dict:
 
 
 # Tests
+
+# API Tests
 
 def test_register_user_not_logged_in(
         truncate_users, client: Session, header_not_logged_in: dict):
@@ -915,3 +951,30 @@ def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = 'none is not an allowed value'
     assert response.json().get("detail")[0]["msg"] == detail_msg
+
+# Unit tests
+
+def test_merge_dicts(input_pt: dict):
+    """Testa a mesclagem de dicionários.
+    """
+    input1 = input_pt.copy()
+    input2 = input_pt.copy()
+
+    del input1['atividades'][0]['qtde_entregas']
+    del input2['atividades'][0]['avaliacao']
+
+    assert util.merge_dicts(input1, input2) == input_pt
+
+def test_list_to_dict(input_pt: dict):
+    """Testa a transformação de lista em dicionário.
+    """
+    atividades = util.list_to_dict(input_pt['atividades'], "id_atividade")
+
+    assert atividades == atividades_dict
+
+def test_dict_to_list(input_pt: dict):
+    """Testa a transformação de lista em dicionário.
+    """
+    atividades = util.dict_to_list(atividades_dict, "id_atividade")
+
+    assert atividades == input_pt['atividades']
