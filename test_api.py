@@ -813,7 +813,7 @@ def test_create_pt_invalid_cpf(input_pt: dict,
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
                           headers=header_usr_1)
-    assert response.status_code == 422
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = [
         'Digitos verificadores do CPF inválidos.',
         'CPF inválido.',
@@ -841,7 +841,7 @@ def test_create_pt_invalid_modalidade_execucao(input_pt: dict,
                           json=input_pt,
                           headers=header_usr_1)
 
-    assert response.status_code == 422
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "value is not a valid enumeration member; permitted: 1, 2, 3"
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
@@ -863,7 +863,7 @@ def test_create_pt_invalid_carga_horaria_semanal(input_pt: dict,
                           json=input_pt,
                           headers=header_usr_1)
 
-    assert response.status_code == 422
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "Carga horária semanal deve ser entre 1 e 40"
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
@@ -894,7 +894,7 @@ def test_create_pt_invalid_carga_horaria_total(input_pt: dict,
                           json=input_pt,
                           headers=header_usr_1)
 
-    assert response.status_code == 422
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = 'A soma dos tempos de execução presencial e ' \
                  'teletrabalho das atividades deve ser igual à ' \
                  'carga_horaria_total.'
@@ -935,7 +935,6 @@ def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
                           headers=header_usr_1)
-    assert response.status_code == 422
-    #TODO: Melhorar resposta automática do Pydantic para deixar claro qual campo não passou na validação
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = 'none is not an allowed value'
     assert response.json().get("detail")[0]["msg"] == detail_msg
