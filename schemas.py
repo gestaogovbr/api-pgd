@@ -9,8 +9,12 @@ class AtividadeSchema(BaseModel):
     nome_atividade: str
     faixa_complexidade: str
     parametros_complexidade: Optional[str]
-    tempo_exec_presencial: float
-    tempo_exec_teletrabalho: float
+    tempo_presencial_estimado: float
+    tempo_presencial_programado: float
+    tempo_presencial_executado: Optional[float]
+    tempo_teletrabalho_estimado: float
+    tempo_teletrabalho_programado: float
+    tempo_teletrabalho_executado: Optional[float]
     entrega_esperada: Optional[str]
     qtde_entregas: int
     qtde_entregas_efetivas: Optional[int]
@@ -66,8 +70,8 @@ class PlanoTrabalhoSchema(BaseModel):
     def validate_carga_horaria_total(cls, values):
         total_sum = 0
         for a in values.get("atividades"):
-            total_sum += (getattr(a, "tempo_exec_presencial") +
-                          getattr(a, "tempo_exec_teletrabalho"))
+            total_sum += (getattr(a, "tempo_presencial_estimado") +
+                          getattr(a, "tempo_teletrabalho_estimado"))
         if total_sum != values.get("carga_horaria_total"):
             raise ValueError("A soma dos tempos de execução presencial e " \
                              "teletrabalho das atividades deve ser igual à " \
@@ -126,8 +130,12 @@ class AtividadeUpdateSchema(BaseModel):
     nome_atividade: Optional[str]
     faixa_complexidade: Optional[str]
     parametros_complexidade: Optional[str]
-    tempo_exec_presencial: Optional[float]
-    tempo_exec_teletrabalho: Optional[float]
+    tempo_presencial_estimado: Optional[float]
+    tempo_presencial_programado: Optional[float]
+    tempo_presencial_executado: Optional[float]
+    tempo_teletrabalho_estimado: Optional[float]
+    tempo_teletrabalho_programado: Optional[float]
+    tempo_teletrabalho_executado: Optional[float]
     entrega_esperada: Optional[str]
     qtde_entregas: Optional[int]
     qtde_entregas_efetivas: Optional[int]
