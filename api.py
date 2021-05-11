@@ -192,7 +192,7 @@ async def patch_plano_trabalho(
 
     # atualiza as atividades
 
-    # traz a lista de atividade que está no banco
+    # traz a lista de atividades que está no banco
     db_atividades = util.list_to_dict(
         [
             util.sa_obj_to_dict(atividade)
