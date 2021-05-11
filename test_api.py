@@ -106,8 +106,12 @@ def input_pt() -> dict:
                 "nome_atividade": "string",
                 "faixa_complexidade": "string",
                 "parametros_complexidade": "string",
-                "tempo_exec_presencial": 0,
-                "tempo_exec_teletrabalho": 0,
+                "tempo_presencial_estimado": 0,
+                "tempo_presencial_programado": 0,
+                "tempo_presencial_executado": 0,
+                "tempo_teletrabalho_estimado": 0,
+                "tempo_teletrabalho_programado": 0,
+                "tempo_teletrabalho_executado": 0,
                 "entrega_esperada": "string",
                 "qtde_entregas": 0,
                 "qtde_entregas_efetivas": 0,
@@ -121,8 +125,12 @@ def input_pt() -> dict:
                 "nome_atividade": "string",
                 "faixa_complexidade": "string",
                 "parametros_complexidade": "string",
-                "tempo_exec_presencial": 0,
-                "tempo_exec_teletrabalho": 0,
+                "tempo_presencial_estimado": 0,
+                "tempo_presencial_programado": 0,
+                "tempo_presencial_executado": 0,
+                "tempo_teletrabalho_estimado": 0,
+                "tempo_teletrabalho_programado": 0,
+                "tempo_teletrabalho_executado": 0,
                 "entrega_esperada": "string",
                 "qtde_entregas": 0,
                 "qtde_entregas_efetivas": 0,
@@ -165,12 +173,16 @@ fields_atividade = {
         ["qtde_entregas_efetivas"],
         ["data_avaliacao"],
         ["justificativa"],
+        ["tempo_presencial_executado"],
+        ["tempo_teletrabalho_executado"],
     ),
     "mandatory": (
         ["nome_atividade"],
         ["faixa_complexidade"],
-        ["tempo_exec_presencial"],
-        ["tempo_exec_teletrabalho"],
+        ["tempo_presencial_estimado"],
+        ["tempo_presencial_programado"],
+        ["tempo_teletrabalho_estimado"],
+        ["tempo_teletrabalho_programado"],
         ["qtde_entregas"],
     )
 }
@@ -181,8 +193,10 @@ atividades_dict = {
         "nome_atividade": "string",
         "faixa_complexidade": "string",
         "parametros_complexidade": "string",
-        "tempo_exec_presencial": 0,
-        "tempo_exec_teletrabalho": 0,
+        "tempo_presencial_estimado": 0,
+        "tempo_presencial_programado": 0,
+        "tempo_teletrabalho_estimado": 0,
+        "tempo_teletrabalho_programado": 0,
         "entrega_esperada": "string",
         "qtde_entregas": 0,
         "qtde_entregas_efetivas": 0,
@@ -195,8 +209,10 @@ atividades_dict = {
         "nome_atividade": "string",
         "faixa_complexidade": "string",
         "parametros_complexidade": "string",
-        "tempo_exec_presencial": 0,
-        "tempo_exec_teletrabalho": 0,
+        "tempo_presencial_estimado": 0,
+        "tempo_presencial_programado": 0,
+        "tempo_teletrabalho_estimado": 0,
+        "tempo_teletrabalho_programado": 0,
         "entrega_esperada": "string",
         "qtde_entregas": 0,
         "qtde_entregas_efetivas": 0,
@@ -585,8 +601,10 @@ def test_append_atividades_list(truncate_pt,
       "nome_atividade": "string",
       "faixa_complexidade": "string",
       "parametros_complexidade": "string",
-      "tempo_exec_presencial": 0,
-      "tempo_exec_teletrabalho": 0,
+      "tempo_presencial_estimado": 0,
+      "tempo_presencial_programado": 0,
+      "tempo_teletrabalho_estimado": 0,
+      "tempo_teletrabalho_programado": 0,
       "entrega_esperada": "string",
       "qtde_entregas": 0,
       "qtde_entregas_efetivas": 0,
@@ -898,10 +916,14 @@ def test_create_pt_invalid_carga_horaria_total(input_pt: dict,
     cod_plano = 767677
     input_pt["cod_plano"] = cod_plano
     input_pt["carga_horaria_total"] = carga_horaria_total
-    input_pt["atividades"][0]["tempo_exec_presencial"] = tempo_pres_1
-    input_pt["atividades"][0]["tempo_exec_teletrabalho"] = tempo_tel_1
-    input_pt["atividades"][1]["tempo_exec_presencial"] = tempo_pres_2
-    input_pt["atividades"][1]["tempo_exec_teletrabalho"] = tempo_tel_2
+    input_pt["atividades"][0]["tempo_presencial_estimado"] = tempo_pres_1
+    input_pt["atividades"][0]["tempo_presencial_programado"] = tempo_pres_1
+    input_pt["atividades"][0]["tempo_teletrabalho_estimado"] = tempo_tel_1
+    input_pt["atividades"][0]["tempo_teletrabalho_programado"] = tempo_tel_1
+    input_pt["atividades"][1]["tempo_presencial_estimado"] = tempo_pres_2
+    input_pt["atividades"][1]["tempo_presencial_programado"] = tempo_pres_2
+    input_pt["atividades"][1]["tempo_teletrabalho_estimado"] = tempo_tel_2
+    input_pt["atividades"][1]["tempo_teletrabalho_programado"] = tempo_tel_2
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
@@ -915,22 +937,28 @@ def test_create_pt_invalid_carga_horaria_total(input_pt: dict,
 
 @pytest.mark.parametrize(
     "id_atividade, nome_atividade, faixa_complexidade, "\
-    "tempo_exec_presencial, tempo_exec_teletrabalho, qtde_entregas",
+    "tempo_presencial_estimado, tempo_presencial_programado, "\
+    "tempo_teletrabalho_estimado, tempo_teletrabalho_programado, "\
+    "qtde_entregas",
                           [
-                              (None, "asd", "asd", 0, 0, 3),
-                              (123123, None, "asd", 0, 0, 3),
-                              (123123, "asd", None, 0, 0, 3),
-                              (123123, "asd", "asd", None, 0, 3),
-                              (123123, "asd", "asd", 0, None, 3),
-                              (123123, "asd", "asd", 0, 0, None),
+                              (None, "asd", "asd", 0, 0, 0, 0, 3),
+                              (123123, None, "asd", 0, 0, 0, 0, 3),
+                              (123123, "asd", None, 0, 0, 0, 0, 3),
+                              (123123, "asd", "asd", None, 0, 0, 0, 3),
+                              (123123, "asd", "asd", 0, None, 0, 0, 3),
+                              (123123, "asd", "asd", 0, 0, None, 0, 3),
+                              (123123, "asd", "asd", 0, 0, 0, None, 3),
+                              (123123, "asd", "asd", 0, 0, 0, 0, None),
                            ])
 def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
 
                                            id_atividade: int,
                                            nome_atividade: str,
                                            faixa_complexidade: str,
-                                           tempo_exec_presencial: float,
-                                           tempo_exec_teletrabalho: float,
+                                           tempo_presencial_estimado: float,
+                                           tempo_presencial_programado: float,
+                                           tempo_teletrabalho_estimado: float,
+                                           tempo_teletrabalho_programado: float,
                                            qtde_entregas: int,
 
                                            header_usr_1: dict,
@@ -941,8 +969,10 @@ def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
     input_pt["atividades"][0]["id_atividade"] = id_atividade
     input_pt["atividades"][0]["nome_atividade"] = nome_atividade
     input_pt["atividades"][0]["faixa_complexidade"] = faixa_complexidade
-    input_pt["atividades"][0]["tempo_exec_presencial"] = tempo_exec_presencial
-    input_pt["atividades"][0]["tempo_exec_teletrabalho"] = tempo_exec_teletrabalho
+    input_pt["atividades"][0]["tempo_presencial_estimado"] = tempo_presencial_estimado
+    input_pt["atividades"][0]["tempo_presencial_programado"] = tempo_presencial_programado
+    input_pt["atividades"][0]["tempo_teletrabalho_estimado"] = tempo_teletrabalho_estimado
+    input_pt["atividades"][0]["tempo_teletrabalho_programado"] = tempo_teletrabalho_programado
     input_pt["atividades"][0]["qtde_entregas"] = qtde_entregas
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
