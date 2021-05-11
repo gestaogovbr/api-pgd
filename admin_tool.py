@@ -123,7 +123,7 @@ async def create_superuser(fastapi_users: FastAPIUsers):
 
 async def truncate_users(connection: sa.engine.Connection):
     " Expurga todos os usuários do banco de dados."
-    connection.execute(sa_text("TRUNCATE TABLE 'user'"))
+    connection.execute(sa_text('TRUNCATE TABLE "user"'))
     print("Tabela de usuários truncada.")
 
 if __name__ == "__main__":
