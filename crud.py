@@ -51,7 +51,7 @@ def update_plano_tabalho(
     )
     # db_plano_trabalho.cod_unidade = cod_unidade
     for k, v in plano_trabalho.__dict__.items():
-        if k[0] != '_' and k != 'atividades':
+        if k[0] != "_" and k != "atividades":
             setattr(db_plano_trabalho, k, getattr(plano_trabalho, k))
     # db_atividades = [models.Atividade(**a.dict()) for a in plano_trabalho.atividades]
     # db_plano_trabalho.atividades = db_atividades
@@ -63,5 +63,5 @@ def update_plano_tabalho(
 
 def truncate_pts_atividades(db: Session):
     "Trunca as tabelas principais. Útil para zerar BD para executar testes."
-    db.execute(sa_text('TRUNCATE TABLE plano_trabalho CASCADE'))
+    db.execute(sa_text("TRUNCATE TABLE plano_trabalho CASCADE"))
     db.commit()

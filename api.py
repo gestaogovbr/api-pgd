@@ -10,7 +10,7 @@ from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import JWTAuthentication
 from fastapi.openapi.utils import get_openapi
 
-import models, schemas, crud
+import models, schemas, crud, util
 from database import engine, get_db
 from auth import user_db, User, UserCreate, UserUpdate, UserDB, SECRET_KEY
 from auth import database_meta as auth_db
@@ -177,29 +177,60 @@ async def patch_plano_trabalho(
                 status.HTTP_404_NOT_FOUND,
                 detail="Só é possível aplicar PATCH em um recurso"+
                         " existente.")
-    else: # patch
-        if db_plano_trabalho.cod_unidade == user.cod_unidade:
-            try:
-                merged_plano_trabalho = {
-                    k: v
-                    for k, v in db_plano_trabalho.__dict__.items()
-                    if k[0] != '_'
-                }
-                merged_plano_trabalho.update(
-                    plano_trabalho.dict(exclude_unset=True))
-                schemas.PlanoTrabalhoSchema(**merged_plano_trabalho)
-            except ValidationError as e:
-                raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=json.loads(e.json())
-            )
-            crud.update_plano_tabalho(db, plano_trabalho)
-            return merged_plano_trabalho
-        else:
-            raise HTTPException(
-                status.HTTP_403_FORBIDDEN,
-                detail="Usuário não pode alterar Plano de Trabalho"+
-                        " de outra unidade.")
+    if db_plano_trabalho.cod_unidade != user.cod_unidade:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="Usuário não pode alterar Plano de Trabalho"+
+                    " de outra unidade.")
+    
+    # atualiza os atributos, exceto atividades
+    merged_plano_trabalho = util.sa_obj_to_dict(db_plano_trabalho)
+    patch_plano_trabalho = plano_trabalho.dict(exclude_unset=True)
+    if patch_plano_trabalho.get("atividades", None):
+        del patch_plano_trabalho["atividades"]
+    merged_plano_trabalho.update(patch_plano_trabalho)
+
+    # atualiza as atividades
+
+    # traz a lista de atividade que está no banco
+    db_atividades = util.list_to_dict(
+        [
+            util.sa_obj_to_dict(atividade)
+            for atividade in getattr(db_plano_trabalho, "atividades",
+                                                    list())
+        ],
+        "id_atividade"
+    )
+
+    # cada atividade a ser modificada
+    patch_atividades = util.list_to_dict(
+        plano_trabalho.dict(exclude_unset=True).get("atividades", list()),
+        "id_atividade"
+    )
+
+    merged_atividades = util.merge_dicts(db_atividades, patch_atividades)
+    merged_plano_trabalho["atividades"] = util.dict_to_list(
+        merged_atividades,
+        "id_atividade"
+    )
+
+    # tenta validar o esquema
+
+    # para validar o esquema, é necessário ter o atributo atividades,
+    # mesmo que seja uma lista vazia
+    if merged_plano_trabalho.get("atividades", None) is None:
+        merged_plano_trabalho["atividades"] = []
+    # valida o esquema do plano de trabalho atualizado
+    try:
+        schemas.PlanoTrabalhoSchema(**merged_plano_trabalho)
+    except ValidationError as e:
+        raise HTTPException(
+        status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail=json.loads(e.json())
+    )
+    
+    crud.update_plano_tabalho(db, plano_trabalho)
+    return merged_plano_trabalho
 
 @app.get("/plano_trabalho/{cod_plano}",
         summary="Consulta plano de trabalho",
@@ -239,9 +270,9 @@ def public_facing_openapi():
         version = app.version,
         routes = app.routes
     )
-    paths = openapi_schema['paths']
-    del paths['/truncate_pts_atividades']
-    del paths['/users/{id}']
+    paths = openapi_schema["paths"]
+    del paths["/truncate_pts_atividades"]
+    del paths["/users/{id}"]
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
