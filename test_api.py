@@ -71,7 +71,7 @@ def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
     }
     if token_user:
         headers["Authorization"] = f"Bearer {token_user}"
-    
+
     return headers
 
 
@@ -486,7 +486,7 @@ def test_patch_plano_trabalho_inexistente(truncate_pt,
                                             client: Session):
     """Tenta atualizar um plano de trabalho com PATCH, faltando campos
     obrigatórios.
-    
+
     Com o verbo PATCH, os campos omitidos são interpretados como sem
     alteração. Por isso, é permitido omitir os campos obrigatórios.
     """
@@ -589,7 +589,7 @@ def test_substitute_atividades_list(truncate_pt,
     response = client.put(f"/plano_trabalho/{input_pt['cod_plano']}",
                             json=input_pt,
                             headers=header_usr_1)
-    
+
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == input_pt
 
@@ -627,7 +627,7 @@ def test_append_atividades_list(truncate_pt,
     response = client.patch(f"/plano_trabalho/{input_pt['cod_plano']}",
                             json=patch_input,
                             headers=header_usr_1)
-    
+
     input_pt["atividades"].append(nova_atividade)
 
     assert response.status_code == status.HTTP_200_OK
@@ -670,7 +670,7 @@ def test_modify_atividade(truncate_pt,
         response = client.patch(f"/plano_trabalho/{input_pt['cod_plano']}",
                           json=atividade_patch,
                           headers=header_usr_1)
-    
+
     if datetime.fromisoformat(data_avaliacao) < datetime.fromisoformat(
                                                     input_pt["data_fim"]):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
