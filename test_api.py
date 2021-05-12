@@ -922,14 +922,10 @@ def test_create_pt_invalid_carga_horaria_total(input_pt: dict,
     cod_plano = 767677
     input_pt["cod_plano"] = cod_plano
     input_pt["carga_horaria_total"] = carga_horaria_total
-    input_pt["atividades"][0]["tempo_presencial_estimado"] = tempo_pres_1
-    input_pt["atividades"][0]["tempo_presencial_programado"] = tempo_pres_1
-    input_pt["atividades"][0]["tempo_teletrabalho_estimado"] = tempo_tel_1
-    input_pt["atividades"][0]["tempo_teletrabalho_programado"] = tempo_tel_1
-    input_pt["atividades"][1]["tempo_presencial_estimado"] = tempo_pres_2
-    input_pt["atividades"][1]["tempo_presencial_programado"] = tempo_pres_2
-    input_pt["atividades"][1]["tempo_teletrabalho_estimado"] = tempo_tel_2
-    input_pt["atividades"][1]["tempo_teletrabalho_programado"] = tempo_tel_2
+    input_pt["atividades"][0]["tempo_presencial_executado"] = tempo_pres_1
+    input_pt["atividades"][0]["tempo_teletrabalho_executado"] = tempo_tel_1
+    input_pt["atividades"][1]["tempo_presencial_executado"] = tempo_pres_2
+    input_pt["atividades"][1]["tempo_teletrabalho_executado"] = tempo_tel_2
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,

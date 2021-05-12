@@ -70,9 +70,15 @@ class PlanoTrabalhoSchema(BaseModel):
     def validate_carga_horaria_total(cls, values):
         total_sum = 0
         for a in values.get("atividades"):
-            total_sum += (getattr(a, "tempo_presencial_estimado") +
-                          getattr(a, "tempo_teletrabalho_estimado"))
-        if total_sum != values.get("carga_horaria_total"):
+            if getattr(a, "tempo_presencial_executado", None) is not None and \
+               getattr(a, "tempo_teletrabalho_executado", None) is not None:
+                total_sum += (a.tempo_presencial_executado +
+                              a.tempo_teletrabalho_executado)
+            else:
+                total_sum = None
+                break
+
+        if total_sum and total_sum != values.get("carga_horaria_total"):
             raise ValueError("A soma dos tempos de execução presencial e " \
                              "teletrabalho das atividades deve ser igual à " \
                              "carga_horaria_total.")
