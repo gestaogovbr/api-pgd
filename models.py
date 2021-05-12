@@ -40,7 +40,7 @@ class Atividade(Base):
     # id_atividade = Column(Integer, primary_key=True, index=True)
     cod_unidade = Column(Integer, primary_key=True, index=True)
     id_plano_trabalho = Column(Integer, ForeignKey("plano_trabalho.id"), primary_key=True, index=True)
-    id_atividade = Column(Integer, primary_key=True, index=True)
+    id_atividade = Column(String, primary_key=True, index=True)
     nome_grupo_atividade = Column(String)
     nome_atividade = Column(String)
     faixa_complexidade = Column(String)

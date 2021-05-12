@@ -101,7 +101,7 @@ def input_pt() -> dict:
         "horas_homologadas": 0.0,
         "atividades": [
             {
-                "id_atividade": 2,
+                "id_atividade": "2",
                 "nome_grupo_atividade": "string",
                 "nome_atividade": "string",
                 "faixa_complexidade": "string",
@@ -120,7 +120,7 @@ def input_pt() -> dict:
                 "justificativa": "string"
             },
             {
-                "id_atividade": 3,
+                "id_atividade": "3",
                 "nome_grupo_atividade": "string",
                 "nome_atividade": "string",
                 "faixa_complexidade": "string",
@@ -188,7 +188,7 @@ fields_atividade = {
 }
 
 atividades_dict = {
-    2: {
+    "2": {
         "nome_grupo_atividade": "string",
         "nome_atividade": "string",
         "faixa_complexidade": "string",
@@ -206,7 +206,7 @@ atividades_dict = {
         "data_avaliacao": "2021-01-15",
     "justificativa": "string"
     },
-    3: {
+    "3": {
         "nome_grupo_atividade": "string",
         "nome_atividade": "string",
         "faixa_complexidade": "string",
@@ -600,7 +600,7 @@ def test_append_atividades_list(truncate_pt,
                                 client: Session):
     "Acrescenta uma nova atividade à lista de atividades existentes."
     nova_atividade = {
-      "id_atividade": 4,
+      "id_atividade": "4",
       "nome_grupo_atividade": "string",
       "nome_atividade": "string",
       "faixa_complexidade": "string",
@@ -662,7 +662,7 @@ def test_modify_atividade(truncate_pt,
             "cod_plano": input_pt["cod_plano"],
             "atividades": [
                 {
-                    "id_atividade": 3,
+                    "id_atividade": "3",
                     "data_avaliacao": data_avaliacao
                 }
             ]
@@ -718,8 +718,8 @@ def test_create_pt_invalid_dates(input_pt: dict,
                                  data_inicio: str,
                                  data_fim: str,
                                  cod_plano: str,
-                                 id_ati_1: int,
-                                 id_ati_2: int,
+                                 id_ati_1: str,
+                                 id_ati_2: str,
                                  header_usr_1: dict,
                                  truncate_pt,
                                  client: Session):
@@ -755,8 +755,8 @@ def test_create_pt_invalid_data_avaliacao(input_pt: dict,
                                           dt_avaliacao_1: str,
                                           dt_avaliacao_2: str,
                                           cod_plano: dict,
-                                          id_ati_1: int,
-                                          id_ati_2: int,
+                                          id_ati_1: str,
+                                          id_ati_2: str,
                                           header_usr_1: dict,
                                           truncate_pt,
                                           client: Session):
@@ -788,8 +788,8 @@ def test_create_pt_invalid_data_avaliacao(input_pt: dict,
                             ])
 def test_create_pt_duplicate_atividade(input_pt: dict,
                                        cod_plano: str,
-                                       id_ati_1: int,
-                                       id_ati_2: int,
+                                       id_ati_1: str,
+                                       id_ati_2: str,
                                        header_usr_1: dict,
                                        truncate_pt,
                                        client: Session):
@@ -948,17 +948,17 @@ def test_create_pt_invalid_carga_horaria_total(input_pt: dict,
     "qtde_entregas",
                     [
                         (None, "asd", "asd", 0.0, 0.0, 0.0, 0.0, 3),
-                        (123123, None, "asd", 0.0, 0.0, 0.0, 0.0, 3),
-                        (123123, "asd", None, 0.0, 0.0, 0.0, 0.0, 3),
-                        (123123, "asd", "asd", None, 0.0, 0.0, 0.0, 3),
-                        (123123, "asd", "asd", 0.0, None, 0.0, 0.0, 3),
-                        (123123, "asd", "asd", 0.0, 0.0, None, 0.0, 3),
-                        (123123, "asd", "asd", 0.0, 0.0, 0.0, None, 3),
-                        (123123, "asd", "asd", 0.0, 0.0, 0.0, 0.0, None),
+                        ("123123", None, "asd", 0.0, 0.0, 0.0, 0.0, 3),
+                        ("123123", "asd", None, 0.0, 0.0, 0.0, 0.0, 3),
+                        ("123123", "asd", "asd", None, 0.0, 0.0, 0.0, 3),
+                        ("123123", "asd", "asd", 0.0, None, 0.0, 0.0, 3),
+                        ("123123", "asd", "asd", 0.0, 0.0, None, 0.0, 3),
+                        ("123123", "asd", "asd", 0.0, 0.0, 0.0, None, 3),
+                        ("123123", "asd", "asd", 0.0, 0.0, 0.0, 0.0, None),
                     ])
 def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
 
-                                           id_atividade: int,
+                                           id_atividade: str,
                                            nome_atividade: str,
                                            faixa_complexidade: str,
                                            tempo_presencial_estimado: float,

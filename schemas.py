@@ -4,7 +4,7 @@ from datetime import date
 from enum import IntEnum
 
 class AtividadeSchema(BaseModel):
-    id_atividade: int = Field(title="id da atividade")
+    id_atividade: str = Field(title="id da atividade")
     nome_grupo_atividade: Optional[str]
     nome_atividade: str
     faixa_complexidade: str
@@ -125,7 +125,7 @@ class PlanoTrabalhoSchema(BaseModel):
         orm_mode = True
 
 class AtividadeUpdateSchema(BaseModel):
-    id_atividade: int = Field(title="id da atividade")
+    id_atividade: str = Field(title="id da atividade")
     nome_grupo_atividade: Optional[str]
     nome_atividade: Optional[str]
     faixa_complexidade: Optional[str]
