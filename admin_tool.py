@@ -95,16 +95,20 @@ def grant_superuser(connection: sa.engine.Connection, email: str):
         f"com o e-mail {email}."
     )
 
-async def create_superuser(fastapi_users: FastAPIUsers):
+async def create_superuser(
+    fastapi_users: FastAPIUsers,
+    show_password: bool = False
+    ):
     " Cria um novo superusuário."
     print(" Preencha os dados do usuário:\n")
     email = input("  e-mail: ") 
     cod_unidade = input ("  código da unidade: ")
-    # TODO: parametrizar abaixo
-    # password = getpass.getpass(prompt="  senha: ")
-    # confirm_password = getpass.getpass(prompt="  confirmação da senha: ")
-    password = input("  senha: ")
-    confirm_password = input("  confirmação da senha: ")
+    if show_password:
+        password = input("  senha: ")
+        confirm_password = input("  confirmação da senha: ")
+    else:
+        password = getpass.getpass(prompt="  senha: ")
+        confirm_password = getpass.getpass(prompt="  confirmação da senha: ")
     if password != confirm_password:
         raise ValueError("As senhas informadas são diferentes.")
     
@@ -149,6 +153,12 @@ if __name__ == "__main__":
         action="store_true"
     )
     parser.add_argument(
+        "--show_password",
+        help="mostra as senhas ao digitá-las",
+        action="store_true",
+        default=False
+    )
+    parser.add_argument(
         "--truncate-users",
         help=truncate_users.__doc__,
         action="store_true"
@@ -170,7 +180,7 @@ if __name__ == "__main__":
         elif args.create_superuser:
             loop = asyncio.get_event_loop()
             loop.run_until_complete(
-                create_superuser(fastapi_users)
+                create_superuser(fastapi_users, args.show_password)
             )
         elif args.truncate_users:
             loop = asyncio.get_event_loop()

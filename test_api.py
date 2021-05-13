@@ -283,7 +283,8 @@ def register_admin(truncate_users, admin_credentials: dict):
         [
             "/usr/local/bin/python",
             "/home/api-pgd/admin_tool.py",
-            "--create_superuser"
+            "--create_superuser",
+            "--show_password"
         ],
         stdout=subprocess.PIPE,
         stdin=subprocess.PIPE,
