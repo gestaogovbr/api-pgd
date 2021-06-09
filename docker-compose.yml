@@ -13,7 +13,8 @@ services:
       - POSTGRES_DB=api_pgd
   web:
     image: api-pgd:latest
-    command: uvicorn api:app --host 0.0.0.0 --port 5057 --reload
+    command:
+      bash -c 'while !</dev/tcp/db-api-pgd/5432; do echo "Waiting for database to start..."; sleep 1; done; uvicorn api:app --host 0.0.0.0 --port 5057 --reload'
     ports:
       - "5057:5057"
     volumes:
