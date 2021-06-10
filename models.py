@@ -12,6 +12,7 @@ class PlanoTrabalho(Base):
     "Plano de Trabalho"
     __tablename__ = "plano_trabalho"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    situacao = Column(String)
     cod_unidade = Column(Integer, nullable=False)
     cod_plano = Column(String, nullable=False)
     matricula_siape = Column(Integer)

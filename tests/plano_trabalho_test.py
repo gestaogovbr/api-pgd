@@ -13,6 +13,7 @@ import pytest
 
 fields_plano_trabalho = {
     "optional": (
+        ["situacao"],
         ["data_interrupcao"],
         ["data_interrupcao", "entregue_no_prazo"],
         ["entregue_no_prazo"],
