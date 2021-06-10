@@ -4,23 +4,80 @@ from datetime import date
 from enum import IntEnum
 
 class AtividadeSchema(BaseModel):
-    id_atividade: str = Field(title="id da atividade")
-    nome_grupo_atividade: Optional[str]
-    nome_atividade: str
-    faixa_complexidade: str
-    parametros_complexidade: Optional[str]
-    tempo_presencial_estimado: float
-    tempo_presencial_programado: float
-    tempo_presencial_executado: Optional[float]
-    tempo_teletrabalho_estimado: float
-    tempo_teletrabalho_programado: float
-    tempo_teletrabalho_executado: Optional[float]
-    entrega_esperada: Optional[str]
-    qtde_entregas: int
-    qtde_entregas_efetivas: Optional[int]
-    avaliacao: Optional[int]
-    data_avaliacao: Optional[date]
-    justificativa: Optional[str]
+    id_atividade: str = Field(
+        title="id da atividade",
+        description="Identificador único da atividade na unidade")
+    nome_grupo_atividade: Optional[str] = Field(
+        title="Nome do grupo de atividades"
+    )
+    nome_atividade: str = Field(
+        title="Nome da atividade"
+    )
+    faixa_complexidade: str = Field(
+        title="Faixa de complexidade",
+        description="Faixa de complexidade da atividade."
+    )
+    parametros_complexidade: Optional[str] = Field(
+        title="Parâmetros de complexidade",
+        description="Parâmetros adotados para definição da faixa de "
+                    "complexidade."
+    )
+    tempo_presencial_estimado: float = Field(
+        title="Tempo presencial estimado",
+        description="Tempo estimado para a execução da atividade em regime "
+                    "presencial, antes da implementação do programa de "
+                    "gestão. Usado como base de comparação para o "
+                    "planejamento da atividade."
+    )
+    tempo_presencial_programado: float = Field(
+        title="Tempo presencial programado",
+        description="Tempo programado para a execução da atividade em regime "
+                    "presencial, no âmbito do programa de gestão."
+    )
+    tempo_presencial_executado: Optional[float] = Field(
+        title="Tempo presencial executado",
+        description="Tempo de fato utilizado em regime presencial para "
+                    "executar a atividade."
+    )
+    tempo_teletrabalho_estimado: float = Field(
+        title="Tempo em teletrabalho estimado",
+        description="Tempo estimado para a execução da atividade em regime "
+                    "de teletrabalho. Usado como base de comparação para o "
+                    "planejamento da atividade."
+    )
+    tempo_teletrabalho_programado: float = Field(
+        title="Tempo em teletrabalho programado",
+        description="Tempo programado para a execução da atividade em regime "
+                    "de teletrabalho."
+    )
+    tempo_teletrabalho_executado: Optional[float] = Field(
+        title="Tempo em teletrabalho executado",
+        description="Tempo de fato utilizado em regime de teletrabalho para "
+                    "executar a atividade."
+    )
+    entrega_esperada: Optional[str] = Field(
+        title="Entregas esperadas"
+    )
+    qtde_entregas: int = Field(
+        title="Quantidade de entregas",
+        description="Quantidade de entregas que o participante deverá "
+                    "realizar."
+    )
+    qtde_entregas_efetivas: Optional[int] = Field(
+        title="Quantidade de entregas efetivas",
+        description="Quantidade de entregas efetivamente realizadas."
+    )
+    avaliacao: Optional[int] = Field(
+        title="Avaliação",
+        description="Avaliação das entregas realizadas."
+    )
+    data_avaliacao: Optional[date] = Field(
+        title="Data de avaliação"
+    )
+    justificativa: Optional[str] = Field(
+        title="Justificativa",
+        description="Texto livre para justificativas."
+    )
 
     class Config:
         orm_mode = True
