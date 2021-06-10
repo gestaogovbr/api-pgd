@@ -31,25 +31,71 @@ class ModalidadeEnum(IntEnum):
     teletrabalho = 3
 
 class PlanoTrabalhoSchema(BaseModel):
-    cod_plano: str = Field(title="código do plano")
-    matricula_siape: int = Field(title="Matrícula SIAPE")
+    cod_plano: str = Field(
+        title="código do Plano de Trabalho",
+        description="Código SIORG da unidade organizacional. Será obtido no momento da autenticação."
+        )
+    matricula_siape: int = Field(
+        title="Matrícula SIAPE",
+        description="Matrícula SIAPE do participante."
+        )
     cpf: str = Field(
         title="CPF",
         description="Cadastro da pessoa física na Receita Federal do Brasil.\n"
             "\n"
-            "Deve conter apenas dígitos.")
-    nome_participante: str
-    cod_unidade_exercicio: int
-    nome_unidade_exercicio: str
-    modalidade_execucao: ModalidadeEnum = Field(..., alias="modalidade_execucao")
-    carga_horaria_semanal: int
-    data_inicio: date
-    data_fim: date
-    carga_horaria_total: float
-    data_interrupcao: Optional[date]
-    entregue_no_prazo: Optional[bool] = None #TODO Na especificação está como Int e usa 1 e 2 para sim e não. Não seria melhor usar bool?
-    horas_homologadas: Optional[float]
-    atividades: List[AtividadeSchema] # = []
+            "Deve conter apenas dígitos."
+        )
+    nome_participante: str = Field(
+        title="Nome do participante"
+        )
+    cod_unidade_exercicio: int = Field(
+        title="Código da Unidade de Exercício",
+        description="Código SIORG da Unidade Organizacional em que o participante está em exercício."
+        )
+    nome_unidade_exercicio: str = Field(
+        title="Nome da Unidade de Exercício",
+        description="Nome SIORG da Unidade Organizacional em que o participante está em exercício."
+        )
+    modalidade_execucao: ModalidadeEnum = Field(
+        ...,
+        alias="modalidade_execucao",
+        title="Modalidade de Execução do Plano",
+        description="Modalidade de execução da atividade\n"
+            "\n"
+            "* 1: presencial;\n"
+            "* 2: semipresencial;\n"
+            "* 3: teletrabalho\n"
+            )
+    carga_horaria_semanal: int = Field(
+        title="Carga Horária Semanal",
+        description="Carga horária semanal do participante."
+        )
+    data_inicio: date = Field(
+        title="Data Início",
+        description="Data de início do Plano de Trabalho."
+        )
+    data_fim: date = Field(
+        title="Data Fim",
+        description="Data de fim do Plano de Trabalho."
+        )
+    carga_horaria_total: float = Field(
+        title="Carga Horária Total"
+        )
+    data_interrupcao: Optional[date] = Field(
+        title="Data de interrupção"
+        )
+    entregue_no_prazo: Optional[bool] = Field(
+        title="Entregue no prazo",
+        description="Indica se os produtos foram entregues no prazo."
+        )
+    horas_homologadas: Optional[float] = Field(
+        title="Horas homologadas",
+        description="Quantidade de horas homologadas."
+        )
+    atividades: List[AtividadeSchema] = Field(
+        title="Atividades",
+        description="Lista de Atividades planejadas no Plano de Trabalho."
+        )
 
     # Validações
     @root_validator
