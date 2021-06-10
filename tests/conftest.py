@@ -82,6 +82,7 @@ def client() -> Generator[Session, None, None]:
 def input_pt() -> dict:
     pt_json = {
         "cod_plano": "555",
+        "situacao": "string",
         "matricula_siape": 0,
         "cpf": "99160773120",
         "nome_participante": "string",

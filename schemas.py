@@ -96,6 +96,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="código do Plano de Trabalho",
         description="Identificador único do Plano de Trabalho."
         )
+    situacao: Optional[str] = Field(title="situação do plano")
     matricula_siape: int = Field(
         title="Matrícula SIAPE",
         description="Matrícula SIAPE do participante."
@@ -242,6 +243,7 @@ class PlanoTrabalhoUpdateSchema(BaseModel):
     """Esquema para atualização do plano de trabalho. Na atualização,
     todos os campos são opcionais, exceto cod_plano."""
     cod_plano: str
+    situacao: Optional[str]
     matricula_siape: Optional[int]
     cpf: Optional[str]
     nome_participante: Optional[str]
