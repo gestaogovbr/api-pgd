@@ -212,7 +212,7 @@ def test_append_atividades_list(truncate_pt,
                             itertools.product(
                                 ("put", "patch"),
                                 (
-                                    "2021-01-11", # < data_fim do plano
+                                    "2021-01-02", # é "<" data_inicio do plano
                                     "2021-03-01"
                                 )
                             )
@@ -247,10 +247,10 @@ def test_modify_atividade(truncate_pt,
                           headers=header_usr_1)
 
     if datetime.fromisoformat(data_avaliacao) < datetime.fromisoformat(
-                                                    input_pt["data_fim"]):
+                                                    input_pt["data_inicio"]):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = "Data de avaliação da atividade deve ser maior ou igual" \
-                     " que a Data Fim do Plano de Trabalho."
+                     " que a Data de início do Plano de Trabalho."
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
         assert response.status_code == status.HTTP_200_OK
