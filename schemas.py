@@ -161,12 +161,12 @@ class PlanoTrabalhoSchema(BaseModel):
         data_fim = values.get("data_fim", None)
         if data_inicio > data_fim:
             raise ValueError("Data fim do Plano de Trabalho deve ser maior" \
-                     " ou igual que Data início.")
+                     " ou igual que Data de início.")
         for atividade in values.get("atividades", []):
             if getattr(atividade, "data_avaliacao", None) is not None and \
-                data_fim > atividade.data_avaliacao:
+                atividade.data_avaliacao < data_inicio:
                     raise ValueError("Data de avaliação da atividade deve ser maior ou igual" \
-                        " que a Data Fim do Plano de Trabalho.")
+                        " que a Data de início do Plano de Trabalho.")
         return values
 
     @root_validator

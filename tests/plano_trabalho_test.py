@@ -195,13 +195,13 @@ def test_create_pt_invalid_dates(input_pt: dict,
     if data_inicio > data_fim:
         assert response.status_code == 422
         detail_msg = "Data fim do Plano de Trabalho deve ser maior" \
-                     " ou igual que Data início."
+                     " ou igual que Data de início."
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
         assert response.status_code == status.HTTP_200_OK
 
 @pytest.mark.parametrize(
-    "dt_fim, dt_avaliacao_1, dt_avaliacao_2, cod_plano, id_ati_1, id_ati_2",
+    "dt_inicio, dt_avaliacao_1, dt_avaliacao_2, cod_plano, id_ati_1, id_ati_2",
     [
       ("2020-06-04", "2020-04-01", "2020-04-01", "77", 333, 334),
       ("2020-06-04", "2020-04-01", "2021-04-01", "78", 335, 336),
@@ -211,7 +211,7 @@ def test_create_pt_invalid_dates(input_pt: dict,
       ("2020-04-01", "2020-02-01", "2020-01-04", "82", 343, 344),
       ])
 def test_create_pt_invalid_data_avaliacao(input_pt: dict,
-                                          dt_fim: str,
+                                          dt_inicio: str,
                                           dt_avaliacao_1: str,
                                           dt_avaliacao_2: str,
                                           cod_plano: dict,
@@ -220,8 +220,8 @@ def test_create_pt_invalid_data_avaliacao(input_pt: dict,
                                           header_usr_1: dict,
                                           truncate_pt,
                                           client: Session):
-    input_pt["data_inicio"] = "2020-01-01"
-    input_pt["data_fim"] = dt_fim
+    input_pt["data_inicio"] = dt_inicio
+    input_pt["data_fim"] = "2025-01-01"
     input_pt["cod_plano"] = cod_plano
     input_pt["atividades"][0]["id_atividade"] = id_ati_1
     input_pt["atividades"][0]["data_avaliacao"] = dt_avaliacao_1
@@ -231,10 +231,10 @@ def test_create_pt_invalid_data_avaliacao(input_pt: dict,
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,
                           headers=header_usr_1)
-    if dt_fim > dt_avaliacao_1 or dt_fim > dt_avaliacao_2:
+    if dt_inicio > dt_avaliacao_1 or dt_inicio > dt_avaliacao_2:
         assert response.status_code == 422
         detail_msg = "Data de avaliação da atividade deve ser maior ou igual" \
-                     " que a Data Fim do Plano de Trabalho."
+                     " que a Data de início do Plano de Trabalho."
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
         assert response.status_code == status.HTTP_200_OK
