@@ -367,17 +367,15 @@ def test_create_pt_invalid_carga_horaria_semanal(input_pt: dict,
 @pytest.mark.parametrize(
     "id_atividade, nome_atividade, faixa_complexidade, "\
     "tempo_presencial_estimado, tempo_presencial_programado, "\
-    "tempo_teletrabalho_estimado, tempo_teletrabalho_programado, "\
-    "qtde_entregas",
+    "tempo_teletrabalho_estimado, tempo_teletrabalho_programado",
                     [
-                        (None, "asd", "asd", 0.0, 0.0, 0.0, 0.0, 3),
-                        ("123123", None, "asd", 0.0, 0.0, 0.0, 0.0, 3),
-                        ("123123", "asd", None, 0.0, 0.0, 0.0, 0.0, 3),
-                        ("123123", "asd", "asd", None, 0.0, 0.0, 0.0, 3),
-                        ("123123", "asd", "asd", 0.0, None, 0.0, 0.0, 3),
-                        ("123123", "asd", "asd", 0.0, 0.0, None, 0.0, 3),
-                        ("123123", "asd", "asd", 0.0, 0.0, 0.0, None, 3),
-                        ("123123", "asd", "asd", 0.0, 0.0, 0.0, 0.0, None),
+                        (None, "asd", "asd", 0.0, 0.0, 0.0, 0.0),
+                        ("123123", None, "asd", 0.0, 0.0, 0.0, 0.0),
+                        ("123123", "asd", None, 0.0, 0.0, 0.0, 0.0),
+                        ("123123", "asd", "asd", None, 0.0, 0.0, 0.0),
+                        ("123123", "asd", "asd", 0.0, None, 0.0, 0.0),
+                        ("123123", "asd", "asd", 0.0, 0.0, None, 0.0),
+                        ("123123", "asd", "asd", 0.0, 0.0, 0.0, None),
                     ])
 def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
 
@@ -388,7 +386,6 @@ def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
                                            tempo_presencial_programado: float,
                                            tempo_teletrabalho_estimado: float,
                                            tempo_teletrabalho_programado: float,
-                                           qtde_entregas: int,
 
                                            header_usr_1: dict,
                                            truncate_pt,
@@ -402,7 +399,6 @@ def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
     input_pt["atividades"][0]["tempo_presencial_programado"] = tempo_presencial_programado
     input_pt["atividades"][0]["tempo_teletrabalho_estimado"] = tempo_teletrabalho_estimado
     input_pt["atividades"][0]["tempo_teletrabalho_programado"] = tempo_teletrabalho_programado
-    input_pt["atividades"][0]["qtde_entregas"] = qtde_entregas
 
     response = client.put(f"/plano_trabalho/{cod_plano}",
                           json=input_pt,

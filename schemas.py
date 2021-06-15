@@ -58,7 +58,7 @@ class AtividadeSchema(BaseModel):
     entrega_esperada: Optional[str] = Field(
         title="Entregas esperadas"
     )
-    qtde_entregas: int = Field(
+    qtde_entregas: Optional[int] = Field(
         title="Quantidade de entregas",
         description="Quantidade de entregas que o participante deverá "
                     "realizar."
