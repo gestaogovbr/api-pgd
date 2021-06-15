@@ -364,39 +364,6 @@ def test_create_pt_invalid_carga_horaria_semanal(input_pt: dict,
     detail_msg = "Carga horária semanal deve ser entre 1 e 40"
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
-
-@pytest.mark.parametrize("carga_horaria_total, tempo_pres_1, tempo_tel_1, tempo_pres_2, tempo_tel_2",
-                          [(56.0, 2, 3, 4, 5),
-                           (-2.0, 2, 3, 4.3, 5),
-                           (0.0, 2, 3, 4.2, 5),
-                           ])
-def test_create_pt_invalid_carga_horaria_total(input_pt: dict,
-                                                 carga_horaria_total: float,
-                                                 tempo_pres_1: float,
-                                                 tempo_tel_1: float,
-                                                 tempo_pres_2: float,
-                                                 tempo_tel_2: float,
-                                                 header_usr_1: dict,
-                                                 truncate_pt,
-                                                 client: Session):
-    cod_plano = 767677
-    input_pt["cod_plano"] = cod_plano
-    input_pt["carga_horaria_total"] = carga_horaria_total
-    input_pt["atividades"][0]["tempo_presencial_executado"] = tempo_pres_1
-    input_pt["atividades"][0]["tempo_teletrabalho_executado"] = tempo_tel_1
-    input_pt["atividades"][1]["tempo_presencial_executado"] = tempo_pres_2
-    input_pt["atividades"][1]["tempo_teletrabalho_executado"] = tempo_tel_2
-
-    response = client.put(f"/plano_trabalho/{cod_plano}",
-                          json=input_pt,
-                          headers=header_usr_1)
-
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "A soma dos tempos de execução presencial e " \
-                 "teletrabalho das atividades deve ser igual à " \
-                 "carga_horaria_total."
-    assert response.json().get("detail")[0]["msg"] == detail_msg
-
 @pytest.mark.parametrize(
     "id_atividade, nome_atividade, faixa_complexidade, "\
     "tempo_presencial_estimado, tempo_presencial_programado, "\
