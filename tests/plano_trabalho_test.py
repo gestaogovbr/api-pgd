@@ -110,7 +110,8 @@ def test_create_huge_plano_trabalho(input_pt: dict,
                         ("put", "patch"), # verb
                         fields_plano_trabalho["mandatory"] # missing_fields
                     ))
-def test_update_plano_trabalho_missing_mandatory_fields(verb: str,
+def test_update_plano_trabalho_missing_mandatory_fields(truncate_pt,
+                                            verb: str,
                                             example_pt,
                                             input_pt: dict,
                                             missing_fields: list,
