@@ -23,6 +23,7 @@ fields_atividade = {
         ["justificativa"],
         ["tempo_presencial_executado"],
         ["tempo_teletrabalho_executado"],
+        ["qtde_entregas"],
     ),
     "mandatory": (
         ["nome_atividade"],
@@ -31,7 +32,6 @@ fields_atividade = {
         ["tempo_presencial_programado"],
         ["tempo_teletrabalho_estimado"],
         ["tempo_teletrabalho_programado"],
-        ["qtde_entregas"],
     )
 }
 
