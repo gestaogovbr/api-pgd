@@ -84,6 +84,27 @@ def test_create_plano_trabalho_missing_mandatory_fields(input_pt: dict,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
+def test_create_huge_plano_trabalho(input_pt: dict,
+                                    header_usr_1: dict,
+                                    truncate_pt,
+                                    client: Session):
+    def create_huge_atividade(id_atividade: str):
+        new_atividade = input_pt["atividades"][0].copy()
+        new_atividade["id_atividade"] = id_atividade
+        new_atividade["entrega_esperada"] = "x" * 1000000 # 1mi de caracteres
+        new_atividade["justificativa"] = "x" * 1000000 # 1mi de caracteres
+        return new_atividade
+
+    for i in range(200):
+        input_pt["atividades"].append(create_huge_atividade(f"unique-key-{i}"))
+
+    response = client.put(f"/plano_trabalho/555",
+                          json=input_pt,
+                          headers=header_usr_1)
+
+    assert response.status_code == status.HTTP_200_OK
+
+
 @pytest.mark.parametrize("verb, missing_fields",
                     itertools.product( # todas as combinações entre
                         ("put", "patch"), # verb
