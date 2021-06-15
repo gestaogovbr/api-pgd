@@ -4,6 +4,25 @@ Repositório com o código-fonte da API do Programa de Gestão (PGD).
 
 [![Docker Image Build & CI Tests](https://github.com/economiagovbr/api-pgd/actions/workflows/docker-image.yml/badge.svg)](https://github.com/economiagovbr/api-pgd/actions/workflows/docker-image.yml)
 
+## Contextualização
+
+O Programa de Gestão, segundo a
+[Instrução Normativa n.º 65, de 30 de julho de 2020](https://www.in.gov.br/en/web/dou/-/instrucao-normativa-n-65-de-30-de-julho-de-2020-269669395),
+da Secretaria de Gestão e Desempenho de Pessoal (SGP) do Ministério da
+Economia, é uma:
+
+> ferramenta de gestão autorizada em ato normativo de Ministro de Estado
+> e respaldada pela norma de procedimentos gerais, que disciplina o
+> exercício de atividades em que os resultados possam ser efetivamente
+> mensurados, cuja execução possa ser realizada pelos participantes.
+
+As atividades mensuradas podem ser realizadas tanto presencialmente
+quanto na modalidade de teletrabalho.
+
+O objetivo desta API integradora é receber os dados enviados por
+diversos órgãos da administração, de modo a possibilitar a sua
+consolidação em uma base de dados.
+
 ## Rodando a API
 
 1. Instalar Docker CE [aqui!](https://docs.docker.com/get-docker/)
