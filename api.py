@@ -40,10 +40,9 @@ Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
   * **2** - Semipresencial
   * **3** - Teletrabalho
 * `carga_horaria_semanal` deve ser entre 1 e 40.
-* A soma dos tempos `tempo_exec_presencial` e `tempo_exec_teletrabalho` das atividades deve ser igual à `carga_horaria_total` do Plano de Trabalho.
 * Os campos `quantidade_entregas`, `quantidade_entregas_efetivas`, `tempo_exec_presencial`, `tempo_exec_teletrabalho` da Atividade e `horas_homologadas` do Plano de Trabalho devem ser maiores que zero.
 * `entregue_no_prazo` não é obrigatório e deve ser `True` ou `False` caso esteja preenchido.
-* Explore a seção [**Schemas**](#model-AtividadeSchema) nesta documentação para descobrir quais campos são obrigatórios para as Atividades e os Planos de Trabalho.
+* Explore a seção [**Schemas**](#model-AtividadeSchema) nesta documentação para descobrir mais detalhes e quais campos são obrigatórios para as Atividades e os Planos de Trabalho.
 
 Para reportar erros na aplicação e interagir com a equipe de desenvolvimento [acesse aqui](https://github.com/economiagovbr/api-pgd/issues).
 """
@@ -182,7 +181,7 @@ async def patch_plano_trabalho(
             status.HTTP_403_FORBIDDEN,
             detail="Usuário não pode alterar Plano de Trabalho"+
                     " de outra unidade.")
-    
+
     # atualiza os atributos, exceto atividades
     merged_plano_trabalho = util.sa_obj_to_dict(db_plano_trabalho)
     patch_plano_trabalho = plano_trabalho.dict(exclude_unset=True)
@@ -228,7 +227,7 @@ async def patch_plano_trabalho(
         status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail=json.loads(e.json())
     )
-    
+
     crud.update_plano_tabalho(db, plano_trabalho)
     return merged_plano_trabalho
 
