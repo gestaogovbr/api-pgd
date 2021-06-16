@@ -27,7 +27,13 @@ class PlanoTrabalho(Base):
     data_interrupcao = Column(Date)
     entregue_no_prazo = Column(Boolean) #TODO Na especificação está como Int e usa 1 e 2 para sim e não. Não seria melhor usar bool?
     horas_homologadas = Column(Float)
-    atividades = relationship("Atividade", back_populates="plano_trabalho")
+    atividades = relationship(
+        "Atividade",
+        back_populates="plano_trabalho",
+        lazy="joined",
+        passive_deletes=True,
+        cascade="save-update, merge, delete, delete-orphan"
+    )
     __table_args__ = (UniqueConstraint(
         "cod_unidade",
         "cod_plano",

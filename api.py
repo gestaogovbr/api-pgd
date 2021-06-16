@@ -143,8 +143,8 @@ async def create_or_update_plano_trabalho(
         )
     else: # update
         if db_plano_trabalho.cod_unidade == user.cod_unidade:
-            crud.update_plano_tabalho(db, plano_trabalho)
-            return plano_trabalho
+            crud.update_plano_trabalho(db, plano_trabalho,
+                                                user.cod_unidade)
         else:
             raise HTTPException(
                 status.HTTP_403_FORBIDDEN,
@@ -195,8 +195,7 @@ async def patch_plano_trabalho(
     db_atividades = util.list_to_dict(
         [
             util.sa_obj_to_dict(atividade)
-            for atividade in getattr(db_plano_trabalho, "atividades",
-                                                    list())
+            for atividade in getattr(db_plano_trabalho, "atividades", list())
         ],
         "id_atividade"
     )
@@ -221,14 +220,14 @@ async def patch_plano_trabalho(
         merged_plano_trabalho["atividades"] = []
     # valida o esquema do plano de trabalho atualizado
     try:
-        schemas.PlanoTrabalhoSchema(**merged_plano_trabalho)
+        merged_schema = schemas.PlanoTrabalhoSchema(**merged_plano_trabalho)
     except ValidationError as e:
         raise HTTPException(
         status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail=json.loads(e.json())
     )
-
-    crud.update_plano_tabalho(db, plano_trabalho)
+    
+    crud.update_plano_trabalho(db, merged_schema, user.cod_unidade)
     return merged_plano_trabalho
 
 @app.get("/plano_trabalho/{cod_plano}",

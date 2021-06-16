@@ -117,6 +117,25 @@ def test_create_atividades_missing_mandatory_fields(input_pt: dict,
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
+@pytest.mark.parametrize("verb", ("put", "patch"))
+def test_update_atividades_fields(verb: str,
+                                truncate_pt,
+                                example_pt,
+                                input_pt: dict,
+                                header_usr_1: dict,
+                                client: Session):
+    """ Atualiza campos na atividade.
+    """
+    input_pt["atividades"][0]["nome_atividade"] = "alterada"
+    input_pt["atividades"][1]["nome_atividade"] = "alterada"
+    call = getattr(client, verb) # put ou patch
+    call(f"/plano_trabalho/{input_pt['cod_plano']}",
+                          json=input_pt,
+                          headers=header_usr_1)
+    response = client.get(f"/plano_trabalho/{input_pt['cod_plano']}",
+                            headers=header_usr_1)
+    assert response.json()["atividades"][0]["nome_atividade"] == "alterada"
+
 @pytest.mark.parametrize("verb, missing_fields",
                     itertools.product( # todas as combinações entre
                         ("put", "patch"), # verb

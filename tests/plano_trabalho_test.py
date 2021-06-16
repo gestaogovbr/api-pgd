@@ -44,6 +44,21 @@ def test_create_plano_trabalho_completo(input_pt: dict,
     assert response.json().get("detail", None) == None
     assert response.json() == input_pt
 
+def test_update_plano_trabalho(input_pt: dict,
+                               example_pt,
+                               header_usr_1: dict,
+                               truncate_pt,
+                               client: Session):
+    # A fixture example_pt cria um novo Plano de Trabalho na API
+    # Altera um campo do PT e reenvia pra API (update)
+    input_pt["nome_unidade_exercicio"] = "CGINF" # Valor era "string"
+    client.put("/plano_trabalho/555", json=input_pt, headers=header_usr_1)
+    # Consulta API para conferir se a alteração foi persistida
+    response = client.get("/plano_trabalho/555", headers=header_usr_1)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["nome_unidade_exercicio"] == "CGINF"
+
 @pytest.mark.parametrize("omitted_fields",
                          enumerate(fields_plano_trabalho["optional"]))
 def test_create_plano_trabalho_omit_optional_fields(input_pt: dict,

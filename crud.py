@@ -1,7 +1,7 @@
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text as sa_text
-import models, schemas
+import models, schemas, util
 
 def get_plano_trabalho(db: Session, cod_plano: str):
     "Traz um plano de trabalho a partir do banco de dados."
@@ -36,12 +36,12 @@ def create_plano_tabalho(
     db.refresh(db_plano_trabalho)
     return schemas.PlanoTrabalhoSchema.from_orm(db_plano_trabalho)
 
-def update_plano_tabalho(
+def update_plano_trabalho(
     db: Session,
-    plano_trabalho: schemas.PlanoTrabalhoSchema
+    plano_trabalho: schemas.PlanoTrabalhoSchema,
+    cod_unidade: int
     ):
     "Atualiza um plano de trabalho definido pelo cod_plano."
-    #TODO: Inserir/atualizar as atividades do Plano de Trabalho sendo atualizado
 
     db_plano_trabalho = (
         db
@@ -53,8 +53,15 @@ def update_plano_tabalho(
     for k, v in plano_trabalho.__dict__.items():
         if k[0] != "_" and k != "atividades":
             setattr(db_plano_trabalho, k, getattr(plano_trabalho, k))
-    # db_atividades = [models.Atividade(**a.dict()) for a in plano_trabalho.atividades]
-    # db_plano_trabalho.atividades = db_atividades
+    for atividade in db_plano_trabalho.atividades:
+        db.delete(atividade)
+    db.commit()
+    sa_atividades = [
+        models.Atividade(cod_unidade=cod_unidade, **a.dict())
+        for a in plano_trabalho.atividades
+    ]
+    for atividade in sa_atividades:
+        db_plano_trabalho.atividades.append(atividade)
     db.commit()
     db.refresh(db_plano_trabalho)
     return db_plano_trabalho
