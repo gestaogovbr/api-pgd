@@ -143,7 +143,8 @@ async def create_or_update_plano_trabalho(
         )
     else: # update
         if db_plano_trabalho.cod_unidade == user.cod_unidade:
-            crud.update_plano_tabalho(db, plano_trabalho)
+            crud.update_plano_trabalho(db, plano_trabalho,
+                                                user.cod_unidade)
         else:
             raise HTTPException(
                 status.HTTP_403_FORBIDDEN,
@@ -225,7 +226,8 @@ async def patch_plano_trabalho(
         status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail=json.loads(e.json())
     )
-    crud.update_plano_tabalho(db, merged_schema)
+    
+    crud.update_plano_trabalho(db, merged_schema, user.cod_unidade)
     return merged_plano_trabalho
 
 @app.get("/plano_trabalho/{cod_plano}",
