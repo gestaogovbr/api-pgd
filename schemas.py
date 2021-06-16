@@ -7,6 +7,10 @@ class AtividadeSchema(BaseModel):
     id_atividade: str = Field(
         title="id da atividade",
         description="Identificador único da atividade na unidade")
+    # o cod_unidade da atividade está desabilitado do esquema, uma vez
+    # que é preenchido automaticamente com o código de unidade do
+    # usuário, nos métodos do crud.py
+    # cod_unidade: int
     nome_grupo_atividade: Optional[str] = Field(
         title="Nome do grupo de atividades"
     )
