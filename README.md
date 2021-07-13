@@ -40,7 +40,16 @@ gerada.
 4. Criar diretório com permissão correta para persistência do PgAdmin:
 > ```$ sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/```
 
-5. Tentar subir os containers:
+5. Criar um arquivo `.env` contendo o nome de usuário, senha e nome do
+   banco a serem utilizados pelo Postgres:
+
+```
+$ echo "POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=api_pgd" > .env
+```
+
+6. Tentar subir os containers:
 > ```$ docker-compose up```
 
 Vai dar um erro de permissão no pgadmin. Quando a mensagem de erro

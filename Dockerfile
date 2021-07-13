@@ -21,4 +21,3 @@ RUN \
 RUN chown -R api-pgd:api-pgd ./
 COPY ./ /home/api-pgd
 USER api-pgd
-

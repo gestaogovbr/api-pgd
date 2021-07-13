@@ -4,13 +4,13 @@ services:
   db-api-pgd:
     image: postgres:11
     ports:
-      - "5432:5432"
+      - "5432"
     volumes:
         - ./database:/var/lib/postgresql
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=api_pgd
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
   web:
     image: api-pgd:latest
     command:
@@ -22,6 +22,8 @@ services:
     depends_on:
       - db-api-pgd
     build: ./
+    environment:
+      - SQLALCHEMY_DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
