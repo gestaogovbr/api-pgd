@@ -20,5 +20,9 @@ jobs:
       run: sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
     - name: Run docker-compose
       run: docker-compose up -d
+      env:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_DB: api_pgd
     - name: run tests
       run: docker exec api-pgd_web_1 /bin/bash -c "pytest tests/"
