@@ -4,9 +4,11 @@ Ferramenta de administração da API-PGD.
 """
 
 # dependências
+import os
 import argparse
 import getpass
 import asyncio
+
 import sqlalchemy as sa
 from sqlalchemy.sql import text as sa_text
 
@@ -164,7 +166,7 @@ if __name__ == "__main__":
         action="store_true"
     )
 
-    engine = sa.create_engine("postgresql://postgres:postgres@db-api-pgd:5432/api_pgd")
+    engine = sa.create_engine(os.environ['SQLALCHEMY_DATABASE_URL'])
 
     args = parser.parse_args()
 
