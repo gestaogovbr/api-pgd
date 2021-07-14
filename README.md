@@ -99,13 +99,20 @@ manipulação no BD. O PgAdmin está rodando em http://localhost:5050.
 ## Dicas
 
 * Consulte o `docker-compose.yml` para descobrir o login e senha do
-  PgAdmin e do Postgres
+  PgAdmin
+* O login, senha e nome do banco do Postgres estão em variáveis de
+  ambiente. A forma mais prática de fazer isto em ambiente de
+  desenvolvimento é criando-se um arquivo `.env`, conforme o item 5 do
+  passo a passo em "[Rodando a API](#rodando-a-api)"
 * No PgAdmin utilize `'db'` como valor para o endereço do Postgres. Isso
-  é necessário porquê os conteiners utilizam uma rede interna do Docker
+  é necessário porquê os contêineres utilizam uma rede interna do Docker
   para se comunicarem
 * Caso a modelagem ORM seja alterada, pode ser mais simples remover
   (dropar) o BD e recriá-lo novamente apenas subindo a solução. Para
   remover o BD utilize o PgAdmin
+* Para fazer *deploy* usando algum outro banco de dados externo, basta
+  redefinir a variável de ambiente `SQLALCHEMY_DATABASE_URL` no
+  contêiner da aplicação
 
 ## Rodando testes
 É necessário entrar no container para rodar os testes:
