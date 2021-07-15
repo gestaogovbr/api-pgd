@@ -27,7 +27,7 @@ consolidação em uma base de dados.
 
 1. Instalar Docker CE [aqui!](https://docs.docker.com/get-docker/)
 2. Clonar o repositório:
-> ```$ git clone http://git.planejamento.gov.br/seges-cginf/api-pgd.git```
+> ```$ git clone git@github.com:economiagovbr/api-pgd.git```
 
 3. Dentro da pasta clonada execute o comando para gerar a imagem docker:
 > ```$ cd api-pgd```
