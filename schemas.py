@@ -93,7 +93,8 @@ class ModalidadeEnum(IntEnum):
 
 class PlanoTrabalhoSchema(BaseModel):
     cod_plano: str = Field(
-        title="código do Plano de Trabalho"
+        title="código do Plano de Trabalho",
+        description="Identificador único do Plano de Trabalho."
         )
     matricula_siape: int = Field(
         title="Matrícula SIAPE",
