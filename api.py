@@ -32,7 +32,7 @@ Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
 * O `cod_plano` deve ser único para cada Plano de Trabalho.
 * Ao utilizar o método PUT do Plano de Trabalho, o `cod_plano` que compõe a URL deve ser igual ao fornecido no JSON.
 * A `data_inicio` do Plano de Trabalho deve ser menor ou igual à `data_fim`.
-* A `data_avaliacao` da atividade deve ser maior ou igual que a `data_fim` do Plano de Trabalho.
+* A `data_avaliacao` da atividade deve ser maior ou igual que a `data_inicio` do Plano de Trabalho.
 * As atividades de um mesmo Plano de Trabalho devem possuir `id_atividade` diferentes.
 * O `cpf` deve possuir exatamente 11 dígitos e sem máscaras.
 * Valores permitidos para a `modalidade_execucao`:
