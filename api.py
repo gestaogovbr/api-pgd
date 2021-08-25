@@ -23,7 +23,7 @@ with open('docs/description.md', 'r') as f:
     description = f.read()
 
 app = FastAPI(
-    title="Plataforma do Programa de Gestão - PGD",
+    title="Plataforma de recebimento de dados do Programa de Gestão - PGD",
     description=description,
     version="0.1.0",
 )
