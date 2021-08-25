@@ -7,3 +7,4 @@ __pycache__
 .bash_history
 .python_history
 .env
+pgadmin_data/
