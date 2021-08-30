@@ -96,7 +96,17 @@ class PlanoTrabalhoSchema(BaseModel):
         title="código do Plano de Trabalho",
         description="Identificador único do Plano de Trabalho."
         )
-    situacao: Optional[str] = Field(title="situação do plano")
+    situacao: Optional[str] = Field(
+        title="situação do plano",
+        description="A situação do plano de trabalho.\n"
+            "\n"
+            "O preenchimento do campo é opcional, podendo ser utilizado, "
+            "por exemplo, quando o plano de trabalho for cancelado.\n"
+            "\n"
+            "Valores sugeridos:\n"
+            "* null\n"
+            "* 'cancelado'\n"
+        )
     matricula_siape: int = Field(
         title="Matrícula SIAPE",
         description="Matrícula SIAPE do participante."
