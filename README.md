@@ -122,12 +122,17 @@ http://localhost:5050.
 > ```$ docker exec -it api-pgd_web_1 /bin/bash```
 
 Para rodar os testes execute:
-> ```$ pytest test_api.py```
+> ```$ pytest tests/```
 
 Para rodar no modo verboso útil para debugar:
-> ```$ pytest test_api.py -vv```
+> ```$ pytest tests/ -vv```
+
+Para rodar uma bateria de testes específica, especifique o arquivo que
+contém os testes desejados. Por exemplo, os testes sobre atividades:
+
+> ```$ pytest tests/atividade_test.py```
 
 Para rodar um teste específico utilize o parâmetro `-k`. Este exemplo
 roda apenas o teste `test_create_pt_invalid_cpf`:
-> ```$ pytest test_api.py -k test_create_pt_invalid_cpf -vv```
+> ```$ pytest tests/ -k test_create_pt_invalid_cpf -vv```
 
