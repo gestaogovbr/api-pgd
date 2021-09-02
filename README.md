@@ -27,18 +27,18 @@ consolidação em uma base de dados.
 
 1. Instalar Docker CE [aqui!](https://docs.docker.com/get-docker/)
 2. Clonar o repositório:
-> ```$ git clone git@github.com:economiagovbr/api-pgd.git```
+> ```git clone git@github.com:economiagovbr/api-pgd.git```
 
 3. Dentro da pasta clonada execute o comando para gerar a imagem docker:
-> ```$ cd api-pgd```
+> ```cd api-pgd```
 
-> ```$ docker build -t api-pgd .```
+> ```docker build -t api-pgd .```
 
 O parâmetro `-t api-pgd` define uma tag (um nome) para a imagem docker
 gerada.
 
 4. Criar diretório com permissão correta para persistência do PgAdmin:
-> ```$ sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/```
+> ```sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/```
 
 5. Criar um arquivo `.env` contendo o nome de usuário, senha e nome do
    banco a serem utilizados pelo Postgres:
@@ -50,7 +50,7 @@ POSTGRES_DB=api_pgd" > .env
 ```
 
 6. Tentar subir os containers:
-> ```$ docker-compose up```
+> ```docker-compose up```
 
 Vai dar um erro de permissão no pgadmin. Quando a mensagem de erro
 aparecer, pare os containers (`ctrl` + `C`) e digite novamente:
@@ -60,11 +60,31 @@ aparecer, pare os containers (`ctrl` + `C`) e digite novamente:
 Para ajustar as permissões de arquivo em todas as novas subpastas.
 
 6. Para subir os containers:
-> ```$ docker-compose up -d```
+> ```docker-compose up -d```
 
 A API está disponível em http://localhost:5057 e em
 http://localhost:5057/docs você acessa a interface para interagir com a
 API.
+
+### Criando o usuário administrador
+
+Para começar a usar a API, é necessário primeiro criar um superusuário,
+que será o administrador do sistema. Para maior segurança, esse
+superusuário só pode ser criado a partir da linha de comando dentro do
+container da API. Para isso, acesse o terminal do container:
+
+> ```docker exec -it api-pgd_web_1 /bin/bash```
+
+A partir do shell da aplicação, digite:
+
+> ```./admin_tool.py --create_superuser```
+
+e a ferramenta de administração irá solicitar o e-mail, senha e código
+da unidade para o superusuário.
+
+Os demais usuários poderão ser criados a partir da interface Swagger ou
+por chamada à API, autenticando-se como o superusuário administrador e
+utilizando o método `/auth/register`.
 
 ## Desenvolvendo
 
