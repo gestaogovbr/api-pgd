@@ -3,6 +3,7 @@ name: Docker Image Build & CI Tests
 on:
   push:
     branches: [ main ]
+    tags: [ tmp-rerun ]
   pull_request:
     branches: [ main ]
 
