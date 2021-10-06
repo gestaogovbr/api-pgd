@@ -11,6 +11,8 @@ jobs:
 
   build:
 
+    name: build and test
+
     runs-on: ubuntu-latest
 
     steps:
