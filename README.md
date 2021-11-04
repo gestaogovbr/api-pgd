@@ -27,44 +27,60 @@ consolidação em uma base de dados.
 
 1. Instalar Docker CE [aqui!](https://docs.docker.com/get-docker/)
 2. Clonar o repositório:
-> ```git clone git@github.com:economiagovbr/api-pgd.git```
+
+    ```bash
+    git clone git@github.com:economiagovbr/api-pgd.git
+    ```
 
 3. Dentro da pasta clonada execute o comando para gerar a imagem docker:
-> ```cd api-pgd```
 
-> ```docker build -t api-pgd .```
+    ```bash
+    cd api-pgd
+    docker build -t api-pgd .
+    ```
 
-O parâmetro `-t api-pgd` define uma tag (um nome) para a imagem docker
-gerada.
+    O parâmetro `-t api-pgd` define uma tag (um nome) para a imagem docker
+    gerada.
 
 4. Criar diretório com permissão correta para persistência do PgAdmin:
-> ```sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/```
+
+    ```bash
+    sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
+    ```
 
 5. Criar um arquivo `.env` contendo o nome de usuário, senha e nome do
    banco a serem utilizados pelo Postgres:
 
-```
-$ echo "POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=api_pgd" > .env
-```
+    ```bash
+    $ echo "POSTGRES_USER=postgres
+    POSTGRES_PASSWORD=postgres
+    POSTGRES_DB=api_pgd" > .env
+    ```
 
 6. Tentar subir os containers:
-> ```docker-compose up```
 
-Vai dar um erro de permissão no pgadmin. Quando a mensagem de erro
-aparecer, pare os containers (`ctrl` + `C`) e digite novamente:
+    ```bash
+    docker-compose up
+    ```
 
-> ```sudo chown -R 5050:5050 ./pgadmin_data/```
+    Vai dar um erro de permissão no pgadmin. Quando a mensagem de erro
+    aparecer, pare os containers (`ctrl` + `C`) e digite novamente:
 
-Para ajustar as permissões de arquivo em todas as novas subpastas.
+    ```bash
+    sudo chown -R 5050:5050 ./pgadmin_data/
+    ```
+
+    Para ajustar as permissões de arquivo em todas as novas subpastas.
 
 6. Para subir os containers:
-> ```docker-compose up -d```
 
-A API está disponível em http://localhost:5057 e em
-http://localhost:5057/docs você acessa a interface para interagir com a
-API.
+    ```bash
+    docker-compose up -d
+    ```
+
+    A API está disponível em http://localhost:5057 e em
+    http://localhost:5057/docs você acessa a interface para interagir com a
+    API.
 
 ### Criando o usuário administrador
 
@@ -73,11 +89,15 @@ que será o administrador do sistema. Para maior segurança, esse
 superusuário só pode ser criado a partir da linha de comando dentro do
 container da API. Para isso, acesse o terminal do container:
 
-> ```docker exec -it api-pgd_web_1 /bin/bash```
+```bash
+docker exec -it api-pgd_web_1 /bin/bash
+```
 
 A partir do shell da aplicação, digite:
 
-> ```./admin_tool.py --create_superuser```
+```bash
+./admin_tool.py --create_superuser
+```
 
 e a ferramenta de administração irá solicitar o e-mail, senha e código
 da unidade para o superusuário.
@@ -89,24 +109,37 @@ utilizando o método `/auth/register`.
 ## Desenvolvendo
 
 Durante o desenvolvimento é comum a necessidade de inclusão de novas
-biliotecas python ou a instalação de novos pacotes linux. Para que as
+bibliotecas python ou a instalação de novos pacotes linux. Para que as
 mudanças surtam efeitos é necessário apagar os containers e refazer a
 imagem docker.
 
-1. Desligando e removendo os conteiners:
-> `$ docker-compose down`
+1. Desligando e removendo os contêineres:
+
+    ```bash
+    $ docker-compose down
+    ```
 
 2. Buildando novamente o Dockerfile para gerar uma nova imagem:
-> ```$ docker build --rm -t api-pgd .```
 
-O parâmetro `--rm` remove a imagem criada anteriormente.
+    ```bash
+    $ docker build --rm -t api-pgd .
+    ```
+
+    O parâmetro `--rm` remove a imagem criada anteriormente.
+
 3. Agora a aplicação já pode ser subida novamente:
-> ```$ docker-compose up -d```
 
-Alternativamente você pode subir a aplicação sem o parâmetro _detached_
-`-d` possibilitando visualizar o log em tempo real, muito útil durante o
-desenvolvimento.
-> ```$ docker-compose up```
+    ```bash
+    $ docker-compose up -d
+    ```
+
+    Alternativamente você pode subir a aplicação sem o parâmetro _detached_
+    `-d` possibilitando visualizar o log em tempo real, muito útil durante o
+    desenvolvimento.
+
+    ```bash
+    $ docker-compose up
+    ```
 
 ## Arquitetura da solução
 O arquivo `docker-compose.yml` descreve a receita dos conteiners que
@@ -139,20 +172,33 @@ http://localhost:5050.
 
 ## Rodando testes
 É necessário entrar no container para rodar os testes:
-> ```$ docker exec -it api-pgd_web_1 /bin/bash```
+
+```bash
+$ docker exec -it api-pgd_web_1 /bin/bash
+```
 
 Para rodar os testes execute:
-> ```$ pytest tests/```
+
+```bash
+$ pytest tests/
+```
 
 Para rodar no modo verboso útil para debugar:
-> ```$ pytest tests/ -vv```
+
+```bash
+$ pytest tests/ -vv
+```
 
 Para rodar uma bateria de testes específica, especifique o arquivo que
 contém os testes desejados. Por exemplo, os testes sobre atividades:
 
-> ```$ pytest tests/atividade_test.py```
+```bash
+$ pytest tests/atividade_test.py
+```
 
 Para rodar um teste específico utilize o parâmetro `-k`. Este exemplo
 roda apenas o teste `test_create_pt_invalid_cpf`:
-> ```$ pytest tests/ -k test_create_pt_invalid_cpf -vv```
 
+```bash
+$ pytest tests/ -k test_create_pt_invalid_cpf -vv
+```
