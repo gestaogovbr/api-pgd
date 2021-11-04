@@ -245,7 +245,6 @@ def public_facing_openapi():
     )
     paths = openapi_schema["paths"]
     del paths["/truncate_pts_atividades"]
-    del paths["/users/{id}"]
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
