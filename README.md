@@ -52,7 +52,7 @@ consolidação em uma base de dados.
    banco a serem utilizados pelo Postgres:
 
     ```bash
-    $ echo "POSTGRES_USER=postgres
+    echo "POSTGRES_USER=postgres
     POSTGRES_PASSWORD=postgres
     POSTGRES_DB=api_pgd" > .env
     ```
@@ -116,13 +116,13 @@ imagem docker.
 1. Desligando e removendo os contêineres:
 
     ```bash
-    $ docker-compose down
+    docker-compose down
     ```
 
 2. Buildando novamente o Dockerfile para gerar uma nova imagem:
 
     ```bash
-    $ docker build --rm -t api-pgd .
+    docker build --rm -t api-pgd .
     ```
 
     O parâmetro `--rm` remove a imagem criada anteriormente.
@@ -130,7 +130,7 @@ imagem docker.
 3. Agora a aplicação já pode ser subida novamente:
 
     ```bash
-    $ docker-compose up -d
+    docker-compose up -d
     ```
 
     Alternativamente você pode subir a aplicação sem o parâmetro _detached_
@@ -138,7 +138,7 @@ imagem docker.
     desenvolvimento.
 
     ```bash
-    $ docker-compose up
+    docker-compose up
     ```
 
 ## Arquitetura da solução
@@ -174,31 +174,31 @@ http://localhost:5050.
 É necessário entrar no container para rodar os testes:
 
 ```bash
-$ docker exec -it api-pgd_web_1 /bin/bash
+docker exec -it api-pgd_web_1 /bin/bash
 ```
 
 Para rodar os testes execute:
 
 ```bash
-$ pytest tests/
+pytest tests/
 ```
 
 Para rodar no modo verboso útil para debugar:
 
 ```bash
-$ pytest tests/ -vv
+pytest tests/ -vv
 ```
 
 Para rodar uma bateria de testes específica, especifique o arquivo que
 contém os testes desejados. Por exemplo, os testes sobre atividades:
 
 ```bash
-$ pytest tests/atividade_test.py
+pytest tests/atividade_test.py
 ```
 
 Para rodar um teste específico utilize o parâmetro `-k`. Este exemplo
 roda apenas o teste `test_create_pt_invalid_cpf`:
 
 ```bash
-$ pytest tests/ -k test_create_pt_invalid_cpf -vv
+pytest tests/ -k test_create_pt_invalid_cpf -vv
 ```
