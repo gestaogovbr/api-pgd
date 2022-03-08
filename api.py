@@ -104,7 +104,8 @@ async def create_or_update_plano_trabalho(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Parâmetro cod_plano diferente do conteúdo do JSON")
 
-    db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
+    db_plano_trabalho = crud.get_plano_trabalho(db, user.cod_unidade, 
+                                                    cod_plano)
     if db_plano_trabalho is None: # create
         try:
             novo_plano_trabalho = schemas.PlanoTrabalhoSchema(
@@ -145,7 +146,8 @@ async def patch_plano_trabalho(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Parâmetro cod_plano diferente do conteúdo do JSON")
 
-    db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
+    db_plano_trabalho = crud.get_plano_trabalho(db, user.cod_unidade, 
+                                                        cod_plano)
     if db_plano_trabalho is None:
         raise HTTPException(
                 status.HTTP_404_NOT_FOUND,
@@ -212,10 +214,10 @@ async def patch_plano_trabalho(
 async def get_plano_trabalho(cod_plano: str,
                        db: Session = Depends(get_db),
                        token: str = Depends(oauth2_scheme),
-                    #    user: User = Depends(fastapi_users.current_user())
+                       user: User = Depends(fastapi_users.current_user(active=True))
                        ):
     "Consulta o plano de trabalho com o código especificado."
-    db_plano_trabalho = crud.get_plano_trabalho(db, cod_plano)
+    db_plano_trabalho = crud.get_plano_trabalho(db, user.cod_unidade, cod_plano)
     if db_plano_trabalho is None:
         raise HTTPException(404, detail="Plano de trabalho não encontrado")
     plano_trabalho = schemas.PlanoTrabalhoSchema.from_orm(db_plano_trabalho)
