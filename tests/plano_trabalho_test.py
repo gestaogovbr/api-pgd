@@ -444,3 +444,20 @@ def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "none is not an allowed value"
     assert response.json().get("detail")[0]["msg"] == detail_msg
+
+def test_create_pt_duplicate_cod_plano(input_pt: dict,
+                                        header_usr_1: dict,
+                                        header_usr_2: dict,
+                                        truncate_pt,
+                                        client: Session):
+    response = client.put(f"/plano_trabalho/555",
+                          json=input_pt,
+                          headers=header_usr_1)
+    response = client.put(f"/plano_trabalho/555",
+                          json=input_pt,
+                          headers=header_usr_2)
+    print (response.json().get("detail", None))
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json().get("detail", None) == None
+    assert response.json() == input_pt
