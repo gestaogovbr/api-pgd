@@ -305,20 +305,6 @@ def test_create_pt_duplicate_atividade(input_pt: dict,
     else:
         assert response.status_code == status.HTTP_200_OK
 
-def test_update_pt_different_cod_unidade(truncate_pt,
-                                         example_pt, # criado por usr_1
-                                         input_pt: dict,
-                                         header_usr_2: dict,
-                                         client: Session):
-    cod_plano = 555
-    response = client.put(f"/plano_trabalho/{cod_plano}",
-                          json=input_pt,
-                          headers=header_usr_2)
-
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    detail_msg = "Usuário não pode alterar Plano de Trabalho de outra unidade."
-    assert response.json().get("detail", None) == detail_msg
-
 @pytest.mark.parametrize("cod_plano, cpf",
                           [
                             ("100", "11111111111"),

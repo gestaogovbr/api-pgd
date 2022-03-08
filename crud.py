@@ -3,12 +3,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text as sa_text
 import models, schemas, util
 
-def get_plano_trabalho(db: Session, cod_plano: str):
+def get_plano_trabalho(db: Session, cod_unidade: int, cod_plano: str):
     "Traz um plano de trabalho a partir do banco de dados."
     db_plano_trabalho = (
         db
         .query(models.PlanoTrabalho)
         .filter(models.PlanoTrabalho.cod_plano == cod_plano)
+        .filter(models.PlanoTrabalho.cod_unidade == cod_unidade)
         .first()
     )
     if db_plano_trabalho:
@@ -47,6 +48,7 @@ def update_plano_trabalho(
         db
         .query(models.PlanoTrabalho)
         .filter(models.PlanoTrabalho.cod_plano == plano_trabalho.cod_plano)
+        .filter(models.PlanoTrabalho.cod_unidade == cod_unidade)
         .first()
     )
     # db_plano_trabalho.cod_unidade = cod_unidade
