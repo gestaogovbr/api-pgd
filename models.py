@@ -3,7 +3,8 @@ banco pelo ORM do SQLAlchemy.
 """
 
 from sqlalchemy import (Boolean, Column, ForeignKey,
-                        Integer, String, Float, Date, UniqueConstraint)
+                        Integer, String, Float, Date, DateTime, UniqueConstraint)
+from sqlalchemy import event, DDL
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -28,6 +29,8 @@ class PlanoTrabalho(Base):
     data_interrupcao = Column(Date)
     entregue_no_prazo = Column(Boolean) #TODO Na especificação está como Int e usa 1 e 2 para sim e não. Não seria melhor usar bool?
     horas_homologadas = Column(Float)
+    data_atualizacao = Column(DateTime)
+    data_insercao = Column(DateTime)
     atividades = relationship(
         "Atividade",
         back_populates="plano_trabalho",
@@ -40,6 +43,21 @@ class PlanoTrabalho(Base):
         "cod_plano",
         name="_unidade_plano_uc"
     ),)
+
+trigger = DDL("""
+    CREATE TRIGGER inseredata_trigger
+    BEFORE INSERT OR UPDATE ON public.plano_trabalho
+    FOR EACH ROW EXECUTE PROCEDURE insere_data_registro();
+"""
+)
+
+event.listen(
+    PlanoTrabalho.__table__,
+    'after_create',
+    trigger.execute_if(dialect='postgresql')
+)
+
+
 
 class Atividade(Base):
     "Atividade"
@@ -64,4 +82,19 @@ class Atividade(Base):
     avaliacao = Column(Integer)
     data_avaliacao = Column(Date)
     justificativa = Column(String)
+    data_atualizacao = Column(DateTime)
+    data_insercao = Column(DateTime)
     plano_trabalho = relationship("PlanoTrabalho", back_populates="atividades")
+
+trigger = DDL("""
+    CREATE TRIGGER inseredata_trigger
+    BEFORE INSERT OR UPDATE ON public.atividade
+    FOR EACH ROW EXECUTE PROCEDURE insere_data_registro();
+"""
+)
+
+event.listen(
+    Atividade.__table__,
+    'after_create',
+    trigger.execute_if(dialect='postgresql')
+)
