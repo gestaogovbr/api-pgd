@@ -11,8 +11,8 @@ from fastapi_users.db import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
 import databases
 import sqlalchemy
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy import Column, Integer
-
+from sqlalchemy import Column, Integer, DateTime
+from sqlalchemy import event, DDL
 from database import SessionLocal, engine, SQLALCHEMY_DATABASE_URL
 
 
@@ -69,9 +69,25 @@ Base: DeclarativeMeta = declarative_base()
 
 class UserTable(Base, SQLAlchemyBaseUserTable):
     cod_unidade = Column(Integer)
+    data_atualizacao = Column(DateTime)
+    data_insercao = Column(DateTime)
     pass
 
 users = UserTable.__table__
+
+trigger = DDL("""
+    CREATE TRIGGER inseredata_trigger
+    BEFORE INSERT OR UPDATE ON public.user
+    FOR EACH ROW EXECUTE PROCEDURE insere_data_registro();
+"""
+)
+
+event.listen(
+    UserTable.__table__,
+    'after_create',
+    trigger.execute_if(dialect='postgresql')
+)
+
 user_db = SQLAlchemyUserDatabase(UserDB, database_meta, users)
 
 engine = sqlalchemy.create_engine(SQLALCHEMY_DATABASE_URL)
