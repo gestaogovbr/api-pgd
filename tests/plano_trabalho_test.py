@@ -466,3 +466,4 @@ def test_create_pt_invalid_horas_homologadas(input_pt: dict,
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "Horas homologadas devem ser maior que zero"
     assert response.json().get("detail")[0]["msg"] == detail_msg
+    
