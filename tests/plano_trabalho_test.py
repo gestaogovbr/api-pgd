@@ -30,6 +30,7 @@ fields_plano_trabalho = {
         ["data_fim"],
         ["carga_horaria_total"],
         ["atividades"],
+        ["horas_homologadas"],
     )
 }
 
@@ -447,3 +448,21 @@ def test_create_pt_duplicate_cod_plano(input_pt: dict,
     assert response.status_code == status.HTTP_200_OK
     assert response.json().get("detail", None) == None
     assert response.json() == input_pt
+
+@pytest.mark.parametrize("horas_homologadas",[
+                            (-1),(0)])
+def test_create_pt_invalid_horas_homologadas(input_pt: dict,
+                                                horas_homologadas: int,
+                                                header_usr_1: dict,
+                                                truncate_pt,
+                                                client: Session):
+    cod_plano = "138"
+    input_pt["cod_plano"] = cod_plano
+    input_pt["horas_homologadas"] = horas_homologadas
+    response = client.put(f"/plano_trabalho/{cod_plano}",
+                          json=input_pt,
+                          headers=header_usr_1)
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    detail_msg = "Horas homologadas devem ser maior que zero"
+    assert response.json().get("detail")[0]["msg"] == detail_msg
