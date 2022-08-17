@@ -95,7 +95,7 @@ def input_pt() -> dict:
         "carga_horaria_total": 0.0,
         "data_interrupcao": "2021-01-07",
         "entregue_no_prazo": True,
-        "horas_homologadas": 0.0,
+        "horas_homologadas": 1.5,
         "atividades": [
             {
                 "id_atividade": "2",

@@ -160,7 +160,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Entregue no prazo",
         description="Indica se os produtos foram entregues no prazo."
         )
-    horas_homologadas: Optional[float] = Field(
+    horas_homologadas: float = Field(
         title="Horas homologadas",
         description="Quantidade de horas homologadas."
         )
@@ -226,6 +226,12 @@ class PlanoTrabalhoSchema(BaseModel):
         if carga_horaria_semanal > 40 or carga_horaria_semanal <= 0:
             raise ValueError("Carga horária semanal deve ser entre 1 e 40")
         return carga_horaria_semanal
+
+    @validator("horas_homologadas")
+    def must_be_positive(cls, horas_homologadas):
+        if horas_homologadas <= 0:
+            raise ValueError("Horas homologadas devem ser maior que zero")
+        return horas_homologadas
 
     class Config:
         orm_mode = True

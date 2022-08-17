@@ -25,7 +25,7 @@ with open('docs/description.md', 'r') as f:
 app = FastAPI(
     title="Plataforma de recebimento de dados do Programa de Gestão - PGD",
     description=description,
-    version="0.1.4",
+    version="0.1.5",
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
