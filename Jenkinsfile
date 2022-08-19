@@ -3,7 +3,7 @@ pipeline {
     environment {
        CATTLE_ACCESS_KEY = credentials('cattle-access-key')
        CATTLE_SECRET_KEY = credentials('cattle-secret-key')
-       RANCHER_SERVICE = '1s5507'
+       RANCHER_SERVICE = '1s5505'
     }
 
     agent any
