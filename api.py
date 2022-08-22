@@ -9,6 +9,7 @@ from typing import List, Optional
 from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import JWTAuthentication
 from fastapi.openapi.utils import get_openapi
+from fastapi.responses import RedirectResponse
 
 import models, schemas, crud, util
 from database import engine, get_db
@@ -84,6 +85,13 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     await auth_db.disconnect()
+
+@app.get("/", include_in_schema=False)
+async def docs_redirect():
+    """
+    Redireciona para a documentação da API.
+    """
+    return RedirectResponse(url="/docs", status_code=status.HTTP_301_MOVED_PERMANENTLY)
 
 @app.put("/plano_trabalho/{cod_plano}",
         summary="Cria ou substitui plano de trabalho",
