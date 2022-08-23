@@ -28,4 +28,4 @@ jobs:
         POSTGRES_PASSWORD: postgres
         POSTGRES_DB: api_pgd
     - name: run tests
-      run: docker exec api-pgd_web_1 /bin/bash -c "pytest tests/"
+      run: docker exec api-pgd_web_1 /bin/bash -c "./run_after_db.py \"pytest tests/\""
