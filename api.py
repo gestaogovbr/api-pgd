@@ -92,11 +92,11 @@ async def docs_redirect(
     """
     Redireciona para a documentação da API.
     """
-    to_location = {
-        "text/html": "/docs",
-        "application/json": "/openapi.json"
-    }
-    return RedirectResponse(url=to_location[accept],
+    if accept == "application/json":
+        location = "/openapi.json"
+    else:
+        location = "/docs"
+    return RedirectResponse(url=location,
         status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
 @app.put("/plano_trabalho/{cod_plano}",
