@@ -4,12 +4,22 @@ database to be up and running.
 """
 import os
 import time
+import argparse
 
 import sqlalchemy as sa
 from sqlalchemy.exc import OperationalError
 
 MAX_RETRIES = 120
-CMD = 'uvicorn api:app --host 0.0.0.0 --port 5057 --reload'
+
+parser = argparse.ArgumentParser(description=
+    'Wait for the database to be responsive and then runs a command.')
+parser.add_argument(
+    'command_line',
+    nargs='+',
+    help=('The command to run after the database is online. '
+        'Please encase the command in quotes.'))
+args = parser.parse_args()
+command = ' '.join(args.command_line) # pylint: disable=invalid-name
 
 engine = sa.create_engine(os.environ['SQLALCHEMY_DATABASE_URL'])
 
@@ -23,4 +33,5 @@ for _ in range(MAX_RETRIES):
         print('Postgres database unavailable, waiting...')
     time.sleep(1)
 
-os.system(CMD)
+print('Executing command: ', command)
+os.system(command)
