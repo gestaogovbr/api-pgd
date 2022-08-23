@@ -2,10 +2,10 @@ from datetime import timedelta
 import json
 
 from pydantic import ValidationError
-from fastapi import Depends, FastAPI, HTTPException, status, Request
+from fastapi import Depends, FastAPI, HTTPException, status, Header, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Union
 from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import JWTAuthentication
 from fastapi.openapi.utils import get_openapi
@@ -26,7 +26,7 @@ with open('docs/description.md', 'r') as f:
 app = FastAPI(
     title="Plataforma de recebimento de dados do Programa de Gestão - PGD",
     description=description,
-    version="0.1.5",
+    version="0.1.6",
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
@@ -87,11 +87,17 @@ async def shutdown():
     await auth_db.disconnect()
 
 @app.get("/", include_in_schema=False)
-async def docs_redirect():
+async def docs_redirect(
+    accept: Union[str, None] = Header(default='text/html')):
     """
     Redireciona para a documentação da API.
     """
-    return RedirectResponse(url="/docs", status_code=status.HTTP_301_MOVED_PERMANENTLY)
+    to_location = {
+        "text/html": "/docs",
+        "application/json": "/openapi.json"
+    }
+    return RedirectResponse(url=to_location[accept],
+        status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
 @app.put("/plano_trabalho/{cod_plano}",
         summary="Cria ou substitui plano de trabalho",
