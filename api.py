@@ -2,6 +2,8 @@ from datetime import timedelta
 import json
 
 from pydantic import ValidationError
+from pydantic import EmailStr, BaseModel
+from starlette.responses import JSONResponse
 from fastapi import Depends, FastAPI, HTTPException, status, Header, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -10,6 +12,7 @@ from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import JWTAuthentication
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 
 import models, schemas, crud, util
 from database import engine, get_db
@@ -118,7 +121,7 @@ async def create_or_update_plano_trabalho(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Parâmetro cod_plano diferente do conteúdo do JSON")
 
-    db_plano_trabalho = crud.get_plano_trabalho(db, user.cod_unidade, 
+    db_plano_trabalho = crud.get_plano_trabalho(db, user.cod_unidade,
                                                     cod_plano)
     if db_plano_trabalho is None: # create
         try:
@@ -160,7 +163,7 @@ async def patch_plano_trabalho(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Parâmetro cod_plano diferente do conteúdo do JSON")
 
-    db_plano_trabalho = crud.get_plano_trabalho(db, user.cod_unidade, 
+    db_plano_trabalho = crud.get_plano_trabalho(db, user.cod_unidade,
                                                         cod_plano)
     if db_plano_trabalho is None:
         raise HTTPException(
@@ -217,7 +220,7 @@ async def patch_plano_trabalho(
         status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail=json.loads(e.json())
     )
-    
+
     crud.update_plano_trabalho(db, merged_schema, user.cod_unidade)
     return merged_plano_trabalho
 
@@ -265,3 +268,41 @@ def public_facing_openapi():
     return app.openapi_schema
 
 app.openapi = public_facing_openapi
+
+# Teste de envio de e-mail
+
+class EmailSchema(BaseModel):
+    email: List[EmailStr]
+
+conf = ConnectionConfig(
+    MAIL_USERNAME = "washington.antonio@economia.gov.br",
+    MAIL_PASSWORD = r"*****",
+    MAIL_FROM = "washington.antonio@economia.gov.br",
+    MAIL_PORT = 587,
+    MAIL_SERVER = "smtp.office365.com",
+    MAIL_FROM_NAME="Wash",
+    MAIL_TLS = True,
+    MAIL_SSL = False,
+    USE_CREDENTIALS = True,
+    VALIDATE_CERTS = False
+)
+
+html = """
+<p>Hi this test mail, thanks for using Fastapi-mail</p>
+"""
+
+@app.post("/email")
+async def simple_send(
+    email: EmailSchema
+    ) -> JSONResponse:
+
+    message = MessageSchema(
+        subject="Fastapi-Mail module",
+        recipients=email.dict().get("email"),  # List of recipients, as many as you can pass
+        body=html,
+        subtype="html"
+        )
+
+    fm = FastMail(conf)
+    await fm.send_message(message)
+    return JSONResponse(status_code=200, content={"message": "email has been sent"})
