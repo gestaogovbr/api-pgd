@@ -18,7 +18,7 @@ import models, schemas, crud, util
 from database import engine, get_db
 from auth import user_db, User, UserCreate, UserUpdate, UserDB, SECRET_KEY
 from auth import database_meta as auth_db
-from wash import password
+from wash import wash_password
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -35,32 +35,32 @@ app = FastAPI(
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
 
-def send_email(user: UserDB, token: str, subject: str) -> JSONResponse:
+async def send_email(user: List[str],
+                     subject: str,
+                     body: str) -> JSONResponse:
+    """Envia e-mail para um destinatário."""
 
     conf = ConnectionConfig(
         MAIL_USERNAME="washington.antonio@economia.gov.br",
-        MAIL_PASSWORD=password,
+        MAIL_PASSWORD=wash_password,
         MAIL_FROM="washington.antonio@economia.gov.br",
         MAIL_PORT=587,
         MAIL_SERVER="smtp.office365.com",
-        MAIL_FROM_NAME="Wash",
+        MAIL_FROM_NAME="API PGD",
         MAIL_TLS=True,
         MAIL_SSL=False,
         USE_CREDENTIALS=True,
         VALIDATE_CERTS=False
     )
-
     message = MessageSchema(
         subject=subject,
-        recipients=["washington.antonio@economia.gov.br"],
-        # recipients=user.email,
-        body=f"<p>Token de acesso: {token}</p>",
+        recipients=user, # [user.email],
+        body=body,
         subtype="html"
         )
-
     fm = FastMail(conf)
-    fm.send_message(message)
-    return JSONResponse(status_code=200, content={"message": "E-mail enviado!"})
+    await fm.send_message(message)
+    return JSONResponse(status_code=200, content={"message": "Email enviado!"})
 
 
 async def on_after_register(user: UserDB, request: Request):
@@ -68,7 +68,19 @@ async def on_after_register(user: UserDB, request: Request):
 
 async def on_after_forgot_password(user: UserDB, token: str, request: Request):
     print(f"User {user.id} has forgot their password. Reset token: {token}")
-    send_email(user, token, "Novo token de acesso para a API PGD")
+    subject = "Recuperação de acesso"
+    body = f"""
+            <html>
+            <body>
+            <h3>Recuperação de acesso</h3>
+            <p>Olá {user.email},</p>
+            <p>Você esqueceu sua senha da API PGD.
+            Segue seu novo token de acesso: {token}
+            </p>
+            </body>
+            </html>
+            """
+    await send_email([user.email], subject, body)
 
 jwt_authentication = JWTAuthentication(
     secret=SECRET_KEY,
@@ -310,7 +322,7 @@ async def simple_send(
 
     conf = ConnectionConfig(
         MAIL_USERNAME="washington.antonio@economia.gov.br",
-        MAIL_PASSWORD=password,
+        MAIL_PASSWORD=wash_password,
         MAIL_FROM="washington.antonio@economia.gov.br",
         MAIL_PORT=587,
         MAIL_SERVER="smtp.office365.com",
