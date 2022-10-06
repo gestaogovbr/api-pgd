@@ -18,6 +18,7 @@ import models, schemas, crud, util
 from database import engine, get_db
 from auth import user_db, User, UserCreate, UserUpdate, UserDB, SECRET_KEY
 from auth import database_meta as auth_db
+from wash import password
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -34,12 +35,40 @@ app = FastAPI(
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
 
+def send_email(user: UserDB, token: str, subject: str) -> JSONResponse:
+
+    conf = ConnectionConfig(
+        MAIL_USERNAME="washington.antonio@economia.gov.br",
+        MAIL_PASSWORD=password,
+        MAIL_FROM="washington.antonio@economia.gov.br",
+        MAIL_PORT=587,
+        MAIL_SERVER="smtp.office365.com",
+        MAIL_FROM_NAME="Wash",
+        MAIL_TLS=True,
+        MAIL_SSL=False,
+        USE_CREDENTIALS=True,
+        VALIDATE_CERTS=False
+    )
+
+    message = MessageSchema(
+        subject=subject,
+        recipients=["washington.antonio@economia.gov.br"],
+        # recipients=user.email,
+        body=f"<p>Token de acesso: {token}</p>",
+        subtype="html"
+        )
+
+    fm = FastMail(conf)
+    fm.send_message(message)
+    return JSONResponse(status_code=200, content={"message": "E-mail enviado!"})
+
+
 async def on_after_register(user: UserDB, request: Request):
     print(f"User {user.id} has registered.")
 
-
 async def on_after_forgot_password(user: UserDB, token: str, request: Request):
     print(f"User {user.id} has forgot their password. Reset token: {token}")
+    send_email(user, token, "Novo token de acesso para a API PGD")
 
 jwt_authentication = JWTAuthentication(
     secret=SECRET_KEY,
@@ -251,7 +280,6 @@ async def truncate_pts_atividades(
 
 
 # Esconde alguns métodos da interface OpenAPI
-
 def public_facing_openapi():
     " Cria o esquema da OpenAPI disponível ao público externo."
     if app.openapi_schema:
@@ -269,32 +297,33 @@ def public_facing_openapi():
 
 app.openapi = public_facing_openapi
 
-# Teste de envio de e-mail
 
+# Teste de envio de e-mail
 class EmailSchema(BaseModel):
     email: List[EmailStr]
 
-conf = ConnectionConfig(
-    MAIL_USERNAME = "washington.antonio@economia.gov.br",
-    MAIL_PASSWORD = r"*****",
-    MAIL_FROM = "washington.antonio@economia.gov.br",
-    MAIL_PORT = 587,
-    MAIL_SERVER = "smtp.office365.com",
-    MAIL_FROM_NAME="Wash",
-    MAIL_TLS = True,
-    MAIL_SSL = False,
-    USE_CREDENTIALS = True,
-    VALIDATE_CERTS = False
-)
-
-html = """
-<p>Hi this test mail, thanks for using Fastapi-mail</p>
-"""
-
 @app.post("/email")
 async def simple_send(
+
     email: EmailSchema
     ) -> JSONResponse:
+
+    conf = ConnectionConfig(
+        MAIL_USERNAME="washington.antonio@economia.gov.br",
+        MAIL_PASSWORD=password,
+        MAIL_FROM="washington.antonio@economia.gov.br",
+        MAIL_PORT=587,
+        MAIL_SERVER="smtp.office365.com",
+        MAIL_FROM_NAME="Wash",
+        MAIL_TLS=True,
+        MAIL_SSL=False,
+        USE_CREDENTIALS=True,
+        VALIDATE_CERTS=False
+    )
+
+    html = """
+    <p>Hi this test mail, thanks for using Fastapi-mail</p>
+    """
 
     message = MessageSchema(
         subject="Fastapi-Mail module",
