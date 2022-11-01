@@ -13,7 +13,7 @@ from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import JWTAuthentication
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 
 import models, schemas, crud, util
 from database import engine, get_db
@@ -48,6 +48,7 @@ async def send_email(user: List[str],
         MAIL_FROM_NAME="API PGD",
         MAIL_TLS=False,
         MAIL_SSL=False,
+        MAIL_PASSWORD="",
         USE_CREDENTIALS=False,
         VALIDATE_CERTS=False
     )
@@ -55,7 +56,7 @@ async def send_email(user: List[str],
         subject=subject,
         recipients=user,
         body=body,
-        subtype="html"
+        subtype=MessageType.html
         )
     fm = FastMail(conf)
     await fm.send_message(message)
@@ -73,7 +74,7 @@ async def on_after_forgot_password(user: UserDB, token: str, request: Request):
             <html>
             <body>
             <h3>Recuperação de acesso</h3>
-            <p>Olá {user.email},</p>
+            <p>Olá, {user.email},</p>
             <p>Você esqueceu sua senha da API PGD.
             Segue seu novo token de acesso: {token}
             </p>
@@ -82,8 +83,21 @@ async def on_after_forgot_password(user: UserDB, token: str, request: Request):
             """
     await send_email([user.email], subject, body)
 
-async def on_after_reset_password(user: User, request: Request):
+async def on_after_reset_password(user: UserDB, request: Request):
     logging.info("User %s has reset their password.", user.id)
+    subject = "Alteração de senha"
+    body = f"""
+            <html>
+            <body>
+            <h3>Alteração de senha</h3>
+            <p>Olá, {user.email},</p>
+            <p>Sua senha da API PGD foi alterada.
+            Se não reconhecer esta alteração, verifique seu acesso.
+            </p>
+            </body>
+            </html>
+            """
+    await send_email([user.email], subject, body)
 
 jwt_authentication = JWTAuthentication(
     secret=SECRET_KEY,
@@ -311,42 +325,3 @@ def public_facing_openapi():
     return app.openapi_schema
 
 app.openapi = public_facing_openapi
-
-
-# Teste de envio de e-mail
-class EmailSchema(BaseModel):
-    email: List[EmailStr]
-
-@app.post("/email")
-async def simple_send(
-
-    email: EmailSchema
-    ) -> JSONResponse:
-
-    conf = ConnectionConfig(
-        MAIL_USERNAME="washington.antonio@economia.gov.br",
-        MAIL_PASSWORD=wash_password,
-        MAIL_FROM="washington.antonio@economia.gov.br",
-        MAIL_PORT=587,
-        MAIL_SERVER="smtp.office365.com",
-        MAIL_FROM_NAME="Wash",
-        MAIL_TLS=True,
-        MAIL_SSL=False,
-        USE_CREDENTIALS=True,
-        VALIDATE_CERTS=False
-    )
-
-    html = """
-    <p>Hi this test mail, thanks for using Fastapi-mail</p>
-    """
-
-    message = MessageSchema(
-        subject="Fastapi-Mail module",
-        recipients=email.dict().get("email"),  # List of recipients, as many as you can pass
-        body=html,
-        subtype="html"
-        )
-
-    fm = FastMail(conf)
-    await fm.send_message(message)
-    return JSONResponse(status_code=200, content={"message": "email has been sent"})
