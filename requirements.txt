@@ -13,4 +13,4 @@ fastapi-users[sqlalchemy]==6.1.2
 asyncpg==0.21.0
 pytest==6.1.2
 requests==2.25.0
-fastapi-mail==1.1.5
+fastapi-mail==1.2.0
