@@ -15,6 +15,7 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 
+
 import models, schemas, crud, util
 from database import engine, get_db
 from auth import user_db, User, UserCreate, UserUpdate, UserDB, SECRET_KEY
