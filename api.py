@@ -1,5 +1,6 @@
 from datetime import timedelta
 import json
+import logging
 
 from pydantic import ValidationError
 from pydantic import EmailStr, BaseModel
@@ -18,7 +19,6 @@ import models, schemas, crud, util
 from database import engine, get_db
 from auth import user_db, User, UserCreate, UserUpdate, UserDB, SECRET_KEY
 from auth import database_meta as auth_db
-from wash import wash_password
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -41,20 +41,19 @@ async def send_email(user: List[str],
     """Envia e-mail para um destinatário."""
 
     conf = ConnectionConfig(
-        MAIL_USERNAME="washington.antonio@economia.gov.br",
-        MAIL_PASSWORD=wash_password,
-        MAIL_FROM="washington.antonio@economia.gov.br",
-        MAIL_PORT=587,
-        MAIL_SERVER="smtp.office365.com",
+        MAIL_USERNAME="api-pgd@economia.gov.br",
+        MAIL_FROM="api-pgd@economia.gov.br",
+        MAIL_PORT=25,
+        MAIL_SERVER="mail-apl.serpro.gov.br",
         MAIL_FROM_NAME="API PGD",
-        MAIL_TLS=True,
+        MAIL_TLS=False,
         MAIL_SSL=False,
-        USE_CREDENTIALS=True,
+        USE_CREDENTIALS=False,
         VALIDATE_CERTS=False
     )
     message = MessageSchema(
         subject=subject,
-        recipients=user, # [user.email],
+        recipients=user,
         body=body,
         subtype="html"
         )
@@ -64,10 +63,11 @@ async def send_email(user: List[str],
 
 
 async def on_after_register(user: UserDB, request: Request):
-    print(f"User {user.id} has registered.")
+    logging.info("User %s has registered.", user.id)
 
 async def on_after_forgot_password(user: UserDB, token: str, request: Request):
-    print(f"User {user.id} has forgot their password. Reset token: {token}")
+    logging.info("User %s has forgot their password. Reset token: %s",
+                    user.id, token)
     subject = "Recuperação de acesso"
     body = f"""
             <html>
@@ -81,6 +81,9 @@ async def on_after_forgot_password(user: UserDB, token: str, request: Request):
             </html>
             """
     await send_email([user.email], subject, body)
+
+async def on_after_reset_password(user: User, request: Request):
+    logging.info("User %s has reset their password.", user.id)
 
 jwt_authentication = JWTAuthentication(
     secret=SECRET_KEY,
