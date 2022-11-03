@@ -3,7 +3,6 @@ import json
 import logging
 
 from pydantic import ValidationError
-from pydantic import EmailStr, BaseModel
 from starlette.responses import JSONResponse
 from fastapi import Depends, FastAPI, HTTPException, status, Header, Request
 from fastapi.security import OAuth2PasswordBearer
@@ -13,13 +12,14 @@ from fastapi_users import FastAPIUsers
 from fastapi_users.authentication import JWTAuthentication
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
-
+from fastapi_mail import FastMail, MessageSchema
+from pydantic import BaseModel, EmailStr
 
 import models, schemas, crud, util
 from database import engine, get_db
 from auth import user_db, User, UserCreate, UserUpdate, UserDB, SECRET_KEY
 from auth import database_meta as auth_db
+from email_conf import conf
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -36,28 +36,17 @@ app = FastAPI(
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
 
+@app.post('/email')
 async def send_email(user: List[str],
                      subject: str,
                      body: str) -> JSONResponse:
     """Envia e-mail para um destinatário."""
 
-    conf = ConnectionConfig(
-        MAIL_USERNAME="api-pgd@economia.gov.br",
-        MAIL_FROM="api-pgd@economia.gov.br",
-        MAIL_PORT=25,
-        MAIL_SERVER="mail-apl.serpro.gov.br",
-        MAIL_FROM_NAME="API PGD",
-        MAIL_TLS=False,
-        MAIL_SSL=False,
-        MAIL_PASSWORD="",
-        USE_CREDENTIALS=False,
-        VALIDATE_CERTS=False
-    )
     message = MessageSchema(
         subject=subject,
         recipients=user,
-        body=body,
-        subtype=MessageType.html
+        html=body,
+        subtype="html"
         )
     fm = FastMail(conf)
     await fm.send_message(message)
@@ -75,9 +64,9 @@ async def on_after_forgot_password(user: UserDB, token: str, request: Request):
             <html>
             <body>
             <h3>Recuperação de acesso</h3>
-            <p>Olá, {user.email},</p>
+            <p>Olá, {user.email}.</p>
             <p>Você esqueceu sua senha da API PGD.
-            Segue seu novo token de acesso: {token}
+            Segue seu novo token de acesso: <br/> {token}
             </p>
             </body>
             </html>
@@ -85,13 +74,13 @@ async def on_after_forgot_password(user: UserDB, token: str, request: Request):
     await send_email([user.email], subject, body)
 
 async def on_after_reset_password(user: UserDB, request: Request):
-    logging.info("User %s has reset their password.", user.id)
+    print("User %s has reset their password.", user.id)
     subject = "Alteração de senha"
     body = f"""
             <html>
             <body>
             <h3>Alteração de senha</h3>
-            <p>Olá, {user.email},</p>
+            <p>Olá, {user.email}.</p>
             <p>Sua senha da API PGD foi alterada.
             Se não reconhecer esta alteração, verifique seu acesso.
             </p>
@@ -128,11 +117,12 @@ app.include_router(
 )
 app.include_router(
     fastapi_users.get_reset_password_router(
-        SECRET_KEY, after_forgot_password=on_after_forgot_password
+        SECRET_KEY, after_forgot_password=on_after_forgot_password, after_reset_password=on_after_reset_password
     ),
     prefix="/auth",
     tags=["auth"],
 )
+
 app.include_router(
     fastapi_users.get_users_router(),
     prefix="/users",
