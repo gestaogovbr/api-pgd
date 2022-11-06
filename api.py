@@ -73,7 +73,7 @@ async def on_after_forgot_password(user: UserDB, token: str, request: Request):
     await send_email([user.email], subject, body)
 
 async def on_after_reset_password(user: UserDB, request: Request):
-    print("User %s has reset their password.", user.id)
+    logging.info("User %s has reset their password.", user.id)
     subject = "Alteração de senha"
     body = f"""
             <html>
