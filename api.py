@@ -36,7 +36,6 @@ app = FastAPI(
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
 
-@app.post('/email')
 async def send_email(user: List[str],
                      subject: str,
                      body: str) -> JSONResponse:
