@@ -24,6 +24,12 @@ services:
     build: ./
     environment:
       - SQLALCHEMY_DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_FROM=${MAIL_FROM}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_SERVER=${MAIL_SERVER}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4

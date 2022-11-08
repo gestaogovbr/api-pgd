@@ -49,12 +49,19 @@ consolidação em uma base de dados.
     ```
 
 5. Criar um arquivo `.env` contendo o nome de usuário, senha e nome do
-   banco a serem utilizados pelo Postgres:
+   banco a serem utilizados pelo Postgres, e configuração do servidor
+   smtp:
 
     ```bash
     echo "POSTGRES_USER=postgres
     POSTGRES_PASSWORD=postgres
-    POSTGRES_DB=api_pgd" > .env
+    POSTGRES_DB=api_pgd
+    MAIL_USERNAME=api-pgd@email.com.br
+    MAIL_FROM=api-pgd@email.com.br
+    MAIL_PORT=25
+    MAIL_SERVER=smtp.email.com.br
+    MAIL_FROM_NAME=API PGD
+    MAIL_PASSWORD=PASSWORD > .env
     ```
 
 6. Tentar subir os containers:

@@ -41,10 +41,36 @@ def test_get_user_self_logged_in(client: Session, user1_credentials: dict,
 
 def test_patch_user_self_change_cod_unidade(client: Session,
         header_usr_1: dict):
-    " Testa se o usuário pode alterar o seu próprio cod_unidade."
+    "Testa se o usuário pode alterar o seu próprio cod_unidade."
     response = client.patch(
         "/users/me",
         json={"cod_unidade": 3},
         headers=header_usr_1
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+def test_forgot_password(client: Session, user1_credentials: dict):
+    "Testa se o forgot password está operante."
+    response = client.post(
+        "/auth/forgot-password",
+        json={"email": user1_credentials["username"]}
+    )
+    assert response.status_code == status.HTTP_202_ACCEPTED
+
+def test_forgot_password_invalid_email(client: Session):
+    "Testa se o forgot password está operante."
+    response = client.post(
+        "/auth/forgot-password",
+        json={"email": "test.com"}
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+def test_reset_password_bad_token(client: Session):
+    "Testa o reset password com um token inválido."
+    response = client.post(
+        "/auth/reset-password",
+        json={"token":"foo", "password":"new-password"}
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
