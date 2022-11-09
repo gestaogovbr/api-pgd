@@ -61,7 +61,7 @@ consolidação em uma base de dados.
     MAIL_PORT=25
     MAIL_SERVER=smtp.email.com.br
     MAIL_FROM_NAME="API PGD"
-    MAIL_PASSWORD=PASSWORD > .env
+    MAIL_PASSWORD=PASSWORD" > .env
     ```
 
 6. Tentar subir os containers:
