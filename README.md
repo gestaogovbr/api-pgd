@@ -60,7 +60,7 @@ consolidação em uma base de dados.
     MAIL_FROM=api-pgd@email.com.br
     MAIL_PORT=25
     MAIL_SERVER=smtp.email.com.br
-    MAIL_FROM_NAME=API PGD
+    MAIL_FROM_NAME="API PGD"
     MAIL_PASSWORD=PASSWORD > .env
     ```
 
