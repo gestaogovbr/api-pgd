@@ -84,4 +84,4 @@ Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
 
 Para comunicar erros na aplicação e interagir com a equipe de
 desenvolvimento
-[acesse aqui](https://github.com/economiagovbr/api-pgd/issues).
+[acesse aqui](https://github.com/gestaogovbr/api-pgd/issues).

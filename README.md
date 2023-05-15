@@ -2,7 +2,7 @@
 
 Repositório com o código-fonte da API do Programa de Gestão (PGD).
 
-[![Docker Image Build & CI Tests](https://github.com/economiagovbr/api-pgd/actions/workflows/docker-image.yml/badge.svg)](https://github.com/economiagovbr/api-pgd/actions/workflows/docker-image.yml)
+[![Docker Image Build & CI Tests](https://github.com/gestaogovbr/api-pgd/actions/workflows/docker-image.yml/badge.svg)](https://github.com/gestaogovbr/api-pgd/actions/workflows/docker-image.yml)
 
 ## Contextualização
 
@@ -29,7 +29,7 @@ consolidação em uma base de dados.
 2. Clonar o repositório:
 
     ```bash
-    git clone git@github.com:economiagovbr/api-pgd.git
+    git clone git@github.com:gestaogovbr/api-pgd.git
     ```
 
 3. Dentro da pasta clonada execute o comando para gerar a imagem docker:
