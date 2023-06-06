@@ -3,7 +3,8 @@ banco pelo ORM do SQLAlchemy.
 """
 
 from sqlalchemy import (Boolean, Column, ForeignKey,
-                        Integer, String, Float, Date, DateTime, UniqueConstraint)
+                        Integer, BigInteger,String, Float, Date, DateTime,
+                        UniqueConstraint)
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import relationship
 
@@ -14,12 +15,12 @@ class PlanoTrabalho(Base):
     __tablename__ = "plano_trabalho"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     situacao = Column(String)
-    cod_unidade = Column(Integer, nullable=False)
+    cod_unidade = Column(BigInteger, nullable=False)
     cod_plano = Column(String, nullable=False)
     matricula_siape = Column(Integer)
     cpf = Column(String)
     nome_participante = Column(String)
-    cod_unidade_exercicio = Column(Integer)
+    cod_unidade_exercicio = Column(BigInteger)
     nome_unidade_exercicio = Column(String)
     modalidade_execucao = Column(Integer)
     carga_horaria_semanal = Column(Integer)
@@ -63,7 +64,7 @@ class Atividade(Base):
     "Atividade"
     __tablename__ = "atividade"
     # id_atividade = Column(Integer, primary_key=True, index=True)
-    cod_unidade = Column(Integer, primary_key=True, index=True)
+    cod_unidade = Column(BigInteger, primary_key=True, index=True)
     id_plano_trabalho = Column(Integer, ForeignKey("plano_trabalho.id"), primary_key=True, index=True)
     id_atividade = Column(String, primary_key=True, index=True)
     nome_grupo_atividade = Column(String)

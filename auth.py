@@ -11,7 +11,7 @@ from fastapi_users.db import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
 import databases
 import sqlalchemy
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy import Column, Integer, DateTime
+from sqlalchemy import Column, BigInteger, DateTime
 from sqlalchemy import event, DDL
 from database import SessionLocal, engine, SQLALCHEMY_DATABASE_URL
 
@@ -68,7 +68,7 @@ database_meta = databases.Database(SQLALCHEMY_DATABASE_URL)
 Base: DeclarativeMeta = declarative_base()
 
 class UserTable(Base, SQLAlchemyBaseUserTable):
-    cod_unidade = Column(Integer)
+    cod_unidade = Column(BigInteger)
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime)
     pass
