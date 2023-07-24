@@ -5,7 +5,7 @@ Testes relacionados à atividade.
 import itertools
 from datetime import datetime
 
-from requests import Session
+from httpx import Client
 
 from fastapi import status
 
@@ -80,7 +80,7 @@ def test_create_atvidades_omit_optional_fields(input_pt: dict,
                                              omitted_fields: list,
                                              header_usr_1: dict,
                                              truncate_pt,
-                                             client: Session):
+                                             client: Client):
     """Tenta criar um plano de trabalho, mas em cada atividade os
     campos opcionais são omitidos.
     """
@@ -102,7 +102,7 @@ def test_create_atividades_missing_mandatory_fields(input_pt: dict,
                                              missing_fields: list,
                                              header_usr_1: dict,
                                              truncate_pt,
-                                             client: Session):
+                                             client: Client):
     """Tenta criar um plano de trabalho, mas em cada atividade os
     campos obrigatórios são omitidos.
     """
@@ -123,7 +123,7 @@ def test_update_atividades_fields(verb: str,
                                 example_pt,
                                 input_pt: dict,
                                 header_usr_1: dict,
-                                client: Session):
+                                client: Client):
     """ Atualiza campos na atividade.
     """
     input_pt["atividades"][0]["nome_atividade"] = "alterada"
@@ -147,7 +147,7 @@ def test_update_atividades_missing_mandatory_fields(verb: str,
                                             input_pt: dict,
                                             missing_fields: list,
                                             header_usr_1: dict,
-                                            client: Session):
+                                            client: Client):
     """Tenta atualizar as atividades de um plano de trabalho faltando
     campos obrigatórios.
 
@@ -176,7 +176,7 @@ def test_substitute_atividades_list(truncate_pt,
                                     example_pt,
                                     input_pt: dict,
                                     header_usr_1: dict,
-                                    client: Session):
+                                    client: Client):
     "Substitui a lista de atividades existentes por uma nova lista."
     input_pt["atividades"].pop() # remove a última atividade
 
@@ -191,7 +191,7 @@ def test_append_atividades_list(truncate_pt,
                                 example_pt,
                                 input_pt: dict,
                                 header_usr_1: dict,
-                                client: Session):
+                                client: Client):
     "Acrescenta uma nova atividade à lista de atividades existentes."
     nova_atividade = {
       "id_atividade": "4",
@@ -242,7 +242,7 @@ def test_modify_atividade(truncate_pt,
                             data_avaliacao: str,
                             input_pt: dict,
                             header_usr_1: dict,
-                            client: Session):
+                            client: Client):
     "Modifica uma atividade existente com put e patch."
     atividade = input_pt["atividades"][-1] # pega a última atividade
     atividade["data_avaliacao"] = data_avaliacao

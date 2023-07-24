@@ -3,7 +3,7 @@ Testes relacionados ao plano de trabalho.
 """
 import itertools
 
-from requests import Session
+from httpx import Client
 
 from fastapi import status
 
@@ -37,7 +37,7 @@ fields_plano_trabalho = {
 def test_create_plano_trabalho_completo(input_pt: dict,
                                         header_usr_1: dict,
                                         truncate_pt,
-                                        client: Session):
+                                        client: Client):
     response = client.put(f"/plano_trabalho/555",
                           json=input_pt,
                           headers=header_usr_1)
@@ -50,7 +50,7 @@ def test_update_plano_trabalho(input_pt: dict,
                                example_pt,
                                header_usr_1: dict,
                                truncate_pt,
-                               client: Session):
+                               client: Client):
     # A fixture example_pt cria um novo Plano de Trabalho na API
     # Altera um campo do PT e reenvia pra API (update)
     input_pt["nome_unidade_exercicio"] = "CGINF" # Valor era "string"
@@ -67,7 +67,7 @@ def test_create_plano_trabalho_omit_optional_fields(input_pt: dict,
                                              omitted_fields: list,
                                              header_usr_1: dict,
                                              truncate_pt,
-                                             client: Session):
+                                             client: Client):
     offset, field_list = omitted_fields
     for field in field_list:
         del input_pt[field]
@@ -84,7 +84,7 @@ def test_create_plano_trabalho_missing_mandatory_fields(input_pt: dict,
                                              missing_fields: list,
                                              header_usr_1: dict,
                                              truncate_pt,
-                                             client: Session):
+                                             client: Client):
     """Tenta criar um plano de trabalho, faltando campos obrigatórios.
     Tem que ser um plano de trabalho novo, pois na atualização de um
     plano de trabalho existente, o campo que ficar faltando será
@@ -104,7 +104,7 @@ def test_create_plano_trabalho_missing_mandatory_fields(input_pt: dict,
 def test_create_huge_plano_trabalho(input_pt: dict,
                                     header_usr_1: dict,
                                     truncate_pt,
-                                    client: Session):
+                                    client: Client):
     def create_huge_atividade(id_atividade: str):
         new_atividade = input_pt["atividades"][0].copy()
         new_atividade["id_atividade"] = id_atividade
@@ -133,7 +133,7 @@ def test_update_plano_trabalho_missing_mandatory_fields(truncate_pt,
                                             input_pt: dict,
                                             missing_fields: list,
                                             header_usr_1: dict,
-                                            client: Session):
+                                            client: Client):
     """Tenta atualizar um plano de trabalho faltando campos
     obrigatórios.
 
@@ -163,7 +163,7 @@ def test_patch_plano_trabalho_inexistente(truncate_pt,
                                             input_pt: dict,
                                             missing_fields: list,
                                             header_usr_1: dict,
-                                            client: Session):
+                                            client: Client):
     """Tenta atualizar um plano de trabalho com PATCH, faltando campos
     obrigatórios.
 
@@ -183,7 +183,7 @@ def test_patch_plano_trabalho_inexistente(truncate_pt,
 def test_create_pt_cod_plano_inconsistent(input_pt: dict,
                                           header_usr_1: dict,
                                           truncate_pt,
-                                          client: Session):
+                                          client: Client):
     input_pt["cod_plano"] = 110
     response = client.put("/plano_trabalho/111", # diferente de 110
                           json=input_pt,
@@ -195,12 +195,12 @@ def test_create_pt_cod_plano_inconsistent(input_pt: dict,
 def test_get_plano_trabalho(header_usr_1: dict,
                             truncate_pt,
                             example_pt,
-                            client: Session):
+                            client: Client):
     response = client.get("/plano_trabalho/555",
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
 
-def test_get_pt_inexistente(header_usr_1: dict, client: Session):
+def test_get_pt_inexistente(header_usr_1: dict, client: Client):
     response = client.get("/plano_trabalho/888888888",
                           headers=header_usr_1)
     assert response.status_code == 404
@@ -221,7 +221,7 @@ def test_create_pt_invalid_dates(input_pt: dict,
                                  id_ati_2: str,
                                  header_usr_1: dict,
                                  truncate_pt,
-                                 client: Session):
+                                 client: Client):
     input_pt["data_inicio"] = data_inicio
     input_pt["data_fim"] = data_fim
     input_pt["cod_plano"] = cod_plano
@@ -258,7 +258,7 @@ def test_create_pt_invalid_data_avaliacao(input_pt: dict,
                                           id_ati_2: str,
                                           header_usr_1: dict,
                                           truncate_pt,
-                                          client: Session):
+                                          client: Client):
     input_pt["data_inicio"] = dt_inicio
     input_pt["data_fim"] = "2025-01-01"
     input_pt["cod_plano"] = cod_plano
@@ -291,7 +291,7 @@ def test_create_pt_duplicate_atividade(input_pt: dict,
                                        id_ati_2: str,
                                        header_usr_1: dict,
                                        truncate_pt,
-                                       client: Session):
+                                       client: Client):
     input_pt["cod_plano"] = cod_plano
     input_pt["atividades"][0]["id_atividade"] = id_ati_1
     input_pt["atividades"][1]["id_atividade"] = id_ati_2
@@ -328,7 +328,7 @@ def test_create_pt_invalid_cpf(input_pt: dict,
                                cpf: str,
                                header_usr_1: dict,
                                truncate_pt,
-                               client: Session):
+                               client: Client):
     input_pt["cod_plano"] = cod_plano
     input_pt["cpf"] = cpf
 
@@ -356,7 +356,7 @@ def test_create_pt_invalid_modalidade_execucao(input_pt: dict,
                                modalidade_execucao: int,
                                header_usr_1: dict,
                                truncate_pt,
-                               client: Session):
+                               client: Client):
     input_pt["cod_plano"] = cod_plano
     input_pt["modalidade_execucao"] = modalidade_execucao
     response = client.put(f"/plano_trabalho/{cod_plano}",
@@ -377,7 +377,7 @@ def test_create_pt_invalid_carga_horaria_semanal(input_pt: dict,
                                                  carga_horaria_semanal: int,
                                                  header_usr_1: dict,
                                                  truncate_pt,
-                                                 client: Session):
+                                                 client: Client):
     cod_plano = "767676"
     input_pt["cod_plano"] = cod_plano
     input_pt["carga_horaria_semanal"] = carga_horaria_semanal
@@ -414,7 +414,7 @@ def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
 
                                            header_usr_1: dict,
                                            truncate_pt,
-                                           client: Session):
+                                           client: Client):
     cod_plano = "111222333"
     input_pt["cod_plano"] = cod_plano
     input_pt["atividades"][0]["id_atividade"] = id_atividade
@@ -436,7 +436,7 @@ def test_create_pt_duplicate_cod_plano(input_pt: dict,
                                         header_usr_1: dict,
                                         header_usr_2: dict,
                                         truncate_pt,
-                                        client: Session):
+                                        client: Client):
     response = client.put(f"/plano_trabalho/555",
                           json=input_pt,
                           headers=header_usr_1)
@@ -455,7 +455,7 @@ def test_create_pt_invalid_horas_homologadas(input_pt: dict,
                                                 horas_homologadas: int,
                                                 header_usr_1: dict,
                                                 truncate_pt,
-                                                client: Session):
+                                                client: Client):
     cod_plano = "138"
     input_pt["cod_plano"] = cod_plano
     input_pt["horas_homologadas"] = horas_homologadas

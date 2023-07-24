@@ -1,18 +1,18 @@
 """
 Testes relacionados aos métodos de usuários.
 """
-from requests import Session
+from httpx import Client
 
 from fastapi import status
 
 from tests.conftest import register_user
 
 def test_register_user_not_logged_in(
-        truncate_users, client: Session, header_not_logged_in: dict):
+        truncate_users, client: Client, header_not_logged_in: dict):
     user_1 = register_user(client, "testx@api.com", "api", 0, header_not_logged_in)
     assert user_1.status_code == status.HTTP_401_UNAUTHORIZED
 
-def test_register_user(truncate_users, client: Session, header_admin: dict):
+def test_register_user(truncate_users, client: Client, header_admin: dict):
     user_1 = register_user(client, "testx@api.com", "api", 0, header_admin)
     assert user_1.status_code == status.HTTP_201_CREATED
 
@@ -25,12 +25,12 @@ def test_authenticate(header_usr_1: dict):
     assert isinstance(token, str)
     assert "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." in token
 
-def test_get_user_self_not_logged_in(client: Session,
+def test_get_user_self_not_logged_in(client: Client,
         header_not_logged_in: dict):
     response = client.get("/users/me", headers=header_not_logged_in)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-def test_get_user_self_logged_in(client: Session, user1_credentials: dict,
+def test_get_user_self_logged_in(client: Client, user1_credentials: dict,
         header_usr_1: dict):
     response = client.get("/users/me", headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
@@ -39,7 +39,7 @@ def test_get_user_self_logged_in(client: Session, user1_credentials: dict,
     assert data.get("cod_unidade", None) == user1_credentials["cod_unidade"]
     assert data.get("is_active", None) == True
 
-def test_patch_user_self_change_cod_unidade(client: Session,
+def test_patch_user_self_change_cod_unidade(client: Client,
         header_usr_1: dict):
     "Testa se o usuário pode alterar o seu próprio cod_unidade."
     response = client.patch(
@@ -49,7 +49,7 @@ def test_patch_user_self_change_cod_unidade(client: Session,
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
-def test_forgot_password(client: Session, user1_credentials: dict):
+def test_forgot_password(client: Client, user1_credentials: dict):
     "Testa se o forgot password está operante."
     response = client.post(
         "/auth/forgot-password",
@@ -57,7 +57,7 @@ def test_forgot_password(client: Session, user1_credentials: dict):
     )
     assert response.status_code == status.HTTP_202_ACCEPTED
 
-def test_forgot_password_invalid_email(client: Session):
+def test_forgot_password_invalid_email(client: Client):
     "Testa se o forgot password está operante."
     response = client.post(
         "/auth/forgot-password",
@@ -66,7 +66,7 @@ def test_forgot_password_invalid_email(client: Session):
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-def test_reset_password_bad_token(client: Session):
+def test_reset_password_bad_token(client: Client):
     "Testa o reset password com um token inválido."
     response = client.post(
         "/auth/reset-password",
