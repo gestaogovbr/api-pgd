@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from typing import List, Optional, Union
 from fastapi_users import FastAPIUsers
-from fastapi_users.authentication import JWTAuthentication
+from fastapi_users.authentication import AuthenticationBackend, BearerTransport, JWTStrategy
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
 from fastapi_mail import FastMail, MessageSchema
@@ -88,15 +88,20 @@ async def on_after_reset_password(user: UserDB, request: Request):
             """
     await send_email([user.email], subject, body)
 
-jwt_authentication = JWTAuthentication(
-    secret=SECRET_KEY,
-    lifetime_seconds=3600,
-    tokenUrl="/auth/jwt/login"
+bearer_transport = BearerTransport(tokenUrl="/auth/jwt/login")
+
+def get_jwt_strategy() -> JWTStrategy:
+    return JWTStrategy(secret=SECRET_KEY, lifetime_seconds=3600)
+
+auth_backend = AuthenticationBackend(
+    name="jwt",
+    transport=bearer_transport,
+    get_strategy=get_jwt_strategy,
 )
 
 fastapi_users = FastAPIUsers(
     user_db,
-    [jwt_authentication],
+    [auth_backend],
     User,
     UserCreate,
     UserUpdate,
@@ -104,7 +109,7 @@ fastapi_users = FastAPIUsers(
 )
 
 app.include_router(
-    fastapi_users.get_auth_router(jwt_authentication),
+    fastapi_users.get_auth_router(auth_backend),
     prefix="/auth/jwt",
     tags=["auth"]
 )
