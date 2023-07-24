@@ -5,11 +5,11 @@ import subprocess
 import json
 from typing import Generator, Optional
 
-from requests.models import Response as HTTPResponse
+from httpx import Response as HTTPResponse
 import requests
 
 from fastapi.testclient import TestClient
-from requests import Session
+from httpx import Client
 from fastapi import status
 from api import app
 
@@ -18,7 +18,7 @@ import pytest
 # Helper functions
 
 def register_user(
-        client: Session,
+        client: Client,
         email: str,
         password: str,
         cod_unidade: int,
@@ -74,7 +74,7 @@ def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
 # Fixtures
 
 @pytest.fixture(scope="module")
-def client() -> Generator[Session, None, None]:
+def client() -> Generator[Client, None, None]:
     with TestClient(app) as c:
         yield c
 
@@ -165,13 +165,13 @@ def user2_credentials() -> dict:
     }
 
 @pytest.fixture()
-def example_pt(client: Session, input_pt: dict, header_usr_1: dict):
+def example_pt(client: Client, input_pt: dict, header_usr_1: dict):
     client.put(f"/plano_trabalho/555",
                           json=input_pt,
                           headers=header_usr_1)
 
 @pytest.fixture()
-def truncate_pt(client: Session, header_admin: dict):
+def truncate_pt(client: Client, header_admin: dict):
     client.post(f"/truncate_pts_atividades", headers=header_admin)
 
 @pytest.fixture(scope="module")
@@ -211,7 +211,7 @@ def register_admin(truncate_users, admin_credentials: dict):
 
 @pytest.fixture(scope="module")
 def register_user_1(
-    client: Session,
+    client: Client,
     truncate_users,
     register_admin,
     header_admin: dict,
@@ -223,7 +223,7 @@ def register_user_1(
 
 @pytest.fixture(scope="module")
 def register_user_2(
-    client: Session,
+    client: Client,
     truncate_users,
     register_admin,
     header_admin: dict,

@@ -6,7 +6,7 @@ import os
 import time
 import argparse
 
-import sqlalchemy as sa
+from sqlalchemy import text, create_engine
 from sqlalchemy.exc import OperationalError
 
 MAX_RETRIES = 120
@@ -21,12 +21,12 @@ parser.add_argument(
 args = parser.parse_args()
 command = ' '.join(args.command_line) # pylint: disable=invalid-name
 
-engine = sa.create_engine(os.environ['SQLALCHEMY_DATABASE_URL'])
+engine = create_engine(os.environ['SQLALCHEMY_DATABASE_URL'])
 
 for _ in range(MAX_RETRIES):
     try:
         with engine.connect() as connection:
-            connection.execute("select 'TEST';")
+            connection.execute(text("select 'TEST';"))
             print('Postgres database found.')
         break
     except OperationalError as e:
