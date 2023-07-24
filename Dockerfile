@@ -1,4 +1,4 @@
-FROM python:3.7.7-slim-buster
+FROM python:3.11.4-slim-bullseye
 RUN useradd -ms /bin/bash -d /home/api-pgd api-pgd
 WORKDIR /home/api-pgd
 COPY requirements.txt requirements.txt
