@@ -1,5 +1,6 @@
 from typing import List, Optional
-from pydantic import BaseModel, Field, ValidationError, validator, root_validator
+from pydantic import BaseModel, Field, AfterValidator, ValidationError
+from pydantic.functional_validators import field_validator, model_validator
 from datetime import date
 from enum import IntEnum
 
@@ -170,7 +171,7 @@ class PlanoTrabalhoSchema(BaseModel):
         )
 
     # Validações
-    @root_validator
+    @model_validator(mode='before')
     def data_validate(cls, values):
         data_inicio = values.get("data_inicio", None)
         data_fim = values.get("data_fim", None)
@@ -184,7 +185,7 @@ class PlanoTrabalhoSchema(BaseModel):
                         " que a Data de início do Plano de Trabalho.")
         return values
 
-    @validator("atividades")
+    @field_validator("atividades")
     def valida_atividades(cls, atividades):
         ids_atividades = [a.id_atividade for a in atividades]
         duplicados = []
@@ -196,7 +197,7 @@ class PlanoTrabalhoSchema(BaseModel):
         return atividades
 
 
-    @validator("cpf")
+    @field_validator("cpf")
     def cpf_validate(input_cpf):
         if not input_cpf.isdigit():
             raise ValueError("CPF deve conter apenas digitos.")
@@ -221,13 +222,13 @@ class PlanoTrabalhoSchema(BaseModel):
         str_cpf = "".join([str(i) for i in input_cpf])
         return str_cpf
 
-    @validator("carga_horaria_semanal")
+    @field_validator("carga_horaria_semanal")
     def must_be_less(cls, carga_horaria_semanal):
         if carga_horaria_semanal > 40 or carga_horaria_semanal <= 0:
             raise ValueError("Carga horária semanal deve ser entre 1 e 40")
         return carga_horaria_semanal
 
-    @validator("horas_homologadas")
+    @field_validator("horas_homologadas")
     def must_be_positive(cls, horas_homologadas):
         if horas_homologadas <= 0:
             raise ValueError("Horas homologadas devem ser maior que zero")
