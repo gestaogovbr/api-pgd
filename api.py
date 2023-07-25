@@ -1,6 +1,7 @@
 from datetime import timedelta
 import json
 import logging
+import uuid
 
 from pydantic import ValidationError
 from starlette.responses import JSONResponse
@@ -99,13 +100,9 @@ auth_backend = AuthenticationBackend(
     get_strategy=get_jwt_strategy,
 )
 
-fastapi_users = FastAPIUsers(
+fastapi_users = FastAPIUsers[User, uuid.UUID](
     user_db,
     [auth_backend],
-    User,
-    UserCreate,
-    UserUpdate,
-    UserDB,
 )
 
 app.include_router(
