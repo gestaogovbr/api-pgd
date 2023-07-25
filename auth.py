@@ -18,7 +18,7 @@ from database import SessionLocal, engine, SQLALCHEMY_DATABASE_URL
 
 # to get a string like this run:
 # openssl rand -hex 32
-SECRET_KEY = "e6eecfcf4d966355276ce17554fb58bf0674b20963843d58a4670a85d98e6e2c"
+SECRET_KEY = os.getenv("FASTAPI_USERS_KEY")
 ALGORITHM = "HS256"
 
 fake_users_db = {
