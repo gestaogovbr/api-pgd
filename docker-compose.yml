@@ -23,7 +23,7 @@ services:
       - db-api-pgd
     build: ./
     environment:
-      - SQLALCHEMY_DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
+      - SQLALCHEMY_DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_FROM=${MAIL_FROM}
       - MAIL_PORT=${MAIL_PORT}
