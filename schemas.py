@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel, Field, AfterValidator, ValidationError
+from pydantic import BaseModel, Field
 from pydantic.functional_validators import field_validator, model_validator
 from datetime import date
 from enum import IntEnum
