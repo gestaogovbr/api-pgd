@@ -1,4 +1,3 @@
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text as sa_text
 import models, schemas, util

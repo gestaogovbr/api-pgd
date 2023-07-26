@@ -8,7 +8,7 @@ from sqlalchemy import (Boolean, Column, ForeignKey,
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import relationship
 
-from database import Base
+from users import Base
 
 class PlanoTrabalho(Base):
     "Plano de Trabalho"
