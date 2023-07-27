@@ -45,18 +45,18 @@ class PlanoTrabalho(Base):
         name="_unidade_plano_uc"
     ),)
 
-trigger = DDL("""
-    CREATE TRIGGER inseredata_trigger
-    BEFORE INSERT OR UPDATE ON public.plano_trabalho
-    FOR EACH ROW EXECUTE PROCEDURE insere_data_registro();
-"""
-)
+# trigger = DDL("""
+#     CREATE TRIGGER inseredata_trigger
+#     BEFORE INSERT OR UPDATE ON public.plano_trabalho
+#     FOR EACH ROW EXECUTE PROCEDURE insere_data_registro();
+# """
+# )
 
-event.listen(
-    PlanoTrabalho.__table__,
-    'after_create',
-    trigger.execute_if(dialect='postgresql')
-)
+# event.listen(
+#     PlanoTrabalho.__table__,
+#     'after_create',
+#     trigger.execute_if(dialect='postgresql')
+# )
 
 
 
@@ -87,15 +87,15 @@ class Atividade(Base):
     data_insercao = Column(DateTime)
     plano_trabalho = relationship("PlanoTrabalho", back_populates="atividades")
 
-trigger = DDL("""
-    CREATE TRIGGER inseredata_trigger
-    BEFORE INSERT OR UPDATE ON public.atividade
-    FOR EACH ROW EXECUTE PROCEDURE insere_data_registro();
-"""
-)
+# trigger = DDL("""
+#     CREATE TRIGGER inseredata_trigger
+#     BEFORE INSERT OR UPDATE ON public.atividade
+#     FOR EACH ROW EXECUTE PROCEDURE insere_data_registro();
+# """
+# )
 
-event.listen(
-    Atividade.__table__,
-    'after_create',
-    trigger.execute_if(dialect='postgresql')
-)
+# event.listen(
+#     Atividade.__table__,
+#     'after_create',
+#     trigger.execute_if(dialect='postgresql')
+# )

@@ -3,7 +3,6 @@
 
 import json
 from typing import Union
-import asyncio
 
 from fastapi import Depends, FastAPI, HTTPException, status, Header
 from fastapi.security import OAuth2PasswordBearer
@@ -13,25 +12,15 @@ from fastapi_users.authentication import BearerTransport, JWTStrategy
 from sqlalchemy.orm import Session
 from pydantic import ValidationError
 
-import models, schemas, crud, util
+import schemas, crud, util
 from users import (
-    engine,
     get_db,
     UserRead as User,
     UserUpdate,
     SECRET_KEY,
     api_users,
-    auth_backend,
+    create_db_and_tables,
 )
-
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-async def init_models():
-    async with engine.begin() as conn:
-        await conn.run_sync(models.Base.metadata.drop_all)
-        await conn.run_sync(models.Base.metadata.create_all)
-
-asyncio.run(init_models())
 
 with open("docs/description.md", "r", encoding="utf-8") as f:
     description = f.read()
@@ -39,7 +28,7 @@ with open("docs/description.md", "r", encoding="utf-8") as f:
 app = FastAPI(
     title="Plataforma de recebimento de dados do Programa de Gestão - PGD",
     description=description,
-    version="0.1.8",
+    version="0.2.0",
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
@@ -50,16 +39,20 @@ bearer_transport = BearerTransport(tokenUrl="/auth/jwt/login")
 def get_jwt_strategy() -> JWTStrategy:
     return JWTStrategy(secret=SECRET_KEY, lifetime_seconds=3600)
 
-
-app.include_router(
-    api_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
-)
+# app.include_router(
+#     api_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
+# )
 
 app.include_router(
     api_users.get_users_router(User, UserUpdate),
     prefix="/users",
     tags=["users"],
 )
+
+
+@app.on_event("startup")
+async def on_startup():
+    await create_db_and_tables()
 
 
 @app.get("/", include_in_schema=False)

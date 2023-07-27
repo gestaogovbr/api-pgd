@@ -13,12 +13,12 @@ from fastapi_users.authentication import (
     JWTStrategy,
 )
 from fastapi_users import schemas as user_schemas
-from fastapi_users.db import SQLAlchemyUserDatabase
+from fastapi_users.db import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy import Column, BigInteger, DateTime
+from sqlalchemy import Column, BigInteger
 from pydantic import Field
 
 # to get a string like this run:
@@ -51,12 +51,19 @@ async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 Base = declarative_base()
 
 
+# database models (SQLAlchemy)
 class Base(DeclarativeBase):
     pass
 
 
+class User(SQLAlchemyBaseUserTableUUID, Base):
+    cod_unidade: Mapped[int] = mapped_column(BigInteger())
+    data_atualizacao: Mapped[datetime] = mapped_column()
+    data_insercao: Mapped[datetime] = mapped_column()
+
+
+# validation schemas (pydantic)
 class UserRead(user_schemas.BaseUser[uuid.UUID]):
-    # mudar para pydantic?
     cod_unidade: int = Field(
         title="código da unidade",
         description="código SIAPE da unidade de lotação do usuário da API",
@@ -121,6 +128,7 @@ async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 async def create_db_and_tables():
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)  # remover depois
         await conn.run_sync(Base.metadata.create_all)
 
 
@@ -200,5 +208,6 @@ def get_db():
         yield db
     finally:
         db.aclose()
+
 
 api_users = FastAPIUsers[UserRead, uuid.UUID](get_user_manager, [auth_backend])
