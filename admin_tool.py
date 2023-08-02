@@ -8,43 +8,62 @@ import os
 import argparse
 import getpass
 import asyncio
+import contextlib
 
 import sqlalchemy as sa
 from sqlalchemy.sql import text as sa_text
 
-from fastapi_users import FastAPIUsers
-from fastapi_users.authentication import JWTAuthentication
+from fastapi_users import FastAPIUsers, models as fau_models
+from fastapi_users.authentication import BearerTransport, JWTStrategy
+from fastapi_users.exceptions import UserAlreadyExists
 
-from auth import (user_db, User, UserCreate, UserUpdate, UserDB,
-                    SECRET_KEY, database_meta)
+from users import (
+    get_db,
+    auth_backend,
+    UserRead as User,
+    UserUpdate,
+    UserCreate,
+    SECRET_KEY,
+    api_users,
+    create_db_and_tables,
+    get_user_manager,
+    get_user_db,
+    get_async_session,
+)
 import crud
 
-jwt_authentication = JWTAuthentication(
-    secret=SECRET_KEY,
-    lifetime_seconds=3600,
-    tokenUrl="/auth/jwt/login"
-)
+get_async_session_context = contextlib.asynccontextmanager(get_async_session)
+get_user_db_context = contextlib.asynccontextmanager(get_user_db)
+get_user_manager_context = contextlib.asynccontextmanager(get_user_manager)
 
-fastapi_users = FastAPIUsers(
-    user_db,
-    [jwt_authentication],
-    User,
-    UserCreate,
-    UserUpdate,
-    UserDB,
-)
+
+async def _create_user(email: str, password: str, cod_unidade: int, is_superuser: bool = False) -> fau_models.UP:
+    try:
+        async with get_async_session_context() as session:
+            async with get_user_db_context(session) as user_db:
+                async with get_user_manager_context(user_db) as user_manager:
+                    user = await user_manager.create(
+                        UserCreate(
+                            email=email, password=password, cod_unidade=cod_unidade, is_superuser=is_superuser
+                        )
+                    )
+                    print(f"User created {user}")
+        return user
+    except UserAlreadyExists:
+        print(f"User {email} already exists")
+
 
 def list_users(connection: sa.engine.Connection, cod_unidade: int = None):
     """ Lista os usuários presentes no banco para a unidade COD_UNIDADE.
     Caso seja omitido, mostra os usuários de todas as unidades.
     """
     if cod_unidade is None:
-        result = connection.execute("select count(*) from public.user")
+        result = connection.execute(sa_text("select count(*) from public.user"))
     else:
-        result = connection.execute(
+        result = connection.execute(sa_text(
             "select count(*) from public.user where "
             f"cod_unidade='{cod_unidade}'"
-        )
+        ))
     user_quantity = result.scalar()
     if user_quantity < 1:
         print(
@@ -60,12 +79,12 @@ def list_users(connection: sa.engine.Connection, cod_unidade: int = None):
         ": \n"
     )
     if cod_unidade is None:
-        result = connection.execute("select * from public.user")
+        result = connection.execute(sa_text("select * from public.user"))
     else:
-        result = connection.execute(
+        result = connection.execute(sa_text(
             "select * from public.user where "
             f"cod_unidade='{cod_unidade}'"
-        )
+        ))
     for row in result:
         print(f"\tid: {row['id']}")
         print(f"\temail: {row['email']}")
@@ -78,18 +97,18 @@ def grant_superuser(connection: sa.engine.Connection, email: str):
     " Dá permissão de superusuário ao usuário com o e-mail especificado."
     # precaução contra injection
     email = email.replace('"', "").replace("'", "")
-    user = connection.execute(
+    user = connection.execute(sa_text(
         f"select * from public.user where email='{email}'"
-    ).fetchone()
+    )).fetchone()
     if user is None:
         print(f"Nenhum usuário não encontrado com o e-mail {email}")
         return
     if user["is_superuser"]:
         print(f"Usuário com o e-mail {email} já é superusuário.")
-    result = connection.execute(
+    result = connection.execute(sa_text(
         "update public.user set is_superuser=true "
         f"WHERE id='{user['id']}'"
-    )
+    ))
     if not result:
         raise IOError ("Erro ao gravar no banco de dados.")
     print(
@@ -98,7 +117,7 @@ def grant_superuser(connection: sa.engine.Connection, email: str):
     )
 
 async def create_superuser(
-    fastapi_users: FastAPIUsers,
+    api_users: FastAPIUsers,
     show_password: bool = False
     ):
     " Cria um novo superusuário."
@@ -114,16 +133,12 @@ async def create_superuser(
     if password != confirm_password:
         raise ValueError("As senhas informadas são diferentes.")
     
-    await database_meta.connect()
-    superuser = await fastapi_users.create_user(
-        UserCreate(
-            email=email,
-            password=password,
-            cod_unidade=cod_unidade,
-            is_superuser=True
-        )
+    superuser = await _create_user(
+        email=email,
+        password=password,
+        cod_unidade=cod_unidade,
+        is_superuser=True
     )
-    await database_meta.disconnect()
     if not superuser:
         raise IOError ("Erro ao gravar no banco de dados.")
 
@@ -182,7 +197,7 @@ if __name__ == "__main__":
         elif args.create_superuser:
             loop = asyncio.get_event_loop()
             loop.run_until_complete(
-                create_superuser(fastapi_users, args.show_password)
+                create_superuser(api_users, args.show_password)
             )
         elif args.truncate_users:
             loop = asyncio.get_event_loop()

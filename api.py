@@ -15,6 +15,7 @@ from pydantic import ValidationError
 import schemas, crud, util
 from users import (
     get_db,
+    auth_backend,
     UserRead as User,
     UserUpdate,
     SECRET_KEY,
@@ -30,18 +31,10 @@ app = FastAPI(
     description=description,
     version="0.2.0",
 )
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/jwt/login")
-
-bearer_transport = BearerTransport(tokenUrl="/auth/jwt/login")
-
-
-def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=SECRET_KEY, lifetime_seconds=3600)
-
-# app.include_router(
-#     api_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
-# )
+# import pdb; pdb.set_trace()
+app.include_router(
+    api_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
+)
 
 app.include_router(
     api_users.get_users_router(User, UserUpdate),
@@ -78,7 +71,6 @@ async def create_or_update_plano_trabalho(
     cod_plano: str,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
     db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme),
     user: User = Depends(api_users.current_user(active=True)),
 ):
     """Cria um novo plano de trabalho ou, se existente, substitui um
@@ -120,7 +112,6 @@ async def patch_plano_trabalho(
     cod_plano: str,
     plano_trabalho: schemas.PlanoTrabalhoUpdateSchema,
     db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme),
     user: User = Depends(api_users.current_user(active=True)),
 ):
     "Atualiza um plano de trabalho existente nos campos informados."
@@ -198,7 +189,6 @@ async def patch_plano_trabalho(
 async def get_plano_trabalho(
     cod_plano: str,
     db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme),
     user: User = Depends(api_users.current_user(active=True)),
 ):
     "Consulta o plano de trabalho com o código especificado."
