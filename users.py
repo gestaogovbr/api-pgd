@@ -210,4 +210,4 @@ def get_db():
         db.aclose()
 
 
-api_users = FastAPIUsers[UserRead, uuid.UUID](get_user_manager, [auth_backend])
+api_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
