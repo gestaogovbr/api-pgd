@@ -1,16 +1,17 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text as sa_text
-import models, schemas, util
+import models, schemas
 
-def get_plano_trabalho(db: Session, cod_unidade: int, cod_plano: str):
+async def get_plano_trabalho(db: Session, cod_unidade: int, cod_plano: str):
     "Traz um plano de trabalho a partir do banco de dados."
-    db_plano_trabalho = (
-        db
-        .query(models.PlanoTrabalho)
-        .filter(models.PlanoTrabalho.cod_plano == cod_plano)
-        .filter(models.PlanoTrabalho.cod_unidade == cod_unidade)
-        .first()
-    )
+    async with db as database:
+        db_plano_trabalho = (
+            database
+            .query(models.PlanoTrabalho)
+            .filter(models.PlanoTrabalho.cod_plano == cod_plano)
+            .filter(models.PlanoTrabalho.cod_unidade == cod_unidade)
+            .first()
+        )
     if db_plano_trabalho:
         return db_plano_trabalho
     else:
@@ -51,7 +52,7 @@ def update_plano_trabalho(
         .first()
     )
     # db_plano_trabalho.cod_unidade = cod_unidade
-    for k, v in plano_trabalho.__dict__.items():
+    for k, _ in plano_trabalho.__dict__.items():
         if k[0] != "_" and k != "atividades":
             setattr(db_plano_trabalho, k, getattr(plano_trabalho, k))
     for atividade in db_plano_trabalho.atividades:
