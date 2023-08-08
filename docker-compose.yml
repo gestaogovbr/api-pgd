@@ -30,6 +30,40 @@ services:
       - MAIL_SERVER=${MAIL_SERVER}
       - MAIL_FROM_NAME=${MAIL_FROM_NAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - FIEF_BASE_TENANT_URL=${FIEF_BASE_TENANT_URL}
+      - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
+      - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
+  fief:
+    image: ghcr.io/fief-dev/fief:latest
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db-api-pgd
+    environment:
+      - SECRET=${FIEF_SECRET}
+      - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
+      - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
+      - ENCRYPTION_KEY=${FIEF_ENCRYPTION_KEY}
+      - PORT=8000
+      - ROOT_DOMAIN=fief:8000
+      - FIEF_DOMAIN=fief:8000
+      - FIEF_MAIN_USER_EMAIL=${FIEF_MAIN_USER_EMAIL}
+      - FIEF_MAIN_USER_PASSWORD=${FIEF_MAIN_USER_PASSWORD}
+      - CSRF_COOKIE_SECURE=False
+      - SESSION_DATA_COOKIE_SECURE=False
+      - USER_LOCALE_COOKIE_SECURE=False
+      - LOGIN_HINT_COOKIE_SECURE=False
+      - LOGIN_SESSION_COOKIE_SECURE=False
+      - REGISTRATION_SESSION_COOKIE_SECURE=False
+      - SESSION_COOKIE_SECURE=False
+      - FIEF_ADMIN_SESSION_COOKIE_SECURE=False
+      - DATABASE_TYPE=POSTGRESQL
+      - DATABASE_HOST=db-api-pgd
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=${POSTGRES_USER}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE_NAME=${POSTGRES_DB}
+      - TELEMETRY_ENABLED=False
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
