@@ -48,19 +48,32 @@ possibilitar a sua consolidação em uma base de dados.
     O parâmetro `-t api-pgd` define uma tag (um nome) para a imagem docker
     gerada.
 
-4. Criar diretório com permissão correta para persistência do PgAdmin:
+4. Criar diretórios com permissões corretas para persistência do PgAdmin
+   e do Fief:
 
-    ```bash
-    sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
-    ```
+   ```bash
+   mkdir -p fief_server_data
+   sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
+   ```
 
-5. A gestão de usuários é realizada por uma aplicação chamada Fief.
-   É necessário inicializá-la para obter as suas configurações, as quais
-   serão preenchidas no passo seguinte.
+5. A gestão de usuários é realizada por uma aplicação chamada Fief. É
+   necessário criar o database que esta aplicação irá usar:
+
+   ```bash
+   docker exec -it -u postgres api-pgd-db-api-pgd-1 createdb fief
+   ```
+
+   Além disso, é necessário inicializar o Fief para obter as suas
+   configurações, as quais serão preenchidas no passo seguinte.
 
    ```bash
    docker run -it --rm ghcr.io/fief-dev/fief:latest fief quickstart --docker
    ```
+
+   Será pedido um endereço de e-mail e uma nova senha para o usuário
+   administrador do Fief.
+
+   Guarde os valores exibidos como resultado para o próximo passo.
 
 6. Criar um arquivo `.env` a partir do modelo:
 
@@ -72,7 +85,7 @@ possibilitar a sua consolidação em uma base de dados.
    
    * o servidor smtp para envio de e-mails,
    * o banco de dados (Postgres), e
-   * a ferramenta de gestão de usuários (Fief)
+   * a ferramenta de gestão de usuários (Fief), gerados no passo anterior.
 
 7. Na gestão de usuários e controle de acesso da API é usada a aplicação
    [Fief](https://www.fief.dev/). Para o seu correto funcionamento pela
