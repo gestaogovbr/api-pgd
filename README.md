@@ -7,7 +7,7 @@ Repositório com o código-fonte da API do Programa de Gestão (PGD).
 ## Contextualização
 
 O Programa de Gestão, segundo a
-[Instrução Normativa n.º 65, de 30 de julho de 2020](https://www.in.gov.br/en/web/dou/-/instrucao-normativa-n-65-de-30-de-julho-de-2020-269669395),
+[Instrução Normativa n.º ____, de ____ 2023](),
 da Secretaria de Gestão e Desempenho de Pessoal (SGP) do Ministério da
 Economia, é uma:
 
@@ -23,7 +23,7 @@ O objetivo desta API integradora é receber os dados enviados por
 diversos órgãos da administração, de modo a possibilitar a sua
 consolidação em uma base de dados.
 
-## Rodando a API
+## Instalando a API em ambiente de desenvolvimento
 
 1. Instalar Docker CE [aqui!](https://docs.docker.com/get-docker/)
 2. Clonar o repositório:
@@ -32,7 +32,8 @@ consolidação em uma base de dados.
     git clone git@github.com:gestaogovbr/api-pgd.git
     ```
 
-3. Dentro da pasta clonada execute o comando para gerar a imagem docker:
+3. Dentro da pasta clonada execute o comando para gerar a imagem docker
+   do container da API:
 
     ```bash
     cd api-pgd
@@ -48,70 +49,67 @@ consolidação em uma base de dados.
     sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
     ```
 
-5. Criar um arquivo `.env` contendo o nome de usuário, senha e nome do
-   banco a serem utilizados pelo Postgres, e configuração do servidor
-   smtp:
+5. A gestão de usuários é realizada por uma aplicação chamada Fief.
+   É necessário inicializá-la para obter as suas configurações, as quais
+   serão preenchidas no passo seguinte.
 
-    ```bash
-    echo "POSTGRES_USER=postgres
-    POSTGRES_PASSWORD=postgres
-    POSTGRES_DB=api_pgd
-    MAIL_USERNAME=api-pgd@email.com.br
-    MAIL_FROM=api-pgd@email.com.br
-    MAIL_PORT=25
-    MAIL_SERVER=smtp.email.com.br
-    MAIL_FROM_NAME="API PGD"
-    MAIL_PASSWORD=PASSWORD" > .env
-    ```
+   ```bash
+   docker run -it --rm ghcr.io/fief-dev/fief:latest fief quickstart --docker
+   ```
 
-6. Tentar subir os containers:
+6. Criar um arquivo `.env` a partir do modelo:
 
-    ```bash
-    docker-compose up
-    ```
+  ```bash
+  cp .env.template .env
+  ```
+  
+  e editá-lo para preenchê-lo com as configurações necessárias referentes a:
+  
+  * o servidor smtp para envio de e-mails,
+  * o banco de dados (Postgres), e
+  * a ferramenta de gestão de usuários (Fief)
 
-    Vai dar um erro de permissão no pgadmin. Quando a mensagem de erro
-    aparecer, pare os containers (`ctrl` + `C`) e digite novamente:
+7. Tentar subir os containers:
 
-    ```bash
-    sudo chown -R 5050:5050 ./pgadmin_data/
-    ```
+  ```bash
+  docker-compose up
+  ```
 
-    Para ajustar as permissões de arquivo em todas as novas subpastas.
+  Caso apareça um erro de permissão no pgadmin, pare os containers
+  (`ctrl` + `C`) e digite novamente:
 
-6. Para subir os containers:
+  ```bash
+  sudo chown -R 5050:5050 ./pgadmin_data/
+  ```
+
+  Para ajustar as permissões de arquivo em todas essas subpastas.
+
+8. Para subir os containers:
 
     ```bash
     docker-compose up -d
     ```
 
-    A API está disponível em http://localhost:5057 e em
-    http://localhost:5057/docs você acessa a interface para interagir com a
-    API.
+    Estarão disponíveis os seguintes serviços:
 
-### Criando o usuário administrador
+    * http://localhost:5057 -- A API e sua interface Swagger UI em
+      http://localhost:5057/docs para interagir e testar suas funcionalidades
+    * http://localhost:5050 -- A interface do PGAdmin, para caso queira
+      verificar os dados armazenados em ambiente de desenvolvimento
+    * http://localhost:8000/admin/ -- interface do Fief para cadastro de
+      usuários da API e outras configurações
 
-Para começar a usar a API, é necessário primeiro criar um superusuário,
-que será o administrador do sistema. Para maior segurança, esse
-superusuário só pode ser criado a partir da linha de comando dentro do
-container da API. Para isso, acesse o terminal do container:
 
-```bash
-docker exec -it api-pgd_web_1 /bin/bash
-```
 
-A partir do shell da aplicação, digite:
+### Usuário administrador
 
-```bash
-./admin_tool.py --create_superuser
-```
+Ao realizar a configuração inicial do Fief já é criado um usuário
+administrador, o qual pode alterar algumas configurações e cadastrar
+novos usuários.
 
-e a ferramenta de administração irá solicitar o e-mail, senha e código
-da unidade para o superusuário.
-
-Os demais usuários poderão ser criados a partir da interface Swagger ou
-por chamada à API, autenticando-se como o superusuário administrador e
-utilizando o método `/auth/register`.
+O usuário e senha desse usuário administrador ficam configurados nas
+variáveis de ambiente `FIEF_MAIN_USER_EMAIL` e `FIEF_MAIN_USER_PASSWORD`
+(vide passos 5 e 6 da configuração do ambiente).
 
 ## Desenvolvendo
 
@@ -133,6 +131,11 @@ imagem docker.
     ```
 
     O parâmetro `--rm` remove a imagem criada anteriormente.
+
+    Obs.: Caso apareça uma mensagem de erro "can't stat" seguido de uma
+    pasta do Pgadmin, use o comando
+    `sudo chown -R usuario:usuario ./pgadmin_data/` para devolver a
+    propriedade da pasta ao seu usuário antes do build do container.
 
 3. Agora a aplicação já pode ser subida novamente:
 
