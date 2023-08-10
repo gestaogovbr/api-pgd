@@ -1,46 +1,21 @@
-Esta API permite que órgãos federais submetam os Planos de Trabalhos da sua força de trabalho para a SEGES/ME.
-Para solicitar credenciais para submissão de dados, entre em contato com [pgd@economia.gov.br](mailto:pgd@economia.gov.br)
+Esta API permite que órgãos federais submetam os Planos de Trabalhos da
+sua força de trabalho para a SEGES/MGI. Para solicitar credenciais para
+submissão de dados, entre em contato com
+[pgd@economia.gov.br](mailto:pgd@economia.gov.br)
 
-> ### Instrução Normativa Nº 65, de 30 de julho de 2020
+> ### Instrução Normativa Conjunta SEGES-SGPRT n.º 24, de 28 de julho de 2023
 >
-> Estabelece orientações, critérios e procedimentos gerais a serem
-> observados pelos órgãos e entidades integrantes do Sistema de Pessoal
-> Civil da Administração Federal - SIPEC relativos à implementação de
-> Programa de Gestão.
+> Estabelece orientações a serem observadas pelos órgãos e entidades
+> integrantes do Sistema de Pessoal Civil da Administração Federal -
+> Sipec e do Sistema de Organização e Inovação Institucional do Governo
+> Federal - Siorg, relativas à implementação e execução do Programa de
+> Gestão e Desempenho - PGD.
 >
-> Art. 16. Ao término do prazo de seis meses, período considerado como
-> ambientação, os órgãos e entidades que tenham implementado o programa de
-> gestão deverão:
->
-> II - enviar os dados a que se refere o art. 28, revisando, se
-> necessário, o mecanismo de coleta das informações requeridas pelo órgão
-> central do SIPEC.
->
-> Art. 28. Os órgãos disponibilizarão Interface de Programação de
-> Aplicativos para o órgão central do SIPEC com o objetivo de fornecer
-> informações atualizadas no mínimo semanalmente, registradas no sistema
-> informatizado de que trata o art. 26, bem como os relatórios de que
-> trata o art. 17.
->
-> § 1º As informações de que trata o caput deverão ser divulgadas pelos
-> órgãos em sítio eletrônico com, pelo menos, mas não se restringindo, as
-> seguintes informações:
->
-> I - plano de trabalho;
->
-> II - relação dos participantes do programa de gestão, discriminados por
-> unidade;
->
-> III - entregas acordadas; e
->
-> IV - acompanhamento das entregas de cada unidade.
->
-> § 2º Apenas serão divulgadas informações não sigilosas, com base nas
-> regras de transparência de informações e dados previstas em legislação.
->
-> § 3º O órgão central do SIPEC emitirá documento com as especificações
-> detalhadas dos dados a serem enviados e da interface de programação de
-> aplicativos previstos no caput.
+> Art. 29. Os órgãos e entidades enviarão ao órgão central do Siorg, via
+> Interface de Programação de Aplicação- API, os dados sobre a execução
+> do PGD, observadas a documentação técnica e a periodicidade a serem
+> definidas pelo Comitê de que trata o art. 31 desta Instrução Normativa
+> Conjunta.
 
 Explore a seção [**Schemas**](#model-AtividadeSchema) nesta documentação
 para descobrir mais detalhes e quais campos são obrigatórios para as
