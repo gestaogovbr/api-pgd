@@ -1,6 +1,6 @@
 """The api.py module defines all the routes for the API.
 """
-
+import os
 from typing import Union
 
 from fastapi import Depends, FastAPI, HTTPException, status, Header
@@ -23,6 +23,11 @@ app = FastAPI(
     title="Plataforma de recebimento de dados do Programa de Gestão - PGD",
     description=description,
     version="0.2.0",
+    swagger_ui_init_oauth={
+        "clientId": os.environ["FIEF_CLIENT_ID"],
+        "clientSecret": os.environ["FIEF_CLIENT_SECRET"],
+        "scopes": "openid",
+    }
 )
 
 @app.get("/user")
