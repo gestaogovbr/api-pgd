@@ -5,8 +5,8 @@ import subprocess
 import json
 from typing import Generator, Optional
 
+import httpx
 from httpx import Response as HTTPResponse
-import requests
 
 from fastapi.testclient import TestClient
 from httpx import Client
@@ -56,7 +56,7 @@ def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
             f"password={password}"
         ])
 
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = httpx.request("POST", url, headers=headers, data=payload)
         response_dict = json.loads(response.text)
         token_user = response_dict.get("access_token")
         print(token_user)
