@@ -14,7 +14,7 @@ services:
   web:
     image: api-pgd:latest
     command:
-      ./run_after_db.py "uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
+      ./run_after_db.py "cd src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
     ports:
       - "5057:5057"
     volumes:
