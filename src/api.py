@@ -16,7 +16,7 @@ from users import (
     create_db_and_tables,
 )
 
-with open("docs/description.md", "r", encoding="utf-8") as f:
+with open("../docs/description.md", "r", encoding="utf-8") as f:
     description = f.read()
 
 app = FastAPI(
