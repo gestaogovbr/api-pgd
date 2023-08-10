@@ -1,12 +1,12 @@
 """
 Funções auxiliares e fixtures dos testes.
 """
+import os
 import subprocess
 import json
 from typing import Generator, Optional
 
 import httpx
-from httpx import Response as HTTPResponse
 
 from fastapi.testclient import TestClient
 from httpx import Client
@@ -17,22 +17,75 @@ import pytest
 
 # Helper functions
 
+def fief_admin_call(method: str, local_url: str, data: dict = None) -> httpx.Response:
+    """Calls the Fief API with an admin token.
+
+    Args:
+        method (str): http method to use
+        local_url (str): the local part of the url
+        data, (dict, optional): dictionary to post. Defaults to None.
+
+    Returns:
+        httpx.Response: the Response object returned by httpx.
+    """
+    api_token = os.environ("FIEF_MAIN_ADMIN_API_KEY")
+    base_url = os.environ("FIEF_BASE_TENANT_URL")
+    if method in ["POST", "PUT"]:
+        return httpx.request(
+        method=method,
+        url=f"{base_url}/admin/api/{local_url}",
+        headers={
+            "accept": "application/json",
+            "content-type": "application/json",
+            "authorization": f"Bearer: {api_token}",
+        },
+        data=data,
+    )
+    return httpx.request(
+        method=method,
+        url=f"{base_url}/admin/api/{local_url}",
+        headers={
+            "accept": "application/json",
+            "Authorization": f"Bearer: {api_token}",
+        },
+    )
+
 def register_user(
-        client: Client,
         email: str,
         password: str,
         cod_unidade: int,
-        headers: dict
-    ) -> HTTPResponse:
+    ) -> httpx.Response:
+    """Registers a new user in Fief.
+
+    Args:
+        email (str): user's email.
+        password (str): user's password.
+        cod_unidade (int): user's organizational unit code.
+
+    Returns:
+        httpx.Response: the Response object returned by httpx.
+    """    
+    tenant_id = fief_admin_call(
+        method="GET",
+        local_url="tenants/?limit=10&skip=0",
+    ).json()["results"][0]["id"]
+
+    fields = {"cod_unidade": cod_unidade}
+
     data = {
-        "email": email,
-        "password": password,
-        "cod_unidade": cod_unidade,
+            "email": email,
+            "password": password,
+            "is_active": True,
+            "is_superuser": False,
+            "is_verified": False,
+            "fields": fields,
+            "tenant_id": tenant_id,
     }
-    return client.post(
-        f"/auth/register",
-        json=data,
-        headers=headers
+
+    return fief_admin_call(
+        method="POST",
+        local_url="users/",
+        data=data,
     )
 
 def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
@@ -216,10 +269,9 @@ def register_user_1(
     register_admin,
     header_admin: dict,
     user1_credentials: dict
-    ) -> HTTPResponse:
-    return register_user(client, user1_credentials["username"],
-        user1_credentials["password"], user1_credentials["cod_unidade"],
-        header_admin)
+    ) -> httpx.Response:
+    return register_user(user1_credentials["username"],
+        user1_credentials["password"], user1_credentials["cod_unidade"])
 
 @pytest.fixture(scope="module")
 def register_user_2(
@@ -228,10 +280,9 @@ def register_user_2(
     register_admin,
     header_admin: dict,
     user2_credentials: dict
-    ) -> HTTPResponse:
-    return register_user(client, user2_credentials["username"],
-        user2_credentials["password"], user2_credentials["cod_unidade"],
-        header_admin)
+    ) -> httpx.Response:
+    return register_user(user2_credentials["username"],
+        user2_credentials["password"], user2_credentials["cod_unidade"])
 
 @pytest.fixture(scope="module")
 def header_not_logged_in() -> dict:
@@ -258,5 +309,3 @@ def header_usr_2(register_user_2, user2_credentials: dict) -> dict:
     return prepare_header(
         username=user2_credentials["username"],
         password=user2_credentials["password"])
-
-
