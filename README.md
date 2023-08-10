@@ -56,30 +56,22 @@ possibilitar a sua consolidação em uma base de dados.
 
 5. A gestão de usuários é realizada por uma aplicação chamada Fief. Para
    obter as suas configurações iniciais, as quais serão preenchidas no
-   passo seguinte, utilize o comando:
+   passo seguinte, utilize o script:
 
    ```bash
-   docker run -it --rm ghcr.io/fief-dev/fief:latest fief quickstart --docker
+   ./load_fief_env.sh
    ```
 
    Será pedido um endereço de e-mail e uma nova senha para o usuário
    administrador do Fief.
 
-   Guarde os valores exibidos como resultado para o próximo passo.
-
-6. Criar um arquivo `.env` a partir do modelo:
-
-   ```bash
-   cp .env.template .env
-   ```
-   
-   e editá-lo para preenchê-lo com as configurações necessárias referentes a:
+   O script ira criar o arquivo .env as configurações necessárias referentes a:
    
    * o servidor smtp para envio de e-mails,
    * o banco de dados (Postgres), e
    * a ferramenta de gestão de usuários (Fief), gerados no passo anterior.
 
-7. Na gestão de usuários e controle de acesso da API é usada a aplicação
+6. Na gestão de usuários e controle de acesso da API é usada a aplicação
    [Fief](https://www.fief.dev/). Para o seu correto funcionamento pela
    interface Swagger UI, é necessário que ela seja alcançável pelo mesmo
    host, tanto no navegador quanto dentro do container. Para isso, em
@@ -91,7 +83,7 @@ possibilitar a sua consolidação em uma base de dados.
    127.0.1.1	fief
    ```
 
-8. Para iniciar a API, suba os containers:
+7. Para iniciar a API, suba os containers:
 
    ```bash
    docker-compose up
