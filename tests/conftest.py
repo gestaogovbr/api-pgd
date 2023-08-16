@@ -6,156 +6,175 @@ import subprocess
 import json
 import urllib
 from typing import Generator, Optional
-from functools import cache
+from functools import cached_property
 
 import httpx
 
 from fastapi.testclient import TestClient
 from httpx import Client
 from fastapi import status
-from api import app
-
 import pytest
+
+# from api import app
 
 # Helper functions
 
-def fief_admin_call(
-    method: str,
-    local_url: str,
-    params: dict = None,
-    data: dict = None,
-    ) -> httpx.Response:
-    """Calls the Fief API with an admin token.
+
+class FiefAdminHelper:
+    """
+    A helper class for interacting with the Fief API using admin authentication.
 
     Args:
-        method (str): http method to use
-        local_url (str): the local part of the url
-        params, (dict, optional): parameters for url. Defaults to None.
-        data, (dict, optional): dictionary to post. Defaults to None.
+        api_token (str): The API token for admin authentication.
+        base_url (str): The base URL for the Fief API.
 
-    Returns:
-        httpx.Response: the Response object returned by httpx.
+    Methods:
+        fief_admin_call(method, local_url, params=None, data=None):
+            Calls the Fief API with an admin token.
+        get_fief_tenant():
+            Get the tenant id for the first tenant registered in Fief.
+        get_fief_client():
+            Get the client id for the first client registered in Fief.
+        register_user(email, password, cod_unidade):
+            Registers a new user in Fief.
     """
-    api_token = os.environ("FIEF_MAIN_ADMIN_API_KEY")
-    base_url = os.environ("FIEF_BASE_TENANT_URL")
-    url = f"{base_url}/admin/api/{local_url}?{urllib.parse.urlencode(params)}"
-    if method in ["POST", "PUT"]:
-        return httpx.request(
-        method=method,
-        url=url,
-        headers={
+
+    def __init__(self, api_token: str, base_url: str):
+        """
+        Initialize the Fief_Admin_Helper class.
+        """
+        self.api_token = api_token
+        self.base_url = base_url
+
+    def fief_admin_call(
+        self, method: str, local_url: str, params: dict = None, data: dict = None
+    ) -> httpx.Response:
+        """
+        Calls the Fief API with an admin token.
+
+        Args:
+            method (str): HTTP method to use.
+            local_url (str): The local part of the URL.
+            params (dict, optional): Parameters for the URL. Defaults to None.
+            data (dict, optional): Dictionary to post. Defaults to None.
+
+        Returns:
+            httpx.Response: The Response object returned by httpx.
+        """
+        url = f"{self.base_url}/admin/api/{local_url}"
+        if params:
+            url += f"?{urllib.parse.urlencode(params)}"
+        headers = {
             "accept": "application/json",
-            "content-type": "application/json",
-            "authorization": f"Bearer: {api_token}",
-        },
-        data=data,
-    )
-    return httpx.request(
-        method=method,
-        url=url,
-        headers={
-            "accept": "application/json",
-            "Authorization": f"Bearer: {api_token}",
-        },
-    )
-
-
-@cache
-def get_fief_tenant() -> str:
-    """Get the tenant id for the first tenant registered in fief.
-
-    Returns:
-        str: the tenant id.
-    """
-    return fief_admin_call(
-        method="GET",
-        local_url="tenants/",
-        params={
-            "limit": 1,
-            "skip" : 0,
-        },
-    ).json()["results"][0]["id"]
-
-
-@cache
-def get_fief_client() -> str:
-    """Get the client id for the first client registered in fief.
-
-    Returns:
-        str: the client id.
-    """
-    return fief_admin_call(
-        method="GET",
-        local_url="clients/",
-        params={
-            "tenant": get_fief_tenant(),
+            "authorization": f"Bearer {self.api_token}",
         }
-    ).json()["results"][0]["id"]
 
+        if method in ["POST", "PUT"]:
+            headers["content-type"] = "application/json"
+            return httpx.request(
+                method=method,
+                url=url,
+                headers=headers,
+                data=data,
+            )
+        return httpx.request(
+            method=method,
+            url=url,
+            headers=headers,
+        )
 
-def register_user(
-        email: str,
-        password: str,
-        cod_unidade: int,
+    @cached_property
+    def first_tenant(self) -> str:
+        """
+        Get the tenant id for the first tenant registered in Fief.
+
+        Returns:
+            str: The tenant id.
+        """
+        return self.fief_admin_call(
+            method="GET",
+            local_url="tenants/",
+            params={"limit": 1, "skip": 0},
+        ).json()["results"][0]["id"]
+
+    @cached_property
+    def first_client(self) -> str:
+        """
+        Get the client id for the first client registered in Fief.
+
+        Returns:
+            str: The client id.
+        """
+        return self.fief_admin_call(
+            method="GET",
+            local_url="clients/",
+            params={"tenant": self.first_tenant},
+        ).json()["results"][0]["id"]
+
+    def register_user(
+        self, email: str, password: str, cod_unidade: int
     ) -> httpx.Response:
-    """Registers a new user in Fief.
+        """
+        Registers a new user in Fief.
 
-    Args:
-        email (str): user's email.
-        password (str): user's password.
-        cod_unidade (int): user's organizational unit code.
+        Args:
+            email (str): User's email.
+            password (str): User's password.
+            cod_unidade (int): User's organizational unit code.
 
-    Returns:
-        httpx.Response: the Response object returned by httpx.
-    """
-    fields = {"cod_unidade": cod_unidade}
-
-    data = {
+        Returns:
+            httpx.Response: The Response object returned by httpx.
+        """
+        fields = {"cod_unidade": cod_unidade}
+        data = {
             "email": email,
             "password": password,
             "is_active": True,
             "is_superuser": False,
             "is_verified": False,
             "fields": fields,
-            "tenant_id": get_fief_tenant(),
-    }
+            "tenant_id": self.first_tenant,
+        }
+        return self.fief_admin_call(
+            method="POST",
+            local_url="users/",
+            data=data,
+        )
 
-    return fief_admin_call(
-        method="POST",
-        local_url="users/",
-        data=data,
-    )
+
+# Exemplo de uso da classe
+fief_admin = FiefAdminHelper(
+    api_token=os.environ.get("FIEF_MAIN_ADMIN_API_KEY"),
+    base_url=os.environ.get("FIEF_BASE_TENANT_URL"),
+)
+
 
 def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
-    """Prepara o cabeçalho para ser utilizado em requisições.
-    """
-    #TODO: Refatorar e resolver utilizando o objeto TestClient
+    """Prepara o cabeçalho para ser utilizado em requisições."""
+    # TODO: Refatorar e resolver utilizando o objeto TestClient
     token_user = None
 
     if username and password:
         # usuário especificado, é necessário fazer login
         url = "http://localhost:5057/auth/jwt/login"
 
-        headers = {
-        "Content-Type": "application/x-www-form-urlencoded"
-        }
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-        payload="&".join([
-            "accept=application%2Fjson",
-            "Content-Type=application%2Fjson",
-            f"username={username}",
-            f"password={password}"
-        ])
+        payload = "&".join(
+            [
+                "accept=application%2Fjson",
+                "Content-Type=application%2Fjson",
+                f"username={username}",
+                f"password={password}",
+            ]
+        )
 
         response = httpx.request("POST", url, headers=headers, data=payload)
         response_dict = json.loads(response.text)
         token_user = response_dict.get("access_token")
         print(token_user)
 
-    headers = {
-        "accept": "application/json",
-        "Content-Type": "application/json"
-    }
+    headers = {"accept": "application/json", "Content-Type": "application/json"}
     if token_user:
         headers["Authorization"] = f"Bearer {token_user}"
 
@@ -164,10 +183,12 @@ def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
 
 # Fixtures
 
+
 @pytest.fixture(scope="module")
 def client() -> Generator[Client, None, None]:
     with TestClient(app) as c:
         yield c
+
 
 @pytest.fixture()
 def input_pt() -> dict:
@@ -205,7 +226,7 @@ def input_pt() -> dict:
                 "qtde_entregas_efetivas": 0,
                 "avaliacao": 0,
                 "data_avaliacao": "2021-01-15",
-                "justificativa": "string"
+                "justificativa": "string",
             },
             {
                 "id_atividade": "3",
@@ -224,60 +245,48 @@ def input_pt() -> dict:
                 "qtde_entregas_efetivas": 0,
                 "avaliacao": 0,
                 "data_avaliacao": "2021-01-15",
-                "justificativa": "string"
-            }
-        ]
+                "justificativa": "string",
+            },
+        ],
     }
     return pt_json
 
 
 @pytest.fixture(scope="module")
 def admin_credentials() -> dict:
-    return {
-        "username": "admin@api.com",
-        "password": "1234",
-        "cod_unidade": 1
-    }
+    return {"username": "admin@api.com", "password": "1234", "cod_unidade": 1}
+
 
 @pytest.fixture(scope="module")
 def user1_credentials() -> dict:
-    return {
-        "username": "test1@api.com",
-        "password": "api",
-        "cod_unidade": 1
-    }
+    return {"username": "test1@api.com", "password": "api", "cod_unidade": 1}
+
 
 @pytest.fixture(scope="module")
 def user2_credentials() -> dict:
-    return {
-        "username": "test2@api.com",
-        "password": "api",
-        "cod_unidade": 2
-    }
+    return {"username": "test2@api.com", "password": "api", "cod_unidade": 2}
+
 
 @pytest.fixture()
 def example_pt(client: Client, input_pt: dict, header_usr_1: dict):
-    client.put(f"/plano_trabalho/555",
-                          json=input_pt,
-                          headers=header_usr_1)
+    client.put(f"/plano_trabalho/555", json=input_pt, headers=header_usr_1)
+
 
 @pytest.fixture()
 def truncate_pt(client: Client, header_admin: dict):
     client.post(f"/truncate_pts_atividades", headers=header_admin)
 
+
 @pytest.fixture(scope="module")
 def truncate_users():
     p = subprocess.Popen(
-        [
-            "/usr/local/bin/python",
-            "/home/api-pgd/admin_tool.py",
-            "--truncate-users"
-        ],
+        ["/usr/local/bin/python", "/home/api-pgd/admin_tool.py", "--truncate-users"],
         stdout=subprocess.PIPE,
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True
+        text=True,
     )
+
 
 @pytest.fixture(scope="module")
 def register_admin(truncate_users, admin_credentials: dict):
@@ -289,16 +298,15 @@ def register_admin(truncate_users, admin_credentials: dict):
             "/usr/local/bin/python",
             "/home/api-pgd/admin_tool.py",
             "--create_superuser",
-            "--show_password"
+            "--show_password",
         ],
         stdout=subprocess.PIPE,
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True
+        text=True,
     )
-    p.communicate(input="\n".join([
-        email, str(cod_unidade), password, password
-    ]))[0]
+    p.communicate(input="\n".join([email, str(cod_unidade), password, password]))[0]
+
 
 @pytest.fixture(scope="module")
 def register_user_1(
@@ -306,10 +314,14 @@ def register_user_1(
     truncate_users,
     register_admin,
     header_admin: dict,
-    user1_credentials: dict
-    ) -> httpx.Response:
-    return register_user(user1_credentials["username"],
-        user1_credentials["password"], user1_credentials["cod_unidade"])
+    user1_credentials: dict,
+) -> httpx.Response:
+    return fief_admin.register_user(
+        user1_credentials["username"],
+        user1_credentials["password"],
+        user1_credentials["cod_unidade"],
+    )
+
 
 @pytest.fixture(scope="module")
 def register_user_2(
@@ -317,33 +329,40 @@ def register_user_2(
     truncate_users,
     register_admin,
     header_admin: dict,
-    user2_credentials: dict
-    ) -> httpx.Response:
-    return register_user(user2_credentials["username"],
-        user2_credentials["password"], user2_credentials["cod_unidade"])
+    user2_credentials: dict,
+) -> httpx.Response:
+    return fief_admin.register_user(
+        user2_credentials["username"],
+        user2_credentials["password"],
+        user2_credentials["cod_unidade"],
+    )
+
 
 @pytest.fixture(scope="module")
 def header_not_logged_in() -> dict:
     return prepare_header(username=None, password=None)
 
+
 @pytest.fixture(scope="module")
 def header_admin(register_admin, admin_credentials: dict) -> dict:
     return prepare_header(
-        username=admin_credentials["username"],
-        password=admin_credentials["password"])
+        username=admin_credentials["username"], password=admin_credentials["password"]
+    )
+
 
 @pytest.fixture(scope="module")
 def header_usr_1(register_user_1, user1_credentials: dict) -> dict:
     """Authenticate in the API as user1 and return a dict with bearer
     header parameter to be passed to apis requests."""
     return prepare_header(
-        username=user1_credentials["username"],
-        password=user1_credentials["password"])
+        username=user1_credentials["username"], password=user1_credentials["password"]
+    )
+
 
 @pytest.fixture(scope="module")
 def header_usr_2(register_user_2, user2_credentials: dict) -> dict:
     """Authenticate in the API as user2 and return a dict with bearer
     header parameter to be passed to apis requests."""
     return prepare_header(
-        username=user2_credentials["username"],
-        password=user2_credentials["password"])
+        username=user2_credentials["username"], password=user2_credentials["password"]
+    )
