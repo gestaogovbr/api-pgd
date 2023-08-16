@@ -64,7 +64,7 @@ def register_user(
 
     Returns:
         httpx.Response: the Response object returned by httpx.
-    """    
+    """
     tenant_id = fief_admin_call(
         method="GET",
         local_url="tenants/?limit=10&skip=0",

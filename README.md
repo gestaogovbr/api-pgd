@@ -59,7 +59,7 @@ possibilitar a sua consolidação em uma base de dados.
    passo seguinte, utilize o script:
 
    ```bash
-   ./load_fief_env.sh
+   ./init/load_fief_env.sh
    ```
 
    Será pedido um endereço de e-mail e uma nova senha para o usuário
