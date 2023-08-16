@@ -34,6 +34,7 @@ services:
       - FIEF_BASE_TENANT_URL=${FIEF_BASE_TENANT_URL}
       - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
       - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
+      - FIEF_MAIN_ADMIN_API_KEY=${FIEF_MAIN_ADMIN_API_KEY}
   fief:
     image: ghcr.io/fief-dev/fief:latest
     ports:
