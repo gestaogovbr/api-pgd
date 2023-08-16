@@ -4,7 +4,9 @@ Funções auxiliares e fixtures dos testes.
 import os
 import subprocess
 import json
+import urllib
 from typing import Generator, Optional
+from functools import cache
 
 import httpx
 
@@ -17,12 +19,18 @@ import pytest
 
 # Helper functions
 
-def fief_admin_call(method: str, local_url: str, data: dict = None) -> httpx.Response:
+def fief_admin_call(
+    method: str,
+    local_url: str,
+    params: dict = None,
+    data: dict = None,
+    ) -> httpx.Response:
     """Calls the Fief API with an admin token.
 
     Args:
         method (str): http method to use
         local_url (str): the local part of the url
+        params, (dict, optional): parameters for url. Defaults to None.
         data, (dict, optional): dictionary to post. Defaults to None.
 
     Returns:
@@ -30,10 +38,11 @@ def fief_admin_call(method: str, local_url: str, data: dict = None) -> httpx.Res
     """
     api_token = os.environ("FIEF_MAIN_ADMIN_API_KEY")
     base_url = os.environ("FIEF_BASE_TENANT_URL")
+    url = f"{base_url}/admin/api/{local_url}?{urllib.parse.urlencode(params)}"
     if method in ["POST", "PUT"]:
         return httpx.request(
         method=method,
-        url=f"{base_url}/admin/api/{local_url}",
+        url=url,
         headers={
             "accept": "application/json",
             "content-type": "application/json",
@@ -43,12 +52,46 @@ def fief_admin_call(method: str, local_url: str, data: dict = None) -> httpx.Res
     )
     return httpx.request(
         method=method,
-        url=f"{base_url}/admin/api/{local_url}",
+        url=url,
         headers={
             "accept": "application/json",
             "Authorization": f"Bearer: {api_token}",
         },
     )
+
+
+@cache
+def get_fief_tenant() -> str:
+    """Get the tenant id for the first tenant registered in fief.
+
+    Returns:
+        str: the tenant id.
+    """
+    return fief_admin_call(
+        method="GET",
+        local_url="tenants/",
+        params={
+            "limit": 1,
+            "skip" : 0,
+        },
+    ).json()["results"][0]["id"]
+
+
+@cache
+def get_fief_client() -> str:
+    """Get the client id for the first client registered in fief.
+
+    Returns:
+        str: the client id.
+    """
+    return fief_admin_call(
+        method="GET",
+        local_url="clients/",
+        params={
+            "tenant": get_fief_tenant(),
+        }
+    ).json()["results"][0]["id"]
+
 
 def register_user(
         email: str,
@@ -65,11 +108,6 @@ def register_user(
     Returns:
         httpx.Response: the Response object returned by httpx.
     """
-    tenant_id = fief_admin_call(
-        method="GET",
-        local_url="tenants/?limit=10&skip=0",
-    ).json()["results"][0]["id"]
-
     fields = {"cod_unidade": cod_unidade}
 
     data = {
@@ -79,7 +117,7 @@ def register_user(
             "is_superuser": False,
             "is_verified": False,
             "fields": fields,
-            "tenant_id": tenant_id,
+            "tenant_id": get_fief_tenant(),
     }
 
     return fief_admin_call(
