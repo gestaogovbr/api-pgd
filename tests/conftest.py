@@ -68,14 +68,13 @@ class FiefAdminHelper:
             "accept": "application/json",
             "authorization": f"Bearer {self.api_token}",
         }
-
         if method in ["POST", "PUT"]:
             headers["content-type"] = "application/json"
             return httpx.request(
                 method=method,
                 url=url,
                 headers=headers,
-                data=data,
+                json=data,
             )
         return httpx.request(
             method=method,
