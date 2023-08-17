@@ -2,11 +2,11 @@ version: '3'
 
 services:
   db-api-pgd:
-    image: postgres:11
+    image: postgres:15
     ports:
       - "5432"
     volumes:
-        - ./database:/var/lib/postgresql
+        - ./database:/var/lib/postgresql/data
         - ./init/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
