@@ -112,7 +112,7 @@ class FiefAdminHelper:
         ).json()["results"][0]["id"]
 
     def register_user(
-        self, email: str, password: str, cod_unidade: int
+        self, email: str, password: str, cod_unidade: int, is_superuser: bool = False
     ) -> httpx.Response:
         """
         Registers a new user in Fief.
@@ -130,7 +130,7 @@ class FiefAdminHelper:
             "email": email,
             "password": password,
             "is_active": True,
-            "is_superuser": False,
+            "is_superuser": is_superuser,
             "is_verified": False,
             "fields": fields,
             "tenant_id": self.first_tenant,
