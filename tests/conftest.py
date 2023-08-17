@@ -140,6 +140,54 @@ class FiefAdminHelper:
             data=data,
         )
 
+    def create_user_field(
+        self,
+        name: str,
+        slug: str,
+        field_type: str,
+        default_value,
+        ask_at_registration: bool = False,
+        ask_at_update: bool = False,
+        required: bool = False,
+    ):
+        """Creates a user field in Fief.
+
+        See documentation at
+        https://docs.fief.dev/configure/user-fields/
+
+        Args:
+            name (str): Label shown on the Fief interface.
+            slug (str): Field identifier used in the API.
+            field_type (str): Type for the field. Check Fief API docs
+                for allowed types.
+            default_value (_type_): Default value for the field.
+            ask_at_registration (bool, optional): Whether or not to ask
+                the user to fill this field when registering.
+                Defaults to False.
+            ask_at_update (bool, optional): Whether or not to ask the user
+                to fill this field when updating their profile.
+                Defaults to False.
+            required (bool, optional): Whether or not the field is required
+                when presented in forms.
+                Defaults to False.
+        """
+        data = {
+            "name": name,
+            "slug": slug,
+            "type": field_type,
+            "configuration": {
+                "default": default_value,
+                "at_registration": ask_at_registration,
+                "at_update": ask_at_update,
+                "required": required,
+            },
+        }
+        return self.fief_admin_call(
+            method="POST",
+            local_url="user-fields/",
+            data=data,
+        )
+
 
 # Exemplo de uso da classe
 fief_admin = FiefAdminHelper(
