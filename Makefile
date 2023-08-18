@@ -3,7 +3,7 @@ build:
 	docker build -t api-pgd .
 
 .PHONY: rebuild
-build:
+rebuild:
 	docker build --rm -t api-pgd .
 
 .PHONY: setup
@@ -12,7 +12,7 @@ setup: init-fief-env
 init-fief-env:
 	./init/load_fief_env.sh
 
-.PHONY: fief-create-db:
+.PHONY: fief-create-db
 fief-create-db:
 	docker exec -it -u postgres api-pgd-db-api-pgd-1 createdb fief
 
