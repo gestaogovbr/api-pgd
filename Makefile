@@ -2,14 +2,23 @@
 build:
 	docker build -t api-pgd .
 
+.PHONY: rebuild
+build:
+	docker build --rm -t api-pgd .
+
 .PHONY: setup
 setup: init-fief-env
 
 init-fief-env:
 	./init/load_fief_env.sh
 
-configure-fief-instance:
-	cd ./init && python configure_fief.py
+.PHONY: fief-create-db:
+fief-create-db:
+	docker exec -it -u postgres api-pgd-db-api-pgd-1 createdb fief
+
+.PHONY: fief-configure-instance
+fief-configure-instance:
+	docker exec -it api-pgd-web-1 sh -c "cd ./init && python configure_fief.py
 
 .PHONY: up
 up:
