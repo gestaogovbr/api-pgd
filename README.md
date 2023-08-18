@@ -89,15 +89,16 @@ possibilitar a sua consolidação em uma base de dados.
    make up
    ```
 
-   > ⚠️ Caso apareça um erro de permissão no pgadmin, pare os containers
-   > (`ctrl` + `C`) e digite novamente:
+   > ⚠️ Caso apareçam erros de permissão em "database" ou "pgadmin", pare
+   > os containers (`ctrl` + `C`) e digite:
    >
    > ```bash
+   > sudo chown -R 999 ./database/
    > sudo chown -R 5050:5050 ./pgadmin_data/
    > ```
    >
-   > Para ajustar as permissões da pasta `pgadmin_data` e todas as suas
-   > subpastas
+   > Para ajustar as permissões das pastas `database` e `pgadmin_data` e
+   > todas as suas subpastas
 
    > ⚠️ Na primeira execução, o container do Fief vai apresentar erro
    > por causa da inexistência do database `fief` dentro do Postgres.
