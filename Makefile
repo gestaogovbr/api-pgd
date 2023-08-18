@@ -3,10 +3,13 @@ build:
 	docker build -t api-pgd .
 
 .PHONY: setup
-setup: setup-fief
+setup: init-fief-env
 
-setup-fief:
+init-fief-env:
 	./init/load_fief_env.sh
+
+configure-fief-instance:
+	cd ./init && python configure_fief.py
 
 .PHONY: up
 up:
