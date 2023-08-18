@@ -42,7 +42,7 @@ possibilitar a sua consolidação em uma base de dados.
 
     ```bash
     cd api-pgd
-    docker build -t api-pgd .
+    make build
     ```
 
     O parâmetro `-t api-pgd` define uma tag (um nome) para a imagem docker
@@ -59,7 +59,7 @@ possibilitar a sua consolidação em uma base de dados.
    passo seguinte, utilize o script:
 
    ```bash
-   ./init/load_fief_env.sh
+   make setup
    ```
 
    Será pedido um endereço de e-mail e uma nova senha para o usuário
@@ -86,7 +86,7 @@ possibilitar a sua consolidação em uma base de dados.
 7. Para iniciar a API, suba os containers:
 
    ```bash
-   docker-compose up
+   make up
    ```
 
    > ⚠️ Caso apareça um erro de permissão no pgadmin, pare os containers
@@ -104,8 +104,16 @@ possibilitar a sua consolidação em uma base de dados.
    > Para resolver, ainda com os contêineres rodando, execute:
    >
    > ```bash
-   > docker exec -it -u postgres api-pgd-db-api-pgd-1 createdb fief
+   > make fief-create-db
    > ```
+
+8. Por fim, é necessário configurar o Fief para incluir dados necessários
+   ao funcionamento da API PGD (URI de autenticação, campos personalizados
+   de usuários). Use:
+
+   ```bash
+   make fief-configure-instance
+   ```
 
    Estarão disponíveis os seguintes serviços:
 
@@ -138,16 +146,17 @@ imagem docker.
 1. Desligando e removendo os contêineres:
 
     ```bash
-    docker-compose down
+    make down
     ```
 
 2. Construindo novamente o Dockerfile para gerar uma nova imagem:
 
     ```bash
-    docker build --rm -t api-pgd .
+    make rebuild
     ```
 
-    O parâmetro `--rm` remove a imagem criada anteriormente.
+    O comando `rebuild` usa o parâmetro `--rm` do comando `docker` para
+    remover a imagem criada anteriormente.
 
     > ⚠️ Obs.: Caso apareça uma mensagem de erro "can't stat" seguido de
     > uma pasta do Pgadmin, use o comando
@@ -165,7 +174,7 @@ imagem docker.
     desenvolvimento.
 
     ```bash
-    docker-compose up
+    make up
     ```
 
 ## Arquitetura da solução
