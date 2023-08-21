@@ -56,7 +56,6 @@ def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
 
     return headers
 
-
 # Fixtures
 
 
@@ -67,65 +66,109 @@ def client() -> Generator[Client, None, None]:
 
 
 @pytest.fixture()
-def input_pt() -> dict:
-    pt_json = {
-        "cod_plano": "555",
-        "situacao": "string",
-        "matricula_siape": 0,
-        "cpf": "99160773120",
-        "nome_participante": "string",
-        "cod_unidade_exercicio": 0,
-        "nome_unidade_exercicio": "string",
-        "modalidade_execucao": 1,
-        "carga_horaria_semanal": 10,
-        "data_inicio": "2021-01-07",
-        "data_fim": "2021-01-12",
-        "carga_horaria_total": 0.0,
-        "data_interrupcao": "2021-01-07",
-        "entregue_no_prazo": True,
-        "horas_homologadas": 1.5,
-        "atividades": [
+def input_pe() -> dict:
+    """Template de Plano de Entregas da Unidade
+
+    Returns:
+        dict: template de exemplo
+    """
+    pe_json = {
+        "cod_siape_insituidora": 99,
+        "id_plano_entrega_unidade": 1,
+        "data_inicio_plano_entregas": "2023-01-01",
+        "data_termino_plano_entregas": "2023-06-30",
+        "avaliacao_plano_entregas": 5,
+        "data_avaliacao_plano_entregas": "2023-08-05",
+        "cod_SIAPE_unidade_plano": 99,
+        "entregas": [
             {
-                "id_atividade": "2",
-                "nome_grupo_atividade": "string",
-                "nome_atividade": "string",
-                "faixa_complexidade": "string",
-                "parametros_complexidade": "string",
-                "tempo_presencial_estimado": 0.0,
-                "tempo_presencial_programado": 0.0,
-                "tempo_presencial_executado": None,
-                "tempo_teletrabalho_estimado": 0.0,
-                "tempo_teletrabalho_programado": 0.0,
-                "tempo_teletrabalho_executado": None,
-                "entrega_esperada": "string",
-                "qtde_entregas": 0,
-                "qtde_entregas_efetivas": 0,
-                "avaliacao": 0,
-                "data_avaliacao": "2021-01-15",
-                "justificativa": "string",
+                "id_plano_entrega_unidade": 1,
+                "id_entrega": 1,
+                "nome_entrega": "string",
+                "meta_entrega": 100,
+                "tipo_meta": 1,
+                "nome_vinculacao_cadeia_valor": "string",
+                "nome_vinculacao_planejamento": "string",
+                "percentual_progresso_esperado": 100,
+                "percentual_progresso_realizado": 100,
+                "data_entrega": "2023-06-01",
+                "nome_demandante": "string",
+                "nome_destinatario": "string",
             },
             {
-                "id_atividade": "3",
-                "nome_grupo_atividade": "string",
-                "nome_atividade": "string",
-                "faixa_complexidade": "string",
-                "parametros_complexidade": "string",
-                "tempo_presencial_estimado": 0.0,
-                "tempo_presencial_programado": 0.0,
-                "tempo_presencial_executado": None,
-                "tempo_teletrabalho_estimado": 0.0,
-                "tempo_teletrabalho_programado": 0.0,
-                "tempo_teletrabalho_executado": None,
-                "entrega_esperada": "string",
-                "qtde_entregas": 0,
-                "qtde_entregas_efetivas": 0,
-                "avaliacao": 0,
-                "data_avaliacao": "2021-01-15",
-                "justificativa": "string",
+                "id_plano_entrega_unidade": 1,
+                "id_entrega": 2,
+                "nome_entrega": "string",
+                "meta_entrega": 100,
+                "tipo_meta": 2,
+                "nome_vinculacao_cadeia_valor": "string",
+                "nome_vinculacao_planejamento": "string",
+                "percentual_progresso_esperado": 100,
+                "percentual_progresso_realizado": 75,
+                "data_entrega": "2023-06-15",
+                "nome_demandante": "string",
+                "nome_destinatario": "string",
+            },
+        ],
+    }
+    return pe_json
+
+@pytest.fixture()
+def input_pt() -> dict:
+    """Template de Plano de Trabalho do Participante
+
+    Returns:
+        dict: template de exemplo
+    """
+    pt_json = {
+        "cod_siape_insituidora": 99,
+        "id_plano_trabalho_participante": 1,
+        "id_plano_entrega_unidade": 1,
+        "cod_SIAPE_unidade_exercicio": 99,
+        "nome_participante": "string",
+        "cpf_participante": 99160773120,
+        "data_início_plano": "2023-01-01",
+        "data_termino_plano": "2023-01-15",
+        "carga_horaria_total_periodo_plano": 80,
+        "contribuicoes": [
+            {
+                "tipo_contribuicao": 1,
+                "id_entrega": 1,
+                "horas_vinculadas_entrega": 40
+
+            },
+            {
+                "tipo_contribuicao": 2,
+                "horas_vinculadas_entrega": 40
+
+            },
+        ],
+        "consolidacoes": [
+            {
+                "data_inicio_registro": "2023-01-01",
+                "data_fim_registro": "2023-02-01",
+                "avaliacao_plano_trabalho": 5
             },
         ],
     }
     return pt_json
+
+@pytest.fixture()
+def input_part() -> dict:
+    """Template de Status dos Participantes
+
+    Returns:
+        dict: template de exemplo
+    """
+    part_json = {
+        "participante_ativo_inativo_pgd": 0,
+        "matricula_siape": 123456,
+        "cpf_participante": 99160773120,
+        "modalidade_execucao": 3,
+        "jornada_trabalho_semanal": 40,
+        "data_envio": "2023-07-01 16:52:23.173210-03:00",
+    }
+    return part_json
 
 
 @pytest.fixture(scope="module")
