@@ -190,6 +190,9 @@ def user2_credentials() -> dict:
 def example_pt(client: Client, input_pt: dict, header_usr_1: dict):
     client.put(f"/plano_trabalho/555", json=input_pt, headers=header_usr_1)
 
+@pytest.fixture()
+def example_part(client: Client, input_part: dict, header_usr_1: dict):
+    client.put(f"/participante/123456", json=input_part, headers=header_usr_1)
 
 @pytest.fixture()
 def truncate_pt(client: Client, header_admin: dict):
