@@ -7,10 +7,10 @@ rebuild:
 	docker build --rm -t api-pgd .
 
 .PHONY: setup
-setup: init-fief-env fief-create-db
+setup: fief-init-env fief-create-db
 
-.PHONY: init-fief-env
-init-fief-env:
+.PHONY: fief-init-env
+fief-init-env:
 	./init/load_fief_env.sh
 
 .PHONY: fief-create-db
