@@ -24,7 +24,7 @@ services:
       - db-api-pgd
     build: ./
     environment:
-      - URI_SCHEME=$(URI_SCHEME)
+      - URI_SCHEME=${URI_SCHEME}
       - HOST_NAME=${HOST_NAME}
       - PORT=5057
       - SQLALCHEMY_DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
