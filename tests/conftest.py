@@ -165,8 +165,7 @@ def input_part() -> dict:
         "matricula_siape": 123456,
         "cpf_participante": 99160773120,
         "modalidade_execucao": 3,
-        "jornada_trabalho_semanal": 40,
-        "data_envio": "2023-07-01 16:52:23.173210-03:00",
+        "jornada_trabalho_semanal": 40
     }
     return part_json
 
@@ -197,6 +196,10 @@ def example_part(client: Client, input_part: dict, header_usr_1: dict):
 @pytest.fixture()
 def truncate_pt(client: Client, header_admin: dict):
     client.post(f"/truncate_pts_atividades", headers=header_admin)
+
+@pytest.fixture()
+def truncate_part(client: Client, header_admin: dict):
+    client.post(f"/truncate_participantes", headers=header_admin)
 
 
 @pytest.fixture(scope="module")
