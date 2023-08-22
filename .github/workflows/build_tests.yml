@@ -25,12 +25,12 @@ jobs:
       run: sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
     - name: Initialize environment variables
       run: ./init/load_fief_env.sh -user-email api-pgd@nonexisting.gov.br --user-password=123456*abcdef
-    - name: Initialize Fief database
-      run: make fief-create-db
     - name: Run all service containers
       run: docker-compose up -d
       env:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
+    - name: Initialize Fief database
+      run: ./run_after_db.py \"make fief-create-db\"
     - name: run tests
       run: docker exec api-pgd_web_1 /bin/bash -c "./run_after_db.py \"pytest tests/\""
