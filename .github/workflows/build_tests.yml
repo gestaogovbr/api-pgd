@@ -31,6 +31,6 @@ jobs:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
     - name: Initialize Fief database
-      run: python ./run_after_db.py \"make fief-create-db\"
+      run: docker exec api-pgd_web_1 /bin/bash -c "./run_after_db.py \"echo Db started.\"" && make fief-create-db
     - name: run tests
       run: docker exec api-pgd_web_1 /bin/bash -c "./run_after_db.py \"pytest tests/\""
