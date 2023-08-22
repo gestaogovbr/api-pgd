@@ -4,7 +4,7 @@
 cp init/.env.template .env
 
 # Generate FIEF env vars
-docker run -it ghcr.io/fief-dev/fief:latest fief quickstart --docker | tee -i .env_fief
+docker run -it ghcr.io/fief-dev/fief:latest fief quickstart --docker "$@" | tee -i .env_fief
 
 # Prepare the dest vars
 source_file=".env_fief"
