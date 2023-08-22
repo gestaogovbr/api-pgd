@@ -2,7 +2,9 @@ name: Docker Image Build & CI Tests
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - v0.2.x-alpha
     tags: [ tmp-rerun ]
   pull_request:
     branches: [ main ]
@@ -18,14 +20,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag api-pgd
+      run: make build
     - name: Create pgadmin_data volume
       run: sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
-    - name: Run docker-compose
+    - name: Initialize environment variables
+      run: ./init/load_fief_env.sh -user-email api-pgd@nonexisting.gov.br --user-password=123456*abcdef
+    - name: Initialize Fief database
+      run: make fief-create-db
+    - name: Run all service containers
       run: docker-compose up -d
       env:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
-        POSTGRES_DB: api_pgd
     - name: run tests
       run: docker exec api-pgd_web_1 /bin/bash -c "./run_after_db.py \"pytest tests/\""

@@ -54,13 +54,18 @@ possibilitar a sua consolidação em uma base de dados.
    sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
    ```
 
-5. A gestão de usuários é realizada por uma aplicação chamada Fief. Para
-   obter as suas configurações iniciais, as quais serão preenchidas no
-   passo seguinte, utilize o script:
+5. Será necessário inicializar algumas configurações. Para isso,
+   utilize o script:
 
    ```bash
    make setup
    ```
+
+   **Variáveis de ambiente do Fief**
+
+   A gestão de usuários é realizada por uma aplicação chamada Fief. Para
+   obter as suas configurações iniciais, as quais serão preenchidas no
+   passo seguinte, 
 
    Será pedido um endereço de e-mail e uma nova senha para o usuário
    administrador do Fief.
@@ -70,6 +75,22 @@ possibilitar a sua consolidação em uma base de dados.
    * o servidor smtp para envio de e-mails,
    * o banco de dados (Postgres), e
    * a ferramenta de gestão de usuários (Fief), gerados no passo anterior.
+
+   Caso queira repetir esta etapa, utilize o comando:
+
+   ```bash
+   make init-fief-env
+   ```
+
+   **Inicialização do database do Fief**
+
+   É necessário criar o database `fief` dentro do Postgres. Esta etapa
+   é feita automaticamente com o comando `make setup`. No entanto, caso
+   precise repeti-la, use:
+
+   ```bash
+   make fief-create-db
+   ```
 
 6. Na gestão de usuários e controle de acesso da API é usada a aplicação
    [Fief](https://www.fief.dev/). Para o seu correto funcionamento pela
@@ -99,14 +120,6 @@ possibilitar a sua consolidação em uma base de dados.
    >
    > Para ajustar as permissões das pastas `database` e `pgadmin_data` e
    > todas as suas subpastas
-
-   > ⚠️ Na primeira execução, o container do Fief vai apresentar erro
-   > por causa da inexistência do database `fief` dentro do Postgres.
-   > Para resolver, ainda com os contêineres rodando, execute:
-   >
-   > ```bash
-   > make fief-create-db
-   > ```
 
 8. Por fim, é necessário configurar o Fief para incluir dados necessários
    ao funcionamento da API PGD (URI de autenticação, campos personalizados
