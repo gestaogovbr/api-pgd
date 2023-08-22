@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Copy the template file
-cp .env.template .env
+cp init/.env.template .env
 
 # Generate FIEF env vars
 docker run -it ghcr.io/fief-dev/fief:latest fief quickstart --docker | tee -i .env_fief
