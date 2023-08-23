@@ -14,7 +14,7 @@ from httpx import Client
 from fastapi import status
 import pytest
 
-sys.path.insert(0, '../src')
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from fief_admin import FiefAdminHelper
 from api import app
 
