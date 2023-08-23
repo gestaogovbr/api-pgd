@@ -37,31 +37,15 @@ possibilitar a sua consolidação em uma base de dados.
     git clone git@github.com:gestaogovbr/api-pgd.git
     ```
 
-3. Dentro da pasta clonada execute o comando para gerar a imagem docker
-   do container da API:
+3. Dentro da pasta clonada crie o diretório com permissão correta para
+   persistência do PgAdmin:
 
     ```bash
     cd api-pgd
-    make build
+    sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
     ```
 
-    O parâmetro `-t api-pgd` define uma tag (um nome) para a imagem docker
-    gerada.
-
-4. Criar diretório com permissão correta para persistência do PgAdmin:
-
-   ```bash
-   sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
-   ```
-
-5. Será necessário inicializar algumas configurações. Para isso,
-   utilize o script:
-
-   ```bash
-   make setup
-   ```
-
-   **Variáveis de ambiente do Fief**
+4. **Variáveis de ambiente do Fief**
 
    A gestão de usuários é realizada por uma aplicação chamada Fief. Para
    obter as suas configurações iniciais, as quais serão preenchidas no
@@ -76,23 +60,13 @@ possibilitar a sua consolidação em uma base de dados.
    * o banco de dados (Postgres), e
    * a ferramenta de gestão de usuários (Fief), gerados no passo anterior.
 
-   Caso queira repetir esta etapa, utilize o comando:
+   Utilize o comando:
 
    ```bash
-   make init-fief-env
+   make fief-init-env
    ```
 
-   **Inicialização do database do Fief**
-
-   É necessário criar o database `fief` dentro do Postgres. Esta etapa
-   é feita automaticamente com o comando `make setup`. No entanto, caso
-   precise repeti-la, use:
-
-   ```bash
-   make fief-create-db
-   ```
-
-6. Na gestão de usuários e controle de acesso da API é usada a aplicação
+5. Na gestão de usuários e controle de acesso da API é usada a aplicação
    [Fief](https://www.fief.dev/). Para o seu correto funcionamento pela
    interface Swagger UI, é necessário que ela seja alcançável pelo mesmo
    host, tanto no navegador quanto dentro do container. Para isso, em
@@ -104,7 +78,7 @@ possibilitar a sua consolidação em uma base de dados.
    127.0.1.1	fief
    ```
 
-7. Para iniciar a API, suba os containers:
+6. Para iniciar a API, suba os containers:
 
    ```bash
    make up
@@ -121,7 +95,7 @@ possibilitar a sua consolidação em uma base de dados.
    > Para ajustar as permissões das pastas `database` e `pgadmin_data` e
    > todas as suas subpastas
 
-8. Por fim, é necessário configurar o Fief para incluir dados necessários
+7. Por fim, é necessário configurar o Fief para incluir dados necessários
    ao funcionamento da API PGD (URI de autenticação, campos personalizados
    de usuários). Use:
 
