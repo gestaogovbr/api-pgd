@@ -186,8 +186,8 @@ def user2_credentials() -> dict:
 
 
 @pytest.fixture()
-def example_pt(client: Client, input_pt: dict, header_usr_1: dict):
-    client.put("/plano_trabalho/555", json=input_pt, headers=header_usr_1)
+def example_pe(client: Client, input_pt: dict, header_usr_1: dict):
+    client.put("/plano_entrega/555", json=input_pt, headers=header_usr_1)
 
 @pytest.fixture()
 def example_part(client: Client, input_part: dict, header_usr_1: dict):
