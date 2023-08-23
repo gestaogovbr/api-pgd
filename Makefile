@@ -12,7 +12,7 @@ fief-init-env:
 
 .PHONY: fief-configure-instance
 fief-configure-instance:
-	docker exec -it api-pgd_web-1 sh -c "cd ./init && python configure_fief.py"
+	docker-compose exec web sh -c "cd ./init && python configure_fief.py"
 
 .PHONY: up
 up:
