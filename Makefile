@@ -19,7 +19,7 @@ fief-create-db:
 
 .PHONY: fief-configure-instance
 fief-configure-instance:
-	docker exec -it api-pgd-web-1 sh -c "cd ./init && python configure_fief.py
+	docker exec -it api-pgd-web-1 sh -c "cd ./init && python configure_fief.py"
 
 .PHONY: up
 up:
