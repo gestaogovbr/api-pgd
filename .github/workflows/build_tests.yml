@@ -19,17 +19,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: make build
-    - name: Create pgadmin_data volume
+    - name: Create pgadmin_data volume folder
       run: sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
     - name: Initialize environment variables
       run: ./init/load_fief_env.sh --user-email api-pgd@nonexisting.gov.br --user-password=123456*abcdef
     - name: Run all service containers
       run: docker-compose up -d
-      env:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
     - name: Initialize Fief database
       run: docker exec api-pgd_web_1 /bin/bash -c "./run_after_db.py \"echo Db started.\"" && make fief-create-db
     - name: run tests
