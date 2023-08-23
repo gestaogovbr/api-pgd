@@ -187,19 +187,19 @@ def user2_credentials() -> dict:
 
 @pytest.fixture()
 def example_pt(client: Client, input_pt: dict, header_usr_1: dict):
-    client.put(f"/plano_trabalho/555", json=input_pt, headers=header_usr_1)
+    client.put("/plano_trabalho/555", json=input_pt, headers=header_usr_1)
 
 @pytest.fixture()
 def example_part(client: Client, input_part: dict, header_usr_1: dict):
-    client.put(f"/participante/123456", json=input_part, headers=header_usr_1)
+    client.put("/participante/123456", json=input_part, headers=header_usr_1)
 
 @pytest.fixture()
 def truncate_pt(client: Client, header_admin: dict):
-    client.post(f"/truncate_pts_atividades", headers=header_admin)
+    client.post("/truncate_pts_atividades", headers=header_admin)
 
 @pytest.fixture()
 def truncate_part(client: Client, header_admin: dict):
-    client.post(f"/truncate_participantes", headers=header_admin)
+    client.post("/truncate_participantes", headers=header_admin)
 
 
 @pytest.fixture(scope="module")
