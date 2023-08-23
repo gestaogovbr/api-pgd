@@ -12,7 +12,7 @@ fief-init-env:
 
 .PHONY: fief-configure-instance
 fief-configure-instance:
-	docker-compose exec web sh -c "cd ./init && python configure_fief.py"
+	docker-compose exec -T web sh -c "cd ./init && python configure_fief.py"
 
 .PHONY: up
 up:
@@ -24,4 +24,4 @@ down:
 
 .PHONY: tests
 tests:
-	docker-compose exec web sh -c "cd /home/api-pgd/tests && pytest -vvv --color=yes"
+	docker-compose exec -T web sh -c "cd /home/api-pgd/tests && pytest -vvv --color=yes"
