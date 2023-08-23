@@ -15,7 +15,6 @@ fields_participantes = (
     ["cpf_participante"],
     ["modalidade_execucao"],
     ["jornada_trabalho_semanal"],
-    ["data_envio"]
     )
 
 def test_put_participante(input_part: dict,
@@ -23,9 +22,27 @@ def test_put_participante(input_part: dict,
                                         truncate_part,
                                         client: Client):
     """Testa a submissão de um participante a partir do template"""
-    response = client.put(f"/participante/123456",
+    response = client.put("/participante/123456",
                           json=input_part,
                           headers=header_usr_1)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json().get("detail", None) == None
+    assert response.json() == input_part
+
+def test_put_duplicate_participante(input_part: dict,
+                                        header_usr_1: dict,
+                                        header_usr_2: dict,                                        
+                                        truncate_part,
+                                        client: Client):
+    """Testa a submissão de um participante duplicado
+    TODO: Verificar regra negocial"""
+    response = client.put("/participante/123456",
+                          json=input_part,
+                          headers=header_usr_1)
+    response = client.put("/participante/123456",
+                          json=input_part,
+                          headers=header_usr_2)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json().get("detail", None) == None
@@ -54,7 +71,8 @@ def test_get_participante(header_usr_1: dict,
                             truncate_part,
                             example_part,
                             client: Client):
-    """Tenta requisitar um participante pelo cod_siape"""
+    """Tenta requisitar um participante pelo cod_siape
+        TODO: Verificar regra negocial"""
     response = client.get("/participante/123456",
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
@@ -65,6 +83,34 @@ def test_get_participante_inexistente(header_usr_1: dict, client: Client):
     
     assert response.status_code == 404
     assert response.json().get("detail", None) == "Participante não encontrado"
+
+@pytest.mark.parametrize("matricula_siape",
+                        [
+                            ("12345678"),
+                            ("0000000"),
+                            ("9999999"),
+                            ("123456"),
+                            (""),
+                        ])
+def test_put_participante_invalid_matricula_siape(input_part: dict,
+                               matricula_siape: str,
+                               header_usr_1: dict,
+                               truncate_part,
+                               client: Client):
+    """Tenta submeter um participante com matricula siape inválida"""
+
+    input_part["matricula_siape"] = matricula_siape
+
+    response = client.put(f"/participante/{input_part['cod_siape']}",
+                          json=input_part,
+                          headers=header_usr_1)
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    detail_msg = [
+        "Matricula SIAPE Inválida.",
+        "Matrícula SIAPE deve ter 7 digitos.",
+    ]
+    assert response.json().get("detail")[0]["msg"] in detail_msg
+
 
 @pytest.mark.parametrize("cpf",
                           [
@@ -88,6 +134,7 @@ def test_put_participante_invalid_cpf(input_part: dict,
                                header_usr_1: dict,
                                truncate_part,
                                client: Client):
+    """Tenta submeter um participante com cpf inválido"""
     input_part["cpf"] = cpf
 
     response = client.put(f"/participante/{input_part['cod_siape']}",
@@ -112,6 +159,7 @@ def test_put_part_invalid_participante_ativo_inativo_pgd(input_part: dict,
                                header_usr_1: dict,
                                truncate_part,
                                client: Client):
+    """Tenta submeter um participante com flag ativo_inativo_pgd inválida"""
     input_part["invalid_participante_ativo_inativo_pgd"] = participante_ativo_inativo_pgd
     response = client.put(f"/participante/{input_part['cod_siape']}",
                           json=input_part,
@@ -140,6 +188,7 @@ def test_put_part_invalid_modalidade_execucao(input_part: dict,
                                header_usr_1: dict,
                                truncate_part,
                                client: Client):
+    """Tenta submeter um participante com modalidade de execução inválida"""
     input_part["modalidade_execucao"] = modalidade_execucao
     response = client.put(f"/participante/{input_part['cod_siape']}",
                           json=input_part,
@@ -161,6 +210,7 @@ def test_put_part_invalid_jornada_trabalho_semanal(input_part: dict,
                                                  header_usr_1: dict,
                                                  truncate_part,
                                                  client: Client):
+    """Tenta submeter um participante com jornada de trabalho semanal inválida"""
     input_part["carga_horaria_semanal"] = carga_horaria_semanal
     response = client.put(f"/participante/{input_part['cod_siape']}",
                           json=input_part,
