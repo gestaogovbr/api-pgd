@@ -24,4 +24,4 @@ down:
 
 .PHONY: tests
 tests:
-	docker exec -it api-pgd-web-1 sh -c "cd /home/api-pgd/tests && pytest -vvv --color=yes"
+	docker-compose exec web sh -c "cd /home/api-pgd/tests && pytest -vvv --color=yes"
