@@ -25,5 +25,7 @@ jobs:
       run: ./init/load_fief_env.sh --user-email api-pgd@nonexisting.gov.br --user-password=123456*abcdef
     - name: Run all service containers
       run: docker-compose up -d
+    - name: Configure Fief at runtime
+      run: make fief-configure-instance
     - name: run tests
       run: docker exec api-pgd_web_1 /bin/bash -c "./run_after_db.py \"pytest tests/\""
