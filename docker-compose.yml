@@ -13,16 +13,14 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
   web:
+    build: ./
     image: api-pgd:latest
-    command:
-      ./run_after_db.py "cd src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
+    depends_on:
+      - db-api-pgd
     ports:
       - "5057:5057"
     volumes:
         - ./:/home/api-pgd
-    depends_on:
-      - db-api-pgd
-    build: ./
     environment:
       - URI_SCHEME=${URI_SCHEME}
       - HOST_NAME=${HOST_NAME}
@@ -38,12 +36,14 @@ services:
       - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
       - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
       - FIEF_MAIN_ADMIN_API_KEY=${FIEF_MAIN_ADMIN_API_KEY}
+    command:
+      ./run_after_db.py "cd src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
   fief:
     image: ghcr.io/fief-dev/fief:latest
-    ports:
-      - "8000:8000"
     depends_on:
       - db-api-pgd
+    ports:
+      - "8000:8000"
     environment:
       - SECRET=${FIEF_SECRET}
       - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
@@ -73,6 +73,8 @@ services:
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
+    depends_on:
+      - db-api-pgd
     environment:
       - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
       - PGADMIN_DEFAULT_PASSWORD=admin
@@ -81,5 +83,3 @@ services:
     volumes:
       - ./pgadmin_data/servers.json:/pgadmin4/servers.json
       - ./pgadmin_data/pgadmin:/var/lib/pgadmin
-    depends_on:
-      - db-api-pgd
