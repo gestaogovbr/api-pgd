@@ -130,14 +130,12 @@ def test_create_huge_plano_entrega(input_pe: dict,
 
     assert response.status_code == status.HTTP_200_OK
 
-@pytest.mark.parametrize("nome_entrega", 
-                         "nome_vinculacao_cadeia_valor",
-                         "nome_vinculacao_planejamento", 
-                         "nome_demandante", 
-                         "nome_destinatario"
-                            [
-                                ("x" * 299, "x" * 299, "x" * 299, "x" * 299, "x" * 299),
-                            ]
+@pytest.mark.parametrize(("nome_entrega, nome_vinculacao_cadeia_valor, "
+                        "nome_vinculacao_planejamento, nome_demandante, "
+                        "nome_destinatario"),
+                        [
+                            ("x" * 299, ) * 5,
+                        ]
                         )
 def test_create_pe_longtext(truncate_pe,
                             input_pe: dict,
@@ -222,7 +220,7 @@ def test_get_plano_entrega(header_usr_1: dict,
                             client: Client):
     """Tenta buscar um plano de entrega existente"""
 
-    response = client.get("/plano_entrega/{input_pe["cod_SIAPE_unidade_plano"]}/555",
+    response = client.get(f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/555",
                           headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
 
@@ -297,7 +295,7 @@ def test_create_pt_invalid_data_avaliacao(input_pe: dict,
     response = client.put(f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/{id_plano_entrega_unidade}",
                           json=input_pe,
                           headers=header_usr_1)
-    if data_inicio_plano_entregas > data_avaliacao_plano_entregas
+    if data_inicio_plano_entregas > data_avaliacao_plano_entregas:
         assert response.status_code == 422
         detail_msg = "Data de avaliação do Plano de Entrega deve ser maior ou igual" \
                      " que a Data de início do Plano de Entrega."
