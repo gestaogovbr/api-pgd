@@ -170,12 +170,6 @@ def test_put_part_invalid_participante_ativo_inativo_pgd(input_part: dict,
     #detail_msg = "value is not a valid enumeration member; permitted: 0,1"
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
-@pytest.mark.parametrize("jornada_trabalho_semanal",
-                        [
-                            (45),
-                            (-2),
-                            (0),
-                        ])
 
 @pytest.mark.parametrize("modalidade_execucao",
                           [
