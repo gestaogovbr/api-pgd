@@ -1,5 +1,5 @@
 """
-Testes relacionados ao plano de trabalho.
+Testes relacionados ao plano de trabalho do participante.
 """
 import itertools
 
@@ -13,24 +13,21 @@ import pytest
 
 fields_plano_trabalho = {
     "optional": (
-        ["situacao"],
-        ["data_interrupcao"],
-        ["data_interrupcao", "entregue_no_prazo"],
-        ["entregue_no_prazo"],
+        ["id_entrega"],
+        ["avaliacao_plano_trabalho"],
     ),
     "mandatory": (
-        ["matricula_siape"],
-        ["cpf"],
-        ["nome_participante"],
-        ["cod_unidade_exercicio"],
-        ["nome_unidade_exercicio"],
-        ["modalidade_execucao"],
-        ["carga_horaria_semanal"],
-        ["data_inicio"],
-        ["data_fim"],
-        ["carga_horaria_total"],
-        ["atividades"],
-        ["horas_homologadas"],
+        ["id_plano_trabalho_participante"],
+        ["id_plano_entrega_unidade"],
+        ["cod_SIAPE_unidade_exercicio"],
+        ["cpf_participante"],
+        ["data_inicio_plano"],
+        ["data_termino_plano"],
+        ["carga_horaria_total_periodo_plano"],
+        ["tipo_contribuicao"],
+        ["horas_vinculadas_entrega"],
+        ["data_inicio_registro"],
+        ["data_fim_registro"],
     )
 }
 
