@@ -14,6 +14,10 @@ import pytest
 fields_plano_entregas = {
     "optional": (
         ["avaliacao_plano_entregas", "data_avaliacao_plano_entregas"],
+        ["nome_vinculacao_cadeia_valor"],
+        ["nome_vinculacao_planejamento"],
+        ["percentual_progresso_esperado"],
+        ["percentual_progresso_realizado"],
     ),
     "mandatory": (
         ["id_plano_entrega_unidade"],
@@ -21,6 +25,13 @@ fields_plano_entregas = {
         ["data_termino_plano_entregas"],
         ["cod_SIAPE_unidade_plano"],
         ["entregas"],
+        ["id_entrega"],
+        ["nome_entrega"],
+        ["meta_entrega"],
+        ["tipo_meta"],
+        ["data_entrega"],
+        ["nome_demandante"],
+        ["nome_destinatario"]
     )
 }
 
@@ -107,21 +118,46 @@ def test_create_huge_plano_entrega(input_pe: dict,
     def create_huge_entrega(id_entrega: str):
         new_entrega = input_pe["entregas"][0].copy()
         new_entrega["id_entrega"] = id_entrega
-        new_entrega["nome_entrega"] = "x" * 1000000 # 1mi de caracteres
+
         return new_entrega
 
     for i in range(200):
         input_pe["entregas"].append(create_huge_entrega(f"unique-key-{i}"))
 
-    response = client.put(f"/plano_trabalho/{input_pe['cod_SIAPE_unidade_plano']}/555",
+    response = client.put(f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/555",
                           json=input_pe,
                           headers=header_usr_1)
 
     assert response.status_code == status.HTTP_200_OK
 
+@pytest.mark.parametrize("nome_entrega", 
+                         "nome_vinculacao_cadeia_valor",
+                         "nome_vinculacao_planejamento", 
+                         "nome_demandante", 
+                         "nome_destinatario"
+                            [
+                                ("x" * 299, "x" * 299, "x" * 299, "x" * 299, "x" * 299),
+                            ]
+                        )
+def test_create_pe_longtext(truncate_pe,
+                            input_pe: dict,
+                            header_usr_1: dict,
+                            nome_entrega: str,
+                            nome_vinculacao_cadeia_valor: str,
+                            nome_vinculacao_planejamento: str,
+                            nome_demandante: str,
+                            nome_destinatario: str,
+                            client: Client):
+    """Tenta criar uma entrega com campos de texto preenchidos maiores que o limite (300)"""
+
+    assert 1 == 0 
+
+
+
+
 @pytest.mark.parametrize("missing_fields",
-                            fields_plano_entrega["mandatory"])
-def test_patch_plano_trabalho_inexistente(truncate_pe,
+                            fields_plano_entregas["mandatory"])
+def test_patch_plano_entrega_inexistente(truncate_pe,
                                             input_pe: dict,
                                             missing_fields: list,
                                             header_usr_1: dict,
@@ -131,6 +167,8 @@ def test_patch_plano_trabalho_inexistente(truncate_pe,
 
     Com o verbo PATCH, os campos omitidos são interpretados como sem
     alteração. Por isso, é permitido omitir os campos obrigatórios.
+
+    TODO: Validar necessidade
     """
     for field in missing_fields:
         del input_pe[field]
@@ -392,9 +430,17 @@ def test_create_entrega_invalid_percent(truncate_pe,
                                             input_pe: dict,
                                             header_usr_1: dict,
                                             client: Client):
-    """Tenta criar um Plano de Entrega com entrega com percentuais inválidos
-    TODO: Validar Regra Negocial - Como será feita a validação com a Integração SIAPE?"""
+    """Tenta criar um Plano de Entrega com entrega com percentuais inválidos"""
     assert 1 == 0 
+
+
+def test_create_entrega_invalid_tipo_meta(truncate_pe,
+                                            input_pe: dict,
+                                            header_usr_1: dict,
+                                            client: Client):
+    """Tenta criar um Plano de Entrega com tipo de meta inválido"""
+    assert 1 == 0     
+
 
 @pytest.mark.parametrize("avaliacao_plano_entregas",
                           [
@@ -409,7 +455,7 @@ def test_create_pe_invalid_avaliacao(input_pe: dict,
                                client: Client):
     """Tenta criar um Plano de Entrega com nota de avaliação inválida"""
 
-    input_part["avaliacao_plano_entregas"] = avaliacao_plano_entregas
+    input_pe["avaliacao_plano_entregas"] = avaliacao_plano_entregas
     response = client.put(f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/555",
                           json=input_pe,
                           headers=header_usr_1)
