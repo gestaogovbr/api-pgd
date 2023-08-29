@@ -200,12 +200,12 @@ def test_put_part_invalid_modalidade_execucao(input_part: dict,
                             (0),
                         ])
 def test_put_part_invalid_jornada_trabalho_semanal(input_part: dict,
-                                                 carga_horaria_semanal: int,
+                                                 jornada_trabalho_semanal: int,
                                                  header_usr_1: dict,
                                                  truncate_part,
                                                  client: Client):
     """Tenta submeter um participante com jornada de trabalho semanal inválida"""
-    input_part["carga_horaria_semanal"] = carga_horaria_semanal
+    input_part["jornada_trabalho_semanal"] = jornada_trabalho_semanal
     response = client.put(f"/participante/{input_part['cod_siape']}",
                           json=input_part,
                           headers=header_usr_1)
