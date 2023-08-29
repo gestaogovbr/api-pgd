@@ -83,7 +83,6 @@ def input_pe() -> dict:
         "cod_SIAPE_unidade_plano": 99,
         "entregas": [
             {
-                "id_plano_entrega_unidade": 1,
                 "id_entrega": 1,
                 "nome_entrega": "string",
                 "meta_entrega": 100,
@@ -97,7 +96,6 @@ def input_pe() -> dict:
                 "nome_destinatario": "string",
             },
             {
-                "id_plano_entrega_unidade": 1,
                 "id_entrega": 2,
                 "nome_entrega": "string",
                 "meta_entrega": 100,
