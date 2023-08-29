@@ -9,6 +9,52 @@ from fastapi import status
 
 import pytest
 
+@pytest.fixture()
+def input_pe() -> dict:
+    """Template de Plano de Entregas da Unidade
+
+    Returns:
+        dict: template de exemplo
+    """
+    return {
+        "cod_siape_insituidora": 99,
+        "id_plano_entrega_unidade": 1,
+        "data_inicio_plano_entregas": "2023-01-01",
+        "data_termino_plano_entregas": "2023-06-30",
+        "avaliacao_plano_entregas": 5,
+        "data_avaliacao_plano_entregas": "2023-08-05",
+        "cod_SIAPE_unidade_plano": 99,
+        "entregas": [
+            {
+                "id_entrega": 1,
+                "nome_entrega": "string",
+                "meta_entrega": 100,
+                "tipo_meta": 1,
+                "nome_vinculacao_cadeia_valor": "string",
+                "nome_vinculacao_planejamento": "string",
+                "percentual_progresso_esperado": 100,
+                "percentual_progresso_realizado": 100,
+                "data_entrega": "2023-06-01",
+                "nome_demandante": "string",
+                "nome_destinatario": "string",
+            },
+            {
+                "id_entrega": 2,
+                "nome_entrega": "string",
+                "meta_entrega": 100,
+                "tipo_meta": 2,
+                "nome_vinculacao_cadeia_valor": "string",
+                "nome_vinculacao_planejamento": "string",
+                "percentual_progresso_esperado": 100,
+                "percentual_progresso_realizado": 75,
+                "data_entrega": "2023-06-15",
+                "nome_demandante": "string",
+                "nome_destinatario": "string",
+            },
+        ],
+    }
+
+
 # grupos de campos opcionais e obrigatórios a testar
 
 fields_plano_entregas = {
