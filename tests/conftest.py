@@ -56,6 +56,7 @@ def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
 
     return headers
 
+
 # Fixtures
 
 
@@ -113,6 +114,7 @@ def input_pe() -> dict:
     }
     return pe_json
 
+
 @pytest.fixture()
 def input_pt() -> dict:
     """Template de Plano de Trabalho do Participante
@@ -131,27 +133,19 @@ def input_pt() -> dict:
         "data_termino_plano": "2023-01-15",
         "carga_horaria_total_periodo_plano": 80,
         "contribuicoes": [
-            {
-                "tipo_contribuicao": 1,
-                "id_entrega": 1,
-                "horas_vinculadas_entrega": 40
-
-            },
-            {
-                "tipo_contribuicao": 2,
-                "horas_vinculadas_entrega": 40
-
-            },
+            {"tipo_contribuicao": 1, "id_entrega": 1, "horas_vinculadas_entrega": 40},
+            {"tipo_contribuicao": 2, "horas_vinculadas_entrega": 40},
         ],
         "consolidacoes": [
             {
                 "data_inicio_registro": "2023-01-01",
                 "data_fim_registro": "2023-02-01",
-                "avaliacao_plano_trabalho": 5
+                "avaliacao_plano_trabalho": 5,
             },
         ],
     }
     return pt_json
+
 
 @pytest.fixture()
 def input_part() -> dict:
@@ -165,7 +159,7 @@ def input_part() -> dict:
         "matricula_siape": 123456,
         "cpf_participante": 99160773120,
         "modalidade_execucao": 3,
-        "jornada_trabalho_semanal": 40
+        "jornada_trabalho_semanal": 40,
     }
     return part_json
 
@@ -189,13 +183,16 @@ def user2_credentials() -> dict:
 def example_pe(client: Client, input_pt: dict, header_usr_1: dict):
     client.put("/plano_entrega/555", json=input_pt, headers=header_usr_1)
 
+
 @pytest.fixture()
 def example_part(client: Client, input_part: dict, header_usr_1: dict):
     client.put("/participante/123456", json=input_part, headers=header_usr_1)
 
+
 @pytest.fixture()
 def truncate_pt(client: Client, header_admin: dict):
     client.post("/truncate_pts_atividades", headers=header_admin)
+
 
 @pytest.fixture()
 def truncate_part(client: Client, header_admin: dict):
