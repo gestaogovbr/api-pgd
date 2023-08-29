@@ -9,6 +9,7 @@ from fastapi import status
 
 import pytest
 
+
 @pytest.fixture()
 def input_pe() -> dict:
     """Template de Plano de Entregas da Unidade
@@ -129,8 +130,8 @@ def test_update_plano_trabalho(
     assert response.json()["data_avaliacao_plano_entregas"] == "2023-08-15"
 
 
-@pytest.mark.parametrize("omitted_fields", enumerate(fields_plano_entregas["optional"]))
-def test_create_plano_trabalho_omit_optional_fields(
+@pytest.mark.parametrize("omitted_fields", enumerate(fields_entrega["optional"]))
+def test_create_plano_entregas_entrega_omit_optional_fields(
     input_pe: dict,
     omitted_fields: list,
     header_usr_1: dict,
@@ -141,11 +142,13 @@ def test_create_plano_trabalho_omit_optional_fields(
 
     offset, field_list = omitted_fields
     for field in field_list:
-        del input_pe[field]
+        for entrega in input_pe["entregas"]:
+            if field in entrega:
+                del entrega[field]
 
     input_pe["id_plano_entrega_unidade"] = 557 + offset
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entrega/{input_pe['cod_SIAPE_instituidora']}/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )

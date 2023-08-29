@@ -95,21 +95,54 @@ def test_update_plano_trabalho(
     assert response.json()["nome_unidade_exercicio"] == "CGINF"
 
 
-@pytest.mark.parametrize("omitted_fields", enumerate(fields_plano_trabalho["optional"]))
-def test_create_plano_trabalho_omit_optional_fields(
+@pytest.mark.parametrize("omitted_fields", enumerate(fields_contribuicao["optional"]))
+def test_create_plano_trabalho_contribuicao_omit_optional_fields(
     input_pt: dict,
     omitted_fields: list,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pe,
     client: Client,
 ):
+    """Tenta criar um novo plano de trabalho, omitindo campos opcionais
+    nas entregas.
+    """
+
     offset, field_list = omitted_fields
     for field in field_list:
-        del input_pt[field]
+        for contribuicao in input_pt["contribuicoes"]:
+            if field in contribuicao:
+                del contribuicao[field]
 
-    input_pt["cod_plano"] = 557 + offset
+    input_pt["id_plano_entrega_unidade"] = 557 + offset
     response = client.put(
-        f"/plano_trabalho/{input_pt['cod_plano']}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{input_pt['cod_SIAPE_instituidora']}/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.parametrize("omitted_fields", enumerate(fields_consolidacao["optional"]))
+def test_create_plano_trabalho_consolidacao_omit_optional_fields(
+    input_pt: dict,
+    omitted_fields: list,
+    header_usr_1: dict,
+    truncate_pe,
+    client: Client,
+):
+    """Tenta criar um novo plano de entregas omitindo campos opcionais"""
+
+    offset, field_list = omitted_fields
+    for field in field_list:
+        for consolidacao in input_pt["consolidacoes"]:
+            if field in consolidacao:
+                del consolidacao[field]
+
+    input_pt["id_plano_entrega_unidade"] = 557 + offset
+    response = client.put(
+        f"/plano_entrega/{input_pt['cod_SIAPE_instituidora']}/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
 
