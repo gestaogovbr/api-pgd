@@ -73,7 +73,7 @@ def input_pe() -> dict:
     Returns:
         dict: template de exemplo
     """
-    pe_json = {
+    return {
         "cod_siape_insituidora": 99,
         "id_plano_entrega_unidade": 1,
         "data_inicio_plano_entregas": "2023-01-01",
@@ -110,7 +110,6 @@ def input_pe() -> dict:
             },
         ],
     }
-    return pe_json
 
 
 @pytest.fixture()
@@ -120,12 +119,11 @@ def input_pt() -> dict:
     Returns:
         dict: template de exemplo
     """
-    pt_json = {
+    return {
         "cod_siape_insituidora": 99,
         "id_plano_trabalho_participante": 1,
         "id_plano_entrega_unidade": 1,
         "cod_SIAPE_unidade_exercicio": 99,
-        "nome_participante": "string",
         "cpf_participante": 99160773120,
         "data_início_plano": "2023-01-01",
         "data_termino_plano": "2023-01-15",
@@ -142,7 +140,6 @@ def input_pt() -> dict:
             },
         ],
     }
-    return pt_json
 
 
 @pytest.fixture()
@@ -152,14 +149,13 @@ def input_part() -> dict:
     Returns:
         dict: template de exemplo
     """
-    part_json = {
-        "participante_ativo_inativo_pgd": 0,
+    return {
+        "participante_ativo": True,
         "matricula_siape": 123456,
         "cpf_participante": 99160773120,
         "modalidade_execucao": 3,
         "jornada_trabalho_semanal": 40,
     }
-    return part_json
 
 
 @pytest.fixture(scope="module")
