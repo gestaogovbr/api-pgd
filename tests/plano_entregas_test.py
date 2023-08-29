@@ -156,18 +156,6 @@ def test_create_huge_plano_entrega(
     assert response.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.parametrize(
-    (
-        "nome_entrega, nome_vinculacao_cadeia_valor, "
-        "nome_vinculacao_planejamento, nome_demandante, "
-        "nome_destinatario"
-    ),
-    [
-        ("x" * 299,) * 5,
-    ],
-)
-
-
 @pytest.mark.parametrize("missing_fields", fields_plano_entregas["mandatory"])
 def test_patch_plano_entrega_inexistente(
     truncate_pe,
