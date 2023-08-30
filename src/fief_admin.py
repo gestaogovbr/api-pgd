@@ -97,7 +97,7 @@ class FiefAdminHelper:
         ).json()["results"][0]
 
     def register_user(
-        self, email: str, password: str, cod_unidade: int, is_superuser: bool = False
+        self, email: str, password: str, cod_SIAPE_instituidora: int, is_superuser: bool = False
     ) -> httpx.Response:
         """
         Registers a new user in Fief.
@@ -105,12 +105,12 @@ class FiefAdminHelper:
         Args:
             email (str): User's email.
             password (str): User's password.
-            cod_unidade (int): User's organizational unit code.
+            cod_SIAPE_instituidora (int): User's organizational unit code.
 
         Returns:
             httpx.Response: The Response object returned by API call.
         """
-        fields = {"cod_unidade": cod_unidade}
+        fields = {"cod_SIAPE_instituidora": cod_SIAPE_instituidora}
         data = {
             "email": email,
             "password": password,
