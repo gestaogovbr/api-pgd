@@ -56,7 +56,6 @@ fields_plano_trabalho = {
 }
 
 fields_contribuicao = {
-    "optional": (["id_entrega"],),
     "mandatory": (
         ["id_plano_trabalho_participante"],
         ["tipo_contribuicao"],
@@ -105,7 +104,7 @@ def test_create_plano_trabalho_unidade_nao_permitida(
     unidade na qual ele não está autorizado.
     """
     response = client.put(
-        f"/plano_trabalho/2" # só está autorizado na unidade 1
+        f"/plano_trabalho/2"  # só está autorizado na unidade 1
         f"/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
@@ -113,7 +112,6 @@ def test_create_plano_trabalho_unidade_nao_permitida(
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json().get("detail", None) == "Usuário sem permissão na unidade."
-    assert response.json() == input_pt
 
 
 def test_update_plano_trabalho(
@@ -141,31 +139,51 @@ def test_update_plano_trabalho(
     assert response.json()["nome_unidade_exercicio"] == "CGINF"
 
 
-@pytest.mark.parametrize("omitted_fields", enumerate(fields_contribuicao["optional"]))
-def test_create_plano_trabalho_contribuicao_omit_optional_fields(
+@pytest.mark.parametrize(
+    "tipo_contribuicao, id_entrega",
+    [
+        (1, input_pe["entregas"][0]["id_entrega"]),
+        (1, input_pe["entregas"][1]["id_entrega"]),
+        (1, None),
+        (2, input_pe["entregas"][0]["id_entrega"]),
+        (2, None),
+        (3, input_pe["entregas"][0]["id_entrega"]),
+        (3, None),
+    ],
+)
+def test_create_plano_trabalho_id_entrega_check(
     input_pt: dict,
-    omitted_fields: list,
+    tipo_contribuicao: int,
+    id_entrega: int,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pe,
+    truncate_pt,
+    example_pe,
     client: Client,
 ):
-    """Tenta criar um novo plano de trabalho, omitindo campos opcionais
-    nas entregas.
+    """Tenta criar um novo plano de trabalho, sendo que, quando o campo
+    tipo_contribuicao tiver valor 1, o campo id_entrega se tornará
+    obrigatório.
     """
-
-    offset, field_list = omitted_fields
-    for field in field_list:
-        for contribuicao in input_pt["contribuicoes"]:
-            if field in contribuicao:
-                del contribuicao[field]
-
-    input_pt["id_plano_entrega_unidade"] = 557 + offset
+    input_pt["tipo_contribuicao"] = tipo_contribuicao
+    input_pt["id_entrega"] = id_entrega
     response = client.put(
-        f"/plano_trabalho/{input_pt['cod_SIAPE_instituidora']}/{input_pt['id_plano_trabalho_participante']}",
+        f"/plano_trabalho/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_200_OK
+
+    if tipo_contribuicao == 1 and id_entrega is None:
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert (
+            response.json().get("detail", None) == "O campo id_entrega é"
+            " obrigatório quando tipo_contribuicao tiver o valor 1."
+        )
+    else:
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json() == input_pt
 
 
 @pytest.mark.parametrize("omitted_fields", enumerate(fields_consolidacao["optional"]))
