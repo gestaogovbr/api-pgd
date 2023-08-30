@@ -24,6 +24,19 @@ fief_admin = FiefAdminHelper(
     base_url=os.environ.get("FIEF_BASE_TENANT_URL"),
 )
 
+USERS_CREDENTIALS = [
+    {
+        "username": "test1@api.com",
+        "password": "api.test.user/1",
+        "cod_SIAPE_instituidora": 1,
+    },
+    {
+        "username": "test2@api.com",
+        "password": "api.test.user/2",
+        "cod_SIAPE_instituidora": 2,
+    },
+]
+
 
 @pytest.fixture()
 def input_pe() -> dict:
@@ -56,14 +69,12 @@ def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
 
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-        payload = "&".join(
-            [
-                "accept=application%2Fjson",
-                "Content-Type=application%2Fjson",
-                f"username={username}",
-                f"password={password}",
-            ]
-        )
+        payload = {
+            "Accept":"application/json",
+            "Content-Type": "application/json",
+            f"username={username}",
+            f"password={password}",
+        }
 
         response = httpx.request("POST", url, headers=headers, data=payload)
         response_dict = json.loads(response.text)
@@ -97,12 +108,12 @@ def admin_credentials() -> dict:
 
 @pytest.fixture(scope="module")
 def user1_credentials() -> dict:
-    return {"username": "test1@api.com", "password": "api", "cod_SIAPE_instituidora": 1}
+    return USERS_CREDENTIALS[0]
 
 
 @pytest.fixture(scope="module")
 def user2_credentials() -> dict:
-    return {"username": "test2@api.com", "password": "api", "cod_SIAPE_instituidora": 2}
+    return USERS_CREDENTIALS[1]
 
 
 @pytest.fixture()
@@ -152,21 +163,15 @@ def truncate_part(client: Client, header_admin: dict):
 
 @pytest.fixture(scope="module")
 def truncate_users():
-    p = subprocess.Popen(
-        ["/usr/local/bin/python", "/home/api-pgd/admin_tool.py", "--truncate-users"],
-        stdout=subprocess.PIPE,
-        stdin=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
+    for user in USERS_CREDENTIALS:
+        user_search = fief_admin.search_user(email=user["username"]).json()
+        if user_search["count"] > 0:
+            fief_admin.delete_user(email=user["username"])
 
 
 @pytest.fixture(scope="module")
 def register_user_1(
-    client: Client,
     truncate_users,
-    register_admin,
-    header_admin: dict,
     user1_credentials: dict,
 ) -> httpx.Response:
     return fief_admin.register_user(
@@ -178,10 +183,7 @@ def register_user_1(
 
 @pytest.fixture(scope="module")
 def register_user_2(
-    client: Client,
     truncate_users,
-    register_admin,
-    header_admin: dict,
     user2_credentials: dict,
 ) -> httpx.Response:
     return fief_admin.register_user(
@@ -197,7 +199,7 @@ def header_not_logged_in() -> dict:
 
 
 @pytest.fixture(scope="module")
-def header_admin(register_admin, admin_credentials: dict) -> dict:
+def header_admin(admin_credentials: dict) -> dict:
     return prepare_header(
         username=admin_credentials["username"], password=admin_credentials["password"]
     )
