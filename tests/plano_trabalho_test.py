@@ -95,12 +95,23 @@ def test_create_plano_trabalho_completo(
 
 
 def test_update_plano_trabalho(
-    input_pt: dict, example_pt, header_usr_1: dict, truncate_pt, client: Client
+    input_pt: dict,
+    example_pt,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pt,
+    client: Client,
 ):
+    """Atualiza um Plano de Trabalho existente usando o método PUT."""
     # A fixture example_pt cria um novo Plano de Trabalho na API
     # Altera um campo do PT e reenvia pra API (update)
-    input_pt["nome_unidade_exercicio"] = "CGINF"  # Valor era "string"
-    client.put("/plano_trabalho/555", json=input_pt, headers=header_usr_1)
+    input_pt["cod_SIAPE_unidade_exercicio"] = 100  # Valor era 99
+    client.put(
+        f"/plano_trabalho/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
     # Consulta API para conferir se a alteração foi persistida
     response = client.get("/plano_trabalho/555", headers=header_usr_1)
 
