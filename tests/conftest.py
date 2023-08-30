@@ -172,7 +172,7 @@ def register_user_1(
     return fief_admin.register_user(
         email=user1_credentials["username"],
         password=user1_credentials["password"],
-        cod_unidade=user1_credentials["cod_unidade"],
+        cod_SIAPE_instituidora=user1_credentials["cod_SIAPE_instituidora"],
     )
 
 
@@ -187,7 +187,7 @@ def register_user_2(
     return fief_admin.register_user(
         email=user2_credentials["username"],
         password=user2_credentials["password"],
-        cod_unidade=user2_credentials["cod_unidade"],
+        cod_SIAPE_instituidora=user2_credentials["cod_SIAPE_instituidora"],
     )
 
 
