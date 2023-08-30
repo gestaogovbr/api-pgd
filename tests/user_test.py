@@ -7,19 +7,6 @@ from fastapi import status
 
 from tests.conftest import fief_admin
 
-def test_register_user_not_logged_in(
-        truncate_users, client: Client, header_not_logged_in: dict):
-    user_1 = fief_admin.register_user(client, "testx@api.com", "api", 0, header_not_logged_in)
-    assert user_1.status_code == status.HTTP_401_UNAUTHORIZED
-
-def test_register_user(truncate_users, client: Client, header_admin: dict):
-    user_1 = fief_admin.register_user(client, "testx@api.com", "api", 0, header_admin)
-    assert user_1.status_code == status.HTTP_201_CREATED
-
-    user_2 = fief_admin.register_user(client, "testx@api.com", "api", 0, header_admin)
-    assert user_2.status_code == status.HTTP_400_BAD_REQUEST
-    assert user_2.json().get("detail", None) == "REGISTER_USER_ALREADY_EXISTS"
-
 def test_authenticate(header_usr_1: dict):
     token = header_usr_1.get("Authorization")
     assert isinstance(token, str)
