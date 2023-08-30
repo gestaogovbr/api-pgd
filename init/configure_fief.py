@@ -29,8 +29,8 @@ response.raise_for_status()
 
 # Add custom user fields
 response = fief_admin.create_user_field(
-    name="Código da unidade",
-    slug="cod_unidade",
+    name="Código SIAPE da unidade instituidora",
+    slug="cod_SIAPE_instituidora",
     field_type="INTEGER",
     default_value=0,
 )

@@ -68,17 +68,17 @@ def client() -> Generator[Client, None, None]:
 
 @pytest.fixture(scope="module")
 def admin_credentials() -> dict:
-    return {"username": "admin@api.com", "password": "1234", "cod_unidade": 1}
+    return {"username": "admin@api.com", "password": "1234", "cod_SIAPE_instituidora": 1}
 
 
 @pytest.fixture(scope="module")
 def user1_credentials() -> dict:
-    return {"username": "test1@api.com", "password": "api", "cod_unidade": 1}
+    return {"username": "test1@api.com", "password": "api", "cod_SIAPE_instituidora": 1}
 
 
 @pytest.fixture(scope="module")
 def user2_credentials() -> dict:
-    return {"username": "test2@api.com", "password": "api", "cod_unidade": 2}
+    return {"username": "test2@api.com", "password": "api", "cod_SIAPE_instituidora": 2}
 
 
 @pytest.fixture()
