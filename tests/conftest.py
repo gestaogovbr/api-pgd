@@ -162,26 +162,6 @@ def truncate_users():
 
 
 @pytest.fixture(scope="module")
-def register_admin(truncate_users, admin_credentials: dict):
-    email = admin_credentials["username"]
-    cod_unidade = admin_credentials["cod_unidade"]
-    password = admin_credentials["password"]
-    p = subprocess.Popen(
-        [
-            "/usr/local/bin/python",
-            "/home/api-pgd/admin_tool.py",
-            "--create_superuser",
-            "--show_password",
-        ],
-        stdout=subprocess.PIPE,
-        stdin=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    p.communicate(input="\n".join([email, str(cod_unidade), password, password]))[0]
-
-
-@pytest.fixture(scope="module")
 def register_user_1(
     client: Client,
     truncate_users,
