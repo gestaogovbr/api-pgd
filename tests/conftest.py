@@ -87,13 +87,17 @@ def user2_credentials() -> dict:
 
 @pytest.fixture()
 def example_pe(
-    client: Client, input_pt: dict, user1_credentials: dict, header_usr_1: dict
+    client: Client,
+    input_pe: dict,
+    input_pt: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
 ):
     """Cria um Plano de Entrega como exemplo."""
     client.put(
         f"/plano_entrega/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/{input_pt['id_plano_trabalho_participante']}",
-        json=input_pt,
+        f"/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
         headers=header_usr_1,
     )
 
