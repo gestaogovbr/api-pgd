@@ -94,6 +94,28 @@ def test_create_plano_trabalho_completo(
     assert response.json() == input_pt
 
 
+def test_create_plano_trabalho_unidade_nao_permitida(
+    input_pt: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pt,
+    client: Client,
+):
+    """Tenta criar um novo Plano de Trabalho do Participante, em uma
+    unidade na qual ele não está autorizado.
+    """
+    response = client.put(
+        f"/plano_trabalho/2" # só está autorizado na unidade 1
+        f"/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json().get("detail", None) == "Usuário sem permissão na unidade."
+    assert response.json() == input_pt
+
+
 def test_update_plano_trabalho(
     input_pt: dict,
     example_pt,
