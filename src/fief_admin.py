@@ -96,9 +96,19 @@ class FiefAdminHelper:
             params={"tenant": self.first_tenant["id"]},
         ).json()["results"][0]
 
+    def search_user(self, email: str = None) -> httpx.Response:
+        """Search users."""
+        return self.fief_admin_call(
+            method="GET", local_url="users/", params={"email": email}
+        )
+
     def register_user(
-        self, email: str, password: str, cod_SIAPE_instituidora: int, is_superuser: bool = False
-    ) -> httpx.Response:
+        self,
+        email: str,
+        password: str,
+        cod_SIAPE_instituidora: int,
+        is_superuser: bool = False,
+    ) :
         """
         Registers a new user in Fief.
 
@@ -126,12 +136,33 @@ class FiefAdminHelper:
             data=data,
         )
 
+    def delete_user(self, email: str) -> httpx.Response:
+        """Deletes an existing user with the specified email.
+
+        Args:
+            email (str): User's email.
+
+        Raises:
+            ValueError: If no user with the given email was found.
+
+        Returns:
+            httpx.Response: The Response object returned by API call.
+        """
+        user_search = self.search_user(email=email).json()
+        if user_search["count"] < 1:
+            raise ValueError(f"Nenhum usuário com o e-mail {email} foi encontrado.")
+        user = user_search["results"][0]
+        return self.fief_admin_call(
+            method="DELETE",
+            local_url=f"users/{user['id']}",
+        )
+
     def get_client(self, client_id: str) -> dict:
         """Obtain client data from the Fief admin API.
 
         Args:
             client_id (str): the client's internal id.
-        
+
         Returns:
             dict: the client data returned by the Fief admin API.
         """
