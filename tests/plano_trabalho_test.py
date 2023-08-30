@@ -10,36 +10,6 @@ from fastapi import status
 import pytest
 
 
-@pytest.fixture()
-def input_pt() -> dict:
-    """Template de Plano de Trabalho do Participante
-
-    Returns:
-        dict: template de exemplo
-    """
-    return {
-        "cod_siape_insituidora": 99,
-        "id_plano_trabalho_participante": 555,
-        "id_plano_entrega_unidade": 1,
-        "cod_SIAPE_unidade_exercicio": 99,
-        "cpf_participante": 99160773120,
-        "data_início_plano": "2023-01-01",
-        "data_termino_plano": "2023-01-15",
-        "carga_horaria_total_periodo_plano": 80,
-        "contribuicoes": [
-            {"tipo_contribuicao": 1, "id_entrega": 1, "horas_vinculadas_entrega": 40},
-            {"tipo_contribuicao": 2, "horas_vinculadas_entrega": 40},
-        ],
-        "consolidacoes": [
-            {
-                "data_inicio_registro": "2023-01-01",
-                "data_fim_registro": "2023-02-01",
-                "avaliacao_plano_trabalho": 5,
-            },
-        ],
-    }
-
-
 # grupos de campos opcionais e obrigatórios a testar
 
 fields_plano_trabalho = {
@@ -142,12 +112,12 @@ def test_update_plano_trabalho(
 @pytest.mark.parametrize(
     "tipo_contribuicao, id_entrega",
     [
-        (1, input_pe["entregas"][0]["id_entrega"]),
-        (1, input_pe["entregas"][1]["id_entrega"]),
+        (1, 1),
+        (1, 2),
         (1, None),
-        (2, input_pe["entregas"][0]["id_entrega"]),
+        (2, 1),
         (2, None),
-        (3, input_pe["entregas"][0]["id_entrega"]),
+        (3, 1),
         (3, None),
     ],
 )

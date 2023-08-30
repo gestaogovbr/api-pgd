@@ -25,6 +25,26 @@ fief_admin = FiefAdminHelper(
 )
 
 
+@pytest.fixture()
+def input_pe() -> dict:
+    """Template de Plano de Entregas da Unidade
+
+    Returns:
+        dict: template de exemplo
+    """
+    return json.load(open("data/plano_entregas.json", "r", encoding="utf-8"))
+
+
+@pytest.fixture()
+def input_pt() -> dict:
+    """Template de Plano de Trabalho do Participante
+
+    Returns:
+        dict: template de exemplo
+    """
+    return json.load(open("data/plano_trabalho.json", "r", encoding="utf-8"))
+
+
 def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
     """Prepara o cabeçalho para ser utilizado em requisições."""
     # TODO: Refatorar e resolver utilizando o objeto TestClient
