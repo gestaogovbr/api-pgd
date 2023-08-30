@@ -68,7 +68,11 @@ def client() -> Generator[Client, None, None]:
 
 @pytest.fixture(scope="module")
 def admin_credentials() -> dict:
-    return {"username": "admin@api.com", "password": "1234", "cod_SIAPE_instituidora": 1}
+    return {
+        "username": "admin@api.com",
+        "password": "1234",
+        "cod_SIAPE_instituidora": 1,
+    }
 
 
 @pytest.fixture(scope="module")
@@ -82,8 +86,29 @@ def user2_credentials() -> dict:
 
 
 @pytest.fixture()
-def example_pe(client: Client, input_pt: dict, header_usr_1: dict):
-    client.put("/plano_entrega/555", json=input_pt, headers=header_usr_1)
+def example_pe(
+    client: Client, input_pt: dict, user1_credentials: dict, header_usr_1: dict
+):
+    """Cria um Plano de Entrega como exemplo."""
+    client.put(
+        f"/plano_entrega/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
+
+
+@pytest.fixture()
+def example_pt(
+    client: Client, input_pt: dict, user1_credentials: dict, header_usr_1: dict
+):
+    """Cria um Plano de Trabalho do Participante como exemplo."""
+    client.put(
+        f"/plano_trabalho/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
 
 
 @pytest.fixture()
