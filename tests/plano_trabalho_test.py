@@ -9,6 +9,7 @@ from fastapi import status
 
 import pytest
 
+
 @pytest.fixture()
 def input_pt() -> dict:
     """Template de Plano de Trabalho do Participante
@@ -18,7 +19,7 @@ def input_pt() -> dict:
     """
     return {
         "cod_siape_insituidora": 99,
-        "id_plano_trabalho_participante": 1,
+        "id_plano_trabalho_participante": 555,
         "id_plano_entrega_unidade": 1,
         "cod_SIAPE_unidade_exercicio": 99,
         "cpf_participante": 99160773120,
@@ -37,6 +38,7 @@ def input_pt() -> dict:
             },
         ],
     }
+
 
 # grupos de campos opcionais e obrigatórios a testar
 
@@ -72,12 +74,23 @@ fields_consolidacao = {
 
 
 def test_create_plano_trabalho_completo(
-    input_pt: dict, header_usr_1: dict, truncate_pt, client: Client
+    input_pt: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pt,
+    client: Client,
 ):
-    response = client.put(f"/plano_trabalho/555", json=input_pt, headers=header_usr_1)
+    """Cria um novo Plano de Trabalho do Participante, em uma unidade
+    na qual ele está autorizado, contendo todos os dados necessários.
+    """
+    response = client.put(
+        f"/plano_trabalho/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json().get("detail", None) == None
     assert response.json() == input_pt
 
 
