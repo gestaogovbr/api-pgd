@@ -72,8 +72,8 @@ def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
         payload = {
             "Accept":"application/json",
             "Content-Type": "application/json",
-            f"username={username}",
-            f"password={password}",
+            "username": username,
+            "password": password,
         }
 
         response = httpx.request("POST", url, headers=headers, data=payload)
