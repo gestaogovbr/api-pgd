@@ -424,7 +424,7 @@ def test_create_pt_duplicate_contribuicao(
 
     input_pt["id_plano_entrega_unidade"] = id_plano_entrega_unidade
     input_pt["contribuicoes"][0]["id_entrega"] = id_ent_1
-    input_pt["atividades"][1]["id_entrega"] = id_ent_2
+    input_pt["contribuicoes"][1]["id_entrega"] = id_ent_2
 
     response = client.put(
         f"/plano_trabalho/{user1_credentials['cod_SIAPE_instituidora']}/{input_pt['id_plano_trabalho_participante']}",
