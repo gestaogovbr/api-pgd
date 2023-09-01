@@ -400,33 +400,39 @@ def test_create_pt_invalid_data_avaliacao(
 
 
 @pytest.mark.parametrize(
-    "cod_plano, id_ati_1, id_ati_2",
+    "id_plano_entrega_unidade, id_ent_1, id_ent_2",
     [
-        ("90", 401, 402),
-        ("91", 403, 403),  # <<<< IGUAIS
-        ("92", 404, 404),  # <<<< IGUAIS
-        ("93", 405, 406),
+        (90, 401, 402),
+        (91, 403, 403),  # <<<< IGUAIS
+        (92, 404, 404),  # <<<< IGUAIS
+        (93, 405, 406),
     ],
 )
-def test_create_pt_duplicate_atividade(
+def test_create_pt_duplicate_contribuicao(
     input_pt: dict,
-    cod_plano: str,
-    id_ati_1: str,
-    id_ati_2: str,
+    user1_credentials: dict,
+    id_plano_entrega_unidade: int,
+    id_ent_1: int,
+    id_ent_2: int,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
 ):
-    input_pt["cod_plano"] = cod_plano
-    input_pt["atividades"][0]["id_atividade"] = id_ati_1
-    input_pt["atividades"][1]["id_atividade"] = id_ati_2
+    """Tenta criar um plano de trabalho com contribuições com
+      id_entrega duplicados
+    TODO: Validar RN  - Pode existir contribuições com entregas com mesmo id?"""
+
+    input_pt["id_plano_entrega_unidade"] = id_plano_entrega_unidade
+    input_pt["contribuicoes"][0]["id_entrega"] = id_ent_1
+    input_pt["atividades"][1]["id_entrega"] = id_ent_2
 
     response = client.put(
-        f"/plano_trabalho/{cod_plano}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{user1_credentials['cod_SIAPE_instituidora']}/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt, headers=header_usr_1
     )
-    if id_ati_1 == id_ati_2:
+    if id_ent_1 == id_ent_2:
         assert response.status_code == 422
-        detail_msg = "Atividades devem possuir id_atividade diferentes."
+        detail_msg = "Contribuições devem possuir id_entrega diferentes."
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
         assert response.status_code == status.HTTP_200_OK
