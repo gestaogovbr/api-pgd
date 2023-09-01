@@ -23,6 +23,8 @@ jobs:
       run: ./init/load_fief_env.sh --user-email api-pgd@nonexisting.gov.br --user-password=123456*abcdef
     - name: Run all service containers
       run: docker compose up -d --scale pgadmin=0 --wait --wait-timeout 90
+    - name: Check if services are running
+      run: docker-compose ps | tail -n +3 | awk '{ if ($7 != "Up") { print $1 " is not running"; exit 1; } }'
     - name: Configure Fief at runtime
       run: make fief-configure-instance
     - name: Run tests
