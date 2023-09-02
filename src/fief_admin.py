@@ -2,6 +2,7 @@
 """
 from functools import cached_property
 import urllib
+from typing import Optional
 
 import httpx
 
@@ -33,7 +34,11 @@ class FiefAdminHelper:
         self.base_url = base_url
 
     def fief_admin_call(
-        self, method: str, local_url: str, params: dict = None, data: dict = None
+        self,
+        method: str,
+        local_url: str,
+        params: Optional[dict] = None,
+        data: Optional[dict] = None,
     ) -> httpx.Response:
         """
         Calls the Fief API with an admin token.
@@ -96,7 +101,7 @@ class FiefAdminHelper:
             params={"tenant": self.first_tenant["id"]},
         ).json()["results"][0]
 
-    def search_user(self, email: str = None) -> httpx.Response:
+    def search_user(self, email: Optional[str] = None) -> httpx.Response:
         """Search users."""
         return self.fief_admin_call(
             method="GET", local_url="users/", params={"email": email}
@@ -108,7 +113,7 @@ class FiefAdminHelper:
         password: str,
         cod_SIAPE_instituidora: int,
         is_superuser: bool = False,
-    ) :
+    ):
         """
         Registers a new user in Fief.
 
@@ -172,7 +177,7 @@ class FiefAdminHelper:
         ).json()
 
     def client_add_redirect_uri(
-        self, uri: str, client_id: str = None
+        self, uri: str, client_id: Optional[str] = None
     ) -> httpx.Response:
         """Adds a Redirect URI to a Fief client.
 
@@ -259,3 +264,40 @@ class FiefAdminHelper:
             local_url="user-fields/",
             data=data,
         )
+
+    def get_access_token_for_user(
+        self,
+        email: str,
+        client_id: Optional[str] = None,
+        scopes: Optional[list[str]] = None,
+    ) -> str:
+        """Gets an access token for the user with the specified email
+        address.
+
+        This can be used for authenticating users in automated tests.
+
+        Args:
+            email (str): email address for the user.
+            client_id (str, optional): the client's id. If omitted, the
+                first available client is assumed.
+            scopes (list, optional): a list of scopes. If omitted, just
+                "openid" is assumed.
+
+        Returns:
+            str: the access token.
+        """
+        if not client_id:
+            client_id = self.first_client["id"]
+        if not scopes:
+            scopes = ["openid"]
+        user_search = self.search_user(email=email).json()
+        if user_search["count"] < 1:
+            raise ValueError(f"Nenhum usuário com o e-mail {email} foi encontrado.")
+        user = user_search["results"][0]
+        response = self.fief_admin_call(
+            method="POST",
+            local_url=f"users/{user['id']}/access-token",
+            data={"id": user["id"], "client_id": client_id, "scopes": ["openid"]},
+        ).json()
+        assert response["token_type"] == "bearer"
+        return response["access_token"]

@@ -58,32 +58,13 @@ def input_pt() -> dict:
     return json.load(open("data/plano_trabalho.json", "r", encoding="utf-8"))
 
 
-def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
+def prepare_header(username: Optional[str]) -> dict:
     """Prepara o cabeçalho para ser utilizado em requisições."""
-    # TODO: Refatorar e resolver utilizando o objeto TestClient
-    token_user = None
-
-    if username and password:
-        # usuário especificado, é necessário fazer login
-        url = "http://localhost:5057/auth/jwt/login"
-
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-
-        payload = {
-            "Accept":"application/json",
-            "Content-Type": "application/json",
-            "username": username,
-            "password": password,
-        }
-
-        response = httpx.request("POST", url, headers=headers, data=payload)
-        response_dict = json.loads(response.text)
-        token_user = response_dict.get("access_token")
-        print(token_user)
-
     headers = {"accept": "application/json", "Content-Type": "application/json"}
-    if token_user:
-        headers["Authorization"] = f"Bearer {token_user}"
+
+    if username:
+        user_token = fief_admin.get_access_token_for_user(email=username)
+        headers["Authorization"] = f"Bearer {user_token}"
 
     return headers
 
@@ -195,29 +176,23 @@ def register_user_2(
 
 @pytest.fixture(scope="module")
 def header_not_logged_in() -> dict:
-    return prepare_header(username=None, password=None)
+    return prepare_header(username=None)
 
 
 @pytest.fixture(scope="module")
 def header_admin(admin_credentials: dict) -> dict:
-    return prepare_header(
-        username=admin_credentials["username"], password=admin_credentials["password"]
-    )
+    return prepare_header(username=admin_credentials["username"])
 
 
 @pytest.fixture(scope="module")
 def header_usr_1(register_user_1, user1_credentials: dict) -> dict:
     """Authenticate in the API as user1 and return a dict with bearer
     header parameter to be passed to apis requests."""
-    return prepare_header(
-        username=user1_credentials["username"], password=user1_credentials["password"]
-    )
+    return prepare_header(username=user1_credentials["username"])
 
 
 @pytest.fixture(scope="module")
 def header_usr_2(register_user_2, user2_credentials: dict) -> dict:
     """Authenticate in the API as user2 and return a dict with bearer
     header parameter to be passed to apis requests."""
-    return prepare_header(
-        username=user2_credentials["username"], password=user2_credentials["password"]
-    )
+    return prepare_header(username=user2_credentials["username"])
