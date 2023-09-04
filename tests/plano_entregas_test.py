@@ -243,7 +243,7 @@ def test_get_pe_inexistente(header_usr_1: dict, client: Client):
     response = client.get("/plano_entrega/888888888", headers=header_usr_1)
     assert response.status_code == 404
 
-    assert response.json().get("detail", None) == "Plano de entrega' não encontrado"
+    assert response.json().get("detail", None) == "Plano de entrega não encontrado"
 
 
 @pytest.mark.parametrize(
