@@ -1,5 +1,5 @@
 __pycache__
-./database
+database/
 .cache
 .local
 .ipython
@@ -8,4 +8,5 @@ __pycache__
 .python_history
 .env
 .pyenv
+.pytest_cache
 pgadmin_data/
