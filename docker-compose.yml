@@ -1,6 +1,12 @@
 version: '3'
 
 services:
+  ssl-creator:
+    image: frapsoft/openssl
+    volumes:
+        - /tmp/ssl/api-pgd:/tmp/ssl/api-pgd
+    command:
+      req -x509 -newkey rsa:4096 -keyout /tmp/ssl/api-pgd/api-pgd-key.pem -out /tmp/ssl/api-pgd/api-pgd-cert.pem -days 825 -nodes -subj '/CN=web'
   db-api-pgd:
     image: postgres:15
     ports:
@@ -8,53 +14,64 @@ services:
     volumes:
         - ./database:/var/lib/postgresql/data
         - ./init/init.sql:/docker-entrypoint-initdb.d/init.sql
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+    env_file:
+      - init/.env.template
+    # environment:
+    #   - POSTGRES_USER=${POSTGRES_USER}
+    #   - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    #   - POSTGRES_DB=${POSTGRES_DB}
   web:
     build: ./
     image: api-pgd:latest
     depends_on:
-      - db-api-pgd
+      db-api-pgd:
+        condition: service_started
+      ssl-creator:
+        condition: service_completed_successfully
     ports:
-      - "5057:5057"
+      - "443:443"
     volumes:
         - ./:/home/api-pgd
+        - /tmp/ssl/api-pgd:/tmp/ssl/api-pgd
+    env_file:
+      - init/.env.template
     environment:
-      - URI_SCHEME=${URI_SCHEME}
-      - HOST_NAME=${HOST_NAME}
-      - PORT=5057
-      - SQLALCHEMY_DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
-      - MAIL_USERNAME=${MAIL_USERNAME}
-      - MAIL_FROM=${MAIL_FROM}
-      - MAIL_PORT=${MAIL_PORT}
-      - MAIL_SERVER=${MAIL_SERVER}
-      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - FIEF_BASE_TENANT_URL=${FIEF_BASE_TENANT_URL}
-      - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
-      - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
-      - FIEF_MAIN_ADMIN_API_KEY=${FIEF_MAIN_ADMIN_API_KEY}
+      - PORT=443
+      # - URI_SCHEME=${URI_SCHEME}
+      # - HOST_NAME=${HOST_NAME}
+      # - SQLALCHEMY_DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
+      # - MAIL_USERNAME=${MAIL_USERNAME}
+      # - MAIL_FROM=${MAIL_FROM}
+      # - MAIL_PORT=${MAIL_PORT}
+      # - MAIL_SERVER=${MAIL_SERVER}
+      # - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      # - MAIL_PASSWORD=${MAIL_PASSWORD}
+      # - FIEF_BASE_TENANT_URL=${FIEF_BASE_TENANT_URL}
+      # - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
+      # - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
+      # - FIEF_MAIN_ADMIN_API_KEY=${FIEF_MAIN_ADMIN_API_KEY}
     command:
-      ./run_after_db.py "cd src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
+      ./run_after_db.py "cd src && \
+      uvicorn api:app --host 0.0.0.0 --port 443 --reload --ssl-keyfile /tmp/ssl/api-pgd/api-pgd-key.pem --ssl-certfile /tmp/ssl/api-pgd/api-pgd-cert.pem"
   fief:
     image: ghcr.io/fief-dev/fief:latest
     depends_on:
-      - db-api-pgd
+      db-api-pgd:
+        condition: service_started
+      ssl-creator:
+        condition: service_completed_successfully
     ports:
       - "8000:8000"
+    env_file:
+      - init/.env.template
+    command:
+      sh -c "cp /tmp/ssl/api-pgd/api-pgd-cert.pem /usr/local/share/ca-certificates/api-pgd-cert.crt && \
+      update-ca-certificates && \
+      supervisord -c /etc/supervisord.conf"
     environment:
-      - SECRET=${FIEF_SECRET}
-      - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
-      - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
-      - ENCRYPTION_KEY=${FIEF_ENCRYPTION_KEY}
-      - FIEF_MAIN_ADMIN_API_KEY=${FIEF_MAIN_ADMIN_API_KEY}
       - PORT=8000
       - ROOT_DOMAIN=fief:8000
       - FIEF_DOMAIN=fief:8000
-      - FIEF_MAIN_USER_EMAIL=${FIEF_MAIN_USER_EMAIL}
-      - FIEF_MAIN_USER_PASSWORD=${FIEF_MAIN_USER_PASSWORD}
       - CSRF_COOKIE_SECURE=False
       - SESSION_DATA_COOKIE_SECURE=False
       - USER_LOCALE_COOKIE_SECURE=False
@@ -66,20 +83,30 @@ services:
       - DATABASE_TYPE=POSTGRESQL
       - DATABASE_HOST=db-api-pgd
       - DATABASE_PORT=5432
-      - DATABASE_USERNAME=${POSTGRES_USER}
-      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
-      - DATABASE_NAME=${FIEF_DB}
       - TELEMETRY_ENABLED=False
-  pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    depends_on:
-      - db-api-pgd
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
-      - PGADMIN_DEFAULT_PASSWORD=admin
-    ports:
-      - "5050:80"
+      # - SECRET=${FIEF_SECRET}
+      # - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
+      # - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
+      # - FIEF_MAIN_ADMIN_API_KEY=${FIEF_MAIN_ADMIN_API_KEY}
+      # - ENCRYPTION_KEY=${FIEF_ENCRYPTION_KEY}
+      # - FIEF_MAIN_USER_EMAIL=${FIEF_MAIN_USER_EMAIL}
+      # - FIEF_MAIN_USER_PASSWORD=${FIEF_MAIN_USER_PASSWORD}
+      # - DATABASE_USERNAME=${POSTGRES_USER}
+      # - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      # - DATABASE_NAME=${FIEF_DB}
     volumes:
-      - ./pgadmin_data/servers.json:/pgadmin4/servers.json
-      - ./pgadmin_data/pgadmin:/var/lib/pgadmin
+      - /tmp/ssl/api-pgd:/tmp/ssl/api-pgd
+
+  # pgadmin:
+  #   container_name: pgadmin
+  #   image: dpage/pgadmin4
+  #   depends_on:
+  #     - db-api-pgd
+  #   environment:
+  #     - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
+  #     - PGADMIN_DEFAULT_PASSWORD=admin
+  #   ports:
+  #     - "5050:80"
+  #   volumes:
+  #     - ./pgadmin_data/servers.json:/pgadmin4/servers.json
+  #     - ./pgadmin_data/pgadmin:/var/lib/pgadmin
