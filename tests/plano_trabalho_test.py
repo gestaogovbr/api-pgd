@@ -198,12 +198,13 @@ def test_create_plano_trabalho_missing_mandatory_fields(
     obrigatório para a criação.
     """
     offset, field_list = missing_fields
+    example_pt = input_pt.copy()
     for field in field_list:
         del input_pt[field]
 
     input_pt["id_plano_trabalho_participante"] = 1800 + offset  # precisa ser um novo plano
     response = client.put(
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{example_pt['id_plano_trabalho_participante']}", json=input_pt, headers=header_usr_1
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
