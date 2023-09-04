@@ -3,6 +3,7 @@
 from functools import cached_property
 import urllib
 from typing import Optional
+import secrets
 
 import httpx
 
@@ -110,8 +111,8 @@ class FiefAdminHelper:
     def register_user(
         self,
         email: str,
-        password: str,
         cod_SIAPE_instituidora: int,
+        password: Optional[str] = None,
         is_superuser: bool = False,
     ):
         """
@@ -119,13 +120,16 @@ class FiefAdminHelper:
 
         Args:
             email (str): User's email.
-            password (str): User's password.
+            password (str): User's password. If omitted, a random
+                password will be generated.
             cod_SIAPE_instituidora (int): User's organizational unit code.
 
         Returns:
             httpx.Response: The Response object returned by API call.
         """
         fields = {"cod_SIAPE_instituidora": cod_SIAPE_instituidora}
+        if password is None:
+            password = secrets.token_urlsafe()
         data = {
             "email": email,
             "password": password,

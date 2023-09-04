@@ -27,12 +27,10 @@ fief_admin = FiefAdminHelper(
 USERS_CREDENTIALS = [
     {
         "username": "test1@api.com",
-        "password": "api.test.user/1",
         "cod_SIAPE_instituidora": 1,
     },
     {
         "username": "test2@api.com",
-        "password": "api.test.user/2",
         "cod_SIAPE_instituidora": 2,
     },
 ]
@@ -157,7 +155,6 @@ def register_user_1(
 ) -> httpx.Response:
     return fief_admin.register_user(
         email=user1_credentials["username"],
-        password=user1_credentials["password"],
         cod_SIAPE_instituidora=user1_credentials["cod_SIAPE_instituidora"],
     )
 
@@ -169,7 +166,6 @@ def register_user_2(
 ) -> httpx.Response:
     return fief_admin.register_user(
         email=user2_credentials["username"],
-        password=user2_credentials["password"],
         cod_SIAPE_instituidora=user2_credentials["cod_SIAPE_instituidora"],
     )
 
