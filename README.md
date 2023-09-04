@@ -54,7 +54,7 @@ possibilitar a sua consolidação em uma base de dados.
    Será pedido um endereço de e-mail e uma nova senha para o usuário
    administrador do Fief.
 
-   O script ira criar o arquivo .env as configurações necessárias referentes a:
+   O script irá criar o arquivo .env as configurações necessárias referentes a:
    
    * o servidor smtp para envio de e-mails,
    * o banco de dados (Postgres), e
@@ -63,7 +63,7 @@ possibilitar a sua consolidação em uma base de dados.
    Utilize o comando:
 
    ```bash
-   make fief-init-env
+   make init-env
    ```
 
 5. Na gestão de usuários e controle de acesso da API é usada a aplicação
