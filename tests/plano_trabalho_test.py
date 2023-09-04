@@ -201,9 +201,9 @@ def test_create_plano_trabalho_missing_mandatory_fields(
     for field in field_list:
         del input_pt[field]
 
-    input_pt["cod_plano"] = 1800 + offset  # precisa ser um novo plano
+    input_pt["id_plano_trabalho_participante"] = 1800 + offset  # precisa ser um novo plano
     response = client.put(
-        f"/plano_trabalho/{input_pt['cod_plano']}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}", json=input_pt, headers=header_usr_1
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
@@ -254,10 +254,10 @@ def test_update_plano_trabalho_missing_mandatory_fields(
     for field in missing_fields:
         del input_pt[field]
 
-    input_pt["cod_plano"] = 555  # precisa ser um plano existente
+    input_pt["id_plano_trabalho_participante"] = 555  # precisa ser um plano existente
     call = getattr(client, verb)  # put ou patch
     response = call(
-        f"/plano_trabalho/{input_pt['cod_plano']}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}", json=input_pt, headers=header_usr_1
     )
     if verb == "put":
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -282,9 +282,9 @@ def test_patch_plano_trabalho_inexistente(
     for field in missing_fields:
         del input_pt[field]
 
-    input_pt["cod_plano"] = 999  # precisa ser um plano inexistente
+    input_pt["id_plano_trabalho_participante"] = 999  # precisa ser um plano inexistente
     response = client.patch(
-        f"/plano_trabalho/{input_pt['cod_plano']}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}", json=input_pt, headers=header_usr_1
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -292,12 +292,12 @@ def test_patch_plano_trabalho_inexistente(
 def test_create_pt_cod_plano_inconsistent(
     input_pt: dict, header_usr_1: dict, truncate_pt, client: Client
 ):
-    input_pt["cod_plano"] = 110
+    input_pt["id_plano_trabalho_participante"] = 110
     response = client.put(
         "/plano_trabalho/111", json=input_pt, headers=header_usr_1  # diferente de 110
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro cod_plano diferente do conteúdo do JSON"
+    detail_msg = "Parâmetro id_plano_trabalho_participante diferente do conteúdo do JSON"
     assert response.json().get("detail", None) == detail_msg
 
 
@@ -316,7 +316,7 @@ def test_get_pt_inexistente(header_usr_1: dict, client: Client):
 
 
 @pytest.mark.parametrize(
-    "data_inicio, data_fim, cod_plano, id_ati_1, id_ati_2",
+    "data_inicio, data_fim, id_plano_trabalho_participante, id_ati_1, id_ati_2",
     [
         ("2020-06-04", "2020-04-01", "77", 333, 334),
         ("2020-06-04", "2020-04-01", "78", 335, 336),
@@ -327,7 +327,7 @@ def test_create_pt_invalid_dates(
     input_pt: dict,
     data_inicio: str,
     data_fim: str,
-    cod_plano: str,
+    id_plano_trabalho_participante: str,
     id_ati_1: str,
     id_ati_2: str,
     header_usr_1: dict,
@@ -336,12 +336,12 @@ def test_create_pt_invalid_dates(
 ):
     input_pt["data_inicio"] = data_inicio
     input_pt["data_fim"] = data_fim
-    input_pt["cod_plano"] = cod_plano
+    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["atividades"][0]["id_atividade"] = id_ati_1
     input_pt["atividades"][1]["id_atividade"] = id_ati_2
 
     response = client.put(
-        f"/plano_trabalho/{cod_plano}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
     )
     if data_inicio > data_fim:
         assert response.status_code == 422
@@ -355,7 +355,7 @@ def test_create_pt_invalid_dates(
 
 
 @pytest.mark.parametrize(
-    "dt_inicio, dt_avaliacao_1, dt_avaliacao_2, cod_plano, id_ati_1, id_ati_2",
+    "dt_inicio, dt_avaliacao_1, dt_avaliacao_2, id_plano_trabalho_participante, id_ati_1, id_ati_2",
     [
         ("2020-06-04", "2020-04-01", "2020-04-01", "77", 333, 334),
         ("2020-06-04", "2020-04-01", "2021-04-01", "78", 335, 336),
@@ -370,7 +370,7 @@ def test_create_pt_invalid_data_avaliacao(
     dt_inicio: str,
     dt_avaliacao_1: str,
     dt_avaliacao_2: str,
-    cod_plano: dict,
+    id_plano_trabalho_participante: dict,
     id_ati_1: str,
     id_ati_2: str,
     header_usr_1: dict,
@@ -379,14 +379,14 @@ def test_create_pt_invalid_data_avaliacao(
 ):
     input_pt["data_inicio"] = dt_inicio
     input_pt["data_fim"] = "2025-01-01"
-    input_pt["cod_plano"] = cod_plano
+    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["atividades"][0]["id_atividade"] = id_ati_1
     input_pt["atividades"][0]["data_avaliacao"] = dt_avaliacao_1
     input_pt["atividades"][1]["id_atividade"] = id_ati_2
     input_pt["atividades"][1]["data_avaliacao"] = dt_avaliacao_2
 
     response = client.put(
-        f"/plano_trabalho/{cod_plano}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
     )
     if dt_inicio > dt_avaliacao_1 or dt_inicio > dt_avaliacao_2:
         assert response.status_code == 422
@@ -439,7 +439,7 @@ def test_create_pt_duplicate_contribuicao(
 
 
 @pytest.mark.parametrize(
-    "cod_plano, cpf",
+    "id_plano_trabalho_participante, cpf",
     [
         ("100", "11111111111"),
         ("101", "22222222222"),
@@ -459,17 +459,17 @@ def test_create_pt_duplicate_contribuicao(
 )
 def test_create_pt_invalid_cpf(
     input_pt: dict,
-    cod_plano: str,
+    id_plano_trabalho_participante: str,
     cpf: str,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
 ):
-    input_pt["cod_plano"] = cod_plano
+    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["cpf"] = cpf
 
     response = client.put(
-        f"/plano_trabalho/{cod_plano}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = [
@@ -482,20 +482,20 @@ def test_create_pt_invalid_cpf(
 
 
 @pytest.mark.parametrize(
-    "cod_plano, modalidade_execucao", [("556", -1), ("81", -2), ("82", -3)]
+    "id_plano_trabalho_participante, modalidade_execucao", [("556", -1), ("81", -2), ("82", -3)]
 )
 def test_create_pt_invalid_modalidade_execucao(
     input_pt: dict,
-    cod_plano: str,
+    id_plano_trabalho_participante: str,
     modalidade_execucao: int,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
 ):
-    input_pt["cod_plano"] = cod_plano
+    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["modalidade_execucao"] = modalidade_execucao
     response = client.put(
-        f"/plano_trabalho/{cod_plano}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -518,11 +518,11 @@ def test_create_pt_invalid_carga_horaria_semanal(
     truncate_pt,
     client: Client,
 ):
-    cod_plano = "767676"
-    input_pt["cod_plano"] = cod_plano
+    id_plano_trabalho_participante = "767676"
+    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["carga_horaria_semanal"] = carga_horaria_semanal
     response = client.put(
-        f"/plano_trabalho/{cod_plano}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -557,8 +557,8 @@ def test_create_pt_missing_mandatory_fields_atividade(
     truncate_pt,
     client: Client,
 ):
-    cod_plano = "111222333"
-    input_pt["cod_plano"] = cod_plano
+    id_plano_trabalho_participante = "111222333"
+    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["atividades"][0]["id_atividade"] = id_atividade
     input_pt["atividades"][0]["nome_atividade"] = nome_atividade
     input_pt["atividades"][0]["faixa_complexidade"] = faixa_complexidade
@@ -574,7 +574,7 @@ def test_create_pt_missing_mandatory_fields_atividade(
     ] = tempo_teletrabalho_programado
 
     response = client.put(
-        f"/plano_trabalho/{cod_plano}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "none is not an allowed value"
@@ -601,11 +601,11 @@ def test_create_pt_invalid_horas_homologadas(
     truncate_pt,
     client: Client,
 ):
-    cod_plano = "138"
-    input_pt["cod_plano"] = cod_plano
+    id_plano_trabalho_participante = "138"
+    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["horas_homologadas"] = horas_homologadas
     response = client.put(
-        f"/plano_trabalho/{cod_plano}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

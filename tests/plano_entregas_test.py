@@ -254,7 +254,6 @@ def test_create_pe_mixed_dates(
     input_pe: dict,
     data_inicio: str,
     data_fim: str,
-    cod_plano: str,
     header_usr_1: dict,
     truncate_pe,
     client: Client,
@@ -265,7 +264,7 @@ def test_create_pe_mixed_dates(
     input_pe["data_termino_plano_entregas"] = data_fim
 
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/{cod_plano}",
+        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -363,20 +362,21 @@ def test_create_pe_duplicate_entrega(
 
 
 @pytest.mark.parametrize(
-    "cod_plano, modalidade_execucao", [("556", -1), ("81", -2), ("82", -3)]
+    "id_plano_trabalho_participante, modalidade_execucao",
+    [("556", -1), ("81", -2), ("82", -3)],
 )
 def test_create_pt_invalid_modalidade_execucao(
     input_pt: dict,
-    cod_plano: str,
+    id_plano_trabalho_participante: str,
     modalidade_execucao: int,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
 ):
-    input_pt["cod_plano"] = cod_plano
+    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["modalidade_execucao"] = modalidade_execucao
     response = client.put(
-        f"/plano_trabalho/{cod_plano}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

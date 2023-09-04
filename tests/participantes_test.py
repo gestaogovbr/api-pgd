@@ -10,7 +10,7 @@ from fastapi import status
 import pytest
 
 fields_participantes = (
-    ["participante_ativo_inativo_pgd"],
+    ["ativo"],
     ["matricula_siape"],
     ["cpf_participante"],
     ["modalidade_execucao"],
@@ -19,7 +19,7 @@ fields_participantes = (
 
 
 def test_put_participante(
-    input_part: dict, header_usr_1: dict, truncate_part, client: Client
+    input_part: dict, header_usr_1: dict, truncate_participantes, client: Client
 ):
     """Testa a submissão de um participante a partir do template"""
     response = client.put("/participante/123456", json=input_part, headers=header_usr_1)
@@ -33,7 +33,7 @@ def test_put_duplicate_participante(
     input_part: dict,
     header_usr_1: dict,
     header_usr_2: dict,
-    truncate_part,
+    truncate_participantes,
     client: Client,
 ):
     """Testa a submissão de um participante duplicado
@@ -51,7 +51,7 @@ def test_put_participante_missing_mandatory_fields(
     input_part: dict,
     missing_fields: list,
     header_usr_1: dict,
-    truncate_part,
+    truncate_participantes,
     client: Client,
 ):
     """Tenta submeter participantes faltando campos obrigatórios"""
@@ -61,7 +61,7 @@ def test_put_participante_missing_mandatory_fields(
 
     input_part["matricula_siape"] = 1800 + offset  # precisa ser um novo participante
     response = client.put(
-        f"/participante/{input_part['cod_siape']}",
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -69,9 +69,9 @@ def test_put_participante_missing_mandatory_fields(
 
 
 def test_get_participante(
-    header_usr_1: dict, truncate_part, example_part, client: Client
+    header_usr_1: dict, truncate_participantes, example_part, client: Client
 ):
-    """Tenta requisitar um participante pelo cod_siape
+    """Tenta requisitar um participante pela matricula_siape
     TODO: Verificar regra negocial"""
     response = client.get("/participante/123456", headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
@@ -98,7 +98,7 @@ def test_put_participante_invalid_matricula_siape(
     input_part: dict,
     matricula_siape: str,
     header_usr_1: dict,
-    truncate_part,
+    truncate_participantes,
     client: Client,
 ):
     """Tenta submeter um participante com matricula siape inválida"""
@@ -106,7 +106,7 @@ def test_put_participante_invalid_matricula_siape(
     input_part["matricula_siape"] = matricula_siape
 
     response = client.put(
-        f"/participante/{input_part['cod_siape']}",
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -138,13 +138,13 @@ def test_put_participante_invalid_matricula_siape(
     ],
 )
 def test_put_participante_invalid_cpf(
-    input_part: dict, cpf: str, header_usr_1: dict, truncate_part, client: Client
+    input_part: dict, cpf: str, header_usr_1: dict, truncate_participantes, client: Client
 ):
     """Tenta submeter um participante com cpf inválido"""
     input_part["cpf"] = cpf
 
     response = client.put(
-        f"/participante/{input_part['cod_siape']}",
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -159,31 +159,31 @@ def test_put_participante_invalid_cpf(
 
 
 @pytest.mark.parametrize(
-    "participante_ativo_inativo_pgd",
+    "ativo",
     [
         (3),
         (-1),
     ],
 )
-def test_put_part_invalid_participante_ativo_inativo_pgd(
+def test_put_part_invalid_ativo(
     input_part: dict,
-    participante_ativo_inativo_pgd: int,
+    ativo: int,
     header_usr_1: dict,
-    truncate_part,
+    truncate_participantes,
     client: Client,
 ):
     """Tenta submeter um participante com flag ativo_inativo_pgd inválida"""
     input_part[
-        "invalid_participante_ativo_inativo_pgd"
-    ] = participante_ativo_inativo_pgd
+        "ativo"
+    ] = ativo
     response = client.put(
-        f"/participante/{input_part['cod_siape']}",
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Boolean participante_ativo_inativo_pgd inválida; permitido: 0, 1"
+    detail_msg = "Valor booleano do campo 'ativo' inválida; permitido: true, false"
     # detail_msg = "value is not a valid enumeration member; permitted: 0,1"
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
@@ -193,13 +193,13 @@ def test_put_part_invalid_modalidade_execucao(
     input_part: dict,
     modalidade_execucao: int,
     header_usr_1: dict,
-    truncate_part,
+    truncate_participantes,
     client: Client,
 ):
     """Tenta submeter um participante com modalidade de execução inválida"""
     input_part["modalidade_execucao"] = modalidade_execucao
     response = client.put(
-        f"/participante/{input_part['cod_siape']}",
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -222,13 +222,13 @@ def test_put_part_invalid_jornada_trabalho_semanal(
     input_part: dict,
     jornada_trabalho_semanal: int,
     header_usr_1: dict,
-    truncate_part,
+    truncate_participantes,
     client: Client,
 ):
     """Tenta submeter um participante com jornada de trabalho semanal inválida"""
     input_part["jornada_trabalho_semanal"] = jornada_trabalho_semanal
     response = client.put(
-        f"/participante/{input_part['cod_siape']}",
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
