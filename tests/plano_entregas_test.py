@@ -175,12 +175,13 @@ def test_patch_plano_entrega_inexistente(
 
     TODO: Validar necessidade
     """
+    example_pe = input_pe.copy()
     for field in missing_fields:
         del input_pe[field]
 
     input_pe["id_plano_entrega_unidade"] = 999  # precisa ser um plano inexistente
     response = client.patch(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entrega/{example_pe['cod_SIAPE_unidade_plano']}/{example_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
