@@ -38,7 +38,7 @@ USERS_CREDENTIALS = [
 
 @pytest.fixture()
 def input_pe() -> dict:
-    """Template de Plano de Entregas da Unidade
+    """Template de Plano de Entregas da Unidade.
 
     Returns:
         dict: template de exemplo
@@ -48,12 +48,28 @@ def input_pe() -> dict:
 
 @pytest.fixture()
 def input_pt() -> dict:
-    """Template de Plano de Trabalho do Participante
+    """Template de Plano de Trabalho do Participante.
 
     Returns:
         dict: template de exemplo
     """
     return json.load(open("data/plano_trabalho.json", "r", encoding="utf-8"))
+
+
+@pytest.fixture()
+def input_part() -> dict:
+    """Template de Participante.
+
+    Returns:
+        dict: template de exemplo
+    """
+    return {
+        "ativo": True,
+        "matricula_siape": 123456,
+        "cpf_participante": 99160773120,
+        "modalidade_execucao": 3,
+        "jornada_trabalho_semanal": 40,
+    }
 
 
 def prepare_header(username: Optional[str]) -> dict:
@@ -130,12 +146,17 @@ def example_part(client: Client, input_part: dict, header_usr_1: dict):
 
 
 @pytest.fixture()
-def truncate_pt(client: Client, header_admin: dict):
-    client.post("/truncate_pts_atividades", headers=header_admin)
+def truncate_pe(client: Client, header_admin: dict):
+    client.post("/truncate_plano_entregas", headers=header_admin)
 
 
 @pytest.fixture()
-def truncate_part(client: Client, header_admin: dict):
+def truncate_pt(client: Client, header_admin: dict):
+    client.post("/truncate_plano_trabalho", headers=header_admin)
+
+
+@pytest.fixture()
+def truncate_participantes(client: Client, header_admin: dict):
     client.post("/truncate_participantes", headers=header_admin)
 
 

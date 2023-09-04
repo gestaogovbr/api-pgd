@@ -9,23 +9,6 @@ from fastapi import status
 
 import pytest
 
-
-@pytest.fixture()
-def input_part() -> dict:
-    """Template de Status dos Participantes
-
-    Returns:
-        dict: template de exemplo
-    """
-    return {
-        "participante_ativo": True,
-        "matricula_siape": 123456,
-        "cpf_participante": 99160773120,
-        "modalidade_execucao": 3,
-        "jornada_trabalho_semanal": 40,
-    }
-
-
 fields_participantes = (
     ["participante_ativo_inativo_pgd"],
     ["matricula_siape"],
