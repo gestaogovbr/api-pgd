@@ -80,7 +80,6 @@ def client() -> Generator[Client, None, None]:
 def admin_credentials() -> dict:
     return {
         "username": "admin@api.com",
-        "password": "1234",
         "cod_SIAPE_instituidora": 1,
     }
 
@@ -149,6 +148,17 @@ def truncate_users():
 
 
 @pytest.fixture(scope="module")
+def register_admin(
+    truncate_users,
+    admin_credentials: dict,
+) -> httpx.Response:
+    return fief_admin.register_user(
+        email=admin_credentials["username"],
+        cod_SIAPE_instituidora=admin_credentials["cod_SIAPE_instituidora"],
+    )
+
+
+@pytest.fixture(scope="module")
 def register_user_1(
     truncate_users,
     user1_credentials: dict,
@@ -176,7 +186,7 @@ def header_not_logged_in() -> dict:
 
 
 @pytest.fixture(scope="module")
-def header_admin(admin_credentials: dict) -> dict:
+def header_admin(register_admin, admin_credentials: dict) -> dict:
     return prepare_header(username=admin_credentials["username"])
 
 
