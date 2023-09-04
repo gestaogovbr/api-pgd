@@ -125,12 +125,13 @@ def test_create_plano_entrega_missing_mandatory_fields(
     obrigatório para a criação.
     """
     offset, field_list = missing_fields
+    example_pe = input_pe.copy()
     for field in field_list:
         del input_pe[field]
 
     input_pe["id_plano_entrega_unidade"] = 1800 + offset  # precisa ser um novo plano
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entrega/{example_pe['cod_SIAPE_unidade_plano']}/{example_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -225,7 +226,7 @@ def test_create_pe_cod_unidade_inconsistent(
     assert response.json().get("detail", None) == detail_msg
 
 
-def test_get_plano_entrega(header_usr_1: dict, truncate_pe, example_pe, client: Client):
+def test_get_plano_entrega(header_usr_1: dict, truncate_pe, input_pe, client: Client):
     """Tenta buscar um plano de entrega existente"""
 
     response = client.get(
