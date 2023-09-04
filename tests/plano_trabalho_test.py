@@ -532,47 +532,29 @@ def test_create_pt_invalid_carga_horaria_semanal(
 
 
 @pytest.mark.parametrize(
-    "id_atividade, nome_atividade, faixa_complexidade, "
-    "tempo_presencial_estimado, tempo_presencial_programado, "
-    "tempo_teletrabalho_estimado, tempo_teletrabalho_programado",
+    "tipo_contribuicao, horas_vinculadas",
     [
-        (None, "asd", "asd", 0.0, 0.0, 0.0, 0.0),
-        ("123123", None, "asd", 0.0, 0.0, 0.0, 0.0),
-        ("123123", "asd", None, 0.0, 0.0, 0.0, 0.0),
-        ("123123", "asd", "asd", None, 0.0, 0.0, 0.0),
-        ("123123", "asd", "asd", 0.0, None, 0.0, 0.0),
-        ("123123", "asd", "asd", 0.0, 0.0, None, 0.0),
-        ("123123", "asd", "asd", 0.0, 0.0, 0.0, None),
+        (None, 40),
+        (1, None),
+        (2, None),
+        (3, None),
     ],
 )
-def test_create_pt_missing_mandatory_fields_atividade(
+def test_create_pt_missing_mandatory_fields_contribuicoes(
     input_pt: dict,
-    id_atividade: str,
-    nome_atividade: str,
-    faixa_complexidade: str,
-    tempo_presencial_estimado: float,
-    tempo_presencial_programado: float,
-    tempo_teletrabalho_estimado: float,
-    tempo_teletrabalho_programado: float,
+    tipo_contribuicao: int,
+    horas_vinculadas: int,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
 ):
     id_plano_trabalho_participante = "111222333"
+    example_pt = input_pt.copy()
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["atividades"][0]["id_atividade"] = id_atividade
-    input_pt["atividades"][0]["nome_atividade"] = nome_atividade
-    input_pt["atividades"][0]["faixa_complexidade"] = faixa_complexidade
-    input_pt["atividades"][0]["tempo_presencial_estimado"] = tempo_presencial_estimado
-    input_pt["atividades"][0][
-        "tempo_presencial_programado"
-    ] = tempo_presencial_programado
-    input_pt["atividades"][0][
-        "tempo_teletrabalho_estimado"
-    ] = tempo_teletrabalho_estimado
-    input_pt["atividades"][0][
-        "tempo_teletrabalho_programado"
-    ] = tempo_teletrabalho_programado
+    input_pt["contribuicoes"] = {
+        "tipo_contribuicao": tipo_contribuicao,
+        "horas_vinculadas": horas_vinculadas,
+    }
 
     response = client.put(
         f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
