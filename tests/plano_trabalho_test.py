@@ -317,32 +317,30 @@ def test_get_pt_inexistente(header_usr_1: dict, client: Client):
 
 
 @pytest.mark.parametrize(
-    "data_inicio_registro, data_fim_registro, id_plano_trabalho_participante",
+    "id_plano_trabalho_participante, data_inicio_plano, data_termino_plano",
     [
-        ("2020-06-04", "2020-04-01", 77),
-        ("2020-06-04", "2020-04-01", 78),
-        ("2020-06-04", "2020-04-01", 79),
+        (77, "2020-06-04", "2020-04-01"),
+        (78, "2020-06-04", "2020-04-01"),
+        (79, "2020-06-04", "2020-04-01"),
     ],
 )
 def test_create_pt_invalid_dates(
     input_pt: dict,
-    data_inicio_registro: str,
-    data_fim_registro: str,
     id_plano_trabalho_participante: str,
+    data_inicio_plano: str,
+    data_termino_plano: str,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
 ):
-    input_pt["data_inicio"] = data_inicio
-    input_pt["data_fim"] = data_fim
+    input_pt["data_inicio_plano"] = data_inicio_plano
+    input_pt["data_termino_plano"] = data_termino_plano
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["atividades"][0]["id_atividade"] = id_ati_1
-    input_pt["atividades"][1]["id_atividade"] = id_ati_2
 
     response = client.put(
         f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
     )
-    if data_inicio > data_fim:
+    if data_inicio_plano > data_termino_plano:
         assert response.status_code == 422
         detail_msg = (
             "Data fim do Plano de Trabalho deve ser maior"
