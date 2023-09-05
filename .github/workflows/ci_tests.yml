@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Initialize environment variables
+    - name: Build container and initialize environment variables
       run: ./init/load_fief_env.sh --user-email api-pgd@nonexisting.gov.br --user-password=123456*abcdef
     - name: Run all service containers
       run: docker compose up -d --scale pgadmin=0
