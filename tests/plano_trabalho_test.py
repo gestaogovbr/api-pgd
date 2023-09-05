@@ -354,43 +354,41 @@ def test_create_pt_invalid_dates(
 
 
 @pytest.mark.parametrize(
-    "dt_inicio, dt_avaliacao_1, dt_avaliacao_2, id_plano_trabalho_participante, id_ati_1, id_ati_2",
+    "id_plano_trabalho_participante, data_inicio_plano, data_termino_plano, "
+    "data_inicio_registro, data_fim_registro",
     [
-        ("2020-06-04", "2020-04-01", "2020-04-01", "77", 333, 334),
-        ("2020-06-04", "2020-04-01", "2021-04-01", "78", 335, 336),
-        ("2020-06-04", "2020-04-01", "2019-04-01", "79", 337, 338),
-        ("2020-04-01", "2020-04-01", "2020-06-04", "80", 339, 340),
-        ("2020-04-01", "2020-04-01", "2020-04-01", "81", 341, 342),
-        ("2020-04-01", "2020-02-01", "2020-01-04", "82", 343, 344),
+        (555, "2020-06-04", "2020-04-01", "2020-04-01"),
+        (555, "2020-06-04", "2020-04-01", "2021-04-01"),
+        (555, "2020-06-04", "2020-04-01", "2019-04-01"),
+        (555, "2020-04-01", "2020-04-01", "2020-06-04"),
+        (555, "2020-04-01", "2020-04-01", "2020-04-01"),
+        (555, "2020-04-01", "2020-02-01", "2020-01-04"),
     ],
 )
 def test_create_pt_invalid_data_avaliacao(
     input_pt: dict,
-    dt_inicio: str,
-    dt_avaliacao_1: str,
-    dt_avaliacao_2: str,
-    id_plano_trabalho_participante: dict,
-    id_ati_1: str,
-    id_ati_2: str,
+    id_plano_trabalho_participante: int,
+    data_inicio_plano: str,
+    data_termino_plano: str,
+    data_inicio_registro: str,
+    data_fim_registro: str,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
 ):
-    input_pt["data_inicio"] = dt_inicio
-    input_pt["data_fim"] = "2025-01-01"
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["atividades"][0]["id_atividade"] = id_ati_1
-    input_pt["atividades"][0]["data_avaliacao"] = dt_avaliacao_1
-    input_pt["atividades"][1]["id_atividade"] = id_ati_2
-    input_pt["atividades"][1]["data_avaliacao"] = dt_avaliacao_2
+    input_pt["data_inicio_plano"] = data_inicio_plano
+    input_pt["data_termino_plano"] = "2025-01-01"
+    input_pt["consolidacoes"][0]["data_inicio_registro"] = data_inicio_registro
+    input_pt["consolidacoes"][0]["data_fim_registro"] = data_fim_registro
 
     response = client.put(
         f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
     )
-    if dt_inicio > dt_avaliacao_1 or dt_inicio > dt_avaliacao_2:
+    if data_inicio_plano > data_inicio_registro or data_inicio_plano > data_fim_registro:
         assert response.status_code == 422
         detail_msg = (
-            "Data de avaliação da atividade deve ser maior ou igual"
+            "Data de início e de fim de registro devem ser maiores ou iguais"
             " que a Data de início do Plano de Trabalho."
         )
         assert response.json().get("detail")[0]["msg"] == detail_msg
