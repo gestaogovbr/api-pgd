@@ -3,8 +3,7 @@ name: Docker Image Build & CI Tests
 on:
   push:
     branches:
-      - main
-      - v0.2.x-alpha
+      - https_in_containers
     tags: [ tmp-rerun ]
   pull_request:
     branches: [ main ]

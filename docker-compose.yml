@@ -1,6 +1,12 @@
 version: '3'
 
 services:
+  ssl-creator:
+    image: frapsoft/openssl
+    volumes:
+        - /tmp/ssl/api-pgd:/tmp/ssl/api-pgd
+    command:
+      req -x509 -newkey rsa:4096 -keyout /tmp/ssl/api-pgd/api-pgd-key.pem -out /tmp/ssl/api-pgd/api-pgd-cert.pem -days 825 -nodes -subj '/CN=web'
   db-api-pgd:
     image: postgres:15
     ports:
@@ -17,14 +23,16 @@ services:
     image: api-pgd:latest
     depends_on:
       - db-api-pgd
+      - ssl-creator
     ports:
-      - "5057:5057"
+      - "443:443"
     volumes:
         - ./:/home/api-pgd
+        - /tmp/ssl/api-pgd:/tmp/ssl/api-pgd
     environment:
       - URI_SCHEME=${URI_SCHEME}
       - HOST_NAME=${HOST_NAME}
-      - PORT=5057
+      - PORT=443
       - SQLALCHEMY_DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_FROM=${MAIL_FROM}
@@ -37,11 +45,13 @@ services:
       - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
       - FIEF_MAIN_ADMIN_API_KEY=${FIEF_MAIN_ADMIN_API_KEY}
     command:
-      ./run_after_db.py "cd src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
+      ./run_after_db.py "cd src && 
+      uvicorn api:app --host 0.0.0.0 --port 443 --reload --ssl-keyfile /tmp/ssl/api-pgd/api-pgd-key.pem --ssl-certfile /tmp/ssl/api-pgd/api-pgd-cert.pem"
   fief:
     image: ghcr.io/fief-dev/fief:latest
     depends_on:
       - db-api-pgd
+      - ssl-creator
     ports:
       - "8000:8000"
     environment:
@@ -70,6 +80,12 @@ services:
       - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
       - DATABASE_NAME=${FIEF_DB}
       - TELEMETRY_ENABLED=False
+    command:
+      sh -c "cp /tmp/ssl/api-pgd/api-pgd-cert.pem /usr/local/share/ca-certificates/api-pgd-cert.crt && 
+      update-ca-certificates && 
+      supervisord -c /etc/supervisord.conf"
+    volumes:
+      - /tmp/ssl/api-pgd:/tmp/ssl/api-pgd
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
