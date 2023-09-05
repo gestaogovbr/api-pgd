@@ -13,7 +13,7 @@ else
 fi
 
 # Generate admin API key
-docker-compose run web python -c "import secrets; print(secrets.token_urlsafe())" > .fief_api_key
+python -c "import secrets; print(secrets.token_urlsafe())" > .fief_api_key
 
 # Prepare the dest vars
 source_file=".env_fief"
