@@ -282,7 +282,7 @@ def test_create_pe_mixed_dates(
 
 
 def test_create_invalid_data_entrega(
-    truncate_pe, input_pe: dict, header_usr_1: dict, client: Client
+    input_pe: dict, truncate_pe, header_usr_1: dict, client: Client
 ):
     """Tenta criar uma entrega com data de entrega fora do intervalo do plano de entrega
     TODO: Validar Regra Negocial - Pode existir entrega com data fora do intervalo do Plano de Entregas?
@@ -291,8 +291,11 @@ def test_create_invalid_data_entrega(
 
 
 @pytest.mark.parametrize(
-    "data_inicio_plano_entregas, data_avaliacao_plano_entregas, id_plano_entrega_unidade",
-    [("2020-06-04", "2020-04-01", "77")],
+    "id_plano_entrega_unidade, data_inicio_plano_entregas, data_avaliacao_plano_entregas",
+    [
+        (77, "2020-06-04", "2020-04-01"),
+        (78, "2020-06-04", "2020-06-11"),
+    ],
 )
 def test_create_pt_invalid_data_avaliacao(
     input_pe: dict,
@@ -329,15 +332,15 @@ def test_create_pt_invalid_data_avaliacao(
 @pytest.mark.parametrize(
     "id_plano_entrega_unidade, id_ent_1, id_ent_2",
     [
-        ("90", 401, 402),
-        ("91", 403, 403),  # <<<< IGUAIS
-        ("92", 404, 404),  # <<<< IGUAIS
-        ("93", 405, 406),
+        (90, 401, 402),
+        (91, 403, 403),  # <<<< IGUAIS
+        (92, 404, 404),  # <<<< IGUAIS
+        (93, 405, 406),
     ],
 )
 def test_create_pe_duplicate_entrega(
     input_pe: dict,
-    id_plano_entrega_unidade: str,
+    id_plano_entrega_unidade: int,
     id_ent_1: str,
     id_ent_2: str,
     header_usr_1: dict,
