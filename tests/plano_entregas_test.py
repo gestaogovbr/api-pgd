@@ -281,13 +281,47 @@ def test_create_pe_mixed_dates(
         assert response.status_code == status.HTTP_200_OK
 
 
+@pytest.mark.parametrize(
+    "id_plano_entrega_unidade, data_inicio_plano_entregas, "
+    "data_termino_plano_entregas, data_entrega",
+    [
+        (91, "2023-08-01", "2023-09-01", "2023-08-08"),
+        (92, "2023-08-01", "2023-09-01", "2023-07-01"),
+        (93, "2023-08-01", "2023-09-01", "2023-10-01"),
+    ],
+)
 def test_create_invalid_data_entrega(
-    input_pe: dict, truncate_pe, header_usr_1: dict, client: Client
+    input_pe: dict,
+    id_plano_entrega_unidade: int,
+    data_inicio_plano_entregas: str,
+    data_termino_plano_entregas: str,
+    data_entrega: str,
+    truncate_pe,
+    header_usr_1: dict,
+    client: Client,
 ):
     """Tenta criar uma entrega com data de entrega fora do intervalo do plano de entrega
     TODO: Validar Regra Negocial - Pode existir entrega com data fora do intervalo do Plano de Entregas?
     """
-    assert 1 == 0
+    input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
+    input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
+    input_pe["data_termino_plano_entregas"] = data_termino_plano_entregas
+    input_pe["entregas"][0]["data_entrega"] = data_entrega
+
+    response = client.put(
+        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/{id_plano_entrega_unidade}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+    if data_entrega < data_inicio_plano_entregas or data_entrega > data_termino_plano_entregas:
+        assert response.status_code == 422
+        detail_msg = (
+            "Data de entrega precisa estar dentro do intervalo entre início "
+            "e término do Plano de Entrega."
+        )
+        assert response.json().get("detail")[0]["msg"] == detail_msg
+    else:
+        assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.parametrize(
@@ -381,7 +415,9 @@ def test_create_pt_invalid_modalidade_execucao(
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["modalidade_execucao"] = modalidade_execucao
     response = client.put(
-        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
+        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        json=input_pt,
+        headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
