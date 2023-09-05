@@ -62,12 +62,14 @@ class FiefAdminHelper:
         }
         if method in ["PATCH", "POST", "PUT"]:
             headers["Content-Type"] = "application/json"
+            print(f"{method} {url}")
             return httpx.request(
                 method=method,
                 url=url,
                 headers=headers,
                 json=data,
             )
+        print(f"{method} {url}")
         return httpx.request(
             method=method,
             url=url,
