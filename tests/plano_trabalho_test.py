@@ -317,20 +317,18 @@ def test_get_pt_inexistente(header_usr_1: dict, client: Client):
 
 
 @pytest.mark.parametrize(
-    "data_inicio, data_fim, id_plano_trabalho_participante, id_ati_1, id_ati_2",
+    "data_inicio_registro, data_fim_registro, id_plano_trabalho_participante",
     [
-        ("2020-06-04", "2020-04-01", "77", 333, 334),
-        ("2020-06-04", "2020-04-01", "78", 335, 336),
-        ("2020-06-04", "2020-04-01", "79", 337, 338),
+        ("2020-06-04", "2020-04-01", 77),
+        ("2020-06-04", "2020-04-01", 78),
+        ("2020-06-04", "2020-04-01", 79),
     ],
 )
 def test_create_pt_invalid_dates(
     input_pt: dict,
-    data_inicio: str,
-    data_fim: str,
+    data_inicio_registro: str,
+    data_fim_registro: str,
     id_plano_trabalho_participante: str,
-    id_ati_1: str,
-    id_ati_2: str,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
