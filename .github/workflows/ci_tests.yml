@@ -23,6 +23,6 @@ jobs:
     - name: Run all service containers
       run: docker compose up -d --scale pgadmin=0
     - name: Configure Fief at runtime
-      run: sleep 30 && make fief-configure-instance
+      run: sleep 30 && echo $FIEF_MAIN_ADMIN_API_KEY && make fief-configure-instance
     - name: Run tests
       run: make tests
