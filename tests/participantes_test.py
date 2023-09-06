@@ -19,10 +19,19 @@ fields_participantes = (
 
 
 def test_put_participante(
-    input_part: dict, header_usr_1: dict, truncate_participantes, client: Client
+    input_part: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_participantes,
+    client: Client,
 ):
     """Testa a submissão de um participante a partir do template"""
-    response = client.put("/participante/123456", json=input_part, headers=header_usr_1)
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        "/participante/123456",
+        json=input_part,
+        headers=header_usr_1,
+    )
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json().get("detail", None) == None
@@ -31,6 +40,8 @@ def test_put_participante(
 
 def test_put_duplicate_participante(
     input_part: dict,
+    user1_credentials: dict,
+    user2_credentials: dict,
     header_usr_1: dict,
     header_usr_2: dict,
     truncate_participantes,
@@ -38,8 +49,18 @@ def test_put_duplicate_participante(
 ):
     """Testa a submissão de um participante duplicado
     TODO: Verificar regra negocial"""
-    response = client.put("/participante/123456", json=input_part, headers=header_usr_1)
-    response = client.put("/participante/123456", json=input_part, headers=header_usr_2)
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        "/participante/123456",
+        json=input_part,
+        headers=header_usr_1,
+    )
+    response = client.put(
+        f"/organizacao/{user2_credentials['cod_SIAPE_instituidora']}"
+        "/participante/123456",
+        json=input_part,
+        headers=header_usr_2,
+    )
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json().get("detail", None) == None
@@ -50,6 +71,7 @@ def test_put_duplicate_participante(
 def test_put_participante_missing_mandatory_fields(
     input_part: dict,
     missing_fields: list,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_participantes,
     client: Client,
@@ -61,6 +83,7 @@ def test_put_participante_missing_mandatory_fields(
 
     input_part["matricula_siape"] = 1800 + offset  # precisa ser um novo participante
     response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
@@ -69,16 +92,30 @@ def test_put_participante_missing_mandatory_fields(
 
 
 def test_get_participante(
-    header_usr_1: dict, truncate_participantes, example_part, client: Client
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_participantes,
+    example_part,
+    client: Client,
 ):
     """Tenta requisitar um participante pela matricula_siape
     TODO: Verificar regra negocial"""
-    response = client.get("/participante/123456", headers=header_usr_1)
+    response = client.get(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        "/participante/123456",
+        headers=header_usr_1,
+    )
     assert response.status_code == status.HTTP_200_OK
 
 
-def test_get_participante_inexistente(header_usr_1: dict, client: Client):
-    response = client.get("/participante/888888888", headers=header_usr_1)
+def test_get_participante_inexistente(
+    user1_credentials: dict, header_usr_1: dict, client: Client
+):
+    response = client.get(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        "/participante/888888888",
+        headers=header_usr_1,
+    )
 
     assert response.status_code == 404
     assert response.json().get("detail", None) == "Participante não encontrado"
@@ -97,6 +134,7 @@ def test_get_participante_inexistente(header_usr_1: dict, client: Client):
 def test_put_participante_invalid_matricula_siape(
     input_part: dict,
     matricula_siape: str,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_participantes,
     client: Client,
@@ -106,6 +144,7 @@ def test_put_participante_invalid_matricula_siape(
     input_part["matricula_siape"] = matricula_siape
 
     response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
@@ -138,12 +177,18 @@ def test_put_participante_invalid_matricula_siape(
     ],
 )
 def test_put_participante_invalid_cpf(
-    input_part: dict, cpf: str, header_usr_1: dict, truncate_participantes, client: Client
+    input_part: dict,
+    cpf: str,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_participantes,
+    client: Client,
 ):
     """Tenta submeter um participante com cpf inválido"""
     input_part["cpf"] = cpf
 
     response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
@@ -168,15 +213,15 @@ def test_put_participante_invalid_cpf(
 def test_put_part_invalid_ativo(
     input_part: dict,
     ativo: int,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_participantes,
     client: Client,
 ):
     """Tenta submeter um participante com flag ativo_inativo_pgd inválida"""
-    input_part[
-        "ativo"
-    ] = ativo
+    input_part["ativo"] = ativo
     response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
@@ -192,6 +237,7 @@ def test_put_part_invalid_ativo(
 def test_put_part_invalid_modalidade_execucao(
     input_part: dict,
     modalidade_execucao: int,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_participantes,
     client: Client,
@@ -199,6 +245,7 @@ def test_put_part_invalid_modalidade_execucao(
     """Tenta submeter um participante com modalidade de execução inválida"""
     input_part["modalidade_execucao"] = modalidade_execucao
     response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
@@ -221,6 +268,7 @@ def test_put_part_invalid_modalidade_execucao(
 def test_put_part_invalid_jornada_trabalho_semanal(
     input_part: dict,
     jornada_trabalho_semanal: int,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_participantes,
     client: Client,
@@ -228,6 +276,7 @@ def test_put_part_invalid_jornada_trabalho_semanal(
     """Tenta submeter um participante com jornada de trabalho semanal inválida"""
     input_part["jornada_trabalho_semanal"] = jornada_trabalho_semanal
     response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,

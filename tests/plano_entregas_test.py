@@ -42,11 +42,16 @@ fields_entrega = {
 
 
 def test_create_plano_entregas_completo(
-    input_pe: dict, header_usr_1: dict, truncate_pe, client: Client
+    input_pe: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pe,
+    client: Client,
 ):
     """Tenta criar um novo plano de entregas"""
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/555",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/555",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -57,7 +62,12 @@ def test_create_plano_entregas_completo(
 
 
 def test_update_plano_trabalho(
-    input_pe: dict, example_pe, header_usr_1: dict, truncate_pe, client: Client
+    input_pe: dict,
+    example_pe,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pe,
+    client: Client,
 ):
     """Tenta criar um novo plano de entregas e atualizar alguns campos
     A fixture example_pe cria um novo Plano de Entrega na API
@@ -68,13 +78,15 @@ def test_update_plano_trabalho(
     input_pe["avaliacao_plano_entregas"] = 3
     input_pe["data_avaliacao_plano_entregas"] = "2023-08-15"
     client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/555",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/555",
         json=input_pe,
         headers=header_usr_1,
     )
     # Consulta API para conferir se a alteração foi persistida
     response = client.get(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/555",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/555",
         headers=header_usr_1,
     )
 
@@ -87,6 +99,7 @@ def test_update_plano_trabalho(
 def test_create_plano_entregas_entrega_omit_optional_fields(
     input_pe: dict,
     omitted_fields: list,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pe,
     client: Client,
@@ -101,7 +114,8 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
 
     input_pe["id_plano_entrega_unidade"] = 557 + offset
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_instituidora']}/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -114,6 +128,7 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
 def test_create_plano_entrega_missing_mandatory_fields(
     input_pe: dict,
     missing_fields: list,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pe,
     client: Client,
@@ -131,7 +146,8 @@ def test_create_plano_entrega_missing_mandatory_fields(
 
     input_pe["id_plano_entrega_unidade"] = 1800 + offset  # precisa ser um novo plano
     response = client.put(
-        f"/plano_entrega/{example_pe['cod_SIAPE_unidade_plano']}/{example_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{example_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -139,7 +155,11 @@ def test_create_plano_entrega_missing_mandatory_fields(
 
 
 def test_create_huge_plano_entrega(
-    input_pe: dict, header_usr_1: dict, truncate_pe, client: Client
+    input_pe: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pe,
+    client: Client,
 ):
     def create_huge_entrega(id_entrega: str):
         new_entrega = input_pe["entregas"][0].copy()
@@ -151,7 +171,8 @@ def test_create_huge_plano_entrega(
         input_pe["entregas"].append(create_huge_entrega(f"unique-key-{i}"))
 
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/555",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/555",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -164,6 +185,7 @@ def test_patch_plano_entrega_inexistente(
     truncate_pe,
     input_pe: dict,
     missing_fields: list,
+    user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
@@ -181,7 +203,8 @@ def test_patch_plano_entrega_inexistente(
 
     input_pe["id_plano_entrega_unidade"] = 999  # precisa ser um plano inexistente
     response = client.patch(
-        f"/plano_entrega/{example_pe['cod_SIAPE_unidade_plano']}/{example_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{example_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -189,7 +212,11 @@ def test_patch_plano_entrega_inexistente(
 
 
 def test_create_plano_entrega_same_date_interval(
-    truncate_pe, input_pe: dict, header_usr_1: dict, client: Client
+    truncate_pe,
+    input_pe: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
 ):
     """Tenta criar uma plano de entregas no mesmo intervalo de data
     TODO: Validar Regra Negocial - Pode existir mais de um plano por unidade no mesmo período?
@@ -198,13 +225,18 @@ def test_create_plano_entrega_same_date_interval(
 
 
 def test_create_pe_cod_plano_inconsistent(
-    input_pe: dict, header_usr_1: dict, truncate_pe, client: Client
+    input_pe: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pe,
+    client: Client,
 ):
     """Tenta criar um plano de entrega com código de plano divergente"""
 
     input_pe["id_plano_entrega_unidade"] = 110
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/111",  # diferente de 110
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/111",  # diferente de 110
         json=input_pe,
         headers=header_usr_1,
     )
@@ -214,33 +246,49 @@ def test_create_pe_cod_plano_inconsistent(
 
 
 def test_create_pe_cod_unidade_inconsistent(
-    input_pe: dict, header_usr_1: dict, truncate_pe, client: Client
+    input_pe: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pe,
+    client: Client,
 ):
     """Tenta criar um plano de entrega com código de unidade divergente"""
 
     input_pe["cod_SIAPE_unidade_plano"] = 999
     response = client.put(
-        f"/plano_entrega/990/1", json=input_pe, headers=header_usr_1  # diferente de 999
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/1",
+        json=input_pe,
+        headers=header_usr_1,  # diferente de 999
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro cod_SIAPE_unidade_plano diferente do conteúdo do JSON"
+    detail_msg = "Parâmetro cod_SIAPE_instituidora na URL diferente do conteúdo do JSON"
     assert response.json().get("detail", None) == detail_msg
 
 
-def test_get_plano_entrega(header_usr_1: dict, truncate_pe, input_pe, client: Client):
+def test_get_plano_entrega(
+    user1_credentials: dict, header_usr_1: dict, truncate_pe, input_pe, client: Client
+):
     """Tenta buscar um plano de entrega existente"""
 
     response = client.get(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/555",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/555",
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
 
 
-def test_get_pe_inexistente(header_usr_1: dict, client: Client):
+def test_get_pe_inexistente(
+    user1_credentials: dict, header_usr_1: dict, client: Client
+):
     """Tenta buscar um plano de entrega inexistente"""
 
-    response = client.get("/plano_entrega/888888888", headers=header_usr_1)
+    response = client.get(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        "/plano_entrega/888888888",
+        headers=header_usr_1,
+    )
     assert response.status_code == 404
 
     assert response.json().get("detail", None) == "Plano de entrega não encontrado"
@@ -256,6 +304,7 @@ def test_create_pe_mixed_dates(
     input_pe: dict,
     data_inicio: str,
     data_fim: str,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pe,
     client: Client,
@@ -266,7 +315,8 @@ def test_create_pe_mixed_dates(
     input_pe["data_termino_plano_entregas"] = data_fim
 
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -297,6 +347,7 @@ def test_create_invalid_data_entrega(
     data_termino_plano_entregas: str,
     data_entrega: str,
     truncate_pe,
+    user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
@@ -309,11 +360,15 @@ def test_create_invalid_data_entrega(
     input_pe["entregas"][0]["data_entrega"] = data_entrega
 
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/{id_plano_entrega_unidade}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{id_plano_entrega_unidade}",
         json=input_pe,
         headers=header_usr_1,
     )
-    if data_entrega < data_inicio_plano_entregas or data_entrega > data_termino_plano_entregas:
+    if (
+        data_entrega < data_inicio_plano_entregas
+        or data_entrega > data_termino_plano_entregas
+    ):
         assert response.status_code == 422
         detail_msg = (
             "Data de entrega precisa estar dentro do intervalo entre início "
@@ -336,6 +391,7 @@ def test_create_pt_invalid_data_avaliacao(
     data_inicio_plano_entregas: str,
     data_avaliacao_plano_entregas: str,
     id_plano_entrega_unidade: int,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pe,
     client: Client,
@@ -348,7 +404,8 @@ def test_create_pt_invalid_data_avaliacao(
     input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
 
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/{id_plano_entrega_unidade}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{id_plano_entrega_unidade}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -377,6 +434,7 @@ def test_create_pe_duplicate_entrega(
     id_plano_entrega_unidade: int,
     id_ent_1: str,
     id_ent_2: str,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pe,
     client: Client,
@@ -388,7 +446,8 @@ def test_create_pe_duplicate_entrega(
     input_pe["entregas"][1]["id_entrega"] = id_ent_2
 
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/{id_plano_entrega_unidade}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{id_plano_entrega_unidade}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -408,6 +467,7 @@ def test_create_pt_invalid_modalidade_execucao(
     input_pt: dict,
     id_plano_trabalho_participante: str,
     modalidade_execucao: int,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
@@ -415,6 +475,7 @@ def test_create_pt_invalid_modalidade_execucao(
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["modalidade_execucao"] = modalidade_execucao
     response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_trabalho/{id_plano_trabalho_participante}",
         json=input_pt,
         headers=header_usr_1,
@@ -425,62 +486,26 @@ def test_create_pt_invalid_modalidade_execucao(
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
 
-# @pytest.mark.parametrize(
-#     "id_atividade, nome_atividade, faixa_complexidade, "\
-#     "tempo_presencial_estimado, tempo_presencial_programado, "\
-#     "tempo_teletrabalho_estimado, tempo_teletrabalho_programado",
-#                     [
-#                         (None, "asd", "asd", 0.0, 0.0, 0.0, 0.0),
-#                         ("123123", None, "asd", 0.0, 0.0, 0.0, 0.0),
-#                         ("123123", "asd", None, 0.0, 0.0, 0.0, 0.0),
-#                         ("123123", "asd", "asd", None, 0.0, 0.0, 0.0),
-#                         ("123123", "asd", "asd", 0.0, None, 0.0, 0.0),
-#                         ("123123", "asd", "asd", 0.0, 0.0, None, 0.0),
-#                         ("123123", "asd", "asd", 0.0, 0.0, 0.0, None),
-#                     ])
-# def test_create_pt_missing_mandatory_fields_atividade(input_pt: dict,
-
-#                                            id_atividade: str,
-#                                            nome_atividade: str,
-#                                            faixa_complexidade: str,
-#                                            tempo_presencial_estimado: float,
-#                                            tempo_presencial_programado: float,
-#                                            tempo_teletrabalho_estimado: float,
-#                                            tempo_teletrabalho_programado: float,
-
-#                                            header_usr_1: dict,
-#                                            truncate_pt,
-#                                            client: Client):
-#     cod_plano = "111222333"
-#     input_pt["cod_plano"] = cod_plano
-#     input_pt["atividades"][0]["id_atividade"] = id_atividade
-#     input_pt["atividades"][0]["nome_atividade"] = nome_atividade
-#     input_pt["atividades"][0]["faixa_complexidade"] = faixa_complexidade
-#     input_pt["atividades"][0]["tempo_presencial_estimado"] = tempo_presencial_estimado
-#     input_pt["atividades"][0]["tempo_presencial_programado"] = tempo_presencial_programado
-#     input_pt["atividades"][0]["tempo_teletrabalho_estimado"] = tempo_teletrabalho_estimado
-#     input_pt["atividades"][0]["tempo_teletrabalho_programado"] = tempo_teletrabalho_programado
-
-#     response = client.put(f"/plano_trabalho/{cod_plano}",
-#                           json=input_pt,
-#                           headers=header_usr_1)
-#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-#     detail_msg = "none is not an allowed value"
-#     assert response.json().get("detail")[0]["msg"] == detail_msg
-
-
 def test_create_pe_duplicate_id_plano(
-    input_pe: dict, header_usr_1: dict, header_usr_2: dict, truncate_pe, client: Client
+    input_pe: dict,
+    user1_credentials: dict,
+    user2_credentials: dict,
+    header_usr_1: dict,
+    header_usr_2: dict,
+    truncate_pe,
+    client: Client,
 ):
     """Tenta criar um plano de entregas duplicados"""
 
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/555",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/555",
         json=input_pe,
         headers=header_usr_1,
     )
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/555",
+        f"/organizacao/{user2_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/555",
         json=input_pe,
         headers=header_usr_2,
     )
@@ -491,7 +516,11 @@ def test_create_pe_duplicate_id_plano(
 
 
 def test_create_invalid_cod_siape_unidade(
-    truncate_pe, input_pe: dict, header_usr_1: dict, client: Client
+    truncate_pe,
+    input_pe: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
 ):
     """Tenta criar uma entrega com código SIAPE inválido
     TODO: Validar Regra Negocial - Como será feita a validação com a Integração SIAPE?
@@ -500,14 +529,22 @@ def test_create_invalid_cod_siape_unidade(
 
 
 def test_create_entrega_invalid_percent(
-    truncate_pe, input_pe: dict, header_usr_1: dict, client: Client
+    truncate_pe,
+    input_pe: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
 ):
     """Tenta criar um Plano de Entrega com entrega com percentuais inválidos"""
     assert 1 == 0
 
 
 def test_create_entrega_invalid_tipo_meta(
-    truncate_pe, input_pe: dict, header_usr_1: dict, client: Client
+    truncate_pe,
+    input_pe: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
 ):
     """Tenta criar um Plano de Entrega com tipo de meta inválido"""
     assert 1 == 0
@@ -517,6 +554,7 @@ def test_create_entrega_invalid_tipo_meta(
 def test_create_pe_invalid_avaliacao(
     input_pe: dict,
     avaliacao_plano_entregas: int,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pe,
     client: Client,
@@ -525,7 +563,8 @@ def test_create_pe_invalid_avaliacao(
 
     input_pe["avaliacao_plano_entregas"] = avaliacao_plano_entregas
     response = client.put(
-        f"/plano_entrega/{input_pe['cod_SIAPE_unidade_plano']}/555",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/555",
         json=input_pe,
         headers=header_usr_1,
     )

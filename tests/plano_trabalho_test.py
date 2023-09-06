@@ -53,8 +53,8 @@ def test_create_plano_trabalho_completo(
     na qual ele está autorizado, contendo todos os dados necessários.
     """
     response = client.put(
-        f"/plano_trabalho/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -65,17 +65,16 @@ def test_create_plano_trabalho_completo(
 
 def test_create_plano_trabalho_unidade_nao_permitida(
     input_pt: dict,
-    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
 ):
     """Tenta criar um novo Plano de Trabalho do Participante, em uma
-    unidade na qual ele não está autorizado.
+    organização na qual ele não está autorizado.
     """
     response = client.put(
-        f"/plano_trabalho/2"  # só está autorizado na unidade 1
-        f"/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/2"  # só está autorizado na organização 1
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -97,8 +96,8 @@ def test_update_plano_trabalho(
     # Altera um campo do PT e reenvia pra API (update)
     input_pt["cod_SIAPE_unidade_exercicio"] = 100  # Valor era 99
     client.put(
-        f"/plano_trabalho/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -139,8 +138,8 @@ def test_create_plano_trabalho_id_entrega_check(
     input_pt["tipo_contribuicao"] = tipo_contribuicao
     input_pt["id_entrega"] = id_entrega
     response = client.put(
-        f"/plano_trabalho/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -160,6 +159,7 @@ def test_create_plano_trabalho_id_entrega_check(
 def test_create_plano_trabalho_consolidacao_omit_optional_fields(
     input_pt: dict,
     omitted_fields: list,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pe,
     client: Client,
@@ -174,7 +174,8 @@ def test_create_plano_trabalho_consolidacao_omit_optional_fields(
 
     input_pt["id_plano_entrega_unidade"] = 557 + offset
     response = client.put(
-        f"/plano_entrega/{input_pt['cod_SIAPE_instituidora']}/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -187,6 +188,7 @@ def test_create_plano_trabalho_consolidacao_omit_optional_fields(
 def test_create_plano_trabalho_missing_mandatory_fields(
     input_pt: dict,
     missing_fields: list,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
@@ -202,15 +204,24 @@ def test_create_plano_trabalho_missing_mandatory_fields(
     for field in field_list:
         del input_pt[field]
 
-    input_pt["id_plano_trabalho_participante"] = 1800 + offset  # precisa ser um novo plano
+    input_pt["id_plano_trabalho_participante"] = (
+        1800 + offset
+    )  # precisa ser um novo plano
     response = client.put(
-        f"/plano_trabalho/{example_pt['id_plano_trabalho_participante']}", json=input_pt, headers=header_usr_1
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{example_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 def test_create_huge_plano_trabalho(
-    input_pt: dict, header_usr_1: dict, truncate_pt, client: Client
+    input_pt: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pt,
+    client: Client,
 ):
     def create_huge_atividade(id_atividade: str):
         new_atividade = input_pt["atividades"][0].copy()
@@ -222,7 +233,12 @@ def test_create_huge_plano_trabalho(
     for i in range(200):
         input_pt["atividades"].append(create_huge_atividade(f"unique-key-{i}"))
 
-    response = client.put(f"/plano_trabalho/555", json=input_pt, headers=header_usr_1)
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/555",
+        json=input_pt,
+        headers=header_usr_1,
+    )
 
     assert response.status_code == status.HTTP_200_OK
 
@@ -239,6 +255,7 @@ def test_update_plano_trabalho_missing_mandatory_fields(
     example_pt,
     input_pt: dict,
     missing_fields: list,
+    user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
@@ -258,7 +275,10 @@ def test_update_plano_trabalho_missing_mandatory_fields(
     input_pt["id_plano_trabalho_participante"] = 555  # precisa ser um plano existente
     call = getattr(client, verb)  # put ou patch
     response = call(
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}", json=input_pt, headers=header_usr_1
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
     )
     if verb == "put":
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -271,6 +291,7 @@ def test_patch_plano_trabalho_inexistente(
     truncate_pt,
     input_pt: dict,
     missing_fields: list,
+    user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
@@ -285,32 +306,54 @@ def test_patch_plano_trabalho_inexistente(
 
     input_pt["id_plano_trabalho_participante"] = 999  # precisa ser um plano inexistente
     response = client.patch(
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}", json=input_pt, headers=header_usr_1
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_create_pt_cod_plano_inconsistent(
-    input_pt: dict, header_usr_1: dict, truncate_pt, client: Client
+    input_pt: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pt,
+    client: Client,
 ):
     input_pt["id_plano_trabalho_participante"] = 110
     response = client.put(
-        "/plano_trabalho/111", json=input_pt, headers=header_usr_1  # diferente de 110
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        "/plano_trabalho/111",
+        json=input_pt,
+        headers=header_usr_1,  # diferente de 110
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro id_plano_trabalho_participante diferente do conteúdo do JSON"
+    detail_msg = (
+        "Parâmetro id_plano_trabalho_participante diferente do conteúdo do JSON"
+    )
     assert response.json().get("detail", None) == detail_msg
 
 
 def test_get_plano_trabalho(
-    header_usr_1: dict, truncate_pt, example_pt, client: Client
+    user1_credentials: dict, header_usr_1: dict, truncate_pt, example_pt, client: Client
 ):
-    response = client.get("/plano_trabalho/555", headers=header_usr_1)
+    response = client.get(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        "/plano_trabalho/555",
+        headers=header_usr_1,
+    )
     assert response.status_code == status.HTTP_200_OK
 
 
-def test_get_pt_inexistente(header_usr_1: dict, client: Client):
-    response = client.get("/plano_trabalho/888888888", headers=header_usr_1)
+def test_get_pt_inexistente(
+    user1_credentials: dict, header_usr_1: dict, client: Client
+):
+    response = client.get(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        "/plano_trabalho/888888888",
+        headers=header_usr_1,
+    )
     assert response.status_code == 404
 
     assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
@@ -329,6 +372,7 @@ def test_create_pt_invalid_dates(
     id_plano_trabalho_participante: str,
     data_inicio_plano: str,
     data_termino_plano: str,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
@@ -338,7 +382,10 @@ def test_create_pt_invalid_dates(
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
 
     response = client.put(
-        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        json=input_pt,
+        headers=header_usr_1,
     )
     if data_inicio_plano > data_termino_plano:
         assert response.status_code == 422
@@ -369,6 +416,7 @@ def test_create_pt_invalid_data_avaliacao(
     data_termino_plano: str,
     data_inicio_registro: str,
     data_fim_registro: str,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
@@ -380,9 +428,15 @@ def test_create_pt_invalid_data_avaliacao(
     input_pt["consolidacoes"][0]["data_fim_registro"] = data_fim_registro
 
     response = client.put(
-        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        json=input_pt,
+        headers=header_usr_1,
     )
-    if data_inicio_plano > data_inicio_registro or data_inicio_plano > data_fim_registro:
+    if (
+        data_inicio_plano > data_inicio_registro
+        or data_inicio_plano > data_fim_registro
+    ):
         assert response.status_code == 422
         detail_msg = (
             "Data de início e de fim de registro devem ser maiores ou iguais"
@@ -404,10 +458,10 @@ def test_create_pt_invalid_data_avaliacao(
 )
 def test_create_pt_duplicate_contribuicao(
     input_pt: dict,
-    user1_credentials: dict,
     id_plano_entrega_unidade: int,
     id_ent_1: int,
     id_ent_2: int,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
@@ -421,8 +475,10 @@ def test_create_pt_duplicate_contribuicao(
     input_pt["contribuicoes"][1]["id_entrega"] = id_ent_2
 
     response = client.put(
-        f"/plano_trabalho/{user1_credentials['cod_SIAPE_instituidora']}/{input_pt['id_plano_trabalho_participante']}",
-        json=input_pt, headers=header_usr_1
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
     )
     if id_ent_1 == id_ent_2:
         assert response.status_code == 422
@@ -455,6 +511,7 @@ def test_create_pt_invalid_cpf(
     input_pt: dict,
     id_plano_trabalho_participante: str,
     cpf: str,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
@@ -463,7 +520,10 @@ def test_create_pt_invalid_cpf(
     input_pt["cpf"] = cpf
 
     response = client.put(
-        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        json=input_pt,
+        headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = [
@@ -476,12 +536,14 @@ def test_create_pt_invalid_cpf(
 
 
 @pytest.mark.parametrize(
-    "id_plano_trabalho_participante, modalidade_execucao", [("556", -1), ("81", -2), ("82", -3)]
+    "id_plano_trabalho_participante, modalidade_execucao",
+    [("556", -1), ("81", -2), ("82", -3)],
 )
 def test_create_pt_invalid_modalidade_execucao(
     input_pt: dict,
     id_plano_trabalho_participante: str,
     modalidade_execucao: int,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
@@ -489,7 +551,10 @@ def test_create_pt_invalid_modalidade_execucao(
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["modalidade_execucao"] = modalidade_execucao
     response = client.put(
-        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        json=input_pt,
+        headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -508,6 +573,7 @@ def test_create_pt_invalid_modalidade_execucao(
 def test_create_pt_invalid_carga_horaria_semanal(
     input_pt: dict,
     carga_horaria_semanal: int,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
@@ -516,7 +582,10 @@ def test_create_pt_invalid_carga_horaria_semanal(
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["carga_horaria_semanal"] = carga_horaria_semanal
     response = client.put(
-        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        json=input_pt,
+        headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -537,6 +606,7 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
     input_pt: dict,
     tipo_contribuicao: int,
     horas_vinculadas: int,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
@@ -550,7 +620,10 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
     }
 
     response = client.put(
-        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        json=input_pt,
+        headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "none is not an allowed value"
@@ -558,10 +631,25 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
 
 
 def test_create_pt_duplicate_cod_plano(
-    input_pt: dict, header_usr_1: dict, header_usr_2: dict, truncate_pt, client: Client
+    input_pt: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    header_usr_2: dict,
+    truncate_pt,
+    client: Client,
 ):
-    response = client.put(f"/plano_trabalho/555", json=input_pt, headers=header_usr_1)
-    response = client.put(f"/plano_trabalho/555", json=input_pt, headers=header_usr_2)
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/555",
+        json=input_pt,
+        headers=header_usr_1,
+    )
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/555",
+        json=input_pt,
+        headers=header_usr_2,
+    )
     print(response.json().get("detail", None))
 
     assert response.status_code == status.HTTP_200_OK
@@ -573,6 +661,7 @@ def test_create_pt_duplicate_cod_plano(
 def test_create_pt_invalid_horas_homologadas(
     input_pt: dict,
     horas_homologadas: int,
+    user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
     client: Client,
@@ -581,7 +670,10 @@ def test_create_pt_invalid_horas_homologadas(
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["horas_homologadas"] = horas_homologadas
     response = client.put(
-        f"/plano_trabalho/{id_plano_trabalho_participante}", json=input_pt, headers=header_usr_1
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        json=input_pt,
+        headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
