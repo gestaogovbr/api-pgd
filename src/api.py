@@ -31,7 +31,7 @@ app = FastAPI(
 )
 
 
-@app.get("/user", tags=["api"])
+@app.get("/user", summary="Consulta usuário da API", tags=["api"])
 async def get_user(
     user: FiefUserInfo = Depends(auth_backend.current_user()),
 ):
@@ -178,13 +178,14 @@ async def docs_redirect(accept: Union[str, None] = Header(default="text/html")):
 
 
 @app.get(
-    "/plano_trabalho/{cod_plano}",
+    "/organizacao/{cod_SIAPE_instituidora}/plano_trabalho/{id_plano_trabalho_participante}",
     summary="Consulta plano de trabalho",
     response_model=schemas.PlanoTrabalhoSchema,
     tags=["pgd"],
 )
 async def get_plano_trabalho(
-    cod_plano: str,
+    cod_SIAPE_instituidora: int,
+    id_plano_trabalho_participante: int,
     db: Session = Depends(get_db),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
 ):
