@@ -27,15 +27,15 @@ app = FastAPI(
         "clientId": os.environ["FIEF_CLIENT_ID"],
         "clientSecret": os.environ["FIEF_CLIENT_SECRET"],
         "scopes": "openid",
-    }
+    },
 )
 
-@app.get("/user")
+
+@app.get("/user", tags=["api"])
 async def get_user(
-    user: FiefUserInfo = Depends(
-        auth_backend.current_user()
-    ),
+    user: FiefUserInfo = Depends(auth_backend.current_user()),
 ):
+    """Informações sobre o usuário autenticado na API."""
     return user
 
 
@@ -181,16 +181,17 @@ async def docs_redirect(accept: Union[str, None] = Header(default="text/html")):
     "/plano_trabalho/{cod_plano}",
     summary="Consulta plano de trabalho",
     response_model=schemas.PlanoTrabalhoSchema,
+    tags=["pgd"],
 )
 async def get_plano_trabalho(
     cod_plano: str,
     db: Session = Depends(get_db),
-    user: FiefUserInfo = Depends(
-        auth_backend.current_user()
-    ),
+    user: FiefUserInfo = Depends(auth_backend.current_user()),
 ):
     "Consulta o plano de trabalho com o código especificado."
-    db_plano_trabalho = await crud.get_plano_trabalho(db, user["fields"]["cod_unidade"], cod_plano)
+    db_plano_trabalho = await crud.get_plano_trabalho(
+        db, user["fields"]["cod_unidade"], cod_plano
+    )
     if db_plano_trabalho is None:
         raise HTTPException(404, detail="Plano de trabalho não encontrado")
     plano_trabalho = schemas.PlanoTrabalhoSchema.from_orm(db_plano_trabalho)
