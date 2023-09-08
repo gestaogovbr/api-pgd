@@ -2,6 +2,7 @@
 Testes relacionados ao Plano de Entregas da Unidade
 """
 import itertools
+from datetime import date
 
 from httpx import Client
 
@@ -211,9 +212,26 @@ def test_patch_plano_entrega_inexistente(
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
+@pytest.mark.parametrize(
+    "id_plano_entrega_unidade, cod_SIAPE_unidade_plano, "
+    "data_inicio_plano_entregas, data_termino_plano_entregas",
+    [
+        (101, 99, "2023-01-01", "2023-06-30"), # igual
+        (102, 99, "2023-07-01", "2023-12-31"), # sem sobreposição
+        (103, 99, "2022-12-01", "2023-01-31"), # sobreposição no início
+        (104, 99, "2023-06-01", "2023-11-30"), # sobreposição no fim
+        (105, 99, "2023-02-01", "2023-05-31"), # contido no período
+        (106, 99, "2022-12-01", "2023-07-31"), # contém o período
+        (105, 100, "2023-02-01", "2023-05-31"), # outra unidade
+    ],
+)
 def test_create_plano_entrega_same_date_interval(
     truncate_pe,
     input_pe: dict,
+    id_plano_entrega_unidade: int,
+    cod_SIAPE_unidade_plano: int,
+    data_inicio_plano_entregas: str,
+    data_termino_plano_entregas: str,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
@@ -221,7 +239,43 @@ def test_create_plano_entrega_same_date_interval(
     """Tenta criar uma plano de entregas no mesmo intervalo de data
     TODO: Validar Regra Negocial - Pode existir mais de um plano por unidade no mesmo período?
     """
-    assert 1 == 0
+    original_pe = input_pe.copy()
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
+    input_pe["cod_SIAPE_unidade_plano"] = cod_SIAPE_unidade_plano
+    input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
+    input_pe["data_termino_plano_entregas"] = data_termino_plano_entregas
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+    if input_pe["cod_SIAPE_unidade_plano"] == original_pe["cod_SIAPE_unidade_plano"]:
+        if (
+            input_pe["data_inicio_plano_entregas"]
+            < original_pe["data_termino_plano_entregas"]
+        ) and (
+            input_pe["data_termino_plano_entregas"]
+            > original_pe["data_inicio_plano_entregas"]
+        ):
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_msg = (
+                "Já existe um plano de entregas para este "
+                "cod_SIAPE_unidade_plano no período informado."
+            )
+            assert response.json().get("detail", None) == detail_msg
 
 
 def test_create_pe_cod_plano_inconsistent(
