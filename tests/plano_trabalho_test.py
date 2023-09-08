@@ -537,11 +537,18 @@ def test_create_pt_invalid_cpf(
 
 @pytest.mark.parametrize(
     "id_plano_trabalho_participante, modalidade_execucao",
-    [("556", -1), ("81", -2), ("82", -3)],
+    [
+        (80, -1),
+        (81, -2),
+        (82, -3),
+        (83, -0),
+        (84, 4),
+        (85, 1),
+    ],
 )
 def test_create_pt_invalid_modalidade_execucao(
     input_pt: dict,
-    id_plano_trabalho_participante: str,
+    id_plano_trabalho_participante: int,
     modalidade_execucao: int,
     user1_credentials: dict,
     header_usr_1: dict,
@@ -557,9 +564,12 @@ def test_create_pt_invalid_modalidade_execucao(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "value is not a valid enumeration member; permitted: 1, 2, 3"
-    assert response.json().get("detail")[0]["msg"] == detail_msg
+    if modalidade_execucao in (1, 2, 3):
+        assert response.status_code == status.HTTP_200_OK
+    else:
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_msg = "Value is not a valid enumeration member; permitted: 1, 2, 3"
+        assert response.json().get("detail")[0]["msg"] == detail_msg
 
 
 @pytest.mark.parametrize(
