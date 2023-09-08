@@ -570,17 +570,35 @@ def test_create_pe_duplicate_id_plano(
     assert response.json() == input_pe
 
 
+@pytest.mark.parametrize(
+    "cod_SIAPE_unidade_plano",
+    [ (99,), (0,), (-1,) ]
+)
 def test_create_invalid_cod_siape_unidade(
     truncate_pe,
     input_pe: dict,
+    cod_SIAPE_unidade_plano: int,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar uma entrega com código SIAPE inválido
-    TODO: Validar Regra Negocial - Como será feita a validação com a Integração SIAPE?
+    """Tenta criar uma entrega com código SIAPE inválido.
+    Por ora não será feita validação no sistema, e sim apenas uma
+    verificação de sanidade.
     """
-    assert 1 == 0
+    input_pe["cod_SIAPE_unidade_plano"] = cod_SIAPE_unidade_plano
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+    if cod_SIAPE_unidade_plano > 0:
+        assert response.status_code == status.HTTP_200_OK
+    else:
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 def test_create_entrega_invalid_percent(
