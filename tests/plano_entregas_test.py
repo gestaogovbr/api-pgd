@@ -514,33 +514,6 @@ def test_create_pe_duplicate_entrega(
         assert response.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.parametrize(
-    "id_plano_trabalho_participante, modalidade_execucao",
-    [("556", -1), ("81", -2), ("82", -3)],
-)
-def test_create_pt_invalid_modalidade_execucao(
-    input_pt: dict,
-    id_plano_trabalho_participante: str,
-    modalidade_execucao: int,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    truncate_pt,
-    client: Client,
-):
-    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["modalidade_execucao"] = modalidade_execucao
-    response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{id_plano_trabalho_participante}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
-
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "value is not a valid enumeration member; permitted: 1, 2, 3"
-    assert response.json().get("detail")[0]["msg"] == detail_msg
-
-
 def test_create_pe_duplicate_id_plano(
     input_pe: dict,
     user1_credentials: dict,
