@@ -225,7 +225,7 @@ def test_patch_plano_entrega_inexistente(
         (105, 100, "2023-02-01", "2023-05-31"), # outra unidade
     ],
 )
-def test_create_plano_entrega_same_date_interval(
+def test_create_plano_entrega_overlapping_date_interval(
     truncate_pe,
     input_pe: dict,
     id_plano_entrega_unidade: int,
@@ -236,7 +236,8 @@ def test_create_plano_entrega_same_date_interval(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar uma plano de entregas no mesmo intervalo de data
+    """Tenta criar uma plano de entregas com sobreposição de intervalo de
+    data na mesma unidade.
     TODO: Validar Regra Negocial - Pode existir mais de um plano por unidade no mesmo período?
     """
     original_pe = input_pe.copy()
