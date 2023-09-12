@@ -215,13 +215,13 @@ def test_patch_plano_entrega_inexistente(
     "id_plano_entrega_unidade, cod_SIAPE_unidade_plano, "
     "data_inicio_plano_entregas, data_termino_plano_entregas",
     [
-        (101, 99, "2023-01-01", "2023-06-30"), # igual
-        (102, 99, "2023-07-01", "2023-12-31"), # sem sobreposição
-        (103, 99, "2022-12-01", "2023-01-31"), # sobreposição no início
-        (104, 99, "2023-06-01", "2023-11-30"), # sobreposição no fim
-        (105, 99, "2023-02-01", "2023-05-31"), # contido no período
-        (106, 99, "2022-12-01", "2023-07-31"), # contém o período
-        (105, 100, "2023-02-01", "2023-05-31"), # outra unidade
+        (101, 99, "2023-01-01", "2023-06-30"),  # igual
+        (102, 99, "2023-07-01", "2023-12-31"),  # sem sobreposição
+        (103, 99, "2022-12-01", "2023-01-31"),  # sobreposição no início
+        (104, 99, "2023-06-01", "2023-11-30"),  # sobreposição no fim
+        (105, 99, "2023-02-01", "2023-05-31"),  # contido no período
+        (106, 99, "2022-12-01", "2023-07-31"),  # contém o período
+        (105, 100, "2023-02-01", "2023-05-31"),  # outra unidade
     ],
 )
 def test_create_plano_entrega_overlapping_date_interval(
@@ -310,7 +310,7 @@ def test_create_pe_cod_unidade_inconsistent(
 
     input_pe["cod_SIAPE_instituidora"] = 999
     response = client.put(
-        f"/organizacao/1000" # diferente de 999
+        f"/organizacao/1000"  # diferente de 999
         f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
@@ -594,8 +594,12 @@ def test_create_entrega_invalid_percent(
     """TODO: Se for tipo_meta absoluta, pode ser superior a 100?"""
 
     input_pe["entregas"][1]["meta_entrega"] = meta_entrega
-    input_pe["entregas"][1]["percentual_progresso_esperado"] = percentual_progresso_esperado
-    input_pe["entregas"][1]["percentual_progresso_esperado"] = percentual_progresso_realizado  
+    input_pe["entregas"][1][
+        "percentual_progresso_esperado"
+    ] = percentual_progresso_esperado
+    input_pe["entregas"][1][
+        "percentual_progresso_esperado"
+    ] = percentual_progresso_realizado
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
@@ -604,8 +608,14 @@ def test_create_entrega_invalid_percent(
         headers=header_usr_1,
     )
 
-    if all((percent >= 0 and percent <= 100)
-        for percent in (meta_entrega, percentual_progresso_esperado, percentual_progresso_realizado)):
+    if all(
+        (percent >= 0 and percent <= 100)
+        for percent in (
+            meta_entrega,
+            percentual_progresso_esperado,
+            percentual_progresso_realizado,
+        )
+    ):
         assert response.status_code == 200
     else:
         assert response.status_code == 422
@@ -613,10 +623,7 @@ def test_create_entrega_invalid_percent(
         assert response.json().get("detail")[0]["msg"] == detail_msg
 
 
-@pytest.mark.parametrize(
-    "tipo_meta",
-    [ (0), (3), (10) ]
-)
+@pytest.mark.parametrize("tipo_meta", [(0), (3), (10)])
 def test_create_entrega_invalid_tipo_meta(
     input_pe: dict,
     user1_credentials: dict,
