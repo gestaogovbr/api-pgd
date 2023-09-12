@@ -52,7 +52,7 @@ def test_create_plano_entregas_completo(
     """Tenta criar um novo plano de entregas"""
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/555",
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
