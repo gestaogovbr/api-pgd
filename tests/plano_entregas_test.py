@@ -575,16 +575,18 @@ def test_create_invalid_cod_siape_unidade(
 
 
 @pytest.mark.parametrize(
-    "meta_entrega, percentual_progresso_esperado, percentual_progresso_realizado",
+    "id_plano_entrega_unidade, meta_entrega, percentual_progresso_esperado, percentual_progresso_realizado",
     [
-        (101, 99, 100),
-        (100, 101, 0),
-        (1, 100, 101),
+        (555, 101, 99, 100),
+        (556, 100, 101, 0),
+        (557, 1, 100, 101),
+        (558, 100, 100, 100),
     ],
 )
 def test_create_entrega_invalid_percent(
     truncate_pe,
     input_pe: dict,
+    id_plano_entrega_unidade: int,
     meta_entrega: int,
     percentual_progresso_esperado: int,
     percentual_progresso_realizado: int,
@@ -601,14 +603,18 @@ def test_create_entrega_invalid_percent(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/555",
+        f"/plano_entrega/{id_plano_entrega_unidade}",
         json=input_pe,
         headers=header_usr_1,
     )
 
-    assert response.status_code == 422
-    detail_msg = "Valor percentual inválido."
-    assert response.json().get("detail")[0]["msg"] == detail_msg
+    if all((percent >= 0 and percent <= 100)
+        for percent in (meta_entrega, percentual_progresso_esperado, percentual_progresso_realizado)):
+        assert response.status_code == 200
+    else:
+        assert response.status_code == 422
+        detail_msg = "Valor percentual inválido."
+        assert response.json().get("detail")[0]["msg"] == detail_msg
 
 
 @pytest.mark.parametrize(
