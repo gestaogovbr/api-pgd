@@ -623,7 +623,7 @@ def test_create_entrega_invalid_percent(
         assert response.json().get("detail")[0]["msg"] == detail_msg
 
 
-@pytest.mark.parametrize("tipo_meta", [(0), (3), (10)])
+@pytest.mark.parametrize("tipo_meta", [0, 1, 2, 3, 10])
 def test_create_entrega_invalid_tipo_meta(
     input_pe: dict,
     user1_credentials: dict,
@@ -642,9 +642,12 @@ def test_create_entrega_invalid_tipo_meta(
         headers=header_usr_1,
     )
 
-    assert response.status_code == 422
-    detail_msg = "Tipo de meta inválido."
-    assert response.json().get("detail")[0]["msg"] == detail_msg
+    if tipo_meta in (1, 2):
+        assert response.status_code == status.HTTP_200_OK
+    else:
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_msg = "Tipo de meta inválido; permitido: 1, 2"
+        assert response.json().get("detail")[0]["msg"] == detail_msg
 
 
 @pytest.mark.parametrize("avaliacao_plano_entregas", [-1, 0, 1, 6])
@@ -667,7 +670,7 @@ def test_create_pe_invalid_avaliacao(
     )
 
     if avaliacao_plano_entregas in range(1, 6):
-            assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_200_OK
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
