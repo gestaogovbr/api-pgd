@@ -1,7 +1,6 @@
 """
 Testes relacionados ao Plano de Entregas da Unidade
 """
-import itertools
 from datetime import date
 
 from httpx import Client

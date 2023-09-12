@@ -3,7 +3,6 @@ Funções auxiliares e fixtures dos testes.
 """
 import os
 import sys
-import subprocess
 import json
 from typing import Generator, Optional
 
@@ -11,7 +10,6 @@ import httpx
 
 from fastapi.testclient import TestClient
 from httpx import Client
-from fastapi import status
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
