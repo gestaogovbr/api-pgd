@@ -542,10 +542,7 @@ def test_create_pe_duplicate_id_plano(
     assert response.json() == input_pe
 
 
-@pytest.mark.parametrize(
-    "cod_SIAPE_unidade_plano",
-    [ (99,), (0,), (-1,) ]
-)
+@pytest.mark.parametrize("cod_SIAPE_unidade_plano", [99, 0, -1])
 def test_create_invalid_cod_siape_unidade(
     truncate_pe,
     input_pe: dict,
