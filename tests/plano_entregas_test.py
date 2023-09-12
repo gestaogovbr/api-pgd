@@ -574,15 +574,42 @@ def test_create_invalid_cod_siape_unidade(
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
+@pytest.mark.parametrize(
+    "meta_entrega, percentual_progresso_esperado, percentual_progresso_realizado",
+    [
+        (101, 99, 100),
+        (100, 101, 0),
+        (1, 100, 101),
+    ],
+)
 def test_create_entrega_invalid_percent(
     truncate_pe,
     input_pe: dict,
+    meta_entrega: int,
+    percentual_progresso_esperado: int,
+    percentual_progresso_realizado: int,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
     """Tenta criar um Plano de Entrega com entrega com percentuais inválidos"""
-    assert 1 == 0
+    """TODO: Se for tipo_meta absoluta, pode ser superior a 100?"""
+
+    input_pe["entregas"][1]["meta_entrega"] = meta_entrega
+    input_pe["entregas"][1]["percentual_progresso_esperado"] = percentual_progresso_esperado
+    input_pe["entregas"][1]["percentual_progresso_esperado"] = percentual_progresso_realizado  
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/555",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == 422
+    detail_msg = "Valor percentual inválido."
+    assert response.json().get("detail")[0]["msg"] == detail_msg
+
 
 @pytest.mark.parametrize(
     "tipo_meta",
