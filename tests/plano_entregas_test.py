@@ -80,14 +80,14 @@ def test_update_plano_trabalho(
     input_pe["data_avaliacao_plano_entregas"] = "2023-08-15"
     client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/555",
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
     # Consulta API para conferir se a alteração foi persistida
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/555",
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         headers=header_usr_1,
     )
 
@@ -173,7 +173,7 @@ def test_create_huge_plano_entrega(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/555",
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -309,12 +309,12 @@ def test_create_pe_cod_unidade_inconsistent(
 ):
     """Tenta criar um plano de entrega com código de unidade divergente"""
 
-    input_pe["cod_SIAPE_unidade_plano"] = 999
+    input_pe["cod_SIAPE_instituidora"] = 999
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/1",
+        f"/organizacao/1000" # diferente de 999
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
-        headers=header_usr_1,  # diferente de 999
+        headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "Parâmetro cod_SIAPE_instituidora na URL diferente do conteúdo do JSON"
@@ -328,7 +328,7 @@ def test_get_plano_entrega(
 
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/555",
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
