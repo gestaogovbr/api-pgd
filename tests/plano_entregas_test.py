@@ -609,7 +609,7 @@ def test_create_entrega_invalid_percent(
     )
 
     if all(
-        (percent >= 0 and percent <= 100)
+        (0 <= percent <= 100)
         for percent in (
             meta_entrega,
             percentual_progresso_esperado,
