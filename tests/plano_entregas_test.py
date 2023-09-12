@@ -597,7 +597,7 @@ def test_create_entrega_invalid_tipo_meta(
     client: Client,
 ):
     """Tenta criar um Plano de Entrega com tipo de meta inválido"""
-    input_pe["tipo_meta"] = tipo_meta
+    input_pe["entregas"][0]["tipo_meta"] = tipo_meta
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
