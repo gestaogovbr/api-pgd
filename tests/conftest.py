@@ -64,7 +64,7 @@ def input_part() -> dict:
         dict: template de exemplo
     """
     return {
-        "ativo": True,
+        "participante_ativo_inativo_pgd": 1,
         "matricula_siape": 123456,
         "cpf_participante": 99160773120,
         "modalidade_execucao": 3,

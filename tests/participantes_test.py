@@ -10,7 +10,7 @@ from fastapi import status
 import pytest
 
 fields_participantes = (
-    ["ativo"],
+    ["participante_ativo_inativo_pgd"],
     ["matricula_siape"],
     ["cpf_participante"],
     ["modalidade_execucao"],
@@ -204,7 +204,7 @@ def test_put_participante_invalid_cpf(
 
 
 @pytest.mark.parametrize(
-    "ativo",
+    "participante_ativo_inativo_pgd",
     [
         (3),
         (-1),
@@ -212,14 +212,15 @@ def test_put_participante_invalid_cpf(
 )
 def test_put_part_invalid_ativo(
     input_part: dict,
-    ativo: int,
+    participante_ativo_inativo_pgd: int,
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_participantes,
     client: Client,
 ):
-    """Tenta submeter um participante com flag ativo_inativo_pgd inválida"""
-    input_part["ativo"] = ativo
+    """Tenta criar um participante com flag participante_ativo_inativo_pgd
+    com valor inválido."""
+    input_part["participante_ativo_inativo_pgd"] = participante_ativo_inativo_pgd
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['matricula_siape']}",
@@ -228,7 +229,9 @@ def test_put_part_invalid_ativo(
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Valor booleano do campo 'ativo' inválida; permitido: true, false"
+    detail_msg = (
+        "Valor do campo 'participante_ativo_inativo_pgd' inválida; permitido: 0, 1"
+    )
     # detail_msg = "value is not a valid enumeration member; permitted: 0,1"
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
