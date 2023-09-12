@@ -584,16 +584,31 @@ def test_create_entrega_invalid_percent(
     """Tenta criar um Plano de Entrega com entrega com percentuais inválidos"""
     assert 1 == 0
 
-
+@pytest.mark.parametrize(
+    "tipo_meta",
+    [ (0), (3), (10) ]
+)
 def test_create_entrega_invalid_tipo_meta(
-    truncate_pe,
     input_pe: dict,
     user1_credentials: dict,
     header_usr_1: dict,
+    truncate_pe,
+    tipo_meta: int,
     client: Client,
 ):
     """Tenta criar um Plano de Entrega com tipo de meta inválido"""
-    assert 1 == 0
+    input_pe["tipo_meta"] = tipo_meta
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/555",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == 422
+    detail_msg = "Tipo de meta inválido."
+    assert response.json().get("detail")[0]["msg"] == detail_msg
 
 
 @pytest.mark.parametrize("avaliacao_plano_entregas", [(0), (-1), (6)])
