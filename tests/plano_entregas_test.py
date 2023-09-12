@@ -527,13 +527,13 @@ def test_create_pe_duplicate_id_plano(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{id_plano_entrega_unidade}",
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
     response = client.put(
         f"/organizacao/{user2_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{id_plano_entrega_unidade}",
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_2,
     )
@@ -634,7 +634,7 @@ def test_create_entrega_invalid_tipo_meta(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{id_plano_entrega_unidade}",
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -658,7 +658,7 @@ def test_create_pe_invalid_avaliacao(
     input_pe["avaliacao_plano_entregas"] = avaliacao_plano_entregas
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{id_plano_entrega_unidade}",
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
