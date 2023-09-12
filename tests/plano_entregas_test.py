@@ -647,7 +647,7 @@ def test_create_entrega_invalid_tipo_meta(
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
 
-@pytest.mark.parametrize("avaliacao_plano_entregas", [(0), (-1), (6)])
+@pytest.mark.parametrize("avaliacao_plano_entregas", [-1, 0, 1, 6])
 def test_create_pe_invalid_avaliacao(
     input_pe: dict,
     avaliacao_plano_entregas: int,
@@ -666,7 +666,9 @@ def test_create_pe_invalid_avaliacao(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
-    # detail_msg = "value is not a valid enumeration member; permitted: 1, 2, 3, 4, 5"
-    assert response.json().get("detail")[0]["msg"] == detail_msg
+    if avaliacao_plano_entregas in range(1, 6):
+            assert response.status_code == status.HTTP_200_OK
+    else:
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_msg = "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
+        assert response.json().get("detail")[0]["msg"] == detail_msg
