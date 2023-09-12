@@ -264,11 +264,11 @@ def test_create_plano_entrega_overlapping_date_interval(
 
     if input_pe["cod_SIAPE_unidade_plano"] == original_pe["cod_SIAPE_unidade_plano"]:
         if (
-            input_pe["data_inicio_plano_entregas"]
-            < original_pe["data_termino_plano_entregas"]
+            date(input_pe["data_inicio_plano_entregas"])
+            < date(original_pe["data_termino_plano_entregas"])
         ) and (
-            input_pe["data_termino_plano_entregas"]
-            > original_pe["data_inicio_plano_entregas"]
+            date(input_pe["data_termino_plano_entregas"])
+            > date(original_pe["data_inicio_plano_entregas"])
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_msg = (
