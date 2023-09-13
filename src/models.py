@@ -58,35 +58,6 @@ class PlanoTrabalho(Base):
 #     trigger.execute_if(dialect='postgresql')
 # )
 
-
-
-class Atividade(Base):
-    "Atividade"
-    __tablename__ = "atividade"
-    # id_atividade = Column(Integer, primary_key=True, index=True)
-    cod_unidade = Column(BigInteger, primary_key=True, index=True)
-    id_plano_trabalho = Column(Integer, ForeignKey("plano_trabalho.id"), primary_key=True, index=True)
-    id_atividade = Column(String, primary_key=True, index=True)
-    nome_grupo_atividade = Column(String)
-    nome_atividade = Column(String)
-    faixa_complexidade = Column(String)
-    parametros_complexidade = Column(String)
-    tempo_presencial_estimado = Column(Float)
-    tempo_presencial_programado = Column(Float)
-    tempo_presencial_executado = Column(Float)
-    tempo_teletrabalho_estimado = Column(Float)
-    tempo_teletrabalho_programado = Column(Float)
-    tempo_teletrabalho_executado = Column(Float)
-    entrega_esperada = Column(String)
-    qtde_entregas = Column(Integer)
-    qtde_entregas_efetivas = Column(Integer)
-    avaliacao = Column(Integer)
-    data_avaliacao = Column(Date)
-    justificativa = Column(String)
-    data_atualizacao = Column(DateTime)
-    data_insercao = Column(DateTime)
-    plano_trabalho = relationship("PlanoTrabalho", back_populates="atividades")
-
 # trigger = DDL("""
 #     CREATE TRIGGER inseredata_trigger
 #     BEFORE INSERT OR UPDATE ON public.atividade
