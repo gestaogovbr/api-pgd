@@ -14,8 +14,7 @@ async def get_plano_trabalho(db: Session, cod_unidade: int, cod_plano: str):
         )
     if db_plano_trabalho:
         return db_plano_trabalho
-    else:
-        return None
+    return None
 
 def create_plano_tabalho(
     db: Session,
