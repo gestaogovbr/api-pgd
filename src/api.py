@@ -191,7 +191,7 @@ async def get_plano_trabalho(
 ):
     "Consulta o plano de trabalho com o código especificado."
     db_plano_trabalho = await crud.get_plano_trabalho(
-        db, user["fields"]["cod_unidade"], cod_plano
+        db, user["fields"]["cod_SIAPE_instituidora"], id_plano_trabalho_participante
     )
     if db_plano_trabalho is None:
         raise HTTPException(404, detail="Plano de trabalho não encontrado")
