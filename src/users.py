@@ -35,12 +35,10 @@ auth_backend = FiefAuth(fief, scheme)
 engine = create_async_engine(SQLALCHEMY_DATABASE_URL)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
+
 # database models (SQLAlchemy)
 class Base(DeclarativeBase):
     pass
-
-engine = create_async_engine(SQLALCHEMY_DATABASE_URL)
-async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
 async def create_db_and_tables():
