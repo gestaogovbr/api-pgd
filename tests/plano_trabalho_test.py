@@ -622,7 +622,6 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
     client: Client,
 ):
     id_plano_trabalho_participante = "111222333"
-    example_pt = input_pt.copy()
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["contribuicoes"] = {
         "tipo_contribuicao": tipo_contribuicao,
@@ -636,8 +635,98 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "none is not an allowed value"
-    assert response.json().get("detail")[0]["msg"] == detail_msg
+
+
+@pytest.mark.parametrize(
+    "id_plano_trabalho_participante, tipo_contribuicao, id_plano_entrega_unidade, id_entrega",
+    [
+        (120, 1, None, None),
+        (121, 1, 1, 1),
+        (121, 1, 1, 999),  # id_entrega não existente
+        (122, 1, 999, 1),  # id_plano_entrega_unidade não existente
+        (123, 2, None, None),
+        (124, 2, 1, 1),
+        (125, 3, None, None),
+        (126, 3, 1, 1),
+    ],
+)
+def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
+    input_pt: dict,
+    input_pe: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    id_plano_trabalho_participante: int,
+    tipo_contribuicao: int,
+    id_plano_entrega_unidade: int,
+    id_entrega: int,
+    truncate_pt,
+    truncate_pe,
+    client: Client,
+):
+    """Verifica o comportamento da API em relação à obrigatoriedade
+    do campo id_entrega, a depender do valor de tipo_contribuicao.
+
+    Se tipo_contribuicao == 1, então id_plano_entrega_unidade e
+    id_entrega são obrigatórios e devem se referir a uma entrega
+    existente de um plano de entregas existente.
+
+    Se tipo_contribuicao == 2, então id_plano_entrega_unidade e
+    id_entrega não devem ser informados.
+    """
+    # cria o plano de entrega 1, que deve ser existente como
+    # premissa para o teste
+    id_plano_entrega_existente = 1
+    ids_entregas_existentes = [
+        entrega["id_entrega"] for entrega in input_pe["entregas"]
+    ]
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{id_plano_entrega_existente}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+    # Prepara o plano de trabalho com os parâmetros informados no teste
+    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
+    input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
+    input_pt["contribuicoes"][0]["id_entrega"] = id_entrega
+
+    assert response.status_code == status.HTTP_200_OK
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
+
+    if tipo_contribuicao == 1:
+        if not (id_plano_entrega_unidade and id_entrega):
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_msg = (
+                "É necessário informar id_plano_entrega_unidade "
+                "e id_entrega quando tipo_contribuicao == 1"
+            )
+            assert response.json().get("detail")[0]["msg"] == detail_msg
+        elif (
+            id_plano_entrega_unidade != id_plano_entrega_existente
+            or id_entrega not in ids_entregas_existentes
+        ):
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_msg = (
+                "Referência a entrega não encontrada"
+            )
+            assert response.json().get("detail")[0]["msg"] == detail_msg
+    elif tipo_contribuicao == 2 and (id_plano_entrega_unidade or id_entrega):
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_msg = (
+            "Não se deve informar id_plano_entrega_unidade nem "
+            "id_entrega quando tipo_contribuicao == 2"
+        )
+        assert response.json().get("detail")[0]["msg"] == detail_msg
+    else:
+        assert response.status_code == status.HTTP_200_OK
 
 
 def test_create_pt_duplicate_cod_plano(
