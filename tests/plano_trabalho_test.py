@@ -336,11 +336,16 @@ def test_create_pt_cod_plano_inconsistent(
 
 
 def test_get_plano_trabalho(
-    user1_credentials: dict, header_usr_1: dict, truncate_pt, example_pt, client: Client
+    input_pt: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pt,
+    example_pt,
+    client: Client,
 ):
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        "/plano_trabalho/555",
+        f"/plano_trabalho/{input_pt['id_plano_entrega_unidade']}",
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
@@ -714,9 +719,7 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
             or id_entrega not in ids_entregas_existentes
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_msg = (
-                "Referência a entrega não encontrada"
-            )
+            detail_msg = "Referência a entrega não encontrada"
             assert response.json().get("detail")[0]["msg"] == detail_msg
     elif tipo_contribuicao == 2 and (id_plano_entrega_unidade or id_entrega):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
