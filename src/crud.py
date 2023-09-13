@@ -1,26 +1,30 @@
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text as sa_text
 import models, schemas
 
-async def get_plano_trabalho(db: Session, cod_unidade: int, cod_plano: str):
+
+async def get_plano_trabalho(
+    db_session: Session,
+    cod_SIAPE_instituidora: int,
+    id_plano_trabalho_participante: str,
+):
     "Traz um plano de trabalho a partir do banco de dados."
-    async with db as database:
-        db_plano_trabalho = (
-            database
-            .query(models.PlanoTrabalho)
-            .filter(models.PlanoTrabalho.cod_plano == cod_plano)
-            .filter(models.PlanoTrabalho.cod_unidade == cod_unidade)
+    async for session in db_session:
+        db_plano_trabalho = session.execute(
+            select(models.PlanoTrabalho)
+            .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
+            .filter_by(id_plano_trabalho_participante=id_plano_trabalho_participante)
             .first()
         )
     if db_plano_trabalho:
         return db_plano_trabalho
     return None
 
+
 def create_plano_tabalho(
-    db: Session,
-    plano_trabalho: schemas.PlanoTrabalhoSchema,
-    cod_unidade: int
-    ):
+    db: Session, plano_trabalho: schemas.PlanoTrabalhoSchema, cod_unidade: int
+):
     "Cria um plano de trabalho definido pelo cod_plano."
 
     db_atividades = [models.Atividade(**a.dict()) for a in plano_trabalho.atividades]
@@ -28,24 +32,21 @@ def create_plano_tabalho(
         a.cod_unidade = cod_unidade
     plano_trabalho.atividades = db_atividades
     db_plano_trabalho = models.PlanoTrabalho(
-        cod_unidade = cod_unidade,
-        **plano_trabalho.dict()
+        cod_unidade=cod_unidade, **plano_trabalho.dict()
     )
     db.add(db_plano_trabalho)
     db.commit()
     db.refresh(db_plano_trabalho)
     return schemas.PlanoTrabalhoSchema.from_orm(db_plano_trabalho)
 
+
 def update_plano_trabalho(
-    db: Session,
-    plano_trabalho: schemas.PlanoTrabalhoSchema,
-    cod_unidade: int
-    ):
+    db: Session, plano_trabalho: schemas.PlanoTrabalhoSchema, cod_unidade: int
+):
     "Atualiza um plano de trabalho definido pelo cod_plano."
 
     db_plano_trabalho = (
-        db
-        .query(models.PlanoTrabalho)
+        db.query(models.PlanoTrabalho)
         .filter(models.PlanoTrabalho.cod_plano == plano_trabalho.cod_plano)
         .filter(models.PlanoTrabalho.cod_unidade == cod_unidade)
         .first()
@@ -67,7 +68,9 @@ def update_plano_trabalho(
     db.refresh(db_plano_trabalho)
     return db_plano_trabalho
 
+
 # Following methods only for test purpose
+
 
 def truncate_pts_atividades(db: Session):
     "Trunca as tabelas principais. Útil para zerar BD para executar testes."
