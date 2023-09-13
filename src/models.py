@@ -13,7 +13,8 @@ from users import Base
 class PlanoTrabalho(Base):
     "Plano de Trabalho"
     __tablename__ = "plano_trabalho"
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    cod_SIAPE_instituidora = Column(Integer, primary_key=True, index=True)
+    id_plano_trabalho_participante = Column(Integer, primary_key=True, index=True)
     situacao = Column(String)
     cod_unidade = Column(BigInteger, nullable=False)
     cod_plano = Column(String, nullable=False)
