@@ -22,8 +22,55 @@ from sqlalchemy.orm import relationship
 from users import Base
 
 
+class PlanoEntregas(Base):
+    "Plano de Entregas da unidade"
+    __tablename__ = "plano_entregas"
+    cod_SIAPE_instituidora = Column(
+        Integer, primary_key=True, index=True, nullable=False
+    )
+    id_plano_entrega_unidade = Column(
+        Integer, primary_key=True, index=True, nullable=False
+    )
+    data_inicio_plano_entregas = Column(Date, nullable=False)
+    data_termino_plano_entregas = Column(Date, nullable=False)
+    avaliacao_plano_entregas = Column(Integer)
+    data_avaliacao_plano_entregas = Column(Date)
+    cod_SIAPE_unidade_plano = Column(Integer, nullable=False)
+
+
+class TipoMeta(enum.Enum):
+    absoluto = 1
+    percentual = 2
+
+
+class Entrega(Base):
+    "Entrega"
+    __tablename__ = "entrega"
+    id_entrega = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id_plano_entrega_unidade = Column(
+        Integer,
+        ForeignKey("plano_entrega.id_plano_entrega_unidade"),
+        primary_key=True,
+        index=True,
+        nullable=False,
+    )
+    cod_SIAPE_instituidora = Column(
+        Integer, primary_key=True, index=True, nullable=False
+    )
+    nome_entrega = Column(String, nullable=False)
+    meta_entrega = Column(Integer, nullable=False)
+    tipo_meta = Column(Integer, Enum(TipoMeta), nullable=False)
+    nome_vinculacao_cadeia_valor = Column(String)
+    nome_vinculacao_planejamento = Column(String)
+    percentual_progresso_esperado = Column(Integer)
+    percentual_progresso_realizado = Column(Integer)
+    data_entrega = Column(Date, nullable=False)
+    nome_demandante = Column(String, nullable=False)
+    nome_destinatario = Column(String, nullable=False)
+
+
 class PlanoTrabalho(Base):
-    "Plano de Trabalho"
+    "Plano de Trabalho do participante"
     __tablename__ = "plano_trabalho"
     cod_SIAPE_instituidora = Column(
         Integer, primary_key=True, index=True, nullable=False
@@ -68,7 +115,9 @@ class TipoContribuicao(enum.Enum):
 class Contribuicao(Base):
     "Contribuição para um Plano de Trabalho"
     __tablename__ = "contribuicao"
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    id = Column(
+        Integer, primary_key=True, index=True, autoincrement=True, nullable=False
+    )
     id_plano_trabalho_participante = Column(
         Integer,
         ForeignKey("plano_trabalho.id_plano_trabalho_participante"),
