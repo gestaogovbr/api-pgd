@@ -15,7 +15,6 @@ async def get_plano_trabalho(
             select(models.PlanoTrabalho)
             .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
             .filter_by(id_plano_trabalho_participante=id_plano_trabalho_participante)
-            .first()
         )
     if db_plano_trabalho:
         return db_plano_trabalho
