@@ -55,7 +55,7 @@ class PlanoEntregas(Base):
     )
 
 
-class TipoMeta(enum.Enum):
+class TipoMeta(enum.IntEnum):
     absoluto = 1
     percentual = 2
 
@@ -148,7 +148,7 @@ class PlanoTrabalho(Base):
     )
 
 
-class TipoContribuicao(enum.Enum):
+class TipoContribuicao(enum.IntEnum):
     entrega_propria_unidade = 1
     nao_vinculada = 2
     entrega_outra_unidade = 3
@@ -215,7 +215,7 @@ class Consolidacao(Base):
     )
 
 
-class ModalidadesExecucao(enum.Enum):
+class ModalidadesExecucao(enum.IntEnum):
     presencial = 1
     teletrabalho_parcial = 2
     teletrabalho_integral = 3
