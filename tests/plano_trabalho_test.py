@@ -694,6 +694,7 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
 
     # Prepara o plano de trabalho com os parâmetros informados no teste
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
+    input_pt["id_plano_entrega_unidade"] = id_plano_entrega_unidade
     input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
     input_pt["contribuicoes"][0]["id_entrega"] = id_entrega
 
@@ -707,11 +708,10 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
     )
 
     if tipo_contribuicao == 1:
-        if not (id_plano_entrega_unidade and id_entrega):
+        if not id_entrega:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_msg = (
-                "É necessário informar id_plano_entrega_unidade "
-                "e id_entrega quando tipo_contribuicao == 1"
+                "É necessário informar id_entrega quando tipo_contribuicao == 1"
             )
             assert response.json().get("detail")[0]["msg"] == detail_msg
         elif (
@@ -719,13 +719,12 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
             or id_entrega not in ids_entregas_existentes
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_msg = "Referência a entrega não encontrada"
+            detail_msg = "Referência a id_entrega não encontrada"
             assert response.json().get("detail")[0]["msg"] == detail_msg
-    elif tipo_contribuicao == 2 and (id_plano_entrega_unidade or id_entrega):
+    elif tipo_contribuicao == 2 and id_entrega:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = (
-            "Não se deve informar id_plano_entrega_unidade nem "
-            "id_entrega quando tipo_contribuicao == 2"
+            "Não se deve informar id_entrega quando tipo_contribuicao == 2"
         )
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:

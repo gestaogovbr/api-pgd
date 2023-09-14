@@ -10,7 +10,6 @@
     "contribuicoes": [
         {
             "tipo_contribuicao": 1,
-            "id_plano_entrega_unidade": 1,
             "id_entrega": 1,
             "horas_vinculadas_entrega": 40
         },
