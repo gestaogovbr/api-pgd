@@ -15,6 +15,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     UniqueConstraint,
+    ForeignKeyConstraint
 )
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import relationship
@@ -45,7 +46,13 @@ class PlanoEntregas(Base):
         passive_deletes=True,
         cascade="save-update, merge, delete, delete-orphan",
     )
-
+    __table_args__ = (
+        UniqueConstraint(
+            "cod_SIAPE_instituidora",
+            "id_plano_entrega_unidade",
+            name="_instituidora_plano_entregas_uc",
+        ),
+    )
 
 class TipoMeta(enum.Enum):
     absoluto = 1
@@ -58,14 +65,12 @@ class Entrega(Base):
     id_entrega = Column(Integer, primary_key=True, index=True, autoincrement=True)
     id_plano_entrega_unidade = Column(
         Integer,
-        ForeignKey("plano_entregas.id_plano_entrega_unidade"),
         primary_key=True,
         index=True,
         nullable=False,
     )
     cod_SIAPE_instituidora = Column(
         Integer,
-        ForeignKey("plano_entregas.cod_SIAPE_instituidora"),
         primary_key=True,
         index=True,
         nullable=False,
@@ -83,10 +88,9 @@ class Entrega(Base):
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
     __table_args__ = (
-        UniqueConstraint(
-            "cod_SIAPE_instituidora",
-            "id_plano_entrega_unidade",
-            name="_instituidora_plano_entregas_uc",
+        ForeignKeyConstraint(
+            ["id_plano_entrega_unidade", cod_SIAPE_instituidora],
+            ["plano_entregas.id_plano_entrega_unidade","plano_entregas.cod_SIAPE_instituidora"]
         ),
     )
 
