@@ -15,35 +15,28 @@ class PlanoTrabalho(Base):
     __tablename__ = "plano_trabalho"
     cod_SIAPE_instituidora = Column(Integer, primary_key=True, index=True)
     id_plano_trabalho_participante = Column(Integer, primary_key=True, index=True)
-    situacao = Column(String)
-    cod_unidade = Column(BigInteger, nullable=False)
-    cod_plano = Column(String, nullable=False)
-    matricula_siape = Column(Integer)
-    cpf = Column(String)
-    nome_participante = Column(String)
-    cod_unidade_exercicio = Column(BigInteger)
-    nome_unidade_exercicio = Column(String)
-    modalidade_execucao = Column(Integer)
-    carga_horaria_semanal = Column(Integer)
-    data_inicio = Column(Date)
-    data_fim = Column(Date)
-    carga_horaria_total = Column(Float)
-    data_interrupcao = Column(Date)
-    entregue_no_prazo = Column(Boolean) #TODO Na especificação está como Int e usa 1 e 2 para sim e não. Não seria melhor usar bool?
-    horas_homologadas = Column(Float)
+    id_plano_entrega_unidade = Column(Integer, ForeignKey("plano_entregas.id_plano_entrega_unidade"))
+    cod_SIAPE_unidade_exercicio = Column(Integer)
+    cpf_participante = Column(Integer, ForeignKey("participante.cpf_participante"))
+    data_inicio_plano = Column(Date)
+    data_termino_plano = Column(Date)
+    carga_horaria_total_periodo_plano = Column(Integer)
+    # situacao = Column(String)
+    # cod_unidade = Column(BigInteger, nullable=False)
+    # cod_plano = Column(String, nullable=False)
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime)
-    atividades = relationship(
-        "Atividade",
+    contribuicoes = relationship(
+        "Contribuicao",
         back_populates="plano_trabalho",
         lazy="joined",
         passive_deletes=True,
         cascade="save-update, merge, delete, delete-orphan"
     )
     __table_args__ = (UniqueConstraint(
-        "cod_unidade",
-        "cod_plano",
-        name="_unidade_plano_uc"
+        "cod_SIAPE_instituidora",
+        "id_plano_trabalho_participante",
+        name="_instituidora_plano_trabalho_uc"
     ),)
 
 # trigger = DDL("""
