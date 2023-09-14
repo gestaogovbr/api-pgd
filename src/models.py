@@ -38,6 +38,13 @@ class PlanoEntregas(Base):
     cod_SIAPE_unidade_plano = Column(Integer, nullable=False)
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
+    entregas = relationship(
+        "PlanoEntregas",
+        back_populates="plano_entregas",
+        lazy="joined",
+        passive_deletes=True,
+        cascade="save-update, merge, delete, delete-orphan",
+    )
 
 
 class TipoMeta(enum.Enum):
@@ -75,7 +82,13 @@ class Entrega(Base):
     nome_destinatario = Column(String, nullable=False)
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
-
+    __table_args__ = (
+        UniqueConstraint(
+            "cod_SIAPE_instituidora",
+            "id_plano_entrega_unidade",
+            name="_instituidora_plano_entregas_uc",
+        ),
+    )
 
 class PlanoTrabalho(Base):
     "Plano de Trabalho do participante"
