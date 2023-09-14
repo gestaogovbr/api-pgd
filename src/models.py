@@ -15,7 +15,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     UniqueConstraint,
-    ForeignKeyConstraint
+    ForeignKeyConstraint,
 )
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import relationship
@@ -54,6 +54,7 @@ class PlanoEntregas(Base):
         ),
     )
 
+
 class TipoMeta(enum.Enum):
     absoluto = 1
     percentual = 2
@@ -89,10 +90,14 @@ class Entrega(Base):
     data_insercao = Column(DateTime, nullable=False)
     __table_args__ = (
         ForeignKeyConstraint(
-            ["id_plano_entrega_unidade", cod_SIAPE_instituidora],
-            ["plano_entregas.id_plano_entrega_unidade","plano_entregas.cod_SIAPE_instituidora"]
+            [id_plano_entrega_unidade, cod_SIAPE_instituidora],
+            [
+                "plano_entregas.id_plano_entrega_unidade",
+                "plano_entregas.cod_SIAPE_instituidora",
+            ],
         ),
     )
+
 
 class PlanoTrabalho(Base):
     "Plano de Trabalho do participante"
@@ -103,9 +108,7 @@ class PlanoTrabalho(Base):
     id_plano_trabalho_participante = Column(
         Integer, primary_key=True, index=True, nullable=False
     )
-    id_plano_entrega_unidade = Column(
-        Integer, ForeignKey("plano_entregas.id_plano_entrega_unidade"), nullable=False
-    )
+    id_plano_entrega_unidade = Column(Integer, nullable=False)
     cod_SIAPE_unidade_exercicio = Column(Integer, nullable=False)
     cpf_participante = Column(
         Integer, ForeignKey("status_participante.cpf_participante"), nullable=False
@@ -122,11 +125,25 @@ class PlanoTrabalho(Base):
         passive_deletes=True,
         cascade="save-update, merge, delete, delete-orphan",
     )
+    consolidacoes = relationship(
+        "Consolidacao",
+        back_populates="plano_trabalho",
+        lazy="joined",
+        passive_deletes=True,
+        cascade="save-update, merge, delete, delete-orphan",
+    )
     __table_args__ = (
         UniqueConstraint(
             "cod_SIAPE_instituidora",
             "id_plano_trabalho_participante",
             name="_instituidora_plano_trabalho_uc",
+        ),
+        ForeignKeyConstraint(
+            [id_plano_entrega_unidade, cod_SIAPE_instituidora],
+            [
+                "plano_entregas.id_plano_entrega_unidade",
+                "plano_entregas.cod_SIAPE_instituidora",
+            ],
         ),
     )
 
@@ -143,17 +160,30 @@ class Contribuicao(Base):
     id = Column(
         Integer, primary_key=True, index=True, autoincrement=True, nullable=False
     )
+    cod_SIAPE_instituidora = Column(
+        Integer, primary_key=True, index=True, nullable=False
+    )
     id_plano_trabalho_participante = Column(
         Integer,
-        ForeignKey("plano_trabalho.id_plano_trabalho_participante"),
         nullable=False,
     )
     tipo_contribuicao = Column(Integer, Enum(TipoContribuicao), nullable=False)
     descricao_contribuicao = Column(String)
-    id_entrega = Column(Integer, ForeignKey("entrega.id_entrega"), nullable=False)
+    id_plano_entrega_unidade = Column(Integer, nullable=False)
+    id_entrega = Column(Integer, nullable=False)
     horas_vinculadas = Column(Integer, nullable=False)
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
+    __table_args__ = (
+        ForeignKeyConstraint(
+            [cod_SIAPE_instituidora, id_plano_entrega_unidade, id_entrega],
+            [
+                "entrega.cod_SIAPE_instituidora",
+                "entrega.id_plano_entrega_unidade",
+                "entrega.id_entrega",
+            ],
+        ),
+    )
 
 
 class Consolidacao(Base):
@@ -162,9 +192,11 @@ class Consolidacao(Base):
     id = Column(
         Integer, primary_key=True, index=True, autoincrement=True, nullable=False
     )
+    cod_SIAPE_instituidora = Column(
+        Integer, primary_key=True, index=True, nullable=False
+    )
     id_plano_trabalho_participante = Column(
         Integer,
-        ForeignKey("plano_trabalho.id_plano_trabalho_participante"),
         nullable=False,
     )
     data_inicio_registro = Column(Date, nullable=False)
@@ -172,6 +204,15 @@ class Consolidacao(Base):
     avaliacao_plano_trabalho = Column(Integer)
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
+    __table_args__ = (
+        ForeignKeyConstraint(
+            [cod_SIAPE_instituidora, id_plano_trabalho_participante],
+            [
+                "plano_trabalho.cod_SIAPE_instituidora",
+                "plano_trabalho.id_plano_trabalho_participante",
+            ],
+        ),
+    )
 
 
 class ModalidadesExecucao(enum.Enum):
