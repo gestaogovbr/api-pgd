@@ -36,6 +36,8 @@ class PlanoEntregas(Base):
     avaliacao_plano_entregas = Column(Integer)
     data_avaliacao_plano_entregas = Column(Date)
     cod_SIAPE_unidade_plano = Column(Integer, nullable=False)
+    data_atualizacao = Column(DateTime)
+    data_insercao = Column(DateTime, nullable=False)
 
 
 class TipoMeta(enum.Enum):
@@ -49,13 +51,17 @@ class Entrega(Base):
     id_entrega = Column(Integer, primary_key=True, index=True, autoincrement=True)
     id_plano_entrega_unidade = Column(
         Integer,
-        ForeignKey("plano_entrega.id_plano_entrega_unidade"),
+        ForeignKey("plano_entregas.id_plano_entrega_unidade"),
         primary_key=True,
         index=True,
         nullable=False,
     )
     cod_SIAPE_instituidora = Column(
-        Integer, primary_key=True, index=True, nullable=False
+        Integer,
+        ForeignKey("plano_entregas.cod_SIAPE_instituidora"),
+        primary_key=True,
+        index=True,
+        nullable=False,
     )
     nome_entrega = Column(String, nullable=False)
     meta_entrega = Column(Integer, nullable=False)
@@ -67,6 +73,8 @@ class Entrega(Base):
     data_entrega = Column(Date, nullable=False)
     nome_demandante = Column(String, nullable=False)
     nome_destinatario = Column(String, nullable=False)
+    data_atualizacao = Column(DateTime)
+    data_insercao = Column(DateTime, nullable=False)
 
 
 class PlanoTrabalho(Base):
@@ -83,7 +91,7 @@ class PlanoTrabalho(Base):
     )
     cod_SIAPE_unidade_exercicio = Column(Integer, nullable=False)
     cpf_participante = Column(
-        Integer, ForeignKey("participante.cpf_participante"), nullable=False
+        Integer, ForeignKey("status_participante.cpf_participante"), nullable=False
     )
     data_inicio_plano = Column(Date, nullable=False)
     data_termino_plano = Column(Date, nullable=False)
@@ -125,8 +133,46 @@ class Contribuicao(Base):
     )
     tipo_contribuicao = Column(Integer, Enum(TipoContribuicao), nullable=False)
     descricao_contribuicao = Column(String)
-    id_entrega = Column(Integer, ForeignKey("Entregas.id_entrega"), nullable=False)
+    id_entrega = Column(Integer, ForeignKey("entrega.id_entrega"), nullable=False)
     horas_vinculadas = Column(Integer, nullable=False)
+    data_atualizacao = Column(DateTime)
+    data_insercao = Column(DateTime, nullable=False)
+
+
+class Consolidacao(Base):
+    "Consolidação (registro) de execução do Plano de Trabalho"
+    __tablename__ = "consolidacao"
+    id = Column(
+        Integer, primary_key=True, index=True, autoincrement=True, nullable=False
+    )
+    id_plano_trabalho_participante = Column(
+        Integer,
+        ForeignKey("plano_trabalho.id_plano_trabalho_participante"),
+        nullable=False,
+    )
+    data_inicio_registro = Column(Date, nullable=False)
+    data_fim_registro = Column(Date, nullable=False)
+    avaliacao_plano_trabalho = Column(Integer)
+    data_atualizacao = Column(DateTime)
+    data_insercao = Column(DateTime, nullable=False)
+
+
+class ModalidadesExecucao(enum.Enum):
+    presencial = 1
+    teletrabalho_parcial = 2
+    teletrabalho_integral = 3
+    teletrabalho_no_exterior = 4
+
+
+class StatusParticipante(Base):
+    "Status dos Participantes"
+    __tablename__ = "status_participante"
+    cpf_participante = Column(Integer, primary_key=True, nullable=False)
+    participante_ativo_inativo_pgd = Column(Integer, nullable=False)
+    matricula_siape = Column(Integer)
+    modalidade_execucao = Column(Integer, Enum(ModalidadesExecucao), nullable=False)
+    jornada_trabalho_semanal = Column(Integer, nullable=False)
+    data_envio = Column(Date, nullable=False)
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
 
