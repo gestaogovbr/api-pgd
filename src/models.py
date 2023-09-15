@@ -20,7 +20,7 @@ from sqlalchemy import (
 from sqlalchemy import event, DDL
 from sqlalchemy.orm import relationship
 
-from users import Base
+from db_config import Base
 
 
 class PlanoEntregas(Base):

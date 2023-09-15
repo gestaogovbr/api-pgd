@@ -11,11 +11,8 @@ from fief_client import FiefUserInfo
 from sqlalchemy.orm import Session
 
 import schemas, crud
-from users import (
-    get_db,
-    auth_backend,
-    create_db_and_tables,
-)
+from db_config import get_db, create_db_and_tables
+from users import auth_backend
 
 with open("../docs/description.md", "r", encoding="utf-8") as f:
     description = f.read()
