@@ -36,7 +36,10 @@ class PlanoTrabalhoSchema(BaseModel):
     carga_horaria_total_periodo_plano: int = Field(
         title="Carga horária total do período do plano de trabalho"
     )
-    contribuicoes = Optional[List[ContribuicoesSchema]]
+    contribuicoes: Optional[List[ContribuicoesSchema]] = Field(
+        title="Contribuições",
+        description="Lista de Contribuições planejadas para o Plano de Trabalho"
+    )
 
     # Validações
     # @root_validator
