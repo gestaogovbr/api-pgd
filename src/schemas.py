@@ -1,3 +1,10 @@
+"""Módulo que define os esquemas de validação dos dados recebidos pela
+API.
+
+A principal ferramenta de validação de dados usada no FastAPI é o
+Pydantic: https://docs.pydantic.dev/1.10/
+"""
+
 from typing import List, Optional
 from pydantic import BaseModel, Field
 from pydantic import validator, root_validator # deprecated in 2.x

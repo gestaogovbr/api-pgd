@@ -1,5 +1,6 @@
-"""The api.py module defines all the routes for the API.
+"""Definição das rotas, endpoints e seu comportamento na API.
 """
+
 import os
 from typing import Union
 

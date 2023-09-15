@@ -1,5 +1,5 @@
 """Definições dos modelos de dados da API que serão persistidos no
-banco pelo ORM do SQLAlchemy.
+banco pelo mapeamento objeto-relacional (ORM) do SQLAlchemy.
 """
 import enum
 

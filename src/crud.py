@@ -1,3 +1,6 @@
+"""Funções para ler, gravar, atualizar ou apagar dados no banco de dados.
+"""
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text as sa_text
