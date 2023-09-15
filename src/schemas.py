@@ -7,8 +7,24 @@ from enum import IntEnum
 from models import ModalidadesExecucao
 
 class ContribuicoesSchema(BaseModel):
-    pass
-
+    tipo_contribuicao: int = Field(
+        title="Tipo de contribuição",
+        description="Tipos de contribuição\n"
+            "\n"
+            "* 1 - Vinculados a entregas da própria unidade;\n"
+            "* 2 - Não vinculados diretamente a entregas da própria unidade,\n"
+            "mas necessários ao adequado funcionamento administrativo ou à gestão de equipes e entregas;\n"
+            "* 3 - Vinculados a entregas de outras unidades, órgãos ou entidades diversos\n"
+    )
+    descricao_contribuicao: Optional[str] = Field(
+        title="Descrição da Contribuição",
+    )
+    id_entrega: Optional[int] = Field(
+        title="Id da Entrega",
+    )
+    horas_vinculadas_entrega: int = Field(
+        title="Horas vinculadas à entrega",
+    )
 class PlanoTrabalhoSchema(BaseModel):
     cod_SIAPE_instituidora: int = Field(
         title="Código SIAPE da organização que instituiu o PGD",
