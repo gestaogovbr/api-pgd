@@ -13,7 +13,8 @@ from enum import IntEnum
 
 from models import ModalidadesExecucao
 
-class ContribuicoesSchema(BaseModel):
+
+class ContribuicaoSchema(BaseModel):
     tipo_contribuicao: int = Field(
         title="Tipo de contribuição",
         description="Tipos de contribuição\n"
@@ -32,6 +33,21 @@ class ContribuicoesSchema(BaseModel):
     horas_vinculadas_entrega: int = Field(
         title="Horas vinculadas à entrega",
     )
+
+
+class ConsolidacaoSchema(BaseModel):
+    data_inicio_registro: date = Field(
+        title="Data de início do registro"
+    )
+    data_fim_registro: date = Field(
+        title="Data de fim do registro"
+    )
+    avaliacao_plano_trabalho: Optional[int] = Field(
+        title="Avaliação do plano de trabalho",
+        description="Os valores devem estar entre 1 e 5."
+    )
+
+
 class PlanoTrabalhoSchema(BaseModel):
     cod_SIAPE_instituidora: int = Field(
         title="Código SIAPE da organização que instituiu o PGD",
@@ -59,9 +75,13 @@ class PlanoTrabalhoSchema(BaseModel):
     carga_horaria_total_periodo_plano: int = Field(
         title="Carga horária total do período do plano de trabalho"
     )
-    contribuicoes: Optional[List[ContribuicoesSchema]] = Field(
+    contribuicoes: Optional[List[ContribuicaoSchema]] = Field(
         title="Contribuições",
-        description="Lista de Contribuições planejadas para o Plano de Trabalho"
+        description="Lista de Contribuições planejadas para o Plano de Trabalho."
+    )
+    consolidacoes: Optional[List[ConsolidacaoSchema]] = Field(
+        title="Consolidações",
+        description="Lista de Consolidações (registros) de execução do Plano de Trabalho."
     )
 
     # Validações
