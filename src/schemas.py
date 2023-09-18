@@ -149,4 +149,4 @@ class PlanoTrabalhoSchema(BaseModel):
     #     return horas_homologadas
 
     class Config:
-        orm_mode = True
+        from_attributes = True

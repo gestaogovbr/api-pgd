@@ -40,7 +40,7 @@ class PlanoEntregas(Base):
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
     entregas = relationship(
-        "PlanoEntregas",
+        "Entrega",
         back_populates="plano_entregas",
         lazy="joined",
         passive_deletes=True,
@@ -63,7 +63,9 @@ class TipoMeta(enum.IntEnum):
 class Entrega(Base):
     "Entrega"
     __tablename__ = "entrega"
-    id_entrega = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id_entrega = Column(
+        Integer, primary_key=True, index=True, nullable=False, autoincrement=True
+    )
     id_plano_entrega_unidade = Column(
         Integer,
         primary_key=True,
@@ -88,6 +90,11 @@ class Entrega(Base):
     nome_destinatario = Column(String, nullable=False)
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
+    plano_entregas = relationship(
+        "PlanoEntregas",
+        back_populates="entregas",
+        lazy="joined",
+    )
     __table_args__ = (
         ForeignKeyConstraint(
             [id_plano_entrega_unidade, cod_SIAPE_instituidora],
@@ -174,7 +181,19 @@ class Contribuicao(Base):
     horas_vinculadas = Column(Integer, nullable=False)
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
+    plano_trabalho = relationship(
+        "PlanoTrabalho",
+        back_populates="contribuicoes",
+        lazy="joined",
+    )
     __table_args__ = (
+        ForeignKeyConstraint(
+            [cod_SIAPE_instituidora, id_plano_trabalho_participante],
+            [
+                "plano_trabalho.cod_SIAPE_instituidora",
+                "plano_trabalho.id_plano_trabalho_participante",
+            ],
+        ),
         ForeignKeyConstraint(
             [cod_SIAPE_instituidora, id_plano_entrega_unidade, id_entrega],
             [
@@ -204,6 +223,11 @@ class Consolidacao(Base):
     avaliacao_plano_trabalho = Column(Integer)
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
+    plano_trabalho = relationship(
+        "PlanoTrabalho",
+        back_populates="consolidacoes",
+        lazy="joined",
+    )
     __table_args__ = (
         ForeignKeyConstraint(
             [cod_SIAPE_instituidora, id_plano_trabalho_participante],
