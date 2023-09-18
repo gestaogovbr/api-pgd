@@ -14,11 +14,12 @@ async def get_plano_trabalho(
 ):
     "Traz um plano de trabalho a partir do banco de dados."
     async for session in db_session:
-        db_plano_trabalho = session.execute(
+        result = await session.execute(
             select(models.PlanoTrabalho)
             .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
             .filter_by(id_plano_trabalho_participante=id_plano_trabalho_participante)
         )
+        db_plano_trabalho = result.unique().scalar_one()
     if db_plano_trabalho:
         return db_plano_trabalho
     return None

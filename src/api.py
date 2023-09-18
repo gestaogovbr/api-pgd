@@ -3,6 +3,7 @@
 
 import os
 from typing import Union
+import asyncio
 
 from fastapi import Depends, FastAPI, HTTPException, status, Header
 from fastapi.openapi.utils import get_openapi
@@ -193,10 +194,10 @@ async def get_plano_trabalho(
         cod_SIAPE_instituidora=user["fields"]["cod_SIAPE_instituidora"],
         id_plano_trabalho_participante=id_plano_trabalho_participante,
     )
-    if db_plano_trabalho is None:
+    if not db_plano_trabalho:
         raise HTTPException(404, detail="Plano de trabalho não encontrado")
-    plano_trabalho = schemas.PlanoTrabalhoSchema.from_orm(db_plano_trabalho)
-    return plano_trabalho.__dict__
+    # plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho.__dict__)
+    return db_plano_trabalho.__dict__
 
 
 # @app.post("/truncate_pts_atividades")
