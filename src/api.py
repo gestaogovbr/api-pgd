@@ -3,15 +3,17 @@
 
 import os
 from typing import Union
-import asyncio
+import json
 
 from fastapi import Depends, FastAPI, HTTPException, status, Header
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
 from fief_client import FiefUserInfo
 from sqlalchemy.orm import Session
+from pydantic import ValidationError
 
-import schemas, crud
+import schemas
+import crud
 from db_config import get_db, create_db_and_tables
 from users import auth_backend
 
@@ -57,45 +59,86 @@ async def docs_redirect(accept: Union[str, None] = Header(default="text/html")):
     )
 
 
-# @app.put(
-#     "/plano_trabalho/{cod_plano}",
-#     summary="Cria ou substitui plano de trabalho",
-#     response_model=schemas.PlanoTrabalhoSchema,
-# )
-# async def create_or_update_plano_trabalho(
-#     cod_plano: str,
-#     plano_trabalho: schemas.PlanoTrabalhoSchema,
-#     db: Session = Depends(get_db),
-#     user: User = Depends(auth_backend.authenticated(scope=["openid", "required_scope"])),
-# ):
-#     """Cria um novo plano de trabalho ou, se existente, substitui um
-#     plano de trabalho por um novo com os dados informados."""
-#     # Validações da entrada conforme regras de negócio
-#     if cod_plano != plano_trabalho.cod_plano:
-#         raise HTTPException(
-#             status.HTTP_422_UNPROCESSABLE_ENTITY,
-#             detail="Parâmetro cod_plano diferente do conteúdo do JSON",
-#         )
+@app.get(
+    "/organizacao/{cod_SIAPE_instituidora}/plano_trabalho/{id_plano_trabalho_participante}",
+    summary="Consulta plano de trabalho",
+    response_model=schemas.PlanoTrabalhoSchema,
+    tags=["pgd"],
+)
+async def get_plano_trabalho(
+    cod_SIAPE_instituidora: int,
+    id_plano_trabalho_participante: int,
+    db: Session = Depends(get_db),
+    user: FiefUserInfo = Depends(auth_backend.current_user()),
+):
+    "Consulta o plano de trabalho com o código especificado."
+    db_plano_trabalho = await crud.get_plano_trabalho(
+        db_session=db,
+        cod_SIAPE_instituidora=user["fields"]["cod_SIAPE_instituidora"],
+        id_plano_trabalho_participante=id_plano_trabalho_participante,
+    )
+    if not db_plano_trabalho:
+        raise HTTPException(404, detail="Plano de trabalho não encontrado")
+    # plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho.__dict__)
+    return db_plano_trabalho.__dict__
 
-#     db_plano_trabalho = crud.get_plano_trabalho(db, user.cod_unidade, cod_plano)
-#     if db_plano_trabalho is None:  # create
-#         try:
-#             novo_plano_trabalho = schemas.PlanoTrabalhoSchema(**plano_trabalho.dict())
-#             crud.create_plano_tabalho(db, novo_plano_trabalho, user.cod_unidade)
-#         except ValidationError as e:
-#             raise HTTPException(
-#                 status.HTTP_422_UNPROCESSABLE_ENTITY, detail=json.loads(e.json())
-#             ) from e
-#     else:  # update
-#         if db_plano_trabalho.cod_unidade == user.cod_unidade:
-#             crud.update_plano_trabalho(db, plano_trabalho, user.cod_unidade)
-#         else:
-#             raise HTTPException(
-#                 status.HTTP_403_FORBIDDEN,
-#                 detail="Usuário não pode alterar Plano de Trabalho"
-#                 + " de outra unidade.",
-#             )
-#     return plano_trabalho
+
+@app.put(
+    "/organizacao/{cod_SIAPE_instituidora}/plano_trabalho/{id_plano_trabalho_participante}",
+    summary="Cria ou substitui plano de trabalho",
+    response_model=schemas.PlanoTrabalhoSchema,
+    tags=["pgd"],
+)
+async def create_or_update_plano_trabalho(
+    cod_SIAPE_instituidora: int,
+    id_plano_trabalho_participante: int,
+    plano_trabalho: schemas.PlanoTrabalhoSchema,
+    db: Session = Depends(get_db),
+    user: FiefUserInfo = Depends(auth_backend.current_user()),
+):
+    """Cria um novo plano de trabalho ou, se existente, substitui um
+    plano de trabalho por um novo com os dados informados."""
+
+    # Validações de permissão
+    if cod_SIAPE_instituidora != user["fields"]["cod_SIAPE_instituidora"]:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+        )
+    if cod_SIAPE_instituidora != plano_trabalho.cod_SIAPE_instituidora:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Parâmetro cod_SIAPE_instituidora diferente do conteúdo do JSON",
+        )
+
+    # Validações do esquema
+    try:
+        novo_plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(plano_trabalho)
+    except Exception as exception:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=json.loads(e.json())
+        ) from exception
+
+    # Verifica se já existe
+    db_plano_trabalho = await crud.get_plano_trabalho(
+        db_session=db,
+        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+        id_plano_trabalho_participante=id_plano_trabalho_participante,
+    )
+
+    if not db_plano_trabalho:  # create
+        crud.create_plano_trabalho(
+            db_session=db,
+            cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+            plano_trabalho=novo_plano_trabalho,
+        )
+    else:  # update
+        crud.update_plano_trabalho(
+            db_session=db,
+            cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+            plano_trabalho=novo_plano_trabalho,
+        )
+    return novo_plano_trabalho
 
 
 # @app.patch(
@@ -174,31 +217,6 @@ async def docs_redirect(accept: Union[str, None] = Header(default="text/html")):
 
 #     crud.update_plano_trabalho(db, merged_schema, user.cod_unidade)
 #     return merged_plano_trabalho
-
-
-@app.get(
-    "/organizacao/{cod_SIAPE_instituidora}/plano_trabalho/{id_plano_trabalho_participante}",
-    summary="Consulta plano de trabalho",
-    response_model=schemas.PlanoTrabalhoSchema,
-    tags=["pgd"],
-)
-async def get_plano_trabalho(
-    cod_SIAPE_instituidora: int,
-    id_plano_trabalho_participante: int,
-    db: Session = Depends(get_db),
-    user: FiefUserInfo = Depends(auth_backend.current_user()),
-):
-    "Consulta o plano de trabalho com o código especificado."
-    db_plano_trabalho = await crud.get_plano_trabalho(
-        db_session=db,
-        cod_SIAPE_instituidora=user["fields"]["cod_SIAPE_instituidora"],
-        id_plano_trabalho_participante=id_plano_trabalho_participante,
-    )
-    if not db_plano_trabalho:
-        raise HTTPException(404, detail="Plano de trabalho não encontrado")
-    # plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho.__dict__)
-    return db_plano_trabalho.__dict__
-
 
 # @app.post("/truncate_pts_atividades")
 # async def truncate_pts_atividades(
