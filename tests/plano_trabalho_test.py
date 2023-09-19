@@ -80,7 +80,7 @@ def test_create_plano_trabalho_unidade_nao_permitida(
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json().get("detail", None) == "Usuário sem permissão na unidade."
+    assert response.json().get("detail", None) == "Usuário não tem permissão na cod_SIAPE_instituidora informada"
 
 
 def test_update_plano_trabalho(
