@@ -78,7 +78,9 @@ async def get_plano_trabalho(
         id_plano_trabalho_participante=id_plano_trabalho_participante,
     )
     if not db_plano_trabalho:
-        raise HTTPException(404, detail="Plano de trabalho não encontrado")
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail="Plano de trabalho não encontrado"
+        )
     # plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho.__dict__)
     return db_plano_trabalho.__dict__
 
@@ -163,7 +165,9 @@ async def get_plano_entrega(
         id_plano_entrega_unidade=id_plano_entrega_unidade,
     )
     if not db_plano_entrega:
-        raise HTTPException(404, detail="Plano de entregas não encontrado")
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail="Plano de entregas não encontrado"
+        )
     # plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho.__dict__)
     return db_plano_entrega.__dict__
 
@@ -245,12 +249,21 @@ async def get_plano_entrega(
 #     crud.update_plano_trabalho(db, merged_schema, user.cod_unidade)
 #     return merged_plano_trabalho
 
-# @app.post("/truncate_pts_atividades")
-# async def truncate_pts_atividades(
-#     db: Session = Depends(get_db),
-#     user: User = Depends(api_users.current_user(active=True, superuser=True)),
-# ):
-#     crud.truncate_pts_atividades(db)
+
+@app.post("/truncate_plano_trabalho", tags=["pgd"])
+async def truncate_plano_trabalho(
+    db: Session = Depends(get_db),
+    user: FiefUserInfo = Depends(auth_backend.current_user()),
+):
+    """Apaga a tabela plano_trabalho.
+    Usado no ambiente de testes de integração contínua.
+    """
+    if not user["is_superuser"]:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED, detail="Usuário sem permissão para a operação"
+        )
+    result = await crud.truncate_plano_trabalho(db)
+    return {"detail": "Tabela plano_trabalho excluída"}
 
 
 # Esconde alguns métodos da interface OpenAPI
