@@ -74,11 +74,7 @@ class PlanoTrabalhoSchema(BaseModel):
     )
     carga_horaria_total_periodo_plano: int = Field(
         title="Carga horária total do período do plano de trabalho"
-    )
-    contribuicoes: Optional[List[ContribuicaoSchema]] = Field(
-        title="Contribuições",
-        description="Lista de Contribuições planejadas para o Plano de Trabalho."
-    )
+    ) 
     consolidacoes: Optional[List[ConsolidacaoSchema]] = Field(
         title="Consolidações",
         description="Lista de Consolidações (registros) de execução do Plano de Trabalho."
@@ -147,6 +143,73 @@ class PlanoTrabalhoSchema(BaseModel):
     #     if horas_homologadas <= 0:
     #         raise ValueError("Horas homologadas devem ser maior que zero")
     #     return horas_homologadas
+
+class EntregaSchema(BaseModel):
+    id_entrega: int = Field(
+        title="Id da entrega",
+    )
+    nome_entrega: str = Field(
+        title="Nome da entrega",
+    )
+    meta_entrega: int = Field(
+        title="Meta estipulada na inclusão no plano",
+    )
+    tipo_meta: int = Field(
+        title="Tipo da meta",
+        description="Campo com o tipo de meta que será informada em 'meta_entrega'\n"
+            "\n"
+            "* 1 - Absoluto;\n"
+            "* 2 - Percentual\n"
+    )
+    nome_vinculacao_cadeia_valor: Optional[str] = Field(
+        title="Nome da vinculação de cadeia de valor",
+    )
+    nome_vinculacao_planejamento: Optional[str] = Field(
+        title="Nome da vinculação do planejamento",
+    )
+    percentual_progresso_esperado: Optional[int] = Field(
+        title="Percentual de progresso esperado",
+    )
+    percentual_progresso_realizado: Optional[int] = Field(
+        title="Percentual de progresso realizado",
+    )
+    data_entrega: Optional[date] = Field(
+        title="Data da entrega",
+    )
+    nome_demandante: Optional[str] = Field(
+        title="Nome do demandante",
+    )
+    nome_destinatario: Optional[str] = Field(
+        title="Nome do destinatário",
+    )
+class PlanoEntregaSchema(BaseModel):
+    cod_SIAPE_instituidora: int = Field(
+        title="Código SIAPE da organização que instituiu o PGD",
+        description="Dado que virá do cadastro do usuário que envia o plano"
+    )
+    id_plano_entrega_unidade: int = Field(
+        title="Id do plano de entregas da unidade",
+    )
+    data_inicio_plano_entregas: date = Field(
+        title="Data de início estipulada no plano de entregas",
+    )
+    data_termino_plano_entregas: date = Field(
+        title="Data de término do plano de entregas",
+    )
+    avaliacao_plano_entregas: Optional[int] = Field(
+        title="Avaliação do plano de entregas",
+        description="Número: 1-5",
+    )
+    data_avaliacao_plano_entregas: Optional[date] = Field(
+        title="Data de avaliação do plano de entregas",
+    )
+    cod_SIAPE_unidade_plano: int = Field(
+        title="Código SIAPE da unidade do plano de entregas",
+    )
+    entregas: Optional[List[EntregaSchema]] = Field(
+        title="Entregas",
+        description="Lista de entregas associadas ao Plano de Entregas"
+    )
 
     class Config:
         from_attributes = True
