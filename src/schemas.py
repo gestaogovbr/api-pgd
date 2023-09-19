@@ -75,6 +75,10 @@ class PlanoTrabalhoSchema(BaseModel):
     carga_horaria_total_periodo_plano: int = Field(
         title="Carga horária total do período do plano de trabalho"
     ) 
+    contribuicoes: Optional[List[ContribuicaoSchema]] = Field(
+        title="Contribuições",
+        description="Lista de Contribuições planejadas para o Plano de Trabalho."
+    )
     consolidacoes: Optional[List[ConsolidacaoSchema]] = Field(
         title="Consolidações",
         description="Lista de Consolidações (registros) de execução do Plano de Trabalho."
