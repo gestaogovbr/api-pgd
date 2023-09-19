@@ -63,7 +63,7 @@ async def docs_redirect(accept: Union[str, None] = Header(default="text/html")):
     "/organizacao/{cod_SIAPE_instituidora}/plano_trabalho/{id_plano_trabalho_participante}",
     summary="Consulta plano de trabalho",
     response_model=schemas.PlanoTrabalhoSchema,
-    tags=["pgd"],
+    tags=["plano de trabalho"],
 )
 async def get_plano_trabalho(
     cod_SIAPE_instituidora: int,
@@ -89,7 +89,7 @@ async def get_plano_trabalho(
     "/organizacao/{cod_SIAPE_instituidora}/plano_trabalho/{id_plano_trabalho_participante}",
     summary="Cria ou substitui plano de trabalho",
     response_model=schemas.PlanoTrabalhoSchema,
-    tags=["pgd"],
+    tags=["plano de trabalho"],
 )
 async def create_or_update_plano_trabalho(
     cod_SIAPE_instituidora: int,
@@ -150,7 +150,7 @@ async def create_or_update_plano_trabalho(
     "/organizacao/{cod_SIAPE_instituidora}/plano_entrega/{id_plano_entrega_unidade}",
     summary="Consulta plano de entregas",
     response_model=schemas.PlanoEntregaSchema,
-    tags=["pgd"],
+    tags=["plano de entregas"],
 )
 async def get_plano_entrega(
     cod_SIAPE_instituidora: int,
@@ -250,7 +250,7 @@ async def get_plano_entrega(
 #     return merged_plano_trabalho
 
 
-@app.post("/truncate_plano_trabalho", tags=["pgd"])
+@app.post("/truncate_plano_trabalho", tags=["ci/cd"])
 async def truncate_plano_trabalho(
     db: Session = Depends(get_db),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
