@@ -111,5 +111,5 @@ async def truncate_plano_trabalho(
     """
     async for session in db_session:
         result = await session.execute(text("TRUNCATE plano_trabalho CASCADE;"))
-        result.commit()
+        await session.commit()
         return result
