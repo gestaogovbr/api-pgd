@@ -345,7 +345,7 @@ def test_get_pe_inexistente(
     )
     assert response.status_code == 404
 
-    assert response.json().get("detail", None) == "Plano de entrega não encontrado"
+    assert response.json().get("detail", None) == "Plano de entregas não encontrado"
 
 
 @pytest.mark.parametrize(
