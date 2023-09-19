@@ -206,18 +206,20 @@ def header_not_logged_in() -> dict:
 
 @pytest.fixture(scope="module")
 def header_admin(register_admin, admin_credentials: dict) -> dict:
+    """Authenticate in the API as an admin and return a dict with bearer
+    header parameter to be passed to API's requests."""
     return prepare_header(username=admin_credentials["username"])
 
 
 @pytest.fixture(scope="module")
 def header_usr_1(register_user_1, user1_credentials: dict) -> dict:
     """Authenticate in the API as user1 and return a dict with bearer
-    header parameter to be passed to apis requests."""
+    header parameter to be passed to API's requests."""
     return prepare_header(username=user1_credentials["username"])
 
 
 @pytest.fixture(scope="module")
 def header_usr_2(register_user_2, user2_credentials: dict) -> dict:
     """Authenticate in the API as user2 and return a dict with bearer
-    header parameter to be passed to apis requests."""
+    header parameter to be passed to API's requests."""
     return prepare_header(username=user2_credentials["username"])
