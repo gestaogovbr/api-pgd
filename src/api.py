@@ -140,6 +140,30 @@ async def create_or_update_plano_trabalho(
         )
     return novo_plano_trabalho
 
+@app.get(
+    "/organizacao/{cod_SIAPE_instituidora}/plano_entrega/{id_plano_entrega_unidade}",
+    summary="Consulta plano de entregas",
+    response_model=schemas.PlanoEntregaSchema,
+    tags=["pgd"],
+)
+async def get_plano_entrega(
+    cod_SIAPE_instituidora: int,
+    id_plano_entrega_unidade: int,
+    db: Session = Depends(get_db),
+    user: FiefUserInfo = Depends(auth_backend.current_user()),
+):
+    "Consulta o plano de entregas com o código especificado."
+    db_plano_entrega = await crud.get_plano_entrega(
+        db_session=db,
+        cod_SIAPE_instituidora=user["fields"]["cod_SIAPE_instituidora"],
+        id_plano_entrega_unidade=id_plano_entrega_unidade,
+    )
+    if not db_plano_entrega:
+        raise HTTPException(404, detail="Plano de entregas não encontrado")
+    # plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho.__dict__)
+    return db_plano_entrega.__dict__
+
+
 
 # @app.patch(
 #     "/plano_trabalho/{cod_plano}",
