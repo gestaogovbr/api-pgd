@@ -100,7 +100,10 @@ async def create_or_update_plano_trabalho(
     plano de trabalho por um novo com os dados informados."""
 
     # Validações de permissão
-    if cod_SIAPE_instituidora != user["fields"]["cod_SIAPE_instituidora"]:
+    if (
+        cod_SIAPE_instituidora != user["fields"]["cod_SIAPE_instituidora"]
+        and not user["is_superuser"]
+    ):
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
@@ -140,6 +143,7 @@ async def create_or_update_plano_trabalho(
         )
     return novo_plano_trabalho
 
+
 @app.get(
     "/organizacao/{cod_SIAPE_instituidora}/plano_entrega/{id_plano_entrega_unidade}",
     summary="Consulta plano de entregas",
@@ -162,7 +166,6 @@ async def get_plano_entrega(
         raise HTTPException(404, detail="Plano de entregas não encontrado")
     # plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho.__dict__)
     return db_plano_entrega.__dict__
-
 
 
 # @app.patch(
