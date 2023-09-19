@@ -145,6 +145,28 @@ class FiefAdminHelper:
             data=data,
         )
 
+    def patch_user(self, email: str, data: dict) -> httpx.Response:
+        """Changes one or more properties of a given user.
+
+        Args:
+            email (str): User's email.
+            data (dict): User's data structure to change.
+                See Fief's admin Swagger interface for an example.
+                https://docs.fief.dev/api/#openapi-swagger
+
+        Returns:
+            httpx.Response: The Response object returned by API call.
+        """
+        user_search = self.search_user(email=email).json()
+        if user_search["count"] < 1:
+            raise ValueError(f"Nenhum usuário com o e-mail {email} foi encontrado.")
+        user = user_search["results"][0]
+        return self.fief_admin_call(
+            method="PATCH",
+            local_url=f"users/{user['id']}",
+            data=data,
+        )
+
     def delete_user(self, email: str) -> httpx.Response:
         """Deletes an existing user with the specified email.
 

@@ -34,3 +34,11 @@ response = fief_admin.create_user_field(
     field_type="INTEGER",
     default_value=0,
 )
+response.raise_for_status()
+
+# Set superuser field for the admin user
+response = fief_admin.patch_user(
+    email=os.environ.get("FIEF_MAIN_USER_EMAIL"),
+    data={"is_superuser": True}
+)
+response.raise_for_status()
