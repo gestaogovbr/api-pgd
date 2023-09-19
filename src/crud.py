@@ -3,7 +3,7 @@
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import text as sa_text
+from sqlalchemy.sql import text
 import models, schemas
 
 
@@ -25,7 +25,7 @@ async def get_plano_trabalho(
     return None
 
 
-def create_plano_trabalho(
+async def create_plano_trabalho(
     db_session: Session,
     cod_SIAPE_instituidora: int,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
@@ -52,7 +52,7 @@ def create_plano_trabalho(
     # return schemas.PlanoTrabalhoSchema.from_orm(db_plano_trabalho)
 
 
-def update_plano_trabalho(
+async def update_plano_trabalho(
     db_session: Session,
     cod_SIAPE_instituidora: int,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
@@ -82,6 +82,7 @@ def update_plano_trabalho(
     # db.refresh(db_plano_trabalho)
     # return db_plano_trabalho
 
+
 async def get_plano_entrega(
     db_session: Session,
     cod_SIAPE_instituidora: int,
@@ -99,10 +100,16 @@ async def get_plano_entrega(
         return db_plano_entrega
     return None
 
-# Following methods only for test purpose
 
+# The following methods are only for test in CI/CD environment
 
-def truncate_pts_atividades(db: Session):
-    "Trunca as tabelas principais. Útil para zerar BD para executar testes."
-    db.execute(sa_text("TRUNCATE TABLE plano_trabalho CASCADE"))
-    db.commit()
+async def truncate_plano_trabalho(
+    db_session: Session,
+):
+    """Apaga a tabela plano_trabalho.
+    Usado no ambiente de testes de integração contínua.
+    """
+    async for session in db_session:
+        result = await session.execute(text("TRUNCATE plano_trabalho CASCADE;"))
+        result.commit()
+        return result
