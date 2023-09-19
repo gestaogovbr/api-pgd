@@ -82,6 +82,22 @@ def update_plano_trabalho(
     # db.refresh(db_plano_trabalho)
     # return db_plano_trabalho
 
+async def get_plano_entrega(
+    db_session: Session,
+    cod_SIAPE_instituidora: int,
+    id_plano_entrega_unidade: int,
+):
+    "Traz um plano de entregas a partir do banco de dados."
+    async for session in db_session:
+        result = await session.execute(
+            select(models.PlanoEntregas)
+            .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
+            .filter_by(id_plano_entrega_unidade=id_plano_entrega_unidade)
+        )
+        db_plano_entrega = result.unique().scalar_one_or_none()
+    if db_plano_entrega:
+        return db_plano_entrega
+    return None
 
 # Following methods only for test purpose
 
