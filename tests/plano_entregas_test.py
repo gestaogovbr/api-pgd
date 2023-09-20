@@ -169,14 +169,14 @@ def test_create_huge_plano_entrega(
     truncate_pe,
     client: Client,
 ):
-    def create_huge_entrega(id_entrega: str):
+    def create_huge_entrega(id_entrega: int):
         new_entrega = input_pe["entregas"][0].copy()
         new_entrega["id_entrega"] = id_entrega
 
         return new_entrega
 
     for i in range(200):
-        input_pe["entregas"].append(create_huge_entrega(f"unique-key-{i}"))
+        input_pe["entregas"].append(create_huge_entrega(i))
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
