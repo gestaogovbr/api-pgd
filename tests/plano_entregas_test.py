@@ -69,21 +69,23 @@ def test_update_plano_entregas(
     truncate_pe,
     client: Client,
 ):
-    """Tenta criar um novo plano de entregas e atualizar alguns campos
-    A fixture example_pe cria um novo Plano de Entrega na API
-    Altera um campo do PE e reenvia pra API (update)
+    """Tenta criar um novo plano de entregas e atualizar alguns campos.
+    A fixture example_pe cria um novo Plano de Entrega na API.
+    O teste altera um campo do PE e reenvia pra API (update).
     """
 
     input_pe["avaliacao_plano_entregas"] = 3
     input_pe["data_avaliacao_plano_entregas"] = "2023-08-15"
-    client.put(
+    response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
 
-    # TODO: incluir assert
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["avaliacao_plano_entregas"] == 3
+    assert response.json()["data_avaliacao_plano_entregas"] == "2023-08-15"
 
     # Consulta API para conferir se a alteração foi persistida
     response = client.get(
