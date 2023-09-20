@@ -139,20 +139,23 @@ def test_create_plano_entrega_missing_mandatory_fields(
     client: Client,
 ):
     """Tenta criar um plano de entregas, faltando campos obrigatórios.
-    Tem que ser um plano de entregas novo, pois na atualização de um
-    plano de trabalho existente, o campo que ficar faltando será
-    interpretado como um campo que não será atualizado, ainda que seja
-    obrigatório para a criação.
+    Na atualização com PUT, ainda assim é necessário informar todos os
+    campos obrigatórios, uma vez que o conteúdo será substituído.
     """
     offset, field_list = missing_fields
-    example_pe = input_pe.copy()
     for field in field_list:
         del input_pe[field]
 
-    input_pe["id_plano_entrega_unidade"] = 1800 + offset  # precisa ser um novo plano
+    # para usar na URL, necessário existir caso tenha sido removido
+    # como campo obrigatório
+    id_plano_entrega_unidade = 1800 + offset
+    if input_pe.get("id_plano_entrega_unidade", None):
+        # Atualiza o id_plano_entrega_unidade somente se existir.
+        # Se não existir, é porque foi removido como campo obrigatório.
+        input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{example_pe['id_plano_entrega_unidade']}",
+        f"/plano_entrega/{id_plano_entrega_unidade}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -419,8 +422,7 @@ def test_create_invalid_data_entrega(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar uma entrega com data de entrega fora do intervalo do plano de entrega
-    """
+    """Tenta criar uma entrega com data de entrega fora do intervalo do plano de entrega"""
     input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
     input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
     input_pe["data_termino_plano_entregas"] = data_termino_plano_entregas
