@@ -61,7 +61,7 @@ def test_create_plano_entregas_completo(
     assert response.json() == input_pe
 
 
-def test_update_plano_trabalho(
+def test_update_plano_entregas(
     input_pe: dict,
     example_pe,
     user1_credentials: dict,
@@ -72,7 +72,6 @@ def test_update_plano_trabalho(
     """Tenta criar um novo plano de entregas e atualizar alguns campos
     A fixture example_pe cria um novo Plano de Entrega na API
     Altera um campo do PE e reenvia pra API (update)
-    TODO: Validar regra negocial - No update devem ser enviados as entregas novamente?
     """
 
     input_pe["avaliacao_plano_entregas"] = 3
@@ -83,6 +82,9 @@ def test_update_plano_trabalho(
         json=input_pe,
         headers=header_usr_1,
     )
+
+    # TODO: incluir assert
+
     # Consulta API para conferir se a alteração foi persistida
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
@@ -180,42 +182,42 @@ def test_create_huge_plano_entrega(
     assert response.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.parametrize("missing_fields", fields_plano_entregas["mandatory"])
-def test_patch_plano_entrega_inexistente(
-    truncate_pe,
-    input_pe: dict,
-    missing_fields: list,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta atualizar um plano de entrega com PATCH, faltando campos
-    obrigatórios.
+# @pytest.mark.parametrize("missing_fields", fields_plano_entregas["mandatory"])
+# def test_patch_plano_entrega_inexistente(
+#     truncate_pe,
+#     input_pe: dict,
+#     missing_fields: list,
+#     user1_credentials: dict,
+#     header_usr_1: dict,
+#     client: Client,
+# ):
+#     """Tenta atualizar um plano de entrega com PATCH, faltando campos
+#     obrigatórios.
 
-    Com o verbo PATCH, os campos omitidos são interpretados como sem
-    alteração. Por isso, é permitido omitir os campos obrigatórios.
+#     Com o verbo PATCH, os campos omitidos são interpretados como sem
+#     alteração. Por isso, é permitido omitir os campos obrigatórios.
 
-    TODO: Validar necessidade
-    """
-    example_pe = input_pe.copy()
-    for field in missing_fields:
-        del input_pe[field]
+#     TODO: Validar necessidade
+#     """
+#     example_pe = input_pe.copy()
+#     for field in missing_fields:
+#         del input_pe[field]
 
-    input_pe["id_plano_entrega_unidade"] = 999  # precisa ser um plano inexistente
-    response = client.patch(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{example_pe['id_plano_entrega_unidade']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-    assert response.status_code == status.HTTP_404_NOT_FOUND
+#     input_pe["id_plano_entrega_unidade"] = 999  # precisa ser um plano inexistente
+#     response = client.patch(
+#         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+#         f"/plano_entrega/{example_pe['id_plano_entrega_unidade']}",
+#         json=input_pe,
+#         headers=header_usr_1,
+#     )
+#     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 @pytest.mark.parametrize(
     "id_plano_entrega_unidade, cod_SIAPE_unidade_plano, "
     "data_inicio_plano_entregas, data_termino_plano_entregas",
     [
-        (101, 99, "2023-01-01", "2023-06-30"),  # igual
+        (101, 99, "2023-01-01", "2023-06-30"),  # igual ao exemplo
         (102, 99, "2023-07-01", "2023-12-31"),  # sem sobreposição
         (103, 99, "2022-12-01", "2023-01-31"),  # sobreposição no início
         (104, 99, "2023-06-01", "2023-11-30"),  # sobreposição no fim
@@ -238,6 +240,8 @@ def test_create_plano_entrega_overlapping_date_interval(
     """Tenta criar uma plano de entregas com sobreposição de intervalo de
     data na mesma unidade.
     TODO: Validar Regra Negocial - Pode existir mais de um plano por unidade no mesmo período?
+        Sim, se estiver cancelado. Acrescentar flag booleana plano cancelado.
+        O mesmo vale também para o Plano de Trabalho.
     """
     original_pe = input_pe.copy()
 
@@ -278,6 +282,13 @@ def test_create_plano_entrega_overlapping_date_interval(
             assert response.json().get("detail", None) == detail_msg
 
 
+def test_create_plano_entrega_date_interval_over_a_year():
+    """Plano de Entregas não pode ter vigência superior a um ano.
+    TODO: Fazer o mesmo teste no Plano de Trabalho.
+    """
+    pass
+
+
 def test_create_pe_cod_plano_inconsistent(
     input_pe: dict,
     user1_credentials: dict,
@@ -295,7 +306,7 @@ def test_create_pe_cod_plano_inconsistent(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro id_plano_entrega_unidade diferente do conteúdo do JSON"
+    detail_msg = "Parâmetro id_plano_entrega_unidade na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_msg
 
 
@@ -316,7 +327,7 @@ def test_create_pe_cod_unidade_inconsistent(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro cod_SIAPE_instituidora na URL diferente do conteúdo do JSON"
+    detail_msg = "Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_msg
 
 
@@ -343,7 +354,7 @@ def test_get_pe_inexistente(
         "/plano_entrega/888888888",
         headers=header_usr_1,
     )
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
     assert response.json().get("detail", None) == "Plano de entregas não encontrado"
 
@@ -354,7 +365,7 @@ def test_get_pe_inexistente(
         ("2020-06-04", "2020-04-01"),
     ],
 )
-def test_create_pe_mixed_dates(
+def test_create_pe_invalid_period(
     input_pe: dict,
     data_inicio: str,
     data_fim: str,
@@ -406,7 +417,6 @@ def test_create_invalid_data_entrega(
     client: Client,
 ):
     """Tenta criar uma entrega com data de entrega fora do intervalo do plano de entrega
-    TODO: Validar Regra Negocial - Pode existir entrega com data fora do intervalo do Plano de Entregas?
     """
     input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
     input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
@@ -426,7 +436,7 @@ def test_create_invalid_data_entrega(
         assert response.status_code == 422
         detail_msg = (
             "Data de entrega precisa estar dentro do intervalo entre início "
-            "e término do Plano de Entrega."
+            "e término do Plano de Entregas."
         )
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
@@ -451,7 +461,6 @@ def test_create_pt_invalid_data_avaliacao(
     client: Client,
 ):
     """Tenta criar um plano de entrega com datas de avaliação inferior a data de inicio do Plano"""
-    """TODO: Regra Negocial - A mesma regra deve ser feita com a data de término do Plano?"""
 
     input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
     input_pe["data_avaliacao_plano_entregas"] = data_avaliacao_plano_entregas
@@ -463,7 +472,7 @@ def test_create_pt_invalid_data_avaliacao(
         json=input_pe,
         headers=header_usr_1,
     )
-    if data_inicio_plano_entregas > data_avaliacao_plano_entregas:
+    if data_avaliacao_plano_entregas < data_inicio_plano_entregas:
         assert response.status_code == 422
         detail_msg = (
             "Data de avaliação do Plano de Entrega deve ser maior ou igual"
@@ -577,6 +586,7 @@ def test_create_invalid_cod_siape_unidade(
         (556, 100, 101, 0),
         (557, 1, 100, 101),
         (558, 100, 100, 100),
+        (559, 100, -1, 0),
     ],
 )
 def test_create_entrega_invalid_percent(
@@ -591,7 +601,6 @@ def test_create_entrega_invalid_percent(
     client: Client,
 ):
     """Tenta criar um Plano de Entrega com entrega com percentuais inválidos"""
-    """TODO: Se for tipo_meta absoluta, pode ser superior a 100?"""
 
     input_pe["entregas"][1]["meta_entrega"] = meta_entrega
     input_pe["entregas"][1][

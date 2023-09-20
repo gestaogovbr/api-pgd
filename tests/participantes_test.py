@@ -67,6 +67,10 @@ def test_put_duplicate_participante(
     assert response.json() == input_part
 
 
+# TODO: Adicionar teste para verificar consistência entre parâmetros da URL
+#       e conteúdo do JSON
+
+
 @pytest.mark.parametrize("missing_fields", enumerate(fields_participantes))
 def test_put_participante_missing_mandatory_fields(
     input_part: dict,
@@ -98,8 +102,8 @@ def test_get_participante(
     example_part,
     client: Client,
 ):
-    """Tenta requisitar um participante pela matricula_siape
-    TODO: Verificar regra negocial"""
+    """Tenta requisitar um participante pela matricula_siape.
+    """
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         "/participante/123456",
@@ -117,7 +121,7 @@ def test_get_participante_inexistente(
         headers=header_usr_1,
     )
 
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.json().get("detail", None) == "Participante não encontrado"
 
 
@@ -152,7 +156,7 @@ def test_put_participante_invalid_matricula_siape(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = [
         "Matricula SIAPE Inválida.",
-        "Matrícula SIAPE deve ter 7 digitos.",
+        "Matrícula SIAPE deve ter 7 dígitos.",
     ]
     assert response.json().get("detail")[0]["msg"] in detail_msg
 
@@ -195,10 +199,10 @@ def test_put_participante_invalid_cpf(
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = [
-        "Digitos verificadores do CPF inválidos.",
+        "Dígitos verificadores do CPF inválidos.",
         "CPF inválido.",
-        "CPF precisa ter 11 digitos.",
-        "CPF deve conter apenas digitos.",
+        "CPF precisa ter 11 dígitos.",
+        "CPF deve conter apenas dígitos.",
     ]
     assert response.json().get("detail")[0]["msg"] in detail_msg
 
@@ -263,7 +267,6 @@ def test_put_part_invalid_modalidade_execucao(
 @pytest.mark.parametrize(
     "jornada_trabalho_semanal",
     [
-        (45),
         (-2),
         (0),
     ],
@@ -286,5 +289,5 @@ def test_put_part_invalid_jornada_trabalho_semanal(
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Carga horária semanal deve ser entre 1 e 40"
+    detail_msg = "Carga horária semanal deve ser maior que zero"
     assert response.json().get("detail")[0]["msg"] == detail_msg

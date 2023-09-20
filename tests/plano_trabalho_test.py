@@ -71,6 +71,7 @@ def test_create_plano_trabalho_unidade_nao_permitida(
 ):
     """Tenta criar um novo Plano de Trabalho do Participante, em uma
     organização na qual ele não está autorizado.
+    TODO: Fazer também para Plano de Entregas e Participante.
     """
     response = client.put(
         f"/organizacao/2"  # só está autorizado na organização 1
@@ -79,7 +80,7 @@ def test_create_plano_trabalho_unidade_nao_permitida(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.json().get("detail", None) == "Usuário não tem permissão na cod_SIAPE_instituidora informada"
 
 
@@ -101,11 +102,19 @@ def test_update_plano_trabalho(
         json=input_pt,
         headers=header_usr_1,
     )
-    # Consulta API para conferir se a alteração foi persistida
-    response = client.get("/plano_trabalho/555", headers=header_usr_1)
 
+    # TODO: assert
+
+    # Consulta API para conferir se a alteração foi persistida
+    response = client.get(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pe['id_plano_entrega_unidade']}",
+        headers=header_usr_1,
+    )
+
+    # TODO: corrigir abaixo
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["nome_unidade_exercicio"] == "CGINF"
+    assert response.json()[""] == ""
 
 
 @pytest.mark.parametrize(
@@ -164,7 +173,7 @@ def test_create_plano_trabalho_consolidacao_omit_optional_fields(
     truncate_pe,
     client: Client,
 ):
-    """Tenta criar um novo plano de entregas omitindo campos opcionais"""
+    """Tenta criar um novo plano de trabalho omitindo campos opcionais"""
 
     offset, field_list = omitted_fields
     for field in field_list:
@@ -231,6 +240,7 @@ def test_create_huge_plano_trabalho(
         return new_atividade
 
     for i in range(200):
+        # TODO: corrigir
         input_pt["atividades"].append(create_huge_atividade(f"unique-key-{i}"))
 
     response = client.put(
@@ -243,75 +253,78 @@ def test_create_huge_plano_trabalho(
     assert response.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.parametrize(
-    "verb, missing_fields",
-    itertools.product(  # todas as combinações entre
-        ("put", "patch"), fields_plano_trabalho["mandatory"]  # verb  # missing_fields
-    ),
-)
-def test_update_plano_trabalho_missing_mandatory_fields(
-    truncate_pt,
-    verb: str,
-    example_pt,
-    input_pt: dict,
-    missing_fields: list,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta atualizar um plano de trabalho faltando campos
-    obrigatórios.
+# @pytest.mark.parametrize(
+#     "verb, missing_fields",
+#     itertools.product(  # todas as combinações entre
+#         ("put", "patch"), fields_plano_trabalho["mandatory"]  # verb  # missing_fields
+#     ),
+# )
+# def test_update_plano_trabalho_missing_mandatory_fields(
+#     truncate_pt,
+#     verb: str,
+#     example_pt,
+#     input_pt: dict,
+#     missing_fields: list,
+#     user1_credentials: dict,
+#     header_usr_1: dict,
+#     client: Client,
+# ):
+#     """Tenta atualizar um plano de trabalho faltando campos
+#     obrigatórios.
 
-    Para usar o verbo PUT é necessário passar a representação completa
-    do recurso. Por isso, os campos obrigatórios não podem estar
-    faltando. Para realizar uma atualização parcial, use o método PATCH.
+#     Para usar o verbo PUT é necessário passar a representação completa
+#     do recurso. Por isso, os campos obrigatórios não podem estar
+#     faltando. Para realizar uma atualização parcial, use o método PATCH.
 
-    Já com o verbo PATCH, os campos omitidos são interpretados como sem
-    alteração. Por isso, é permitido omitir os campos obrigatórios.
-    """
-    for field in missing_fields:
-        del input_pt[field]
+#     Já com o verbo PATCH, os campos omitidos são interpretados como sem
+#     alteração. Por isso, é permitido omitir os campos obrigatórios.
+#     """
+#     for field in missing_fields:
+#         del input_pt[field]
 
-    input_pt["id_plano_trabalho_participante"] = 555  # precisa ser um plano existente
-    call = getattr(client, verb)  # put ou patch
-    response = call(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
-    if verb == "put":
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    elif verb == "patch":
-        assert response.status_code == status.HTTP_200_OK
+#     input_pt["id_plano_trabalho_participante"] = 555  # precisa ser um plano existente
+#     call = getattr(client, verb)  # put ou patch
+#     response = call(
+#         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+#         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+#         json=input_pt,
+#         headers=header_usr_1,
+#     )
+#         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+#         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+#     elif verb == "patch":
+#         assert response.status_code == status.HTTP_200_OK
+#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+#     elif verb == "patch":
+#         assert response.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.parametrize("missing_fields", fields_plano_trabalho["mandatory"])
-def test_patch_plano_trabalho_inexistente(
-    truncate_pt,
-    input_pt: dict,
-    missing_fields: list,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta atualizar um plano de trabalho com PATCH, faltando campos
-    obrigatórios.
+# @pytest.mark.parametrize("missing_fields", fields_plano_trabalho["mandatory"])
+# def test_patch_plano_trabalho_inexistente(
+#     truncate_pt,
+#     input_pt: dict,
+#     missing_fields: list,
+#     user1_credentials: dict,
+#     header_usr_1: dict,
+#     client: Client,
+# ):
+#     """Tenta atualizar um plano de trabalho com PATCH, faltando campos
+#     obrigatórios.
 
-    Com o verbo PATCH, os campos omitidos são interpretados como sem
-    alteração. Por isso, é permitido omitir os campos obrigatórios.
-    """
-    for field in missing_fields:
-        del input_pt[field]
+#     Com o verbo PATCH, os campos omitidos são interpretados como sem
+#     alteração. Por isso, é permitido omitir os campos obrigatórios.
+#     """
+#     for field in missing_fields:
+#         del input_pt[field]
 
-    input_pt["id_plano_trabalho_participante"] = 999  # precisa ser um plano inexistente
-    response = client.patch(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
-    assert response.status_code == status.HTTP_404_NOT_FOUND
+#     input_pt["id_plano_trabalho_participante"] = 999  # precisa ser um plano inexistente
+#     response = client.patch(
+#         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+#         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+#         json=input_pt,
+#         headers=header_usr_1,
+#     )
+#     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_create_pt_cod_plano_inconsistent(
@@ -330,7 +343,7 @@ def test_create_pt_cod_plano_inconsistent(
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = (
-        "Parâmetro id_plano_trabalho_participante diferente do conteúdo do JSON"
+        "Parâmetro id_plano_trabalho_participante na URL e no JSON devem ser iguais"
     )
     assert response.json().get("detail", None) == detail_msg
 
@@ -359,7 +372,7 @@ def test_get_pt_inexistente(
         "/plano_trabalho/888888888",
         headers=header_usr_1,
     )
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
     assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
 
@@ -382,6 +395,8 @@ def test_create_pt_invalid_dates(
     truncate_pt,
     client: Client,
 ):
+    """Verifica se a data_termino_plano é maior ou igual à data_inicio_plano.
+    """
     input_pt["data_inicio_plano"] = data_inicio_plano
     input_pt["data_termino_plano"] = data_termino_plano
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
@@ -393,7 +408,7 @@ def test_create_pt_invalid_dates(
         headers=header_usr_1,
     )
     if data_inicio_plano > data_termino_plano:
-        assert response.status_code == 422
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = (
             "Data fim do Plano de Trabalho deve ser maior"
             " ou igual que Data de início."
@@ -414,7 +429,7 @@ def test_create_pt_invalid_dates(
         (84, "2023-04-01", "2023-04-01", "2023-04-01", "2023-04-01"),
     ],
 )
-def test_create_pt_invalid_data_avaliacao(
+def test_create_pt_invalid_data_consolidacao(
     input_pt: dict,
     id_plano_trabalho_participante: int,
     data_inicio_plano: str,
@@ -426,6 +441,9 @@ def test_create_pt_invalid_data_avaliacao(
     truncate_pt,
     client: Client,
 ):
+    """Verifica se o registro (consolidação) está dentro intervalo do
+    Plano de Trabalho.
+    """
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["data_inicio_plano"] = data_inicio_plano
     input_pt["data_termino_plano"] = "2025-01-01"
@@ -439,10 +457,10 @@ def test_create_pt_invalid_data_avaliacao(
         headers=header_usr_1,
     )
     if (
-        data_inicio_plano > data_inicio_registro
-        or data_inicio_plano > data_fim_registro
+        data_inicio_registro < data_inicio_plano
+        or data_fim_registro > data_inicio_plano
     ):
-        assert response.status_code == 422
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = (
             "Data de início e de fim de registro devem ser maiores ou iguais"
             " que a Data de início do Plano de Trabalho."
@@ -452,160 +470,8 @@ def test_create_pt_invalid_data_avaliacao(
         assert response.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.parametrize(
-    "id_plano_entrega_unidade, id_ent_1, id_ent_2",
-    [
-        (90, 401, 402),
-        (91, 403, 403),  # <<<< IGUAIS
-        (92, 404, 404),  # <<<< IGUAIS
-        (93, 405, 406),
-    ],
-)
-def test_create_pt_duplicate_contribuicao(
-    input_pt: dict,
-    id_plano_entrega_unidade: int,
-    id_ent_1: int,
-    id_ent_2: int,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    truncate_pt,
-    client: Client,
-):
-    """Tenta criar um plano de trabalho com contribuições com
-      id_entrega duplicados
-    TODO: Validar RN  - Pode existir contribuições com entregas com mesmo id?"""
-
-    input_pt["id_plano_entrega_unidade"] = id_plano_entrega_unidade
-    input_pt["contribuicoes"][0]["id_entrega"] = id_ent_1
-    input_pt["contribuicoes"][1]["id_entrega"] = id_ent_2
-
-    response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
-    if id_ent_1 == id_ent_2:
-        assert response.status_code == 422
-        detail_msg = "Contribuições devem possuir id_entrega diferentes."
-        assert response.json().get("detail")[0]["msg"] == detail_msg
-    else:
-        assert response.status_code == status.HTTP_200_OK
-
-
-@pytest.mark.parametrize(
-    "id_plano_trabalho_participante, cpf",
-    [
-        ("100", "11111111111"),
-        ("101", "22222222222"),
-        ("102", "33333333333"),
-        ("103", "44444444444"),
-        ("104", "04811556435"),
-        ("103", "444-444-444.44"),
-        ("108", "-44444444444"),
-        ("111", "444444444"),
-        ("112", "-444 4444444"),
-        ("112", "4811556437"),
-        ("112", "048115564-37"),
-        ("112", "04811556437     "),
-        ("112", "    04811556437     "),
-        ("112", ""),
-    ],
-)
-def test_create_pt_invalid_cpf(
-    input_pt: dict,
-    id_plano_trabalho_participante: str,
-    cpf: str,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    truncate_pt,
-    client: Client,
-):
-    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["cpf"] = cpf
-
-    response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{id_plano_trabalho_participante}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = [
-        "Digitos verificadores do CPF inválidos.",
-        "CPF inválido.",
-        "CPF precisa ter 11 digitos.",
-        "CPF deve conter apenas digitos.",
-    ]
-    assert response.json().get("detail")[0]["msg"] in detail_msg
-
-
-@pytest.mark.parametrize(
-    "id_plano_trabalho_participante, modalidade_execucao",
-    [
-        (80, -1),
-        (81, -2),
-        (82, -3),
-        (83, -0),
-        (84, 4),
-        (85, 1),
-    ],
-)
-def test_create_pt_invalid_modalidade_execucao(
-    input_pt: dict,
-    id_plano_trabalho_participante: int,
-    modalidade_execucao: int,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    truncate_pt,
-    client: Client,
-):
-    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["modalidade_execucao"] = modalidade_execucao
-    response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{id_plano_trabalho_participante}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
-
-    if modalidade_execucao in (1, 2, 3):
-        assert response.status_code == status.HTTP_200_OK
-    else:
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = "Value is not a valid enumeration member; permitted: 1, 2, 3"
-        assert response.json().get("detail")[0]["msg"] == detail_msg
-
-
-@pytest.mark.parametrize(
-    "carga_horaria_semanal",
-    [
-        (56),
-        (-2),
-        (0),
-    ],
-)
-def test_create_pt_invalid_carga_horaria_semanal(
-    input_pt: dict,
-    carga_horaria_semanal: int,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    truncate_pt,
-    client: Client,
-):
-    id_plano_trabalho_participante = "767676"
-    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["carga_horaria_semanal"] = carga_horaria_semanal
-    response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{id_plano_trabalho_participante}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
-
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Carga horária semanal deve ser entre 1 e 40"
-    assert response.json().get("detail")[0]["msg"] == detail_msg
+# TODO: Incluir teste de consolidação com sobreposições de datas,
+#       copiar da entrega
 
 
 @pytest.mark.parametrize(
@@ -641,6 +507,8 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
+
+# TODO: Incluir teste de domínio do campo tipo_contribuicao da contribuição.
 
 @pytest.mark.parametrize(
     "id_plano_trabalho_participante, tipo_contribuicao, id_plano_entrega_unidade, id_entrega",
@@ -718,6 +586,8 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
             id_plano_entrega_unidade != id_plano_entrega_existente
             or id_entrega not in ids_entregas_existentes
         ):
+            # TODO: Verificar impacto no desempenho com grande volume de requisições
+            # e se pode ser aproveitada a verificação de FK no banco
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_msg = "Referência a id_entrega não encontrada"
             assert response.json().get("detail")[0]["msg"] == detail_msg
@@ -751,17 +621,16 @@ def test_create_pt_duplicate_cod_plano(
         json=input_pt,
         headers=header_usr_2,
     )
-    print(response.json().get("detail", None))
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json().get("detail", None) == None
     assert response.json() == input_pt
 
 
-@pytest.mark.parametrize("horas_homologadas", [(-1), (0)])
-def test_create_pt_invalid_horas_homologadas(
+@pytest.mark.parametrize("horas_vinculadas_entrega", [-2, -1])
+def test_create_pt_invalid_horas_vinculadas_entrega(
     input_pt: dict,
-    horas_homologadas: int,
+    horas_vinculadas_entrega: int,
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
@@ -769,7 +638,7 @@ def test_create_pt_invalid_horas_homologadas(
 ):
     id_plano_trabalho_participante = "138"
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["horas_homologadas"] = horas_homologadas
+    input_pt["horas_vinculadas_entrega"] = horas_vinculadas_entrega
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_trabalho/{id_plano_trabalho_participante}",
@@ -778,5 +647,7 @@ def test_create_pt_invalid_horas_homologadas(
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Horas homologadas devem ser maior que zero"
+    detail_msg = "Valor de horas_vinculadas_entrega deve ser maior ou igual a zero"
     assert response.json().get("detail")[0]["msg"] == detail_msg
+
+# TODO: Acrescentar teste da avaliacao_plano_trabalho

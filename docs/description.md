@@ -33,6 +33,11 @@ através do método `Update User`. Informar no **Request Body** somente os
 dados que devem ser alterados (caso informe um email já existente o sistema
 retornará erro).
 
+
+### Planos de Entrega
+
+ENVIAR OS PLANOS DE ENTREGA ANTES DOS PLANOS DE TRABALHO.
+
 -------
 ### Planos de Trabalho
 Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
