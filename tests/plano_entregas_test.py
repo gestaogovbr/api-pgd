@@ -124,6 +124,7 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
+    assert response.json() == input_pe
 
 
 @pytest.mark.parametrize(
