@@ -130,7 +130,7 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
 @pytest.mark.parametrize(
     "missing_fields", enumerate(fields_plano_entregas["mandatory"])
 )
-def test_create_plano_entrega_missing_mandatory_fields(
+def test_create_plano_entregas_missing_mandatory_fields(
     input_pe: dict,
     missing_fields: list,
     user1_credentials: dict,
