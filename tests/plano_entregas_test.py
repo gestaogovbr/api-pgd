@@ -194,6 +194,7 @@ def test_create_huge_plano_entregas(
     assert response.json() == input_pe
 
 
+# TODO: verbo PATCH será implementado em versão futura
 # @pytest.mark.parametrize("missing_fields", fields_plano_entregas["mandatory"])
 # def test_patch_plano_entrega_inexistente(
 #     truncate_pe,
@@ -208,8 +209,6 @@ def test_create_huge_plano_entregas(
 
 #     Com o verbo PATCH, os campos omitidos são interpretados como sem
 #     alteração. Por isso, é permitido omitir os campos obrigatórios.
-
-#     TODO: Validar necessidade
 #     """
 #     example_pe = input_pe.copy()
 #     for field in missing_fields:
