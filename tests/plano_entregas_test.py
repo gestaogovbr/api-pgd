@@ -256,9 +256,6 @@ def test_create_plano_entregas_overlapping_date_interval(
     O Plano de Entregas original é criado e então é testada a criação de
     cada novo Plano de Entregas, com sobreposição ou não das datas,
     conforme especificado nos parâmetros de teste.
-    TODO: Acrescentar flag booleana plano cancelado (esquema e banco).
-        O mesmo vale também para o Plano de Trabalho. Criar teste
-        igual para Plano de Trabalho.
     """
     original_pe = input_pe.copy()
 
@@ -283,14 +280,13 @@ def test_create_plano_entregas_overlapping_date_interval(
         headers=header_usr_1,
     )
 
-    if any((plano.get("cancelado", False) for plano in (input_pe, original_pe))):
+    if (
         # se algum dos planos estiver cancelado, não há problema em haver
         # sobreposição
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json() == input_pe
-        return
-
-    if input_pe["cod_SIAPE_unidade_plano"] == original_pe["cod_SIAPE_unidade_plano"]:
+        not any((plano.get("cancelado", False) for plano in (input_pe, original_pe)))
+        and input_pe["cod_SIAPE_unidade_plano"]
+        == original_pe["cod_SIAPE_unidade_plano"]
+    ):
         if (
             date(input_pe["data_inicio_plano_entregas"])
             < date(original_pe["data_termino_plano_entregas"])
@@ -304,6 +300,9 @@ def test_create_plano_entregas_overlapping_date_interval(
                 "cod_SIAPE_unidade_plano no período informado."
             )
             assert response.json().get("detail", None) == detail_msg
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == input_pe
 
 
 def test_create_plano_entrega_date_interval_over_a_year():

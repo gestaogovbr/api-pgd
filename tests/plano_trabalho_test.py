@@ -2,6 +2,7 @@
 Testes relacionados ao plano de trabalho do participante.
 """
 import itertools
+from datetime import date
 
 from httpx import Client
 
@@ -23,7 +24,7 @@ fields_plano_trabalho = {
         ["carga_horaria_total_periodo_plano"],
         ["contribuicoes"],
         ["consolidacoes"],
-    )
+    ),
 }
 
 fields_contribuicao = {
@@ -82,7 +83,10 @@ def test_create_plano_trabalho_unidade_nao_permitida(
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert response.json().get("detail", None) == "Usuário não tem permissão na cod_SIAPE_instituidora informada"
+    assert (
+        response.json().get("detail", None)
+        == "Usuário não tem permissão na cod_SIAPE_instituidora informada"
+    )
 
 
 def test_update_plano_trabalho(
@@ -328,6 +332,99 @@ def test_create_huge_plano_trabalho(
 #     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
+@pytest.mark.parametrize(
+    "id_plano_trabalho_participante, cod_SIAPE_unidade_exercicio, "
+    "cpf_participante, "
+    "data_inicio_plano, data_termino_plano",
+    [
+        (101, 99, 64635210600, "2023-01-01", "2023-01-15"),  # igual ao exemplo
+        (102, 99, 64635210600, "2023-01-06", "2023-01-31"),  # sem sobreposição
+        (103, 99, 64635210600, "2022-12-01", "2023-01-08"),  # sobreposição no início
+        (104, 99, 64635210600, "2023-01-09", "2023-01-31"),  # sobreposição no fim
+        (105, 99, 64635210600, "2023-01-02", "2023-01-08"),  # contido no período
+        (106, 99, 64635210600, "2022-12-31", "2023-01-16"),  # contém o período
+        (105, 100, 64635210600, "2023-01-01", "2023-01-15"),  # outra unidade
+        (105, 99, 82893311776, "2023-01-01", "2023-01-15"),  # outro participante
+        (105, 100, 82893311776, "2023-01-01", "2023-01-15"),  # ambos diferentes
+    ],
+)
+def test_create_plano_trabalho_overlapping_date_interval(
+    truncate_pt,
+    input_pt: dict,
+    id_plano_trabalho_participante: int,
+    cod_SIAPE_unidade_exercicio: int,
+    cpf_participante: int,
+    data_inicio_plano: str,
+    data_termino_plano: str,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
+):
+    """Tenta criar uma plano de entregas com sobreposição de intervalo de
+    data na mesma unidade.
+
+    O Plano de Entregas original é criado e então é testada a criação de
+    cada novo Plano de Entregas, com sobreposição ou não das datas,
+    conforme especificado nos parâmetros de teste.
+    """
+    original_pt = input_pt.copy()
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
+    input_pt["cod_SIAPE_unidade_exercicio"] = cod_SIAPE_unidade_exercicio
+    input_pt["cpf_participante"] = cpf_participante
+    input_pt["data_inicio_plano"] = data_inicio_plano
+    input_pt["data_termino_plano"] = data_termino_plano
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
+
+    if (
+        # se são participantes diferentes, não há problema em haver
+        # sobreposição
+        (
+            input_pt["cod_SIAPE_unidade_exercicio"]
+            == original_pt["cod_SIAPE_unidade_exercicio"]
+        )
+        # se são participantes diferentes, não há problema em haver
+        # sobreposição
+        and (input_pt["cpf_participante"] == original_pt["cpf_participante"])
+        # se algum dos planos estiver cancelado, não há problema em haver
+        # sobreposição
+        and any((plano.get("cancelado", False) for plano in (input_pt, original_pt)))
+    ):
+        if (
+            date(input_pt["data_inicio_plano"])
+            < date(original_pt["data_termino_plano"])
+        ) and (
+            date(input_pt["data_termino_plano"])
+            > date(original_pt["data_inicio_plano"])
+        ):
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_msg = (
+                "Já existe um plano de trabalho para este "
+                "cod_SIAPE_unidade_exercicio para este cpf_participante "
+                "no período informado."
+            )
+            assert response.json().get("detail", None) == detail_msg
+            return
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == input_pt
+
+
 def test_create_pt_cod_plano_inconsistent(
     input_pt: dict,
     user1_credentials: dict,
@@ -396,8 +493,7 @@ def test_create_pt_invalid_dates(
     truncate_pt,
     client: Client,
 ):
-    """Verifica se a data_termino_plano é maior ou igual à data_inicio_plano.
-    """
+    """Verifica se a data_termino_plano é maior ou igual à data_inicio_plano."""
     input_pt["data_inicio_plano"] = data_inicio_plano
     input_pt["data_termino_plano"] = data_termino_plano
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
@@ -511,6 +607,7 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
 
 # TODO: Incluir teste de domínio do campo tipo_contribuicao da contribuição.
 
+
 @pytest.mark.parametrize(
     "id_plano_trabalho_participante, tipo_contribuicao, id_plano_entrega_unidade, id_entrega",
     [
@@ -594,9 +691,7 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
             assert response.json().get("detail")[0]["msg"] == detail_msg
     elif tipo_contribuicao == 2 and id_entrega:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = (
-            "Não se deve informar id_entrega quando tipo_contribuicao == 2"
-        )
+        detail_msg = "Não se deve informar id_entrega quando tipo_contribuicao == 2"
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
         assert response.status_code == status.HTTP_200_OK
@@ -650,6 +745,7 @@ def test_create_pt_invalid_horas_vinculadas_entrega(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "Valor de horas_vinculadas_entrega deve ser maior ou igual a zero"
     assert response.json().get("detail")[0]["msg"] == detail_msg
+
 
 @pytest.mark.parametrize("avaliacao_plano_trabalho", [0, 1, 2, 5, 6])
 def test_create_pt_consolidacoes_invalid_avaliacao_plano_trabalho(
