@@ -650,4 +650,28 @@ def test_create_pt_invalid_horas_vinculadas_entrega(
     detail_msg = "Valor de horas_vinculadas_entrega deve ser maior ou igual a zero"
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
-# TODO: Acrescentar teste da avaliacao_plano_trabalho
+@pytest.mark.parametrize("avaliacao_plano_trabalho", [0, 1, 2, 5, 6])
+def test_create_pt_consolidacoes_invalid_avaliacao_plano_trabalho(
+    input_pt: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pt,
+    avaliacao_plano_trabalho: str,
+    client: Client,
+):
+    """Tenta criar uma consolidação com avaliação_plano_trabalho inválido"""
+    input_pt["consolidacoes"][0]["avaliacao_plano_trabalho"] = avaliacao_plano_trabalho
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
+
+    if avaliacao_plano_trabalho in range(1, 6):
+        assert response.status_code == status.HTTP_200_OK
+    else:
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_msg = "Avaliacao de plano de trabalho inválida; permitido: 1 a 5"
+        assert response.json().get("detail") == detail_msg
