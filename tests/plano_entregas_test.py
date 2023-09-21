@@ -196,7 +196,7 @@ def test_create_huge_plano_entregas(
 
 # TODO: verbo PATCH será implementado em versão futura
 # @pytest.mark.parametrize("missing_fields", fields_plano_entregas["mandatory"])
-# def test_patch_plano_entrega_inexistente(
+# def test_patch_plano_entregas_inexistente(
 #     truncate_pe,
 #     input_pe: dict,
 #     missing_fields: list,
@@ -237,7 +237,7 @@ def test_create_huge_plano_entregas(
         (105, 100, "2023-02-01", "2023-05-31"),  # outra unidade
     ],
 )
-def test_create_plano_entrega_overlapping_date_interval(
+def test_create_plano_entregas_overlapping_date_interval(
     truncate_pe,
     input_pe: dict,
     id_plano_entrega_unidade: int,
@@ -250,9 +250,13 @@ def test_create_plano_entrega_overlapping_date_interval(
 ):
     """Tenta criar uma plano de entregas com sobreposição de intervalo de
     data na mesma unidade.
-    TODO: Validar Regra Negocial - Pode existir mais de um plano por unidade no mesmo período?
-        Sim, se estiver cancelado. Acrescentar flag booleana plano cancelado.
-        O mesmo vale também para o Plano de Trabalho.
+
+    O Plano de Entregas original é criado e então é testada a criação de
+    cada novo Plano de Entregas, com sobreposição ou não das datas,
+    conforme especificado nos parâmetros de teste.
+    TODO: Acrescentar flag booleana plano cancelado (esquema e banco).
+        O mesmo vale também para o Plano de Trabalho. Criar teste
+        igual para Plano de Trabalho.
     """
     original_pe = input_pe.copy()
 
@@ -276,6 +280,13 @@ def test_create_plano_entrega_overlapping_date_interval(
         json=input_pe,
         headers=header_usr_1,
     )
+
+    if any((plano.get("cancelado", False) for plano in (input_pe, original_pe))):
+        # se algum dos planos estiver cancelado, não há problema em haver
+        # sobreposição
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json() == input_pe
+        return
 
     if input_pe["cod_SIAPE_unidade_plano"] == original_pe["cod_SIAPE_unidade_plano"]:
         if (
