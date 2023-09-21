@@ -61,6 +61,11 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Id do Plano de Entregas da unidade",
         description=PlanoTrabalho.id_plano_entrega_unidade.comment
     )
+    cancelado: Optional[bool] = Field(
+        default=False,
+        title="Plano cancelado",
+        description=PlanoTrabalho.cancelado.comment
+    )
     cod_SIAPE_unidade_exercicio: int = Field(
         title="Código SIAPE da unidade de exercício do participante",
         description=PlanoTrabalho.id_plano_entrega_unidade.comment
@@ -206,6 +211,11 @@ class PlanoEntregaSchema(BaseModel):
     id_plano_entrega_unidade: int = Field(
         title="Id do plano de entregas da unidade",
         description=PlanoEntregas.id_plano_entrega_unidade.comment
+    )
+    cancelado: Optional[bool] = Field(
+        default=False,
+        title="Plano cancelado",
+        description=PlanoEntregas.cancelado.comment
     )
     data_inicio_plano_entregas: date = Field(
         title="Data de início estipulada no plano de entregas",

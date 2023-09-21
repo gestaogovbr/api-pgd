@@ -41,6 +41,12 @@ class PlanoEntregas(Base):
         nullable=False,
         comment="Identificador único do plano de entregas",
     )
+    cancelado = Column(
+        Boolean,
+        comment="TRUE se o plano tiver sido cancelado; FALSE caso contrário. "
+                "O valor padrão é FALSE. A ausência do atributo ou NULL "
+                "deve ser interpretada como FALSE."
+    )
     data_inicio_plano_entregas = Column(
         Date,
         nullable=False,
@@ -221,6 +227,12 @@ class PlanoTrabalho(Base):
         index=True,
         nullable=False,
         comment="Identificador único do plano de trabalho",
+    )
+    cancelado = Column(
+        Boolean,
+        comment="TRUE se o plano tiver sido cancelado; FALSE caso contrário. "
+                "O valor padrão é FALSE. A ausência do atributo ou NULL "
+                "deve ser interpretada como FALSE."
     )
     id_plano_entrega_unidade = Column(
         Integer,

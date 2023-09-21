@@ -12,7 +12,9 @@ import pytest
 # grupos de campos opcionais e obrigatórios a testar
 
 fields_plano_entregas = {
-    "optional": (["avaliacao_plano_entregas", "data_avaliacao_plano_entregas"],),
+    "optional": (
+        ["cancelado", "avaliacao_plano_entregas", "data_avaliacao_plano_entregas"],
+    ),
     "mandatory": (
         ["id_plano_entrega_unidade"],
         ["data_inicio_plano_entregas"],
@@ -169,8 +171,8 @@ def test_create_huge_plano_entregas(
     truncate_pe,
     client: Client,
 ):
-    """Testa a criação de um plano de entrega com grande volume de dados.
-    """
+    """Testa a criação de um plano de entrega com grande volume de dados."""
+
     def create_huge_entrega(id_entrega: int):
         new_entrega = input_pe["entregas"][0].copy()
         new_entrega["id_entrega"] = id_entrega

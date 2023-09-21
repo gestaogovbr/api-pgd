@@ -13,6 +13,7 @@ import pytest
 # grupos de campos opcionais e obrigatórios a testar
 
 fields_plano_trabalho = {
+    "optional": (["cancelado"],),
     "mandatory": (
         ["id_plano_entrega_unidade"],
         ["cod_SIAPE_unidade_exercicio"],
