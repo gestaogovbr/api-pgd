@@ -1,7 +1,7 @@
 """
 Testes relacionados ao Plano de Entregas da Unidade
 """
-from datetime import date
+from datetime import date, timedelta
 
 from httpx import Client
 
@@ -305,11 +305,48 @@ def test_create_plano_entregas_overlapping_date_interval(
     assert response.json() == input_pe
 
 
-def test_create_plano_entrega_date_interval_over_a_year():
+@pytest.mark.parametrize(
+    "data_inicio_plano_entregas, data_termino_plano_entregas",
+    [
+        ("2023-01-01", "2023-06-30"),  # igual ao exemplo
+        ("2023-01-01", "2024-01-01"),  # um ano
+        ("2023-01-01", "2024-01-02"),  # mais que um ano
+    ],
+)
+def test_create_plano_entrega_date_interval_over_a_year(
+    truncate_pe,
+    input_pe: dict,
+    data_inicio_plano_entregas: str,
+    data_termino_plano_entregas: str,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
+):
     """Plano de Entregas não pode ter vigência superior a um ano.
-    TODO: Fazer o mesmo teste no Plano de Trabalho.
     """
-    pass
+    input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
+    input_pe["data_termino_plano_entregas"] = data_termino_plano_entregas
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+    if (
+        date(data_termino_plano_entregas) - date(data_inicio_plano_entregas)
+        > timedelta(days=366)
+    ):
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_msg = (
+            "Plano de entregas não pode abranger período maior que "
+            "1 ano."
+        )
+        assert response.json().get("detail", None) == detail_msg
+    else:
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json() == input_pe
 
 
 def test_create_pe_cod_plano_inconsistent(
