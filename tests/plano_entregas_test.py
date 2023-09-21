@@ -606,7 +606,7 @@ def test_create_pe_duplicate_id_plano(
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json().get("detail", None) == None
+    assert response.json().get("detail", None) is None
     assert response.json() == input_pe
 
 

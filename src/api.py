@@ -10,7 +10,6 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
 from fief_client import FiefUserInfo
 from sqlalchemy.orm import Session
-from pydantic import ValidationError
 
 import schemas
 import crud
@@ -66,7 +65,6 @@ async def docs_redirect(accept: Union[str, None] = Header(default="text/html")):
     tags=["plano de trabalho"],
 )
 async def get_plano_trabalho(
-    cod_SIAPE_instituidora: int,
     id_plano_trabalho_participante: int,
     db: Session = Depends(get_db),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
@@ -153,7 +151,6 @@ async def create_or_update_plano_trabalho(
     tags=["plano de entregas"],
 )
 async def get_plano_entrega(
-    cod_SIAPE_instituidora: int,
     id_plano_entrega_unidade: int,
     db: Session = Depends(get_db),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
@@ -262,7 +259,7 @@ async def truncate_plano_trabalho(
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED, detail="Usuário sem permissão para a operação"
         )
-    result = await crud.truncate_plano_trabalho(db)
+    await crud.truncate_plano_trabalho(db)
     return {"detail": "Tabela plano_trabalho excluída"}
 
 
