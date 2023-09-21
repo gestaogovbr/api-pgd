@@ -162,21 +162,26 @@ def test_create_plano_entrega_missing_mandatory_fields(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-def test_create_huge_plano_entrega(
+def test_create_huge_plano_entregas(
     input_pe: dict,
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pe,
     client: Client,
 ):
+    """Testa a criação de um plano de entrega com grande volume de dados.
+    """
     def create_huge_entrega(id_entrega: int):
         new_entrega = input_pe["entregas"][0].copy()
         new_entrega["id_entrega"] = id_entrega
+        new_entrega["nome_entrega"] = "x" * 1000000  # 1mi de caracteres
+        new_entrega["nome_demandante"] = "x" * 1000000  # 1mi de caracteres
+        new_entrega["nome_destinatario"] = "x" * 1000000  # 1mi de caracteres
 
         return new_entrega
 
-    for i in range(200):
-        input_pe["entregas"].append(create_huge_entrega(i))
+    for id_entrega in range(200):
+        input_pe["entregas"].append(create_huge_entrega(id_entrega))
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
@@ -186,6 +191,7 @@ def test_create_huge_plano_entrega(
     )
 
     assert response.status_code == status.HTTP_200_OK
+    assert response.json() == input_pe
 
 
 # @pytest.mark.parametrize("missing_fields", fields_plano_entregas["mandatory"])
