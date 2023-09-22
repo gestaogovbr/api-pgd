@@ -767,7 +767,7 @@ def test_create_pt_duplicate_cod_plano(
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json().get("detail", None) == None
+    assert response.json().get("detail", None) is None
     assert response.json() == input_pt
 
 
