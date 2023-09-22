@@ -532,7 +532,7 @@ def test_create_invalid_data_entrega(
         (78, "2020-06-04", "2020-06-11"),
     ],
 )
-def test_create_pt_invalid_data_avaliacao(
+def test_create_pe_invalid_data_avaliacao(
     input_pe: dict,
     data_inicio_plano_entregas: str,
     data_avaliacao_plano_entregas: str,
