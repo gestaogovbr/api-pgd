@@ -236,6 +236,11 @@ def test_create_huge_plano_trabalho(
     truncate_pt,
     client: Client,
 ):
+    """Testa a criação de um plano de trabalho com grande volume de dados.
+    
+    TODO: atualizar para o modelo atual, com contribuições e consolidações
+    em vez de atividades.
+    """
     def create_huge_atividade(id_atividade: str):
         new_atividade = input_pt["atividades"][0].copy()
         new_atividade["id_atividade"] = id_atividade
