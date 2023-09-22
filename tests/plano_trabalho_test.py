@@ -437,9 +437,9 @@ def test_create_plano_trabalho_overlapping_date_interval(
         ("2023-01-01", "2024-01-02"),  # mais que um ano
     ],
 )
-def test_create_plano_entrega_date_interval_over_a_year(
-    truncate_pe,
-    input_pe: dict,
+def test_create_plano_trabalho_date_interval_over_a_year(
+    truncate_pt,
+    input_pt: dict,
     data_inicio_plano: str,
     data_termino_plano: str,
     user1_credentials: dict,
@@ -448,13 +448,13 @@ def test_create_plano_entrega_date_interval_over_a_year(
 ):
     """Plano de Entregas não pode ter vigência superior a um ano.
     """
-    input_pe["data_inicio_plano"] = data_inicio_plano
-    input_pe["data_termino_plano"] = data_termino_plano
+    input_pt["data_inicio_plano"] = data_inicio_plano
+    input_pt["data_termino_plano"] = data_termino_plano
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
-        json=input_pe,
+        f"/plano_entrega/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
         headers=header_usr_1,
     )
 
@@ -470,7 +470,7 @@ def test_create_plano_entrega_date_interval_over_a_year(
         assert response.json().get("detail", None) == detail_msg
     else:
         assert response.status_code == status.HTTP_200_OK
-        assert response.json() == input_pe
+        assert response.json() == input_pt
 
 
 def test_create_pt_cod_plano_inconsistent(
