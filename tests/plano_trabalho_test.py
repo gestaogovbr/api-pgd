@@ -61,7 +61,7 @@ def test_create_plano_trabalho_completo(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
     assert response.json() == input_pt
 
 
@@ -164,7 +164,7 @@ def test_create_plano_trabalho_id_entrega_check(
             " obrigatório quando tipo_contribuicao tiver o valor 1."
         )
     else:
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
         assert response.json() == input_pt
 
 
@@ -192,7 +192,7 @@ def test_create_plano_trabalho_consolidacao_omit_optional_fields(
         json=input_pt,
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(
@@ -259,7 +259,7 @@ def test_create_huge_plano_trabalho(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
 
 
 # @pytest.mark.parametrize(
@@ -380,7 +380,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code in (status.HTTP_200_OK, status.HTTP_201_CREATED)
 
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["cod_SIAPE_unidade_exercicio"] = cod_SIAPE_unidade_exercicio
@@ -425,7 +425,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
             assert response.json().get("detail", None) == detail_msg
             return
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
     assert response.json() == input_pt
 
 
@@ -469,7 +469,7 @@ def test_create_plano_trabalho_date_interval_over_a_year(
         )
         assert response.json().get("detail", None) == detail_msg
     else:
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
         assert response.json() == input_pt
 
 
@@ -560,7 +560,7 @@ def test_create_pt_invalid_dates(
         )
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(
@@ -612,7 +612,7 @@ def test_create_pt_invalid_data_consolidacao(
         )
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
 
 
 # TODO: Incluir teste de consolidação com sobreposições de datas,
@@ -712,7 +712,7 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
     input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
     input_pt["contribuicoes"][0]["id_entrega"] = id_entrega
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
@@ -742,7 +742,7 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
         detail_msg = "Não se deve informar id_entrega quando tipo_contribuicao == 2"
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
 
 
 def test_create_pt_duplicate_cod_plano(
@@ -766,7 +766,7 @@ def test_create_pt_duplicate_cod_plano(
         headers=header_usr_2,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
     assert response.json() == input_pt
 
@@ -815,7 +815,7 @@ def test_create_pt_consolidacoes_invalid_avaliacao_plano_trabalho(
     )
 
     if avaliacao_plano_trabalho in range(1, 6):
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = "Avaliacao de plano de trabalho inválida; permitido: 1 a 5"
