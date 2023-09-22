@@ -194,7 +194,7 @@ def test_create_huge_plano_entregas(
     truncate_pe,
     client: Client,
 ):
-    """Testa a criação de um plano de entrega com grande volume de dados."""
+    """Testa a criação de um plano de entregas com grande volume de dados."""
 
     def create_huge_entrega(id_entrega: int):
         new_entrega = input_pe["entregas"][0].copy()
