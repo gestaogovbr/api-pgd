@@ -71,9 +71,8 @@ def test_create_plano_trabalho_unidade_nao_permitida(
     truncate_pt,
     client: Client,
 ):
-    """Tenta criar um novo Plano de Trabalho do Participante, em uma
+    """Tenta criar um novo Plano de Trabalho do Participante em uma
     organização na qual ele não está autorizado.
-    TODO: Fazer também para Plano de Entregas e Participante.
     """
     response = client.put(
         f"/organizacao/2"  # só está autorizado na organização 1

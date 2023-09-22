@@ -53,7 +53,7 @@ def test_create_plano_entregas_completo(
     """Tenta criar um novo plano de entregas"""
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -61,6 +61,29 @@ def test_create_plano_entregas_completo(
     assert response.status_code == status.HTTP_200_OK
     assert response.json().get("detail", None) == None
     assert response.json() == input_pe
+
+
+def test_create_plano_entregas_unidade_nao_permitida(
+    input_pe: dict,
+    header_usr_1: dict,
+    truncate_pe,
+    client: Client,
+):
+    """Tenta criar um novo Plano de Entregas em uma organização na qual
+    ele não está autorizado.
+    """
+    response = client.put(
+        f"/organizacao/2"  # só está autorizado na organização 1
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert (
+        response.json().get("detail", None)
+        == "Usuário não tem permissão na cod_SIAPE_instituidora informada"
+    )
 
 
 def test_update_plano_entregas(
@@ -80,7 +103,7 @@ def test_update_plano_entregas(
     input_pe["data_avaliacao_plano_entregas"] = "2023-08-15"
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -92,7 +115,7 @@ def test_update_plano_entregas(
     # Consulta API para conferir se a alteração foi persistida
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         headers=header_usr_1,
     )
 
@@ -121,7 +144,7 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
     input_pe["id_plano_entrega_unidade"] = 557 + offset
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -157,7 +180,7 @@ def test_create_plano_entregas_missing_mandatory_fields(
         input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{id_plano_entrega_unidade}",
+        f"/plano_entregas/{id_plano_entrega_unidade}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -187,7 +210,7 @@ def test_create_huge_plano_entregas(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -219,7 +242,7 @@ def test_create_huge_plano_entregas(
 #     input_pe["id_plano_entrega_unidade"] = 999  # precisa ser um plano inexistente
 #     response = client.patch(
 #         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-#         f"/plano_entrega/{example_pe['id_plano_entrega_unidade']}",
+#         f"/plano_entregas/{example_pe['id_plano_entrega_unidade']}",
 #         json=input_pe,
 #         headers=header_usr_1,
 #     )
@@ -261,7 +284,7 @@ def test_create_plano_entregas_overlapping_date_interval(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -275,7 +298,7 @@ def test_create_plano_entregas_overlapping_date_interval(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -329,7 +352,7 @@ def test_create_plano_entrega_date_interval_over_a_year(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -361,7 +384,7 @@ def test_create_pe_cod_plano_inconsistent(
     input_pe["id_plano_entrega_unidade"] = 110
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/111",  # diferente de 110
+        f"/plano_entregas/111",  # diferente de 110
         json=input_pe,
         headers=header_usr_1,
     )
@@ -382,7 +405,7 @@ def test_create_pe_cod_unidade_inconsistent(
     input_pe["cod_SIAPE_instituidora"] = 999
     response = client.put(
         f"/organizacao/1000"  # diferente de 999
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -398,7 +421,7 @@ def test_get_plano_entrega(
 
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
@@ -411,7 +434,7 @@ def test_get_pe_inexistente(
 
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        "/plano_entrega/888888888",
+        "/plano_entregas/888888888",
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -441,7 +464,7 @@ def test_create_pe_invalid_period(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -484,7 +507,7 @@ def test_create_invalid_data_entrega(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{id_plano_entrega_unidade}",
+        f"/plano_entregas/{id_plano_entrega_unidade}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -527,7 +550,7 @@ def test_create_pt_invalid_data_avaliacao(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{id_plano_entrega_unidade}",
+        f"/plano_entregas/{id_plano_entrega_unidade}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -569,7 +592,7 @@ def test_create_pe_duplicate_entrega(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{id_plano_entrega_unidade}",
+        f"/plano_entregas/{id_plano_entrega_unidade}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -594,13 +617,13 @@ def test_create_pe_duplicate_id_plano(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
     response = client.put(
         f"/organizacao/{user2_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_2,
     )
@@ -627,7 +650,7 @@ def test_create_invalid_cod_siape_unidade(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -671,7 +694,7 @@ def test_create_entrega_invalid_percent(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{id_plano_entrega_unidade}",
+        f"/plano_entregas/{id_plano_entrega_unidade}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -705,7 +728,7 @@ def test_create_entrega_invalid_tipo_meta(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -732,7 +755,7 @@ def test_create_pe_invalid_avaliacao(
     input_pe["avaliacao_plano_entregas"] = avaliacao_plano_entregas
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pe['id_plano_entrega_unidade']}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
