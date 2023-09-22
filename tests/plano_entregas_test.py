@@ -336,7 +336,7 @@ def test_create_plano_entregas_overlapping_date_interval(
         ("2023-01-01", "2024-01-02"),  # mais que um ano
     ],
 )
-def test_create_plano_entrega_date_interval_over_a_year(
+def test_create_plano_entregas_date_interval_over_a_year(
     truncate_pe,
     input_pe: dict,
     data_inicio_plano_entregas: str,
