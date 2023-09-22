@@ -100,14 +100,15 @@ def test_update_plano_trabalho(
     # A fixture example_pt cria um novo Plano de Trabalho na API
     # Altera um campo do PT e reenvia pra API (update)
     input_pt["cod_SIAPE_unidade_exercicio"] = 100  # Valor era 99
-    client.put(
+    response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
 
-    # TODO: assert
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json() == input_pt
 
     # Consulta API para conferir se a alteração foi persistida
     response = client.get(
@@ -116,9 +117,8 @@ def test_update_plano_trabalho(
         headers=header_usr_1,
     )
 
-    # TODO: corrigir abaixo
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()[""] == ""
+    assert response.json() == input_pt
 
 
 @pytest.mark.parametrize(
