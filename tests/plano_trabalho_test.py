@@ -188,7 +188,7 @@ def test_create_plano_trabalho_consolidacao_omit_optional_fields(
     input_pt["id_plano_entrega_unidade"] = 557 + offset
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pt['id_plano_trabalho_participante']}",
+        f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -375,7 +375,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pt['id_plano_trabalho_participante']}",
+        f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -390,7 +390,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pt['id_plano_trabalho_participante']}",
+        f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -453,7 +453,7 @@ def test_create_plano_trabalho_date_interval_over_a_year(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{input_pt['id_plano_trabalho_participante']}",
+        f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -701,7 +701,7 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entrega/{id_plano_entrega_existente}",
+        f"/plano_entregas/{id_plano_entrega_existente}",
         json=input_pe,
         headers=header_usr_1,
     )
