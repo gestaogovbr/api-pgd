@@ -12,18 +12,24 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
   web:
     build: ./
     image: api-pgd:latest
     depends_on:
-      - db-api-pgd
+      db-api-pgd:
+        condition: service_healthy
     ports:
       - "5057:5057"
     volumes:
         - ./:/home/api-pgd
     environment:
       - URI_SCHEME=${URI_SCHEME}
-      - HOST_NAME=${HOST_NAME}
+      - FIEF_HOST_NAME=${FIEF_HOST_NAME}
       - PORT=5057
       - SQLALCHEMY_DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
       - MAIL_USERNAME=${MAIL_USERNAME}
@@ -36,19 +42,26 @@ services:
       - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
       - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
       - FIEF_MAIN_ADMIN_API_KEY=${FIEF_MAIN_ADMIN_API_KEY}
+      - FIEF_MAIN_USER_EMAIL=${FIEF_MAIN_USER_EMAIL}
     command:
       ./run_after_db.py "cd src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:5057"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
   fief:
     image: ghcr.io/fief-dev/fief:latest
     depends_on:
-      - db-api-pgd
+      db-api-pgd:
+        condition: service_healthy
     ports:
       - "8000:8000"
     environment:
-      - SECRET=${FIEF_SECRET}
+      - SECRET=${SECRET}
       - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
       - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
-      - ENCRYPTION_KEY=${FIEF_ENCRYPTION_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - FIEF_MAIN_ADMIN_API_KEY=${FIEF_MAIN_ADMIN_API_KEY}
       - PORT=8000
       - ROOT_DOMAIN=fief:8000
@@ -70,16 +83,8 @@ services:
       - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
       - DATABASE_NAME=${FIEF_DB}
       - TELEMETRY_ENABLED=False
-  pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    depends_on:
-      - db-api-pgd
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=pgadmin4@pgadmin.org
-      - PGADMIN_DEFAULT_PASSWORD=admin
-    ports:
-      - "5050:80"
-    volumes:
-      - ./pgadmin_data/servers.json:/pgadmin4/servers.json
-      - ./pgadmin_data/pgadmin:/var/lib/pgadmin
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://0.0.0.0:8000"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 3
