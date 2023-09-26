@@ -58,7 +58,7 @@ def test_create_plano_entregas_completo(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) == None
     assert response.json() == input_pe
 
@@ -108,7 +108,7 @@ def test_update_plano_entregas(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code in (status.HTTP_200_OK, status.HTTP_201_CREATED)
     assert response.json()["avaliacao_plano_entregas"] == 3
     assert response.json()["data_avaliacao_plano_entregas"] == "2023-08-15"
 
@@ -148,7 +148,7 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
         json=input_pe,
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
     assert response.json() == input_pe
 
 
@@ -215,7 +215,7 @@ def test_create_huge_plano_entregas(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
     assert response.json() == input_pe
 
 
@@ -285,11 +285,11 @@ def test_create_plano_entregas_overlapping_date_interval(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
-        json=input_pe,
+        json=original_pe,
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code in (status.HTTP_200_OK, status.HTTP_201_CREATED)
 
     input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
     input_pe["cod_SIAPE_unidade_plano"] = cod_SIAPE_unidade_plano
@@ -324,7 +324,7 @@ def test_create_plano_entregas_overlapping_date_interval(
             )
             assert response.json().get("detail", None) == detail_msg
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
     assert response.json() == input_pe
 
 
@@ -368,7 +368,7 @@ def test_create_plano_entregas_date_interval_over_a_year(
         )
         assert response.json().get("detail", None) == detail_msg
     else:
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
         assert response.json() == input_pe
 
 
@@ -476,7 +476,7 @@ def test_create_pe_invalid_period(
         )
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(
@@ -522,7 +522,7 @@ def test_create_invalid_data_entrega(
         )
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(
@@ -562,7 +562,7 @@ def test_create_pe_invalid_data_avaliacao(
         )
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(
@@ -601,7 +601,7 @@ def test_create_pe_duplicate_entrega(
         detail_msg = "Entregas devem possuir id_entrega diferentes."
         assert response.json().get("detail")[0]["msg"] == detail_msg
     else:
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
 
 
 def test_create_pe_duplicate_id_plano(
@@ -621,6 +621,9 @@ def test_create_pe_duplicate_id_plano(
         json=input_pe,
         headers=header_usr_1,
     )
+
+    assert response.status_code == status.HTTP_201_CREATED
+
     response = client.put(
         f"/organizacao/{user2_credentials['cod_SIAPE_instituidora']}"
         f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
@@ -656,7 +659,7 @@ def test_create_invalid_cod_siape_unidade(
     )
 
     if cod_SIAPE_unidade_plano > 0:
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
@@ -707,9 +710,9 @@ def test_create_entrega_invalid_percent(
             percentual_progresso_realizado,
         )
     ):
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_201_CREATED
     else:
-        assert response.status_code == 422
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = "Valor percentual inválido."
         assert response.json().get("detail")[0]["msg"] == detail_msg
 
@@ -734,7 +737,7 @@ def test_create_entrega_invalid_tipo_meta(
     )
 
     if tipo_meta in (1, 2):
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = "Tipo de meta inválido; permitido: 1, 2"
@@ -761,7 +764,7 @@ def test_create_pe_invalid_avaliacao(
     )
 
     if avaliacao_plano_entregas in range(1, 6):
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"

@@ -33,7 +33,7 @@ def test_put_participante(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) == None
     assert response.json() == input_part
 
@@ -62,7 +62,7 @@ def test_put_duplicate_participante(
         headers=header_usr_2,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) == None
     assert response.json() == input_part
 
@@ -109,7 +109,7 @@ def test_get_participante(
         "/participante/123456",
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
 
 
 def test_get_participante_inexistente(

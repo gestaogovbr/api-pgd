@@ -376,7 +376,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
-        json=input_pt,
+        json=original_pt,
         headers=header_usr_1,
     )
 
@@ -745,7 +745,7 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
         assert response.status_code == status.HTTP_201_CREATED
 
 
-def test_create_pt_duplicate_cod_plano(
+def test_create_pt_duplicate_id_plano(
     input_pt: dict,
     user1_credentials: dict,
     header_usr_1: dict,
@@ -759,6 +759,9 @@ def test_create_pt_duplicate_cod_plano(
         json=input_pt,
         headers=header_usr_1,
     )
+
+    assert response.status_code == status.HTTP_201_CREATED
+
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_trabalho/555",
@@ -766,7 +769,7 @@ def test_create_pt_duplicate_cod_plano(
         headers=header_usr_2,
     )
 
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == status.HTTP_200_OK
     assert response.json().get("detail", None) is None
     assert response.json() == input_pt
 
