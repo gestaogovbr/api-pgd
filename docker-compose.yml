@@ -87,7 +87,7 @@ services:
       - DATABASE_NAME=${FIEF_DB}
       - TELEMETRY_ENABLED=False
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://fief:8000"]
+      test: ["CMD", "curl", "-f", "http://fief:8000/login"]
       interval: 10s
       timeout: 5s
       retries: 3
