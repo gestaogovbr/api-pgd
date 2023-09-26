@@ -16,7 +16,7 @@ fief-config:
 
 .PHONY: up
 up:
-	docker compose up -d --wait --timeout 90
+	docker compose up -d --wait
 
 .PHONY: down
 down:
