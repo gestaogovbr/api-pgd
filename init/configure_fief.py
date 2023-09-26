@@ -21,7 +21,7 @@ if scheme not in ["http", "https"]:
 hostname = os.environ.get("FIEF_HOST_NAME")
 if not hostname:
     raise ValueError("'FIEF_HOST_NAME' environment variable must be set.")
-port = os.environ.get("PORT")
+port = os.environ.get("FIEF_PORT")
 response = fief_admin.client_add_redirect_uri(
     uri=f"{scheme}://{hostname}:{port}/docs/oauth2-redirect"
 )
