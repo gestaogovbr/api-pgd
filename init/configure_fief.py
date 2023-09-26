@@ -13,10 +13,10 @@ fief_admin = FiefAdminHelper(
 )
 
 # Add a redirect URI for API PGD
-scheme = os.environ.get("URI_SCHEME")
+scheme = os.environ.get("FIEF_URI_SCHEME")
 if scheme not in ["http", "https"]:
     raise ValueError(
-        "'URI_SCHEME' environment variable must be either 'http' or 'https'."
+        "'FIEF_URI_SCHEME' environment variable must be either 'http' or 'https'."
     )
 hostname = os.environ.get("FIEF_HOST_NAME")
 if not hostname:

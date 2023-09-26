@@ -28,7 +28,7 @@ services:
     volumes:
         - ./:/home/api-pgd
     environment:
-      - URI_SCHEME=${URI_SCHEME}
+      - FIEF_URI_SCHEME=${FIEF_URI_SCHEME}
       - FIEF_HOST_NAME=${FIEF_HOST_NAME}
       - PORT=5057
       - SQLALCHEMY_DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
