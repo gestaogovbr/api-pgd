@@ -19,7 +19,7 @@ services:
       retries: 3
   web:
     build: ./
-    image: api-pgd:latest
+    # image: api-pgd:latest
     depends_on:
       db-api-pgd:
         condition: service_healthy
@@ -28,9 +28,9 @@ services:
     volumes:
         - ./:/home/api-pgd
     environment:
-      - FIEF_URI_SCHEME=${FIEF_URI_SCHEME}
-      - FIEF_HOST_NAME=${FIEF_HOST_NAME}
-      - PORT=5057
+      - WEB_URI_SCHEME=${WEB_URI_SCHEME}
+      - WEB_HOST_NAME=${WEB_HOST_NAME}
+      - WEB_PORT=5057
       - SQLALCHEMY_DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_FROM=${MAIL_FROM}
@@ -51,7 +51,10 @@ services:
       timeout: 5s
       retries: 3
   fief:
-    image: ghcr.io/fief-dev/fief:latest
+    build:
+      context: ./
+      dockerfile: Dockerfile.fief
+    # image: ghcr.io/fief-dev/fief:latest
     depends_on:
       db-api-pgd:
         condition: service_healthy
@@ -83,8 +86,8 @@ services:
       - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
       - DATABASE_NAME=${FIEF_DB}
       - TELEMETRY_ENABLED=False
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://0.0.0.0:8000"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://fief:8000"]
+      interval: 10s
+      timeout: 5s
+      retries: 3

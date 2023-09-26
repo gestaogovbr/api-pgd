@@ -13,15 +13,15 @@ fief_admin = FiefAdminHelper(
 )
 
 # Add a redirect URI for API PGD
-scheme = os.environ.get("FIEF_URI_SCHEME")
+scheme = os.environ.get("WEB_URI_SCHEME")
 if scheme not in ["http", "https"]:
     raise ValueError(
-        "'FIEF_URI_SCHEME' environment variable must be either 'http' or 'https'."
+        "'WEB_URI_SCHEME' environment variable must be either 'http' or 'https'."
     )
-hostname = os.environ.get("FIEF_HOST_NAME")
+hostname = os.environ.get("WEB_HOST_NAME")
 if not hostname:
-    raise ValueError("'FIEF_HOST_NAME' environment variable must be set.")
-port = os.environ.get("FIEF_PORT")
+    raise ValueError("'WEB_HOST_NAME' environment variable must be set.")
+port = os.environ.get("WEB_PORT")
 response = fief_admin.client_add_redirect_uri(
     uri=f"{scheme}://{hostname}:{port}/docs/oauth2-redirect"
 )
