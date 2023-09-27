@@ -16,7 +16,7 @@ fief-config:
 
 .PHONY: up
 up:
-	docker compose -d up
+	docker compose up -d
 
 .PHONY: down
 down:
