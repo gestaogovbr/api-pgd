@@ -16,7 +16,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres -d api_pgd"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
   web:
     build: ./
     # image: api-pgd:latest
@@ -88,6 +88,6 @@ services:
       TELEMETRY_ENABLED: False
     healthcheck:
       test: ["CMD", "curl", "-f", "http://fief:8000/login"]
-      interval: 15s
+      interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
