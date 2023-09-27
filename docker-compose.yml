@@ -13,10 +13,10 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: api_pgd
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d api_pgd"]
       interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
   web:
     build: ./
     # image: api-pgd:latest
@@ -31,12 +31,7 @@ services:
       WEB_URI_SCHEME: http
       WEB_HOST_NAME: localhost
       WEB_PORT: 5057
-      # ---
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: api_pgd
-      # ---
-      SQLALCHEMY_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
+      SQLALCHEMY_DATABASE_URL: postgresql+psycopg://postgres:postgres@db-api-pgd:5432/api_pgd
       MAIL_USERNAME: api-pgd@email-provider.gov.br
       MAIL_FROM: api-pgd@email-provider.gov.br
       MAIL_PORT: "25"
