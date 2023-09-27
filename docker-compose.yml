@@ -9,9 +9,9 @@ services:
         - ./database:/var/lib/postgresql/data
         - ./init/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: api_pgd
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
       interval: 10s
@@ -28,21 +28,26 @@ services:
     volumes:
         - ./:/home/api-pgd
     environment:
-      - WEB_URI_SCHEME=${WEB_URI_SCHEME}
-      - WEB_HOST_NAME=${WEB_HOST_NAME}
-      - WEB_PORT=5057
-      - SQLALCHEMY_DATABASE_URL=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
-      - MAIL_USERNAME=${MAIL_USERNAME}
-      - MAIL_FROM=${MAIL_FROM}
-      - MAIL_PORT=${MAIL_PORT}
-      - MAIL_SERVER=${MAIL_SERVER}
-      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - FIEF_BASE_TENANT_URL=${FIEF_BASE_TENANT_URL}
-      - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
-      - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
-      - FIEF_MAIN_ADMIN_API_KEY=${FIEF_MAIN_ADMIN_API_KEY}
-      - FIEF_MAIN_USER_EMAIL=${FIEF_MAIN_USER_EMAIL}
+      WEB_URI_SCHEME: http
+      WEB_HOST_NAME: localhost
+      WEB_PORT: 5057
+      # ---
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: api_pgd
+      # ---
+      SQLALCHEMY_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db-api-pgd:5432/${POSTGRES_DB}
+      MAIL_USERNAME: api-pgd@email-provider.gov.br
+      MAIL_FROM: api-pgd@email-provider.gov.br
+      MAIL_PORT: "25"
+      MAIL_SERVER: smtp.email-provider.gov.br
+      MAIL_FROM_NAME: API PGD
+      MAIL_PASSWORD: ""
+      FIEF_BASE_TENANT_URL: http://fief:8000
+      FIEF_CLIENT_ID: FNmytF0epvJxHKaUYEDEUVX-TchhOpkRTB01Y2dKY08
+      FIEF_CLIENT_SECRET: D2GfMzCmlpwgBTmwQ1_2CUSMSrEWrHE7CIOHwSp0a-Y
+      FIEF_MAIN_ADMIN_API_KEY: Qa7PCdiiRP8sfuMXjbVM7G74RMuadosM
+      FIEF_MAIN_USER_EMAIL: test-pgd@nonexisting.gov.br
     command:
       ./run_after_db.py "cd src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
     healthcheck:
@@ -61,33 +66,33 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - SECRET=${SECRET}
-      - FIEF_CLIENT_ID=${FIEF_CLIENT_ID}
-      - FIEF_CLIENT_SECRET=${FIEF_CLIENT_SECRET}
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
-      - FIEF_MAIN_ADMIN_API_KEY=${FIEF_MAIN_ADMIN_API_KEY}
-      - PORT=8000
-      - ROOT_DOMAIN=fief:8000
-      - FIEF_DOMAIN=fief:8000
-      - FIEF_MAIN_USER_EMAIL=${FIEF_MAIN_USER_EMAIL}
-      - FIEF_MAIN_USER_PASSWORD=${FIEF_MAIN_USER_PASSWORD}
-      - CSRF_COOKIE_SECURE=False
-      - SESSION_DATA_COOKIE_SECURE=False
-      - USER_LOCALE_COOKIE_SECURE=False
-      - LOGIN_HINT_COOKIE_SECURE=False
-      - LOGIN_SESSION_COOKIE_SECURE=False
-      - REGISTRATION_SESSION_COOKIE_SECURE=False
-      - SESSION_COOKIE_SECURE=False
-      - FIEF_ADMIN_SESSION_COOKIE_SECURE=False
-      - DATABASE_TYPE=POSTGRESQL
-      - DATABASE_HOST=db-api-pgd
-      - DATABASE_PORT=5432
-      - DATABASE_USERNAME=${POSTGRES_USER}
-      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
-      - DATABASE_NAME=${FIEF_DB}
-      - TELEMETRY_ENABLED=False
+      SECRET: Ioy2a6waEN6g2knCBbe0G23obQ2wl8_0-H9WyuQv0Ra7oj6_yK4IF9UWMUmSyEQ9DbIZX6XlQ7xCVIpPWQbSgg
+      FIEF_CLIENT_ID: FNmytF0epvJxHKaUYEDEUVX-TchhOpkRTB01Y2dKY08
+      FIEF_CLIENT_SECRET: D2GfMzCmlpwgBTmwQ1_2CUSMSrEWrHE7CIOHwSp0a-Y
+      ENCRYPTION_KEY: u-yug5v5SvQQkNmgM5NLXNRvWbWpUJAdYaSETTwQ3rk=
+      FIEF_MAIN_ADMIN_API_KEY: Qa7PCdiiRP8sfuMXjbVM7G74RMuadosM
+      PORT: "8000"
+      ROOT_DOMAIN: fief:8000
+      FIEF_DOMAIN: fief:8000
+      FIEF_MAIN_USER_EMAIL: test-pgd@nonexisting.gov.br
+      FIEF_MAIN_USER_PASSWORD: 123456*abcdef
+      CSRF_COOKIE_SECURE: False
+      SESSION_DATA_COOKIE_SECURE: False
+      USER_LOCALE_COOKIE_SECURE: False
+      LOGIN_HINT_COOKIE_SECURE: False
+      LOGIN_SESSION_COOKIE_SECURE: False
+      REGISTRATION_SESSION_COOKIE_SECURE: False
+      SESSION_COOKIE_SECURE: False
+      FIEF_ADMIN_SESSION_COOKIE_SECURE: False
+      DATABASE_TYPE: POSTGRESQL
+      DATABASE_HOST: db-api-pgd
+      DATABASE_PORT: "5432"
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: fief
+      TELEMETRY_ENABLED: False
     healthcheck:
       test: ["CMD", "curl", "-f", "http://fief:8000/login"]
-      interval: 20s
+      interval: 15s
       timeout: 5s
-      retries: 10
+      retries: 5
