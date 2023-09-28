@@ -163,7 +163,9 @@ def truncate_users():
     for user in USERS_CREDENTIALS:
         user_search = fief_admin.search_user(email=user["username"]).json()
         if user_search["count"] > 0:
-            fief_admin.delete_user(email=user["username"])
+            response = fief_admin.delete_user(email=user["username"])
+            response.raise_for_status()
+            return response
 
 
 @pytest.fixture(scope="module")
@@ -171,10 +173,12 @@ def register_admin(
     truncate_users,
     admin_credentials: dict,
 ) -> httpx.Response:
-    return fief_admin.register_user(
+    response = fief_admin.register_user(
         email=admin_credentials["username"],
         cod_SIAPE_instituidora=admin_credentials["cod_SIAPE_instituidora"],
     )
+    response.raise_for_status()
+    return response
 
 
 @pytest.fixture(scope="module")
@@ -182,10 +186,12 @@ def register_user_1(
     truncate_users,
     user1_credentials: dict,
 ) -> httpx.Response:
-    return fief_admin.register_user(
+    response = fief_admin.register_user(
         email=user1_credentials["username"],
         cod_SIAPE_instituidora=user1_credentials["cod_SIAPE_instituidora"],
     )
+    response.raise_for_status()
+    return response
 
 
 @pytest.fixture(scope="module")
@@ -193,10 +199,12 @@ def register_user_2(
     truncate_users,
     user2_credentials: dict,
 ) -> httpx.Response:
-    return fief_admin.register_user(
+    response = fief_admin.register_user(
         email=user2_credentials["username"],
         cod_SIAPE_instituidora=user2_credentials["cod_SIAPE_instituidora"],
     )
+    response.raise_for_status()
+    return response
 
 
 @pytest.fixture(scope="module")
