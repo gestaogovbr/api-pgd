@@ -159,14 +159,12 @@ def truncate_participantes(client: Client, header_admin: dict):
 
 
 @pytest.fixture(scope="module")
-def truncate_users():
-    for user in USERS_CREDENTIALS:
+def truncate_users(admin_credentials: dict):
+    for user in USERS_CREDENTIALS + [admin_credentials]:
         user_search = fief_admin.search_user(email=user["username"]).json()
         if user_search["count"] > 0:
             response = fief_admin.delete_user(email=user["username"])
             response.raise_for_status()
-            return response
-
 
 @pytest.fixture(scope="module")
 def register_admin(
