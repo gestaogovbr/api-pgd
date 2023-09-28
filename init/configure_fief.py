@@ -30,7 +30,7 @@ response = fief_admin.client_add_redirect_uri(
     # uri=f"{scheme}://{hostname}:{port}/docs/oauth2-redirect"
     uri=uri
 )
-print(f"Status: {response.status}")
+print(f"Status: {response.status_code}")
 response.raise_for_status()
 
 # Add custom user fields
@@ -41,7 +41,7 @@ response = fief_admin.create_user_field(
     field_type="INTEGER",
     default_value=0,
 )
-print(f"Status: {response.status}")
+print(f"Status: {response.status_code}")
 response.raise_for_status()
 
 # Set superuser field for the admin user
@@ -51,5 +51,5 @@ response = fief_admin.patch_user(
     email=admin_user,
     data={"is_superuser": True}
 )
-print(f"Status: {response.status}")
+print(f"Status: {response.status_code}")
 response.raise_for_status()
