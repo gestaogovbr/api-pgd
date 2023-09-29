@@ -366,7 +366,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
     client: Client,
 ):
     """Tenta criar uma plano de trabalho com sobreposição de intervalo de
-    data na mesma unidade.
+    data na mesma unidade para o mesmo participante.
 
     O Plano de Trabalho original é criado e então é testada a criação de
     cada novo Plano de Trabalho, com sobreposição ou não das datas, sendo
