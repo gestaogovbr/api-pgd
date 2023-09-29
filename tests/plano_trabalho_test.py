@@ -576,7 +576,7 @@ def test_create_pt_invalid_dates(
         (84, "2023-04-01", "2023-04-01", "2023-04-01", "2023-04-01"),
     ],
 )
-def test_create_pt_invalid_data_consolidacao(
+def test_create_pt_data_consolidacao_out_of_bounds(
     input_pt: dict,
     id_plano_trabalho_participante: int,
     data_inicio_plano: str,

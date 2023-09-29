@@ -489,7 +489,7 @@ def test_create_pe_invalid_period(
         (93, "2023-08-01", "2023-09-01", "2023-10-01"),
     ],
 )
-def test_create_invalid_data_entrega(
+def test_create_data_entrega_out_of_bounds(
     input_pe: dict,
     id_plano_entrega_unidade: int,
     data_inicio_plano_entregas: str,
