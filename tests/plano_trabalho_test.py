@@ -261,7 +261,8 @@ def test_create_huge_plano_trabalho(
 
     assert response.status_code == status.HTTP_201_CREATED
 
-
+# TODO: Verbo PATCH poderá ser implementado em versão futura.
+# 
 # @pytest.mark.parametrize(
 #     "verb, missing_fields",
 #     itertools.product(  # todas as combinações entre

@@ -219,7 +219,8 @@ def test_create_huge_plano_entregas(
     assert response.json() == input_pe
 
 
-# TODO: verbo PATCH será implementado em versão futura
+# TODO: verbo PATCH poderá ser implementado em versão futura.abs
+# 
 # @pytest.mark.parametrize("missing_fields", fields_plano_entregas["mandatory"])
 # def test_patch_plano_entregas_inexistente(
 #     truncate_pe,
