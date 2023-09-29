@@ -237,20 +237,20 @@ def test_create_huge_plano_trabalho(
     client: Client,
 ):
     """Testa a criação de um plano de trabalho com grande volume de dados.
-    
-    TODO: atualizar para o modelo atual, com contribuições e consolidações
-    em vez de atividades.
     """
-    def create_huge_atividade(id_atividade: str):
-        new_atividade = input_pt["atividades"][0].copy()
-        new_atividade["id_atividade"] = id_atividade
-        new_atividade["entrega_esperada"] = "x" * 1000000  # 1mi de caracteres
-        new_atividade["justificativa"] = "x" * 1000000  # 1mi de caracteres
-        return new_atividade
+    def create_huge_contribuicao():
+        contribuicao = input_pt["contribuicoes"][0].copy()
+        contribuicao["descricao_contribuicao"] = "x" * 1000000  # 1mi de caracteres
+        return contribuicao
 
-    for i in range(200):
-        # TODO: corrigir
-        input_pt["atividades"].append(create_huge_atividade(f"unique-key-{i}"))
+    def create_huge_consolidacao():
+        consolidacao = input_pt["consolidacoes"][0].copy()
+        consolidacao["descricao_consolidacao"] = "x" * 1000000  # 1mi de caracteres
+        return consolidacao
+
+    for _ in range(200):
+        input_pt["contribuicoes"].append(create_huge_contribuicao())
+        input_pt["consolidacoes"].append(create_huge_consolidacao())
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
