@@ -617,8 +617,102 @@ def test_create_pt_data_consolidacao_out_of_bounds(
         assert response.status_code == status.HTTP_201_CREATED
 
 
-# TODO: Incluir teste de consolidação com sobreposições de datas,
-#       copiar da entrega
+@pytest.mark.parametrize(
+    "id_plano_trabalho_participante, cod_SIAPE_unidade_exercicio, "
+    "cpf_participante, "
+    "data_inicio_registro, data_fim_registro",
+    [
+        (101, 99, 64635210600, "2023-01-01", "2023-01-15"),  # igual ao exemplo
+        (102, 99, 64635210600, "2023-01-06", "2023-01-31"),  # sem sobreposição
+        (103, 99, 64635210600, "2022-12-01", "2023-01-08"),  # sobreposição no início
+        (104, 99, 64635210600, "2023-01-09", "2023-01-31"),  # sobreposição no fim
+        (105, 99, 64635210600, "2023-01-02", "2023-01-08"),  # contido no período
+        (106, 99, 64635210600, "2022-12-31", "2023-01-16"),  # contém o período
+        (105, 100, 64635210600, "2023-01-01", "2023-01-15"),  # outra unidade
+        (105, 99, 82893311776, "2023-01-01", "2023-01-15"),  # outro participante
+        (105, 100, 82893311776, "2023-01-01", "2023-01-15"),  # ambos diferentes
+    ],
+)
+def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
+    truncate_pt,
+    input_pt: dict,
+    id_plano_trabalho_participante: int,
+    cod_SIAPE_unidade_exercicio: int,
+    cpf_participante: int,
+    data_inicio_registro: str,
+    data_fim_registro: str,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
+):
+    """Tenta criar uma plano de trabalho, cujas consolidações tenham
+    sobreposição de intervalo de data na mesma unidade para o mesmo
+    participante.
+
+    O Plano de Trabalho original é criado e então é testada a criação de
+    cada novo Plano de Trabalho, com sobreposição ou não das datas de
+    consolidação, sendo da mesma ou outra unidade, de mesmo ou outro
+    participante, conforme especificado nos parâmetros de teste.
+
+    TODO: Refatorar para cruzar as consolidações em um único plano.
+    """
+    original_pt = input_pt.copy()
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
+        json=original_pt,
+        headers=header_usr_1,
+    )
+
+    assert response.status_code in (status.HTTP_200_OK, status.HTTP_201_CREATED)
+
+    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
+    input_pt["cod_SIAPE_unidade_exercicio"] = cod_SIAPE_unidade_exercicio
+    input_pt["cpf_participante"] = cpf_participante
+    input_pt["consolidacoes"][0]["data_inicio_registro"] = data_inicio_registro
+    input_pt["consolidacoes"][0]["data_fim_registro"] = data_fim_registro
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
+
+    if (
+        # se são participantes diferentes, não há problema em haver
+        # sobreposição
+        (
+            input_pt["cod_SIAPE_unidade_exercicio"]
+            == original_pt["cod_SIAPE_unidade_exercicio"]
+        )
+        # se são participantes diferentes, não há problema em haver
+        # sobreposição
+        and (input_pt["cpf_participante"] == original_pt["cpf_participante"])
+        # se algum dos planos estiver cancelado, não há problema em haver
+        # sobreposição
+        and any((plano.get("cancelado", False) for plano in (input_pt, original_pt)))
+    ):
+        if (
+            date(input_pt["data_inicio_plano"])
+            < date(original_pt["data_termino_plano"])
+        ) and (
+            date(input_pt["data_termino_plano"])
+            > date(original_pt["data_inicio_plano"])
+        ):
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_msg = (
+                "Já existe um plano de trabalho para este "
+                "cod_SIAPE_unidade_exercicio para este cpf_participante "
+                "no período informado."
+            )
+            assert response.json().get("detail", None) == detail_msg
+            return
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json() == input_pt
+
 
 
 @pytest.mark.parametrize(
