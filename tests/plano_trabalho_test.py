@@ -365,12 +365,13 @@ def test_create_plano_trabalho_overlapping_date_interval(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar uma plano de entregas com sobreposição de intervalo de
+    """Tenta criar uma plano de trabalho com sobreposição de intervalo de
     data na mesma unidade.
 
-    O Plano de Entregas original é criado e então é testada a criação de
-    cada novo Plano de Entregas, com sobreposição ou não das datas,
-    conforme especificado nos parâmetros de teste.
+    O Plano de Trabalho original é criado e então é testada a criação de
+    cada novo Plano de Trabalho, com sobreposição ou não das datas, sendo
+    da mesma ou outra unidade, de mesmo ou outro participante, conforme
+    especificado nos parâmetros de teste.
     """
     original_pt = input_pt.copy()
 
