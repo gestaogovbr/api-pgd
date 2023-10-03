@@ -262,7 +262,7 @@ def test_create_huge_plano_trabalho(
     assert response.status_code == status.HTTP_201_CREATED
 
 # TODO: Verbo PATCH poderá ser implementado em versão futura.
-# 
+#
 # @pytest.mark.parametrize(
 #     "verb, missing_fields",
 #     itertools.product(  # todas as combinações entre
@@ -749,7 +749,38 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-# TODO: Incluir teste de domínio do campo tipo_contribuicao da contribuição.
+@pytest.mark.parametrize(
+    "tipo_contribuicao",
+    [
+        (-2),
+        (0),
+        (1),
+        (4)
+    ],
+)
+def test_create_pt_invalid_tipo_contribuicao(
+    input_pt: dict,
+    tipo_contribuicao: int,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pt,
+    client: Client,
+):
+    """Tenta submeter um plano de trabalho com tipo_contribuicao inválido"""
+    input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
+
+    if tipo_contribuicao in range(1, 4):
+        assert response.status_code == status.HTTP_201_CREATED
+    else:
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_msg = "Tipo de contribuição inválida; permitido: 1 a 3"
+        assert response.json().get("detail") == detail_msg
 
 
 @pytest.mark.parametrize(
