@@ -64,11 +64,13 @@ class PlanoEntregas(Base):
     comment="Avaliação do plano de entregas pelo nível hierárquico "
             "superior ao da chefia da unidade de execução, em até trinta "
             "dias após o término do plano de entregas, em uma das seguintes "
-            "escalas: I - excepcional: plano de entregas executado com "
-            "desempenho muito acima do esperado; II - alto desempenho: "
-            "plano de entregas executado com desempenho acima do esperado; "
-            "III - adequado: plano de entregas executado dentro do esperado; "
-            "IV - inadequado: plano de entregas executado abaixo do esperado; "
+            "escalas:\n\n\n"
+            "I - excepcional: plano de entregas executado com "
+            "desempenho muito acima do esperado;\n\n"
+            "II - alto desempenho: "
+            "plano de entregas executado com desempenho acima do esperado;\n\n"
+            "III - adequado: plano de entregas executado dentro do esperado;\n\n"
+            "IV - inadequado: plano de entregas executado abaixo do esperado;\n\n"
             "ou V - plano de entregas não executado"
     )
     data_avaliacao_plano_entregas = Column(
@@ -242,7 +244,7 @@ class PlanoTrabalho(Base):
     cod_SIAPE_unidade_exercicio = Column(
         Integer,
         nullable=False,
-        comment="Código da unidade organizacional (UORG) no Sistema Integrado"
+        comment="Código da unidade organizacional (UORG) no Sistema Integrado "
                 "de Administração de Recursos Humanos (Siape) onde o participante "
                 "se encontra formalmente em exercício",
     )
@@ -422,11 +424,11 @@ class Consolidacao(Base):
         Integer,
         comment="Avaliação do plano de trabalho do participante pela chefia da "
         "unidade de execução ou a quem ela delegar, em até vinte dias após a "
-        "data limite do registro feito pelo participante, em uma das seguintes escalas:"
-        "I - excepcional: plano de trabalho executado muito acima do esperado; "
-        "II - alto desempenho: plano de trabalho executado acima do esperado; "
-        "III - adequado: plano de trabalho executado dentro do esperado; "
-        "IV - inadequado: plano de trabalho executado abaixo do esperado ou parcialmente executado;"
+        "data limite do registro feito pelo participante, em uma das seguintes escalas:\n\n\n"
+        "I - excepcional: plano de trabalho executado muito acima do esperado;\n\n"
+        "II - alto desempenho: plano de trabalho executado acima do esperado;\n\n"
+        "III - adequado: plano de trabalho executado dentro do esperado;\n\n"
+        "IV - inadequado: plano de trabalho executado abaixo do esperado ou parcialmente executado;\n\n"
         "V - não executado: plano de trabalho integralmente não executado",
     )
     data_atualizacao = Column(DateTime)
