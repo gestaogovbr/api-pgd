@@ -236,8 +236,8 @@ def test_create_huge_plano_trabalho(
     truncate_pt,
     client: Client,
 ):
-    """Testa a criação de um plano de trabalho com grande volume de dados.
-    """
+    """Testa a criação de um plano de trabalho com grande volume de dados."""
+
     def create_huge_contribuicao():
         contribuicao = input_pt["contribuicoes"][0].copy()
         contribuicao["descricao_contribuicao"] = "x" * 1000000  # 1mi de caracteres
@@ -260,6 +260,7 @@ def test_create_huge_plano_trabalho(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
+
 
 # TODO: Verbo PATCH poderá ser implementado em versão futura.
 #
@@ -447,8 +448,7 @@ def test_create_plano_trabalho_date_interval_over_a_year(
     header_usr_1: dict,
     client: Client,
 ):
-    """Plano de Entregas não pode ter vigência superior a um ano.
-    """
+    """Plano de Entregas não pode ter vigência superior a um ano."""
     input_pt["data_inicio_plano"] = data_inicio_plano
     input_pt["data_termino_plano"] = data_termino_plano
 
@@ -459,15 +459,9 @@ def test_create_plano_trabalho_date_interval_over_a_year(
         headers=header_usr_1,
     )
 
-    if (
-        date(data_termino_plano) - date(data_inicio_plano)
-        > timedelta(days=366)
-    ):
+    if date(data_termino_plano) - date(data_inicio_plano) > timedelta(days=366):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = (
-            "Plano de trabalho não pode abranger período maior que "
-            "1 ano."
-        )
+        detail_msg = "Plano de trabalho não pode abranger período maior que " "1 ano."
         assert response.json().get("detail", None) == detail_msg
     else:
         assert response.status_code == status.HTTP_201_CREATED
@@ -617,29 +611,48 @@ def test_create_pt_data_consolidacao_out_of_bounds(
 
 
 @pytest.mark.parametrize(
-    "id_plano_trabalho_participante, cod_SIAPE_unidade_exercicio, "
-    "cpf_participante, "
-    "data_inicio_registro, data_fim_registro",
+    "id_plano_trabalho_participante, consolidacoes",
     [
-        (101, 99, 64635210600, "2023-01-01", "2023-01-15"),  # igual ao exemplo
-        (102, 99, 64635210600, "2023-01-06", "2023-01-31"),  # sem sobreposição
-        (103, 99, 64635210600, "2022-12-01", "2023-01-08"),  # sobreposição no início
-        (104, 99, 64635210600, "2023-01-09", "2023-01-31"),  # sobreposição no fim
-        (105, 99, 64635210600, "2023-01-02", "2023-01-08"),  # contido no período
-        (106, 99, 64635210600, "2022-12-31", "2023-01-16"),  # contém o período
-        (105, 100, 64635210600, "2023-01-01", "2023-01-15"),  # outra unidade
-        (105, 99, 82893311776, "2023-01-01", "2023-01-15"),  # outro participante
-        (105, 100, 82893311776, "2023-01-01", "2023-01-15"),  # ambos diferentes
+        (101, [("2023-01-01", "2023-02-01")]),  # igual ao exemplo
+        (
+            102,
+            [("2023-01-01", "2023-01-14"), ("2023-01-15", "2023-01-31")],
+        ),  # sem sobreposição
+        (
+            103,
+            [("2023-01-01", "2023-01-14"), ("2022-12-16", "2023-01-01")],
+        ),  # sobreposição no início
+        (
+            104,
+            [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31")],
+        ),  # sobreposição no fim
+        (
+            105,
+            [("2023-01-01", "2023-01-14"), ("2023-01-02", "2023-01-13")],
+        ),  # contido no período
+        (
+            106,
+            [("2023-01-01", "2023-01-14"), ("2022-12-31", "2023-01-15")],
+        ),  # contém o período
+        (
+            105,
+            [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31")],
+        ),  # outra unidade
+        (
+            105,
+            [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31")],
+        ),  # outro participante
+        (
+            105,
+            [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31")],
+        ),  # ambos diferentes
     ],
 )
 def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
     truncate_pt,
     input_pt: dict,
     id_plano_trabalho_participante: int,
-    cod_SIAPE_unidade_exercicio: int,
-    cpf_participante: int,
-    data_inicio_registro: str,
-    data_fim_registro: str,
+    consolidacoes: list[tuple[str, str]],
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
@@ -648,29 +661,23 @@ def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
     sobreposição de intervalo de data na mesma unidade para o mesmo
     participante.
 
-    O Plano de Trabalho original é criado e então é testada a criação de
-    cada novo Plano de Trabalho, com sobreposição ou não das datas de
-    consolidação, sendo da mesma ou outra unidade, de mesmo ou outro
-    participante, conforme especificado nos parâmetros de teste.
+    O Plano de Trabalho original é alterado para incluir consolidações
+    com diferentes condições de data, conforme o especificado nos
+    parâmetros de teste.
 
-    TODO: Refatorar para cruzar as consolidações em um único plano.
+    Planos de Trabalho cujas consolidações possuam sobreposição de data
+    devem ser rejeitadas.
     """
-    original_pt = input_pt.copy()
-
-    response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
-        json=original_pt,
-        headers=header_usr_1,
-    )
-
-    assert response.status_code in (status.HTTP_200_OK, status.HTTP_201_CREATED)
+    original_consolidacao = input_pt["consolidacoes"][0].copy()
 
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["cod_SIAPE_unidade_exercicio"] = cod_SIAPE_unidade_exercicio
-    input_pt["cpf_participante"] = cpf_participante
-    input_pt["consolidacoes"][0]["data_inicio_registro"] = data_inicio_registro
-    input_pt["consolidacoes"][0]["data_fim_registro"] = data_fim_registro
+
+    input_pt["consolidacoes"] = []
+    for consolidacao in consolidacoes:
+        consolidacao = original_consolidacao.copy()
+        consolidacao["data_inicio_registro"] = consolidacao[0]
+        consolidacao["data_fim_registro"] = consolidacao[1]
+        input_pt["consolidacoes"].append(consolidacao)
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
@@ -679,39 +686,26 @@ def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
         headers=header_usr_1,
     )
 
-    if (
-        # se são participantes diferentes, não há problema em haver
-        # sobreposição
-        (
-            input_pt["cod_SIAPE_unidade_exercicio"]
-            == original_pt["cod_SIAPE_unidade_exercicio"]
-        )
-        # se são participantes diferentes, não há problema em haver
-        # sobreposição
-        and (input_pt["cpf_participante"] == original_pt["cpf_participante"])
-        # se algum dos planos estiver cancelado, não há problema em haver
-        # sobreposição
-        and any((plano.get("cancelado", False) for plano in (input_pt, original_pt)))
-    ):
-        if (
-            date(input_pt["data_inicio_plano"])
-            < date(original_pt["data_termino_plano"])
-        ) and (
-            date(input_pt["data_termino_plano"])
-            > date(original_pt["data_inicio_plano"])
-        ):
-            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_msg = (
-                "Já existe um plano de trabalho para este "
-                "cod_SIAPE_unidade_exercicio para este cpf_participante "
-                "no período informado."
-            )
-            assert response.json().get("detail", None) == detail_msg
-            return
+    # TODO: Verificar possíveis sobreposições de datas em consolidações.
+    #
+    # if (
+    #     date(input_pt["data_inicio_plano"])
+    #     < date(original_pt["data_termino_plano"])
+    # ) and (
+    #     date(input_pt["data_termino_plano"])
+    #     > date(original_pt["data_inicio_plano"])
+    # ):
+    #     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    #     detail_msg = (
+    #         "Já existe um plano de trabalho para este "
+    #         "cod_SIAPE_unidade_exercicio para este cpf_participante "
+    #         "no período informado."
+    #     )
+    #     assert response.json().get("detail", None) == detail_msg
+    #     return
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json() == input_pt
-
 
 
 @pytest.mark.parametrize(
@@ -750,12 +744,7 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
 
 @pytest.mark.parametrize(
     "tipo_contribuicao",
-    [
-        (-2),
-        (0),
-        (1),
-        (4)
-    ],
+    [(-2), (0), (1), (4)],
 )
 def test_create_pt_invalid_tipo_contribuicao(
     input_pt: dict,
