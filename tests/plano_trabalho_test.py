@@ -365,7 +365,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar uma plano de trabalho com sobreposição de intervalo de
+    """Tenta criar um plano de trabalho com sobreposição de intervalo de
     data na mesma unidade para o mesmo participante.
 
     O Plano de Trabalho original é criado e então é testada a criação de
@@ -645,7 +645,7 @@ def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar uma plano de trabalho, cujas consolidações tenham
+    """Tenta criar um plano de trabalho, cujas consolidações tenham
     sobreposição de intervalo de data na mesma unidade para o mesmo
     participante.
 

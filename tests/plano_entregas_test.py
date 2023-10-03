@@ -274,7 +274,7 @@ def test_create_plano_entregas_overlapping_date_interval(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar uma plano de entregas com sobreposição de intervalo de
+    """Tenta criar um plano de entregas com sobreposição de intervalo de
     data na mesma unidade.
 
     O Plano de Entregas original é criado e então é testada a criação de
