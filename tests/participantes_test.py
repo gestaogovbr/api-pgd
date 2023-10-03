@@ -67,8 +67,27 @@ def test_put_duplicate_participante(
     assert response.json() == input_part
 
 
-# TODO: Adicionar teste para verificar consistência entre parâmetros da URL
-#       e conteúdo do JSON
+def test_create_participante_inconsistent(
+    input_part: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_participantes,
+    client: Client,
+):
+    """Tenta submeter participante inconsistente (URL difere do JSON)"""
+    input_part["matricula_siape"] = 678910
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/participante/123456",
+        json=input_part,
+        headers=header_usr_1,  # diferente de 678910
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    detail_msg = (
+        "Parâmetro matricula_siape na URL e no JSON devem ser iguais"
+    )
+    assert response.json().get("detail", None) == detail_msg
+
 
 
 @pytest.mark.parametrize("missing_fields", enumerate(fields_participantes))
