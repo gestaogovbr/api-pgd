@@ -113,3 +113,25 @@ async def truncate_plano_trabalho(
         result = await session.execute(text("TRUNCATE plano_trabalho CASCADE;"))
         await session.commit()
         return result
+
+async def truncate_plano_entregas(
+    db_session: Session,
+):
+    """Apaga a tabela plano_entregas.
+    Usado no ambiente de testes de integração contínua.
+    """
+    async for session in db_session:
+        result = await session.execute(text("TRUNCATE plano_entregas CASCADE;"))
+        await session.commit()
+        return result
+
+async def truncate_status_participante(
+    db_session: Session,
+):
+    """Apaga a tabela status_participante.
+    Usado no ambiente de testes de integração contínua.
+    """
+    async for session in db_session:
+        result = await session.execute(text("TRUNCATE status_participante CASCADE;"))
+        await session.commit()
+        return result
