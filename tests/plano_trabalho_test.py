@@ -398,8 +398,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
     )
 
     if (
-        # se são participantes diferentes, não há problema em haver
-        # sobreposição
+        # se são unidades diferentes, não há problema em haver sobreposição
         (
             input_pt["cod_SIAPE_unidade_exercicio"]
             == original_pt["cod_SIAPE_unidade_exercicio"]
