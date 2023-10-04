@@ -47,8 +47,11 @@ def test_put_duplicate_participante(
     truncate_participantes,
     client: Client,
 ):
-    """Testa a submissão de um participante duplicado
-    TODO: Verificar regra negocial"""
+    """Testa o envio de um mesmo participante em unidades diferentes
+    (é possível, por exemplo, quando o participante altera a sua
+    lotação. Nesse caso tem que se manter o(s) registro(s) anterior(es)
+    concomitantemente).
+    """
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         "/participante/123456",
