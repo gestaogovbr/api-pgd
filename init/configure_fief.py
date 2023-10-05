@@ -23,6 +23,16 @@ if not hostname:
     raise ValueError("'WEB_HOST_NAME' environment variable must be set.")
 port = os.environ.get("WEB_PORT")
 
+# Add localhost redirect URI
+uri = f"{scheme}://localhost:{port}/docs/oauth2-redirect"
+print(f"Adding redirect URI: {uri}...")
+response = fief_admin.client_add_redirect_uri(
+    # uri=f"{scheme}://{hostname}:{port}/docs/oauth2-redirect"
+    uri=uri
+)
+print(f"Status: {response.status_code}")
+response.raise_for_status()
+
 # Add redirect URI
 uri = f"{scheme}://{hostname}:{port}/docs/oauth2-redirect"
 print(f"Adding redirect URI: {uri}...")

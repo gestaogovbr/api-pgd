@@ -222,13 +222,6 @@ class FiefAdminHelper:
         client = self.get_client(client_id)
         redirect_uris = client["redirect_uris"]
 
-        # remove http URIs that are not localhost (will be rejected by
-        # Fief's API otherwise)
-        for uri_string in redirect_uris:
-            existing_uri = urllib.parse.urlparse(uri_string)
-            if existing_uri.scheme == "http" and existing_uri.hostname != "localhost":
-                redirect_uris.remove(uri_string)
-
         redirect_uris.append(uri)
         data = {
             "redirect_uris": redirect_uris,
