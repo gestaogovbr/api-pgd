@@ -60,10 +60,17 @@ class FiefAdminHelper:
             "Accept": "application/json",
             "Authorization": f"Bearer {self.api_token}",
         }
-        if method in ["PATCH", "POST", "PUT"]:
+        if method in ["PATCH", "PUT"]:
             headers["Content-Type"] = "application/json"
             return httpx.request(
                 method=method,
+                url=url,
+                headers=headers,
+                json=data,
+            )
+        if method == "POST":
+            headers["Content-Type"] = "application/json"
+            return httpx.post(
                 url=url,
                 headers=headers,
                 json=data,
@@ -135,7 +142,7 @@ class FiefAdminHelper:
             "password": password,
             "is_active": True,
             "is_superuser": is_superuser,
-            "is_verified": False,
+            "email_verified": True,
             "fields": fields,
             "tenant_id": self.first_tenant["id"],
         }
