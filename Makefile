@@ -13,7 +13,7 @@ init-env:
 
 # Initialize environment variables for tests in CI/CD
 .PHONY: init-env-tests
-init-env:
+init-env-tests:
 	cp -n ./init/.env.tests .env
 
 # Apply initial configuration to Fief instance (container must be already
