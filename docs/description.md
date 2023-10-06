@@ -106,7 +106,7 @@ Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
 * O `cpf_participante` deve possuir exatamente 11 dígitos e sem máscaras.
 * A `matricula_siape` deve possuir 7 dígitos.
 * `jornada_trabalho_semanal` deve ser maior que 0.
-* Valores permitidos para a `tipo_contribuicao`:
+* Valores permitidos para a `modalidade_execucao`:
   * `1`: Presencial;
   * `2`: Teletrabalho Parcial;
   * `3`: Teletrabalho Integral;
