@@ -22,34 +22,71 @@ para descobrir mais detalhes e quais campos são obrigatórios para as
 Atividades e os Planos de Trabalho.
 
 -------
-### Usuários
-* Para geração de uma nova senha de usuário, utilizar o método `Forgot Password`.
-Um token será encaminhado ao email cadastrado para geração da nova senha.
-Em seguida, acessar o método `Reset Password`, informando o token e a nova
-senha.
+## Gestão de Usuários
 
-* Alteração de dados de usuário deve ser realizada pelo superusuário
-através do método `Update User`. Informar no **Request Body** somente os
-dados que devem ser alterados (caso informe um email já existente o sistema
-retornará erro).
+O cadastro de usuários é feito pela aplicação Fief. Para cadastrar um
+novo usuário, faça o login como administrador do Fief.
 
+Na coluna da esquerda, selecione a opção "Users". Clique o botão
+vermelho "add new user". Digite o e-mail e a senha do usuário, bem como
+o código SIAPE da unidade instituidora do PGD, para a qual será realizada
+a carga dos dados.
+
+(detalhar mais, possivelmente mover para página separada colocando link
+aqui, incluir imagens de tela)
+
+-------
+## Endpoints
+
+A API consiste em três endpoints principais.
+
+Como algumas entidades fazem referência a outras, as que são referenciadas
+precisam ser enviadas primeiro. Por isso, os dados devem ser enviados
+na seguinte ordem:
+
+1. Participantes
+2. Planos de Entrega
+3. Planos de Trabalho
 
 ### Planos de Entrega
 
-ENVIAR OS PLANOS DE ENTREGA ANTES DOS PLANOS DE TRABALHO.
+Os **Planos de Entrega** representam as entregas previstas para aquela
+unidade no âmbito do Programa de Gestão.
 
--------
+**Atenção:** os Planos de Entrega devem ser enviados antes dos Planos de
+Trabalho.
+
+
+#### Entrega
+
+* (... complementar)
+
+
 ### Planos de Trabalho
+
 Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
-* O `cod_plano` deve ser único para cada Plano de Trabalho.
-* Ao utilizar o método PUT do Plano de Trabalho, o `cod_plano` que
-  compõe a URL deve ser igual ao fornecido no JSON.
-* A `data_inicio` do Plano de Trabalho deve ser menor ou igual à `data_fim`.
-* A `data_avaliacao` da atividade deve ser maior ou igual que a
-  `data_inicio` do Plano de Trabalho.
-* As atividades de um mesmo Plano de Trabalho devem possuir
-  `id_atividade` diferentes.
-* O `cpf` deve possuir exatamente 11 dígitos e sem máscaras.
+* O `id_plano_entrega_unidade` deve ser único para cada Plano de Trabalho.
+* Ao utilizar o método PUT do Plano de Trabalho, o
+  `id_plano_entrega_unidade` que compõe a URL deve ser igual ao fornecido
+  no JSON.
+* A `data_inicio_plano` do Plano de Trabalho deve ser menor ou igual à
+  `data_termino_plano`.
+
+#### Contribuição
+
+* (... complementar)
+
+
+#### Consolidação
+
+* A `data_inicio_registro` da consolidação deve ser maior ou igual que a
+  `data_inicio_plano` do Plano de Trabalho.
+* (... complementar)
+
+
+### Participante
+
+* O `cpf_participante` deve possuir exatamente 11 dígitos e sem máscaras.
 * Valores permitidos para a `modalidade_execucao`:
   * **1** - Presencial
   * **2** - Semipresencial
@@ -61,6 +98,7 @@ Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
 * `entregue_no_prazo` não é obrigatório e deve ser `True` ou `False`
   caso esteja preenchido.
 
+-------
 
 Para comunicar erros na aplicação e interagir com a equipe de
 desenvolvimento
