@@ -104,16 +104,13 @@ Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
 ### Participante
 
 * O `cpf_participante` deve possuir exatamente 11 dígitos e sem máscaras.
-* Valores permitidos para a `modalidade_execucao`:
-  * **1** - Presencial
-  * **2** - Semipresencial
-  * **3** - Teletrabalho
-* `carga_horaria_semanal` deve ser entre 1 e 40.
-* Os campos `quantidade_entregas`, `quantidade_entregas_efetivas`,
-  `tempo_exec_presencial`, `tempo_exec_teletrabalho` da Atividade e
-  `horas_homologadas` do Plano de Trabalho devem ser maiores que zero.
-* `entregue_no_prazo` não é obrigatório e deve ser `True` ou `False`
-  caso esteja preenchido.
+* A `matricula_siape` deve possuir 7 dígitos.
+* `jornada_trabalho_semanal` deve ser maior que 0.
+* Valores permitidos para a `tipo_contribuicao`:
+  * `1`: Presencial;
+  * `2`: Teletrabalho Parcial;
+  * `3`: Teletrabalho Integral;
+  * `4`: Teletrabalho com Residência no Exterior.
 
 -------
 
