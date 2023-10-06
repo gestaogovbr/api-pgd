@@ -76,17 +76,29 @@ Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
   no JSON.
 * A `data_inicio_plano` do Plano de Trabalho deve ser menor ou igual à
   `data_termino_plano`.
+* O `cpf_participante` deve se referir a um participante já cadastrado
+  pelo endpoint **Participante**.
+* Não deve haver sobreposição de intervalos (`data_inicio_plano` e
+  `data_termino_plano`) entre diferentes Planos de Entrega na mesma
+  unidade (`cod_SIAPE_unidade_plano`) e mesmo participante.
 
 #### Contribuição
 
-* (... complementar)
+* Valores permitidos para a `tipo_contribuicao`:
+  * `1`: Contribuição para entrega da própria unidade de execução do
+    participante;
+  * `2`: Contribuição não vinculada diretamente a entrega, mas necessária
+    ao adequado funcionamento administrativo (por exemplo, Atividades de
+    apoio, assessoramento e desenvolvimento, e Atividades de gestão de
+    equipes e entregas);
+  * `3`: Contribuição vinculada a entrega de outra unidade de execução,
+    inclusive de outros órgãos e entidades.
 
 
 #### Consolidação
 
 * A `data_inicio_registro` da consolidação deve ser maior ou igual que a
   `data_inicio_plano` do Plano de Trabalho.
-* (... complementar)
 
 
 ### Participante
