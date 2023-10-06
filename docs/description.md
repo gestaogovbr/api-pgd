@@ -48,19 +48,24 @@ na seguinte ordem:
 2. Planos de Entrega
 3. Planos de Trabalho
 
-### Planos de Entrega
+### Planos de Entregas
 
-Os **Planos de Entrega** representam as entregas previstas para aquela
-unidade no âmbito do Programa de Gestão.
+Os **Planos de Entregas** representam as entregas previstas para aquela
+unidade no âmbito do Programa de Gestão. Eles devem seguir as seguintes
+regras:
+
+* Não deve haver sobreposição de intervalos (`data_inicio_plano_entregas`
+  e `data_termino_plano_entregas`) entre diferentes Planos de Entrega na
+  mesma unidade (`cod_SIAPE_unidade_plano`).
 
 **Atenção:** os Planos de Entrega devem ser enviados antes dos Planos de
 Trabalho.
 
-
 #### Entrega
 
-* (... complementar)
-
+* Para o campo `tipo_meta` são permitidos os seguintes valores:
+  * `1`: absoluto
+  * `2`: percentual
 
 ### Planos de Trabalho
 
