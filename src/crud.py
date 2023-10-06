@@ -103,17 +103,6 @@ async def get_plano_entrega(
 
 # The following methods are only for test in CI/CD environment
 
-async def truncate_plano_trabalho(
-    db_session: Session,
-):
-    """Apaga a tabela plano_trabalho.
-    Usado no ambiente de testes de integração contínua.
-    """
-    async for session in db_session:
-        result = await session.execute(text("TRUNCATE plano_trabalho CASCADE;"))
-        await session.commit()
-        return result
-
 async def truncate_plano_entregas(
     db_session: Session,
 ):
@@ -122,6 +111,17 @@ async def truncate_plano_entregas(
     """
     async for session in db_session:
         result = await session.execute(text("TRUNCATE plano_entregas CASCADE;"))
+        await session.commit()
+        return result
+
+async def truncate_plano_trabalho(
+    db_session: Session,
+):
+    """Apaga a tabela plano_trabalho.
+    Usado no ambiente de testes de integração contínua.
+    """
+    async for session in db_session:
+        result = await session.execute(text("TRUNCATE plano_trabalho CASCADE;"))
         await session.commit()
         return result
 
