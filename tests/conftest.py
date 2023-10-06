@@ -14,6 +14,8 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from fief_admin import FiefAdminHelper
+from crud import truncate_plano_entregas, truncate_plano_trabalho, truncate_status_participante
+from db_config import get_db
 from api import app
 
 # Fief admin helper object
@@ -145,17 +147,23 @@ def example_part(client: Client, input_part: dict, header_usr_1: dict):
 
 @pytest.fixture()
 def truncate_pe(client: Client, header_admin: dict):
-    client.post("/truncate_plano_entregas", headers=header_admin)
+    db = get_db()
+    truncate_plano_entregas(db)
+    # client.post("/truncate_plano_entregas", headers=header_admin)
 
 
 @pytest.fixture()
 def truncate_pt(client: Client, header_admin: dict):
-    client.post("/truncate_plano_trabalho", headers=header_admin)
+    db = get_db()
+    truncate_plano_trabalho(db)
+    # client.post("/truncate_plano_trabalho", headers=header_admin)
 
 
 @pytest.fixture()
 def truncate_participantes(client: Client, header_admin: dict):
-    client.post("/truncate_participantes", headers=header_admin)
+    db = get_db()
+    truncate_status_participante(db)
+    # client.post("/truncate_participantes", headers=header_admin)
 
 
 @pytest.fixture(scope="module")
