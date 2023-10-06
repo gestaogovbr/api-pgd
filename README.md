@@ -174,11 +174,12 @@ compõem a solução. Atualmente são utilizados 4 containers:
 * outro rodando a **API**,
 * outro rodando o sistema de gestão de usuários e controle de acesso
   **Fief**, e
-* outro rodando o **PgAdmin** para acessar o Postgres e realizar
-  consultas ou qualquer manipulação no BD. O PgAdmin é útil para o
-  ambiente de desenvolvimento e testes, não sendo necessário ou
-  aconselhável a sua utilização em ambiente de produção. Quando utilizado
-  o PgAdmin, ele estará rodando em http://localhost:5050.
+* somente em ambiente de desenvolvimento, há outro contêiner rodando o
+  **PgAdmin** para acessar o Postgres e realizar consultas ou qualquer
+  manipulação no BD. O PgAdmin é útil durante o desenvolvimento e testes
+  para ver o comportamento da API e os dados gerados. Não é necessário ou
+  aconselhável utilizá-lo em ambiente de produção. Quando utilizado o
+  PgAdmin, ele estará rodando em http://localhost:5050.
 
 
 ## Dicas
