@@ -19,6 +19,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Set up environment variables for testing
+      run: make init-env-tests
     - name: Run all service containers
       run: make up
     - name: Configure Fief at runtime

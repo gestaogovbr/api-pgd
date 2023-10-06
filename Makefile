@@ -6,10 +6,18 @@ build:
 rebuild:
 	docker build --rm -t api-pgd .
 
+# Initialize environment variables for development environment
 .PHONY: init-env
 init-env:
-	./init/load_fief_env.sh --user-email='test-pgd@nonexisting.gov.br' --user-password='123456*abcdef'
+	./init/load_fief_env.sh
 
+# Initialize environment variables for tests in CI/CD
+.PHONY: init-env-tests
+init-env-tests:
+	cp -n ./init/.env.tests .env
+
+# Apply initial configuration to Fief instance (container must be already
+# running)
 .PHONY: fief-config
 fief-config:
 	docker compose exec -T web sh -c "cd ./init && python configure_fief.py"
