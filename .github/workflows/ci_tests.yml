@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - v0.2.x-alpha
     tags: [ tmp-rerun ]
   pull_request:
     branches: [ main ]
@@ -20,6 +19,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Run all service containers
+    - name: Set up environment variables for testing
+      run: make init-env-tests
       run: make up
     - name: Configure Fief at runtime
       run: make fief-config
