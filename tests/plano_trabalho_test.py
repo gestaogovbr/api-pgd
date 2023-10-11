@@ -938,3 +938,48 @@ def test_create_pt_consolidacoes_invalid_avaliacao_plano_trabalho(
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = "Avaliacao de plano de trabalho inválida; permitido: 1 a 5"
         assert response.json().get("detail") == detail_msg
+
+@pytest.mark.parametrize(
+    "cpf_participante",
+    [
+        ("11111111111"),
+        ("22222222222"),
+        ("33333333333"),
+        ("44444444444"),
+        ("04811556435"),
+        ("444-444-444.44"),
+        ("-44444444444"),
+        ("444444444"),
+        ("-444 4444444"),
+        ("4811556437"),
+        ("048115564-37"),
+        ("04811556437     "),
+        ("    04811556437     "),
+        (""),
+    ],
+)
+def test_put_plano_trabalho_invalid_cpf(
+    input_pt: dict,
+    cpf_participante: str,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pt,
+    client: Client,
+):
+    """Tenta submeter um plano de trabalho com cpf inválido"""
+    input_pt["cpf_participante"] = cpf_participante
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_usr_1,
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    detail_msg = [
+        "Dígitos verificadores do CPF inválidos.",
+        "CPF inválido.",
+        "CPF precisa ter 11 dígitos.",
+        "CPF deve conter apenas dígitos.",
+    ]
+    assert response.json().get("detail")[0]["msg"] in detail_msg
