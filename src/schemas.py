@@ -38,16 +38,20 @@ def cpf_validate(input_cpf):
 
     str_cpf = "".join([str(i) for i in input_cpf])
     return str_cpf
+
+
 class ContribuicaoSchema(BaseModel):
     tipo_contribuicao: int = Field(
         title="Tipo de contribuição",
         description=Contribuicao.tipo_contribuicao.comment
     )
     descricao_contribuicao: Optional[str] = Field(
+        default=None,
         title="Descrição da Contribuição",
         description=Contribuicao.descricao_contribuicao.comment
     )
     id_entrega: Optional[int] = Field(
+        default=None,
         title="Id da Entrega",
         description=Contribuicao.id_entrega.comment
     )
