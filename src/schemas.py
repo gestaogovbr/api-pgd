@@ -17,12 +17,12 @@ from models import Consolidacao, Contribuicao, StatusParticipante
 # Funcão para validar CPF
 def cpf_validate(input_cpf):
     if not input_cpf.isdigit():
-        raise ValueError("CPF deve conter apenas digitos.")
+        raise ValueError("CPF deve conter apenas dígitos.")
 
     cpf = [int(char) for char in input_cpf if char.isdigit()]
     #  Verifica se o CPF tem 11 dígitos
     if len(cpf) != 11:
-        raise ValueError("CPF precisa ter 11 digitos.")
+        raise ValueError("CPF precisa ter 11 dígitos.")
 
     #  Verifica se o CPF tem todos os números iguais, ex: 111.111.111-11
     #  Esses CPFs são considerados inválidos mas passam na validação dos dígitos
@@ -34,7 +34,7 @@ def cpf_validate(input_cpf):
         value = sum((cpf[num] * ((i+1) - num) for num in range(0, i)))
         digit = ((value * 10) % 11) % 10
         if digit != cpf[i]:
-            raise ValueError("Digitos verificadores do CPF inválidos.")
+            raise ValueError("Dígitos verificadores do CPF inválidos.")
 
     str_cpf = "".join([str(i) for i in input_cpf])
     return str_cpf
