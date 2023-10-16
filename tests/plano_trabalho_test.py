@@ -2,7 +2,7 @@
 Testes relacionados ao plano de trabalho do participante.
 """
 import itertools
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 
 from httpx import Client
 
@@ -628,22 +628,26 @@ def test_create_pt_data_consolidacao_out_of_bounds(
         ),  # sobreposição no fim
         (
             105,
+            [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31"), ("2023-01-31", "2023-02-14")],
+        ),  # sobreposições múltiplas
+        (
+            106,
             [("2023-01-01", "2023-01-14"), ("2023-01-02", "2023-01-13")],
         ),  # contido no período
         (
-            106,
+            107,
             [("2023-01-01", "2023-01-14"), ("2022-12-31", "2023-01-15")],
         ),  # contém o período
         (
-            105,
+            108,
             [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31")],
         ),  # outra unidade
         (
-            105,
+            109,
             [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31")],
         ),  # outro participante
         (
-            105,
+            110,
             [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31")],
         ),  # ambos diferentes
     ],
@@ -674,35 +678,34 @@ def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
 
     input_pt["consolidacoes"] = []
     for consolidacao in consolidacoes:
-        consolidacao = original_consolidacao.copy()
-        consolidacao["data_inicio_registro"] = consolidacao[0]
-        consolidacao["data_fim_registro"] = consolidacao[1]
-        input_pt["consolidacoes"].append(consolidacao)
+        consolidacao_template = original_consolidacao.copy()
+        consolidacao_template["data_inicio_registro"] = consolidacao[0]
+        consolidacao_template["data_fim_registro"] = consolidacao[1]
+        input_pt["consolidacoes"].append(consolidacao_template)
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
 
-    # TODO: Verificar possíveis sobreposições de datas em consolidações.
-    #
-    # if (
-    #     date(input_pt["data_inicio_plano"])
-    #     < date(original_pt["data_termino_plano"])
-    # ) and (
-    #     date(input_pt["data_termino_plano"])
-    #     > date(original_pt["data_inicio_plano"])
-    # ):
-    #     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    #     detail_msg = (
-    #         "Já existe um plano de trabalho para este "
-    #         "cod_SIAPE_unidade_exercicio para este cpf_participante "
-    #         "no período informado."
-    #     )
-    #     assert response.json().get("detail", None) == detail_msg
-    #     return
+    for consolidacao_1, consolidacao_2 in zip(consolidacoes[:-1], consolidacoes[1:]):
+        print("consolidacao_1: ", consolidacao_1)
+        print("consolidacao_2: ", consolidacao_2)
+        data_fim_registro_1 = datetime.fromisoformat(consolidacao_1[1]).date()
+        data_inicio_registro_2 = datetime.fromisoformat(consolidacao_2[0]).date()
+        if (
+            data_inicio_registro_2
+            < data_fim_registro_1
+        ):
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_msg = (
+                "Uma ou mais consolidações possuem data_inicio_registro e "
+                "data_fim_registro sobrepostas."
+            )
+            assert response.json().get("detail", None) == detail_msg
+            return
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json() == input_pt
