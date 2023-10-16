@@ -474,7 +474,7 @@ class StatusParticipante(Base):
                 "habilitado para a proposição e/ou execução do plano de trabalho",
     )
     matricula_siape = Column(
-        Integer,
+        String,
         comment="Número da matrícula do participante no Sistema Integrado "
                 "de Administração de Recursos Humanos (Siape)",
     )
