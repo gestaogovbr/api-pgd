@@ -31,7 +31,7 @@ fields_contribuicao = {
     "mandatory": (
         ["id_plano_trabalho_participante"],
         ["tipo_contribuicao"],
-        ["horas_vinculadas_entrega"],
+        ["horas_vinculadas"],
     ),
 }
 
@@ -889,10 +889,10 @@ def test_create_pt_duplicate_id_plano(
     assert response.json() == input_pt
 
 
-@pytest.mark.parametrize("horas_vinculadas_entrega", [-2, -1])
-def test_create_pt_invalid_horas_vinculadas_entrega(
+@pytest.mark.parametrize("horas_vinculadas", [-2, -1])
+def test_create_pt_invalid_horas_vinculadas(
     input_pt: dict,
-    horas_vinculadas_entrega: int,
+    horas_vinculadas: int,
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
@@ -900,7 +900,7 @@ def test_create_pt_invalid_horas_vinculadas_entrega(
 ):
     id_plano_trabalho_participante = "138"
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["horas_vinculadas_entrega"] = horas_vinculadas_entrega
+    input_pt["horas_vinculadas"] = horas_vinculadas
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_trabalho/{id_plano_trabalho_participante}",
@@ -909,7 +909,7 @@ def test_create_pt_invalid_horas_vinculadas_entrega(
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Valor de horas_vinculadas_entrega deve ser maior ou igual a zero"
+    detail_msg = "Valor de horas_vinculadas deve ser maior ou igual a zero"
     assert response.json().get("detail")[0]["msg"] == detail_msg
 
 

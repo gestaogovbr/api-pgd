@@ -12,11 +12,11 @@
             "tipo_contribuicao": 1,
             "descricao_contribuicao": "texto",
             "id_entrega": 1,
-            "horas_vinculadas_entrega": 40
+            "horas_vinculadas": 40
         },
         {
             "tipo_contribuicao": 2,
-            "horas_vinculadas_entrega": 40
+            "horas_vinculadas": 40
         }
     ],
     "consolidacoes": [
