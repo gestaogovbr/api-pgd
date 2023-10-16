@@ -11,8 +11,10 @@ from pydantic import validator, root_validator # deprecated in 2.x
 from datetime import date
 from enum import IntEnum
 
-from models import PlanoEntregas, PlanoTrabalho, Entrega, Consolidacao, Contribuicao
+from models import PlanoEntregas, PlanoTrabalho, Entrega
+from models import Consolidacao, Contribuicao, StatusParticipante
 
+# Funcão para validar CPF
 def cpf_validate(input_cpf):
     if not input_cpf.isdigit():
         raise ValueError("CPF deve conter apenas digitos.")
@@ -245,3 +247,35 @@ class PlanoEntregaSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class StatusParticipanteSchema(BaseModel):
+
+    cpf_participante: str = Field(
+        title="Número do CPF do participante",
+        description=StatusParticipante.cpf_participante.comment
+    )
+    matricula_siape: str = Field(
+        title="Número da matrícula do participante",
+        description=StatusParticipante.matricula_siape.comment
+    )
+    participante_ativo_inativo_pgd: int = Field(
+        title="Situação do participante no Programa de Gestão e Desempenho (PGD)",
+        description=StatusParticipante.participante_ativo_inativo_pgd.comment
+    )
+    modadalidade_execucao: int = Field(
+        title="Modalidade e regime de execução do trabalho do participante",
+        description=StatusParticipante.modalidade_execucao.comment
+    )
+    jornada_trabalho_semanal: int = Field(
+        title="Jornada de trabalho semanal",
+        description=StatusParticipante.jornada_trabalho_semanal.comment
+    )
+    data_envio: date = Field(
+        title="Timestamp do envio dos dados",
+        description=StatusParticipante.data_envio.comment
+    )
+
+    @validator("cpf_participante")
+    def cpf_part_validate(cls, cpf_participante):
+        return cpf_validate(cpf_participante)
