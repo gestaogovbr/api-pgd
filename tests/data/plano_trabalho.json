@@ -3,7 +3,7 @@
     "id_plano_trabalho_participante": 555,
     "id_plano_entrega_unidade": 1,
     "cod_SIAPE_unidade_exercicio": 99,
-    "cpf_participante": 64635210600,
+    "cpf_participante": "64635210600",
     "data_inicio_plano": "2023-01-01",
     "data_termino_plano": "2023-01-15",
     "carga_horaria_total_periodo_plano": 80,

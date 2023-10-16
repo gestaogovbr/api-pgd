@@ -65,8 +65,8 @@ def input_part() -> dict:
     """
     return {
         "participante_ativo_inativo_pgd": 1,
-        "matricula_siape": 123456,
-        "cpf_participante": 99160773120,
+        "matricula_siape": "123456",
+        "cpf_participante": "99160773120",
         "modalidade_execucao": 3,
         "jornada_trabalho_semanal": 40,
     }
