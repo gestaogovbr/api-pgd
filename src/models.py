@@ -249,7 +249,7 @@ class PlanoTrabalho(Base):
                 "se encontra formalmente em exercício",
     )
     cpf_participante = Column(
-        Integer,
+        String,
         ForeignKey("status_participante.cpf_participante"),
         nullable=False,
         comment="Número do CPF do participante responsável pelo "
@@ -460,7 +460,7 @@ class StatusParticipante(Base):
     "Status dos Participantes"
     __tablename__ = "status_participante"
     cpf_participante = Column(
-        Integer,
+        String,
         primary_key=True,
         nullable=False,
         comment="Número do CPF do participante responsável pelo plano de "

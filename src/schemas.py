@@ -70,7 +70,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Código SIAPE da unidade de exercício do participante",
         description=PlanoTrabalho.id_plano_entrega_unidade.comment
     )
-    cpf_participante: int = Field(
+    cpf_participante: str = Field(
         title="Número do CPF do participante",
         description=PlanoTrabalho.cpf_participante.comment
     )
