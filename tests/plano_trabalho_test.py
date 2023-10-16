@@ -919,7 +919,7 @@ def test_create_pt_consolidacoes_invalid_avaliacao_plano_trabalho(
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,
-    avaliacao_plano_trabalho: str,
+    avaliacao_plano_trabalho: int,
     client: Client,
 ):
     """Tenta criar uma consolidação com avaliação_plano_trabalho inválido"""
