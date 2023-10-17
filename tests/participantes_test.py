@@ -110,7 +110,7 @@ def test_put_participante_missing_mandatory_fields(
     input_part["matricula_siape"] = 1800 + offset  # precisa ser um novo participante
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['matricula_siape']}",
+        f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -139,7 +139,7 @@ def test_get_participante_inexistente(
 ):
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        "/participante/888888888",
+        "/participante/88888888888",
         headers=header_usr_1,
     )
 
@@ -171,7 +171,7 @@ def test_put_participante_invalid_matricula_siape(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['matricula_siape']}",
+        f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -215,7 +215,7 @@ def test_put_participante_invalid_cpf(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['matricula_siape']}",
+        f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -249,7 +249,7 @@ def test_put_part_invalid_ativo(
     input_part["participante_ativo_inativo_pgd"] = participante_ativo_inativo_pgd
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['matricula_siape']}",
+        f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -275,7 +275,7 @@ def test_put_part_invalid_modalidade_execucao(
     input_part["modalidade_execucao"] = modalidade_execucao
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['matricula_siape']}",
+        f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -305,7 +305,7 @@ def test_put_part_invalid_jornada_trabalho_semanal(
     input_part["jornada_trabalho_semanal"] = jornada_trabalho_semanal
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['matricula_siape']}",
+        f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_1,
     )
