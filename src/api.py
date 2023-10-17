@@ -272,52 +272,6 @@ async def get_status_participante(
 #     return merged_plano_trabalho
 
 
-@app.post("/truncate_plano_trabalho", tags=["ci/cd"])
-async def truncate_plano_trabalho(
-    db: Session = Depends(get_db),
-    user: FiefUserInfo = Depends(auth_backend.current_user()),
-):
-    """Apaga a tabela plano_trabalho.
-    Usado no ambiente de testes de integração contínua.
-    """
-    if not user["is_superuser"]:
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED, detail="Usuário sem permissão para a operação"
-        )
-    await crud.truncate_plano_trabalho(db)
-    return {"detail": "Tabela plano_trabalho excluída"}
-
-@app.post("/truncate_plano_entregas", tags=["ci/cd"])
-async def truncate_plano_entregas(
-    db: Session = Depends(get_db),
-    user: FiefUserInfo = Depends(auth_backend.current_user()),
-):
-    """Apaga a tabela plano_entregas.
-    Usado no ambiente de testes de integração contínua.
-    """
-    if not user["is_superuser"]:
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED, detail="Usuário sem permissão para a operação"
-        )
-    await crud.truncate_plano_entregas(db)
-    return {"detail": "Tabela plano_entregas excluída"}
-
-@app.post("/truncate_participantes", tags=["ci/cd"])
-async def truncate_participantes(
-    db: Session = Depends(get_db),
-    user: FiefUserInfo = Depends(auth_backend.current_user()),
-):
-    """Apaga a tabela status_participante.
-    Usado no ambiente de testes de integração contínua.
-    """
-    if not user["is_superuser"]:
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED, detail="Usuário sem permissão para a operação"
-        )
-    await crud.truncate_status_participante(db)
-    return {"detail": "Tabela status_participante excluída"}
-
-
 # Esconde alguns métodos da interface OpenAPI
 def public_facing_openapi():
     "Cria o esquema da OpenAPI disponível ao público externo."
