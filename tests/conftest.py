@@ -14,7 +14,11 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from fief_admin import FiefAdminHelper
-from crud import truncate_plano_entregas, truncate_plano_trabalho, truncate_status_participante
+from crud import (
+    truncate_plano_entregas,
+    truncate_plano_trabalho,
+    truncate_status_participante,
+)
 from db_config import get_db
 from api import app
 
@@ -173,6 +177,7 @@ def truncate_users(admin_credentials: dict):
         if user_search["count"] > 0:
             response = fief_admin.delete_user(email=user["username"])
             response.raise_for_status()
+
 
 @pytest.fixture(scope="module")
 def register_admin(
