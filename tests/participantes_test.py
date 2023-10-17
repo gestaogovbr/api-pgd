@@ -28,7 +28,7 @@ def test_put_participante(
     """Testa a submissão de um participante a partir do template"""
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        "/participante/123456",
+        f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -54,13 +54,13 @@ def test_put_duplicate_participante(
     """
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        "/participante/123456",
+        f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_1,
     )
     response = client.put(
         f"/organizacao/{user2_credentials['cod_SIAPE_instituidora']}"
-        "/participante/123456",
+        f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_2,
     )
@@ -78,16 +78,16 @@ def test_create_participante_inconsistent(
     client: Client,
 ):
     """Tenta submeter participante inconsistente (URL difere do JSON)"""
-    input_part["matricula_siape"] = 678910
+    input_part["cpf_participante"] = 82893311776
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/123456",
+        f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_1,  # diferente de 678910
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = (
-        "Parâmetro matricula_siape na URL e no JSON devem ser iguais"
+        "Parâmetro cpf_participante na URL e no JSON devem ser iguais"
     )
     assert response.json().get("detail", None) == detail_msg
 
@@ -122,13 +122,14 @@ def test_get_participante(
     header_usr_1: dict,
     truncate_participantes,
     example_part,
+    input_part: dict,
     client: Client,
 ):
     """Tenta requisitar um participante pela matricula_siape.
     """
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        "/participante/123456",
+        f"/participante/{input_part['cpf_participante']}",
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_201_CREATED
@@ -139,7 +140,7 @@ def test_get_participante_inexistente(
 ):
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        "/participante/88888888888",
+        "/participante/82893311776",
         headers=header_usr_1,
     )
 

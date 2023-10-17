@@ -70,7 +70,7 @@ def input_part() -> dict:
     return {
         "participante_ativo_inativo_pgd": 1,
         "matricula_siape": "123456",
-        "cpf_participante": "99160773120",
+        "cpf_participante": "64635210600",
         "modalidade_execucao": 3,
         "jornada_trabalho_semanal": 40,
     }
@@ -145,8 +145,15 @@ def example_pt(
 
 
 @pytest.fixture()
-def example_part(client: Client, input_part: dict, header_usr_1: dict):
-    client.put("/participante/123456", json=input_part, headers=header_usr_1)
+def example_part(
+    client: Client, input_part: dict, user1_credentials: dict, header_usr_1: dict
+):
+    client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/participante/{input_part['cpf_participante']}",
+        json=input_part,
+        headers=header_usr_1,
+    )
 
 
 @pytest.fixture()
