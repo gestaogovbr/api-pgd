@@ -10,7 +10,6 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
 from fief_client import FiefUserInfo
 from sqlalchemy.orm import Session
-
 import schemas
 import crud
 from db_config import get_db, create_db_and_tables
@@ -167,6 +166,32 @@ async def get_plano_entrega(
         )
     # plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho.__dict__)
     return db_plano_entrega.__dict__
+
+
+@app.get(
+    "/organizacao/{cod_SIAPE_instituidora}/participante/{cpf_participante}",
+    summary="Consulta Status do Participante",
+    response_model=schemas.StatusParticipanteSchema,
+    tags=["status participante"],
+)
+async def get_status_participante(
+    cpf_participante: str,
+    db: Session = Depends(get_db),
+    user: FiefUserInfo = Depends(auth_backend.current_user()),
+):
+    "Consulta o status do participante a partir da matricula SIAPE."
+    db_status_participante = await crud.get_status_participante(
+        db_session=db,
+        cod_SIAPE_instituidora=user["fields"]["cod_SIAPE_instituidora"],
+        cpf_participante=cpf_participante,
+    )
+    if not db_status_participante:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail="Status de Participante não encontrado"
+        )
+
+    return db_status_participante.__dict__
+
 
 
 # @app.patch(

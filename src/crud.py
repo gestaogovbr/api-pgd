@@ -101,6 +101,23 @@ async def get_plano_entrega(
     return None
 
 
+async def get_status_participante(
+    db_session: Session,
+    cod_SIAPE_instituidora: int,
+    cpf_participante: str,
+):
+    "Traz o status do participante a partir do banco de dados."
+    async for session in db_session:
+        result = await session.execute(
+            select(models.StatusParticipante)
+            .filter_by(cpf_participante=cpf_participante)
+        )
+        db_status_participante = result.unique().scalar_one_or_none()
+    if db_status_participante:
+        return db_status_participante
+    return None
+
+
 # The following methods are only for test in CI/CD environment
 
 async def truncate_plano_entregas(

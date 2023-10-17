@@ -250,7 +250,7 @@ class PlanoTrabalho(Base):
     )
     cpf_participante = Column(
         String,
-        ForeignKey("status_participante.cpf_participante"),
+        # ForeignKey("status_participante.cpf_participante"),
         nullable=False,
         comment="Número do CPF do participante responsável pelo "
                 "plano de trabalho",
@@ -459,9 +459,21 @@ class ModalidadesExecucao(enum.IntEnum):
 class StatusParticipante(Base):
     "Status dos Participantes"
     __tablename__ = "status_participante"
+
+    id = Column(
+        Integer, primary_key=True, index=True, autoincrement=True, nullable=False
+    )
+
+    cod_SIAPE_instituidora = Column(
+        Integer,
+        index=True,
+        nullable=False,
+        comment="Código da unidade organizacional (UORG) no "
+                "Sistema Integrado de Administração de Recursos Humanos "
+                "(Siape) corresponde à Unidade de Instituição",
+    )
     cpf_participante = Column(
         String,
-        primary_key=True,
         nullable=False,
         comment="Número do CPF do participante responsável pelo plano de "
                 "trabalho, sem pontos, hífen ou caracteres especiais",
@@ -475,6 +487,7 @@ class StatusParticipante(Base):
     )
     matricula_siape = Column(
         String,
+        nullable=False,
         comment="Número da matrícula do participante no Sistema Integrado "
                 "de Administração de Recursos Humanos (Siape)",
     )
@@ -505,17 +518,12 @@ class StatusParticipante(Base):
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
 
-
 # trigger = DDL("""
 #     CREATE TRIGGER inseredata_trigger
 #     BEFORE INSERT OR UPDATE ON public.plano_trabalho
 #     FOR EACH ROW EXECUTE PROCEDURE insere_data_registro();
 # """
-# )
-
-# event.listen(
-#     PlanoTrabalho.__table__,
-#     'after_create',
+# )Integer
 #     trigger.execute_if(dialect='postgresql')
 # )
 
