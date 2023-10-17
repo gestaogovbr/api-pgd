@@ -33,3 +33,9 @@ down:
 .PHONY: tests
 tests:
 	docker compose exec -T web sh -c "cd /home/api-pgd/tests && pytest -vvv --color=yes"
+
+# example: make test TEST_FILTER=test_put_participante_missing_mandatory_fields
+TEST_FILTER=test
+.PHONY: test
+test:
+	docker compose exec web sh -c "cd /home/api-pgd/tests && pytest -k $(TEST_FILTER) -vvv --color=yes"
