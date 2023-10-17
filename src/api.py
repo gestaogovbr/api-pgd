@@ -94,9 +94,11 @@ async def create_or_update_plano_trabalho(
     plano_trabalho: schemas.PlanoTrabalhoSchema,
     db: Session = Depends(get_db),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
-    access_token_info: Optional[FiefAccessTokenInfo] = Depends(
-        auth_backend.authenticated(permissions=["all:read"])
-    ),
+    # TODO: Obter meios de verificar permissão opcional. O código abaixo
+    #       bloqueia o acesso, mesmo informando que é opcional.
+    # access_token_info: Optional[FiefAccessTokenInfo] = Depends(
+    #     auth_backend.authenticated(permissions=["all:read"], optional=True)
+    # ),
 ):
     """Cria um novo plano de trabalho ou, se existente, substitui um
     plano de trabalho por um novo com os dados informados."""
@@ -104,10 +106,11 @@ async def create_or_update_plano_trabalho(
     # Validações de permissão
     if (
         cod_SIAPE_instituidora != user["fields"]["cod_SIAPE_instituidora"]
-        and "all:write" not in access_token_info["permissions"]
+        # TODO: Dar acesso ao superusuário em todas as unidades.
+        # and "all:write" not in access_token_info["permissions"]
     ):
         raise HTTPException(
-            status.HTTP_403_FORBIDDEN,
+            status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
         )
     if cod_SIAPE_instituidora != plano_trabalho.cod_SIAPE_instituidora:
