@@ -220,7 +220,7 @@ def test_create_huge_plano_entregas(
 
 
 # TODO: verbo PATCH poderá ser implementado em versão futura.abs
-# 
+#
 # @pytest.mark.parametrize("missing_fields", fields_plano_entregas["mandatory"])
 # def test_patch_plano_entregas_inexistente(
 #     truncate_pe,
@@ -346,8 +346,7 @@ def test_create_plano_entregas_date_interval_over_a_year(
     header_usr_1: dict,
     client: Client,
 ):
-    """Plano de Entregas não pode ter vigência superior a um ano.
-    """
+    """Plano de Entregas não pode ter vigência superior a um ano."""
     input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
     input_pe["data_termino_plano_entregas"] = data_termino_plano_entregas
 
@@ -358,15 +357,11 @@ def test_create_plano_entregas_date_interval_over_a_year(
         headers=header_usr_1,
     )
 
-    if (
-        date(data_termino_plano_entregas) - date(data_inicio_plano_entregas)
-        > timedelta(days=366)
-    ):
+    if date.fromisoformat(data_termino_plano_entregas) - date.fromisoformat(
+        data_inicio_plano_entregas
+    ) > timedelta(days=366):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = (
-            "Plano de entregas não pode abranger período maior que "
-            "1 ano."
-        )
+        detail_msg = "Plano de entregas não pode abranger período maior que " "1 ano."
         assert response.json().get("detail", None) == detail_msg
     else:
         assert response.status_code == status.HTTP_201_CREATED

@@ -2,7 +2,7 @@
 Testes relacionados ao plano de trabalho do participante.
 """
 import itertools
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 
 from httpx import Client
 
@@ -459,7 +459,9 @@ def test_create_plano_trabalho_date_interval_over_a_year(
         headers=header_usr_1,
     )
 
-    if date(data_termino_plano) - date(data_inicio_plano) > timedelta(days=366):
+    if date.fromisoformat(data_termino_plano) - date.fromisoformat(
+        data_inicio_plano
+    ) > timedelta(days=366):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = "Plano de trabalho não pode abranger período maior que " "1 ano."
         assert response.json().get("detail", None) == detail_msg
@@ -628,7 +630,11 @@ def test_create_pt_data_consolidacao_out_of_bounds(
         ),  # sobreposição no fim
         (
             105,
-            [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31"), ("2023-01-31", "2023-02-14")],
+            [
+                ("2023-01-01", "2023-01-14"),
+                ("2023-01-14", "2023-01-31"),
+                ("2023-01-31", "2023-02-14"),
+            ],
         ),  # sobreposições múltiplas
         (
             106,
@@ -693,12 +699,9 @@ def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
     for consolidacao_1, consolidacao_2 in zip(consolidacoes[:-1], consolidacoes[1:]):
         print("consolidacao_1: ", consolidacao_1)
         print("consolidacao_2: ", consolidacao_2)
-        data_fim_registro_1 = datetime.fromisoformat(consolidacao_1[1]).date()
-        data_inicio_registro_2 = datetime.fromisoformat(consolidacao_2[0]).date()
-        if (
-            data_inicio_registro_2
-            < data_fim_registro_1
-        ):
+        data_fim_registro_1 = date.fromisoformat(consolidacao_1[1])
+        data_inicio_registro_2 = date.fromisoformat(consolidacao_2[0])
+        if data_inicio_registro_2 < data_fim_registro_1:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_msg = (
                 "Uma ou mais consolidações possuem data_inicio_registro e "
@@ -941,6 +944,7 @@ def test_create_pt_consolidacoes_invalid_avaliacao_plano_trabalho(
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = "Avaliação de plano de trabalho inválida; permitido: 1 a 5"
         assert response.json().get("detail") == detail_msg
+
 
 @pytest.mark.parametrize(
     "cpf_participante",
