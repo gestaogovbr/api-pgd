@@ -145,7 +145,7 @@ def test_get_participante_inexistente(
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json().get("detail", None) == "Participante não encontrado"
+    assert response.json().get("detail", None) == "Status de Participante não encontrado"
 
 
 @pytest.mark.parametrize(
