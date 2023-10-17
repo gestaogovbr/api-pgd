@@ -107,7 +107,7 @@ def test_put_participante_missing_mandatory_fields(
     for field in field_list:
         del input_part[field]
 
-    input_part["matricula_siape"] = 1800 + offset  # precisa ser um novo participante
+    input_part["cpf_participante"] = 1800 + offset  # precisa ser um novo participante
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
