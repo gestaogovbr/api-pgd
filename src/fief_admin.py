@@ -152,6 +152,23 @@ class FiefAdminHelper:
             data=data,
         )
 
+
+    def get_user_by_email(self, email: str) -> dict:
+        """Get the User's id by their email.
+
+        Args:
+            email (str): User's email.
+
+        Returns:
+            dict: User's data.
+        """
+        user_search = self.search_user(email=email).json()
+        if user_search["count"] < 1:
+            raise ValueError(f"Nenhum usuário com o e-mail {email} foi encontrado.")
+        user = user_search["results"][0]
+        return user
+
+
     def patch_user(self, email: str, data: dict) -> httpx.Response:
         """Changes one or more properties of a given user.
 
@@ -164,10 +181,7 @@ class FiefAdminHelper:
         Returns:
             httpx.Response: The Response object returned by API call.
         """
-        user_search = self.search_user(email=email).json()
-        if user_search["count"] < 1:
-            raise ValueError(f"Nenhum usuário com o e-mail {email} foi encontrado.")
-        user = user_search["results"][0]
+        user = self.get_user_by_email(email)
         return self.fief_admin_call(
             method="PATCH",
             local_url=f"users/{user['id']}",
@@ -327,3 +341,93 @@ class FiefAdminHelper:
         ).json()
         assert response["token_type"] == "bearer"
         return response["access_token"]
+
+    def create_permission(self, name: str, codename: str) -> httpx.Response:
+        """Create a Permission in the Fief environment.
+
+        Args:
+            name (str): Name of the Permission.
+            codename (str): Codename for the Permission, such as castles:create.
+
+        Returns:
+            httpx.Response: the Response object obtained from the API
+                call.
+        """
+        response = self.fief_admin_call(
+            method="POST",
+            local_url="permissions/",
+            data={
+                "name": name,
+                "codename": codename,
+            },
+        )
+        return response
+
+    def get_role_by_name(self, name: str) -> dict:
+        """Get a Role's data by the Role's name.
+
+        Args:
+            name (str): The Role's name.
+
+        Returns:
+            dict: Role's data.
+        """
+        response = self.fief_admin_call(
+            method="GET",
+            local_url="roles/",
+        )
+        response.raise_for_status()
+        roles_search = response.json()
+        if roles_search["count"] < 1:
+            raise ValueError("Nenhuma Role encontrada.")
+        role = None
+        for result in roles_search["results"]:
+            if result["name"] == name:
+                role = result
+        if role is None:
+            raise ValueError(f"Nenhuma Role com o nome {name} foi encontrada.")
+        return role
+
+
+    def create_role(self, name: str, permissions: list[str], granted_by_default: bool = False) -> httpx.Response:
+        """Create a Role in the Fief environment.
+
+        Args:
+            name (str): Name of the Role.
+            permissions (list[str]): List of respective uuid's of the
+                permissions the role should have.
+            granted_by_default (bool, optional): Whether the role is
+                applied by default to users. Defaults to False.
+
+        Returns:
+            httpx.Response: the Response object obtained from the API
+                call.
+        """
+        response = self.fief_admin_call(
+            method="POST",
+            local_url="roles/",
+            data={
+                "name": name,
+                "granted_by_default": granted_by_default,
+                "permissions": permissions,
+            },
+        )
+        return response
+
+    def user_grant_role(self, user_email: str, role_name: str) -> httpx.Response:
+        """Grant a Role to a User.
+
+        Args:
+            user_id (str): The User's email.
+            role_id (str): The Role's name.
+        """
+        user = self.get_user_by_email(user_email)
+        role = self.get_role_by_name(role_name)
+        response = self.fief_admin_call(
+            method="POST",
+            local_url=f"users/{user['id']}/roles",
+            data={
+                "id": role["id"]
+            },
+        )
+        return response

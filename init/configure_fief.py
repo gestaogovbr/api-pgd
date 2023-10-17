@@ -44,7 +44,7 @@ print(f"Status: {response.status_code}")
 response.raise_for_status()
 
 # Add custom user fields
-print("Creating user field: {admin_user}...")
+print("Creating user field: cod_SIAPE_instituidora...")
 response = fief_admin.create_user_field(
     name="Código SIAPE da unidade instituidora",
     slug="cod_SIAPE_instituidora",
@@ -54,12 +54,29 @@ response = fief_admin.create_user_field(
 print(f"Status: {response.status_code}")
 response.raise_for_status()
 
-# Set superuser field for the admin user
+# Create and Set superuser role for the admin user
+permissions = []
+print(f"Creating Permission: read_all...")
+response = fief_admin.create_permission("read_all", codename="all:read")
+print(f"Status: {response.status_code}")
+response.raise_for_status()
+permissions.append(response.json()["id"])
+
+print(f"Creating Permission: write_all...")
+response = fief_admin.create_permission("write_all", codename="all:write")
+print(f"Status: {response.status_code}")
+response.raise_for_status()
+permissions.append(response.json()["id"])
+
+print(f"Creating Role: superuser...")
+response = fief_admin.create_role(
+    "superuser", permissions=permissions, granted_by_default=False
+)
+print(f"Status: {response.status_code}")
+response.raise_for_status()
+
 admin_user = os.environ.get("FIEF_MAIN_USER_EMAIL")
 print(f"Setting superuser flag for user: {admin_user}...")
-response = fief_admin.patch_user(
-    email=admin_user,
-    data={"is_superuser": True}
-)
+response = fief_admin.user_grant_role(user_email=admin_user, role_name="superuser")
 print(f"Status: {response.status_code}")
 response.raise_for_status()
