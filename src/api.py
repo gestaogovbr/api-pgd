@@ -5,7 +5,7 @@ import os
 from typing import Union, Optional
 import json
 
-from fastapi import Depends, FastAPI, HTTPException, status, Header
+from fastapi import Depends, FastAPI, HTTPException, status, Header, Response
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
 from fief_client import FiefUserInfo, FiefAccessTokenInfo
@@ -92,6 +92,7 @@ async def create_or_update_plano_trabalho(
     cod_SIAPE_instituidora: int,
     id_plano_trabalho_participante: int,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
+    response: Response,
     db: Session = Depends(get_db),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
     # TODO: Obter meios de verificar permissão opcional. O código abaixo
@@ -140,6 +141,7 @@ async def create_or_update_plano_trabalho(
             cod_SIAPE_instituidora=cod_SIAPE_instituidora,
             plano_trabalho=novo_plano_trabalho,
         )
+        response.status_code = status.HTTP_201_CREATED
     else:  # update
         crud.update_plano_trabalho(
             db_session=db,
