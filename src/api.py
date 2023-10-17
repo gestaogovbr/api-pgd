@@ -2,13 +2,13 @@
 """
 
 import os
-from typing import Union
+from typing import Union, Optional
 import json
 
 from fastapi import Depends, FastAPI, HTTPException, status, Header
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
-from fief_client import FiefUserInfo
+from fief_client import FiefUserInfo, FiefAccessTokenInfo
 from sqlalchemy.orm import Session
 import schemas
 import crud
@@ -94,6 +94,9 @@ async def create_or_update_plano_trabalho(
     plano_trabalho: schemas.PlanoTrabalhoSchema,
     db: Session = Depends(get_db),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
+    access_token_info: Optional[FiefAccessTokenInfo] = Depends(
+        auth_backend.authenticated(permissions=["all:read"])
+    ),
 ):
     """Cria um novo plano de trabalho ou, se existente, substitui um
     plano de trabalho por um novo com os dados informados."""
@@ -101,7 +104,7 @@ async def create_or_update_plano_trabalho(
     # Validações de permissão
     if (
         cod_SIAPE_instituidora != user["fields"]["cod_SIAPE_instituidora"]
-        and not user["is_superuser"]
+        and "all:write" not in access_token_info["permissions"]
     ):
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
