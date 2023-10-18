@@ -23,11 +23,12 @@ fields_participantes = (
 # A linha abaixo desabilita os warnings do Pylint sobre isso.
 # pylint: disable=too-many-arguments
 
+
 def test_put_participante(
     input_part: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes, # pylint: disable=unused-argument
+    truncate_participantes,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Testa a submissão de um participante a partir do template"""
@@ -88,7 +89,7 @@ def test_create_participante_inconsistent(
     input_part: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes, # pylint: disable=unused-argument
+    truncate_participantes,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter participante inconsistente (URL difere do JSON)"""
@@ -100,11 +101,8 @@ def test_create_participante_inconsistent(
         headers=header_usr_1,  # diferente de 678910
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = (
-        "Parâmetro cpf_participante na URL e no JSON devem ser iguais"
-    )
+    detail_msg = "Parâmetro cpf_participante na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_msg
-
 
 
 @pytest.mark.parametrize("missing_fields", enumerate(fields_participantes))
@@ -113,7 +111,7 @@ def test_put_participante_missing_mandatory_fields(
     missing_fields: list,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes, # pylint: disable=unused-argument
+    truncate_participantes,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter participantes faltando campos obrigatórios"""
@@ -134,13 +132,12 @@ def test_put_participante_missing_mandatory_fields(
 def test_get_participante(
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes, # pylint: disable=unused-argument
-    example_part, # pylint: disable=unused-argument
+    truncate_participantes,  # pylint: disable=unused-argument
+    example_part,  # pylint: disable=unused-argument
     input_part: dict,
     client: Client,
 ):
-    """Tenta requisitar um participante pela matricula_siape.
-    """
+    """Tenta requisitar um participante pela matricula_siape."""
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
@@ -159,7 +156,9 @@ def test_get_participante_inexistente(
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert response.json().get("detail", None) == "Status de Participante não encontrado"
+    assert (
+        response.json().get("detail", None) == "Status de Participante não encontrado"
+    )
 
 
 @pytest.mark.parametrize(
@@ -177,7 +176,7 @@ def test_put_participante_invalid_matricula_siape(
     matricula_siape: str,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes, # pylint: disable=unused-argument
+    truncate_participantes,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter um participante com matricula siape inválida"""
@@ -222,7 +221,7 @@ def test_put_participante_invalid_cpf(
     cpf: str,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes, # pylint: disable=unused-argument
+    truncate_participantes,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter um participante com cpf inválido"""
@@ -256,7 +255,7 @@ def test_put_part_invalid_ativo(
     participante_ativo_inativo_pgd: int,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes, # pylint: disable=unused-argument
+    truncate_participantes,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta criar um participante com flag participante_ativo_inativo_pgd
@@ -283,7 +282,7 @@ def test_put_part_invalid_modalidade_execucao(
     modalidade_execucao: int,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes, # pylint: disable=unused-argument
+    truncate_participantes,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter um participante com modalidade de execução inválida"""
@@ -313,7 +312,7 @@ def test_put_part_invalid_jornada_trabalho_semanal(
     jornada_trabalho_semanal: int,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes, # pylint: disable=unused-argument
+    truncate_participantes,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter um participante com jornada de trabalho semanal inválida"""
