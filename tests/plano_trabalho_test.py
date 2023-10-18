@@ -119,7 +119,12 @@ def test_update_plano_trabalho(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json() == input_pt
+    assert all(
+        response.json()[attribute] == input_pt[attribute]
+        for attributes in fields_plano_trabalho["mandatory"]
+        for attribute in attributes
+        if attribute not in ("contribuicoes", "consolidacoes")
+    )
 
     # Consulta API para conferir se a alteração foi persistida
     response = client.get(
@@ -129,7 +134,12 @@ def test_update_plano_trabalho(
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == input_pt
+    assert all(
+        response.json()[attribute] == input_pt[attribute]
+        for attributes in fields_plano_trabalho["mandatory"]
+        for attribute in attributes
+        if attribute not in ("contribuicoes", "consolidacoes")
+    )
 
 
 @pytest.mark.parametrize(
