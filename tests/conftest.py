@@ -40,8 +40,8 @@ USERS_CREDENTIALS = [
 ]
 
 
-@pytest.fixture()
-def input_pe() -> dict:
+@pytest.fixture(scope="module", name="input_pe")
+def fixture_input_pe() -> dict:
     """Template de Plano de Entregas da Unidade.
 
     Returns:
@@ -50,8 +50,8 @@ def input_pe() -> dict:
     return json.load(open("data/plano_entregas.json", "r", encoding="utf-8"))
 
 
-@pytest.fixture()
-def input_pt() -> dict:
+@pytest.fixture(scope="module", name="input_pt")
+def fixture_input_pt() -> dict:
     """Template de Plano de Trabalho do Participante.
 
     Returns:
@@ -60,8 +60,8 @@ def input_pt() -> dict:
     return json.load(open("data/plano_trabalho.json", "r", encoding="utf-8"))
 
 
-@pytest.fixture()
-def input_part() -> dict:
+@pytest.fixture(scope="module", name="input_part")
+def fixture_input_part() -> dict:
     """Template de Participante.
 
     Returns:
@@ -90,27 +90,27 @@ def prepare_header(username: Optional[str]) -> dict:
 # Fixtures
 
 
-@pytest.fixture(scope="module")
-def client() -> Generator[Client, None, None]:
+@pytest.fixture(scope="module", name="client")
+def fixture_client() -> Generator[Client, None, None]:
     with TestClient(app) as c:
         yield c
 
 
-@pytest.fixture(scope="module")
-def admin_credentials() -> dict:
+@pytest.fixture(scope="module", name="admin_credentials")
+def fixture_admin_credentials() -> dict:
     return {
         "username": "admin@api.com",
         "cod_SIAPE_instituidora": 1,
     }
 
 
-@pytest.fixture(scope="module")
-def user1_credentials() -> dict:
+@pytest.fixture(scope="module", name="user1_credentials")
+def fixture_user1_credentials() -> dict:
     return USERS_CREDENTIALS[0]
 
 
-@pytest.fixture(scope="module")
-def user2_credentials() -> dict:
+@pytest.fixture(scope="module", name="user2_credentials")
+def fixture_user2_credentials() -> dict:
     return USERS_CREDENTIALS[1]
 
 
@@ -118,7 +118,6 @@ def user2_credentials() -> dict:
 def example_pe(
     client: Client,
     input_pe: dict,
-    input_pt: dict,
     user1_credentials: dict,
     header_usr_1: dict,
 ):
@@ -157,28 +156,25 @@ def example_part(
 
 
 @pytest.fixture()
-def truncate_pe(client: Client, header_admin: dict):
+def truncate_pe():
     db = get_db()
     truncate_plano_entregas(db)
-    # client.post("/truncate_plano_entregas", headers=header_admin)
 
 
 @pytest.fixture()
-def truncate_pt(client: Client, header_admin: dict):
+def truncate_pt():
     db = get_db()
     truncate_plano_trabalho(db)
-    # client.post("/truncate_plano_trabalho", headers=header_admin)
 
 
 @pytest.fixture()
-def truncate_participantes(client: Client, header_admin: dict):
+def truncate_participantes():
     db = get_db()
     truncate_status_participante(db)
-    # client.post("/truncate_participantes", headers=header_admin)
 
 
-@pytest.fixture(scope="module")
-def truncate_users(admin_credentials: dict):
+@pytest.fixture(scope="module", name="truncate_users")
+def fixture_truncate_users(admin_credentials: dict):
     for user in USERS_CREDENTIALS + [admin_credentials]:
         user_search = fief_admin.search_user(email=user["username"]).json()
         if user_search["count"] > 0:
@@ -186,9 +182,9 @@ def truncate_users(admin_credentials: dict):
             response.raise_for_status()
 
 
-@pytest.fixture(scope="module")
-def register_admin(
-    truncate_users,
+@pytest.fixture(scope="module", name="register_admin")
+def fixture_register_admin(
+    truncate_users,  # pylint: disable=unused-argument
     admin_credentials: dict,
 ) -> httpx.Response:
     response = fief_admin.register_user(
@@ -199,9 +195,9 @@ def register_admin(
     return response
 
 
-@pytest.fixture(scope="module")
-def register_user_1(
-    truncate_users,
+@pytest.fixture(scope="module", name="register_user_1")
+def fixture_register_user_1(
+    truncate_users,  # pylint: disable=unused-argument
     user1_credentials: dict,
 ) -> httpx.Response:
     response = fief_admin.register_user(
@@ -212,9 +208,9 @@ def register_user_1(
     return response
 
 
-@pytest.fixture(scope="module")
-def register_user_2(
-    truncate_users,
+@pytest.fixture(scope="module", name="register_user_2")
+def fixture_register_user_2(
+    truncate_users,  # pylint: disable=unused-argument
     user2_credentials: dict,
 ) -> httpx.Response:
     response = fief_admin.register_user(
@@ -230,22 +226,28 @@ def header_not_logged_in() -> dict:
     return prepare_header(username=None)
 
 
-@pytest.fixture(scope="module")
-def header_admin(register_admin, admin_credentials: dict) -> dict:
+@pytest.fixture(scope="module", name="header_admin")
+def fixture_header_admin(
+    register_admin, admin_credentials: dict  # pylint: disable=unused-argument
+) -> dict:
     """Authenticate in the API as an admin and return a dict with bearer
     header parameter to be passed to API's requests."""
     return prepare_header(username=admin_credentials["username"])
 
 
-@pytest.fixture(scope="module")
-def header_usr_1(register_user_1, user1_credentials: dict) -> dict:
+@pytest.fixture(scope="module", name="header_usr_1")
+def fixture_header_usr_1(
+    register_user_1, user1_credentials: dict  # pylint: disable=unused-argument
+) -> dict:
     """Authenticate in the API as user1 and return a dict with bearer
     header parameter to be passed to API's requests."""
     return prepare_header(username=user1_credentials["username"])
 
 
-@pytest.fixture(scope="module")
-def header_usr_2(register_user_2, user2_credentials: dict) -> dict:
+@pytest.fixture(scope="module", name="header_usr_2")
+def fixture_header_usr_2(
+    register_user_2, user2_credentials: dict  # pylint: disable=unused-argument
+) -> dict:
     """Authenticate in the API as user2 and return a dict with bearer
     header parameter to be passed to API's requests."""
     return prepare_header(username=user2_credentials["username"])
