@@ -124,8 +124,11 @@ async def create_or_update_plano_trabalho(
     try:
         novo_plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(plano_trabalho)
     except Exception as exception:
+        message = getattr(exception, "message", str(exception))
+        if getattr(exception, "json", None):
+            message = json.loads(getattr(exception, "json"))
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=json.loads(e.json())
+            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
         ) from exception
 
     # Verifica se já existe
