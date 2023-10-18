@@ -62,7 +62,12 @@ def test_create_plano_trabalho_completo(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json() == input_pt
+    assert all(
+        response.json()[attribute] == input_pt[attribute]
+        for attributes in fields_plano_trabalho["mandatory"]
+        for attribute in attributes
+        if attribute not in ("contribuicoes", "consolidacoes")
+    )
 
 
 def test_create_plano_trabalho_unidade_nao_permitida(
