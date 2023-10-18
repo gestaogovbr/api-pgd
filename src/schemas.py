@@ -267,7 +267,7 @@ class StatusParticipanteSchema(BaseModel):
         title="Situação do participante no Programa de Gestão e Desempenho (PGD)",
         description=StatusParticipante.participante_ativo_inativo_pgd.comment
     )
-    modadalidade_execucao: int = Field(
+    modalidade_execucao: int = Field(
         title="Modalidade e regime de execução do trabalho do participante",
         description=StatusParticipante.modalidade_execucao.comment
     )
@@ -283,3 +283,29 @@ class StatusParticipanteSchema(BaseModel):
     @validator("cpf_participante")
     def cpf_part_validate(cls, cpf_participante):
         return cpf_validate(cpf_participante)
+
+    @validator("matricula_siape")
+    def siape_validate(cls, matricula_siape):
+        if len(matricula_siape) != 7:
+            raise ValueError("Matricula SIAPE Inválida.",
+                             "Matrícula SIAPE deve ter 7 dígitos.")
+        return matricula_siape
+
+    @validator("participante_ativo_inativo_pgd")
+    def must_be_bool(cls, participante_ativo_inativo_pgd):
+        if participante_ativo_inativo_pgd not in (0, 1):
+            raise ValueError("Valor do campo 'participante_ativo_inativo_pgd' inválida; "\
+                             "permitido: 0, 1")
+        return participante_ativo_inativo_pgd
+
+    @validator("modalidade_execucao")
+    def must_be_between(cls, modalidade_execucao):
+        if modalidade_execucao not in range(1, 4):
+            raise ValueError("Modalidade de execução inválida; permitido: 1, 2, 3, 4")
+        return modalidade_execucao
+
+    @validator("jornada_trabalho_semanal")
+    def must_be_positive(cls, jornada_trabalho_semanal):
+        if jornada_trabalho_semanal < 1:
+            raise ValueError("Carga horária semanal deve ser maior que zero")
+        return jornada_trabalho_semanal
