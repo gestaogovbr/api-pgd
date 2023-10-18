@@ -43,35 +43,44 @@ def test_put_participante(
     assert response.json() == input_part
 
 
+@pytest.mark.parametrize(
+    "codigos_SIAPE_instituidora",
+    [
+        (1, 1),  # mesma unidade
+        (1, 2),  # unidades diferentes
+    ],
+)
 def test_put_duplicate_participante(
     input_part: dict,
+    codigos_SIAPE_instituidora: tuple[int, int],
     user1_credentials: dict,
     user2_credentials: dict,
     header_usr_1: dict,
     header_usr_2: dict,
-    truncate_participantes, # pylint: disable=unused-argument
+    truncate_participantes,  # pylint: disable=unused-argument
     client: Client,
 ):
-    """Testa o envio de um mesmo participante em unidades diferentes
-    (é possível, por exemplo, quando o participante altera a sua
-    lotação. Nesse caso tem que se manter o(s) registro(s) anterior(es)
-    concomitantemente).
+    """Testa o envio de um mesmo participante mais de uma vez. Podendo
+    ser em unidades diferentes (por exemplo, quando o participante altera
+    a sua lotação) ou na mesma unidade (envio de um novo status para o
+    mesmo participante, na mesma unidade). Em todos os casos tem que se
+    manter o(s) registro(s) anterior(es) concomitantemente.
     """
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/{codigos_SIAPE_instituidora[0]}"
         f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_1,
     )
     response = client.put(
-        f"/organizacao/{user2_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/{codigos_SIAPE_instituidora[1]}"
         f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json().get("detail", None) == None
+    assert response.json().get("detail", None) is None
     assert response.json() == input_part
 
 
