@@ -6,7 +6,7 @@ Pydantic: https://docs.pydantic.dev/2.0/
 """
 
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic import field_validator
 from datetime import date
 from enum import IntEnum
@@ -42,6 +42,7 @@ def cpf_validate(input_cpf):
 
 
 class ContribuicaoSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     tipo_contribuicao: int = Field(
         title="Tipo de contribuição", description=Contribuicao.tipo_contribuicao.comment
     )
@@ -60,6 +61,7 @@ class ContribuicaoSchema(BaseModel):
 
 
 class ConsolidacaoSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     data_inicio_registro: date = Field(
         title="Data de início do registro",
         description=Consolidacao.data_inicio_registro.comment,
@@ -75,6 +77,7 @@ class ConsolidacaoSchema(BaseModel):
 
 
 class PlanoTrabalhoSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     cod_SIAPE_instituidora: int = Field(
         title="Código SIAPE da organização que instituiu o PGD",
         description=PlanoTrabalho.cod_SIAPE_instituidora.comment,
@@ -165,6 +168,7 @@ class PlanoTrabalhoSchema(BaseModel):
 
 
 class EntregaSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id_entrega: int = Field(
         title="Id da entrega",
     )
@@ -204,6 +208,7 @@ class EntregaSchema(BaseModel):
 
 
 class PlanoEntregaSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     cod_SIAPE_instituidora: int = Field(
         title="Código SIAPE da organização que instituiu o PGD",
         description=PlanoEntregas.cod_SIAPE_instituidora.comment,
@@ -242,11 +247,9 @@ class PlanoEntregaSchema(BaseModel):
         description="Lista de entregas associadas ao Plano de Entregas",
     )
 
-    class Config:
-        from_attributes = True
-
 
 class StatusParticipanteSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     cpf_participante: str = Field(
         title="Número do CPF do participante",
         description=StatusParticipante.cpf_participante.comment,
