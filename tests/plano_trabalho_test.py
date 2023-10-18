@@ -50,6 +50,7 @@ fields_consolidacao = {
 # A linha abaixo desabilita os warnings do Pylint sobre isso.
 # pylint: disable=too-many-arguments
 
+
 def test_create_plano_trabalho_completo(
     input_pt: dict,
     user1_credentials: dict,
@@ -68,6 +69,21 @@ def test_create_plano_trabalho_completo(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
+    assert all(
+        response.json()[attribute] == input_pt[attribute]
+        for attributes in fields_plano_trabalho["mandatory"]
+        for attribute in attributes
+        if attribute not in ("contribuicoes", "consolidacoes")
+    )
+
+    # Consulta API para conferir se a criação foi persistida
+    response = client.get(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == status.HTTP_200_OK
     assert all(
         response.json()[attribute] == input_pt[attribute]
         for attributes in fields_plano_trabalho["mandatory"]
