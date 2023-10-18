@@ -30,25 +30,35 @@ async def create_plano_trabalho(
     cod_SIAPE_instituidora: int,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
 ):
-    "Cria um plano de trabalho definido pelo cod_plano."
+    """Cria um plano de trabalho definido pelos dados do schema Pydantic
+    plano_trabalho.
+    """
 
     contribuicoes = [
-        models.Contribuicao(**contribuicao.dict())
+        models.Contribuicao(**contribuicao.model_dump())
         for contribuicao in plano_trabalho.contribuicoes
     ]
     consolidacoes = [
-        models.Consolidacao(**consolidacao.dict())
+        models.Consolidacao(**consolidacao.model_dump())
         for consolidacao in plano_trabalho.consolidacoes
     ]
-    # for a in db_atividades:
-    #     a.cod_unidade = cod_unidade
-    # plano_trabalho.atividades = db_atividades
-    # db_plano_trabalho = models.PlanoTrabalho(
-    #     cod_unidade=cod_unidade, **plano_trabalho.dict()
-    # )
-    # db.add(db_plano_trabalho)
-    # db.commit()
-    # db.refresh(db_plano_trabalho)
+    plano_trabalho.contribuicoes = []
+    plano_trabalho.consolidacoes = []
+    db_plano_trabalho = models.PlanoTrabalho(
+        **plano_trabalho.model_dump()
+    )
+    async for session in db_session:
+        # for contribuicao in contribuicoes:
+        #     await session.add(contribuicao)
+        #     db_plano_trabalho.contribuicoes.append(contribuicao)
+        # # db_plano_trabalho.contribuicoes = contribuicoes
+        # for consolidacao in consolidacoes:
+        #     await session.add(consolidacao)
+        #     db_plano_trabalho.consolidacoes.append(consolidacao)
+        await session.add(db_plano_trabalho)
+        await session.commit()
+    # db_plano_trabalho.consolidacoes = consolidacoes
+    # db_session.refresh(db_plano_trabalho)
     # return schemas.PlanoTrabalhoSchema.from_orm(db_plano_trabalho)
 
 

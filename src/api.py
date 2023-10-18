@@ -139,14 +139,14 @@ async def create_or_update_plano_trabalho(
     )
 
     if not db_plano_trabalho:  # create
-        crud.create_plano_trabalho(
+        await crud.create_plano_trabalho(
             db_session=db,
             cod_SIAPE_instituidora=cod_SIAPE_instituidora,
             plano_trabalho=novo_plano_trabalho,
         )
         response.status_code = status.HTTP_201_CREATED
     else:  # update
-        crud.update_plano_trabalho(
+        await crud.update_plano_trabalho(
             db_session=db,
             cod_SIAPE_instituidora=cod_SIAPE_instituidora,
             plano_trabalho=novo_plano_trabalho,
