@@ -74,14 +74,9 @@ def test_put_participante_unidade_nao_permitida(
         (1, 2),  # unidades diferentes
     ],
 )
-
-
-
 def test_put_duplicate_participante(
     input_part: dict,
     codigos_SIAPE_instituidora: tuple[int, int],
-    user1_credentials: dict,
-    user2_credentials: dict,
     header_usr_1: dict,
     header_usr_2: dict,
     truncate_participantes,  # pylint: disable=unused-argument

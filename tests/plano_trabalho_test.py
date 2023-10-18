@@ -43,12 +43,18 @@ fields_consolidacao = {
     ),
 }
 
+# Os testes usam muitas fixtures, então necessariamente precisam de
+# muitos argumentos. Além disso, algumas fixtures não retornam um valor
+# para ser usado no teste, mas mesmo assim são executadas quando estão
+# presentes como um argumento da função.
+# A linha abaixo desabilita os warnings do Pylint sobre isso.
+# pylint: disable=too-many-arguments
 
 def test_create_plano_trabalho_completo(
     input_pt: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Cria um novo Plano de Trabalho do Participante, em uma unidade
@@ -73,7 +79,7 @@ def test_create_plano_trabalho_completo(
 def test_create_plano_trabalho_unidade_nao_permitida(
     input_pt: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta criar um novo Plano de Trabalho do Participante em uma
@@ -95,10 +101,10 @@ def test_create_plano_trabalho_unidade_nao_permitida(
 
 def test_update_plano_trabalho(
     input_pt: dict,
-    example_pt,
+    example_pt,  # pylint: disable=unused-argument
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Atualiza um Plano de Trabalho existente usando o método PUT."""
@@ -144,9 +150,9 @@ def test_create_plano_trabalho_id_entrega_check(
     id_entrega: int,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
-    truncate_pt,
-    example_pe,
+    truncate_pe,  # pylint: disable=unused-argument
+    truncate_pt,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta criar um novo plano de trabalho, sendo que, quando o campo
@@ -179,7 +185,7 @@ def test_create_plano_trabalho_consolidacao_omit_optional_fields(
     omitted_fields: list,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
+    truncate_pe,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta criar um novo plano de trabalho omitindo campos opcionais"""
@@ -208,7 +214,7 @@ def test_create_plano_trabalho_missing_mandatory_fields(
     missing_fields: list,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta criar um plano de trabalho, faltando campos obrigatórios.
@@ -238,7 +244,7 @@ def test_create_huge_plano_trabalho(
     input_pt: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Testa a criação de um plano de trabalho com grande volume de dados."""
@@ -360,7 +366,7 @@ def test_create_huge_plano_trabalho(
     ],
 )
 def test_create_plano_trabalho_overlapping_date_interval(
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     input_pt: dict,
     id_plano_trabalho_participante: int,
     cod_SIAPE_unidade_exercicio: int,
@@ -445,7 +451,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
     ],
 )
 def test_create_plano_trabalho_date_interval_over_a_year(
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     input_pt: dict,
     data_inicio_plano: str,
     data_termino_plano: str,
@@ -479,7 +485,7 @@ def test_create_pt_cod_plano_inconsistent(
     input_pt: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     input_pt["id_plano_trabalho_participante"] = 110
@@ -500,8 +506,8 @@ def test_get_plano_trabalho(
     input_pt: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
-    example_pt,
+    truncate_pt,  # pylint: disable=unused-argument
+    example_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     response = client.get(
@@ -540,7 +546,7 @@ def test_create_pt_invalid_dates(
     data_termino_plano: str,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Verifica se a data_termino_plano é maior ou igual à data_inicio_plano."""
@@ -585,7 +591,7 @@ def test_create_pt_data_consolidacao_out_of_bounds(
     data_fim_registro: str,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Verifica se o registro (consolidação) está dentro intervalo do
@@ -605,7 +611,7 @@ def test_create_pt_data_consolidacao_out_of_bounds(
     )
     if (
         data_inicio_registro < data_inicio_plano
-        or data_fim_registro > data_inicio_plano
+        or data_fim_registro > data_termino_plano
     ):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_msg = (
@@ -664,7 +670,7 @@ def test_create_pt_data_consolidacao_out_of_bounds(
     ],
 )
 def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     input_pt: dict,
     id_plano_trabalho_participante: int,
     consolidacoes: list[tuple[str, str]],
@@ -734,7 +740,7 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
     horas_vinculadas: int,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     id_plano_trabalho_participante = "111222333"
@@ -762,7 +768,7 @@ def test_create_pt_invalid_tipo_contribuicao(
     tipo_contribuicao: int,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter um plano de trabalho com tipo_contribuicao inválido"""
@@ -804,8 +810,8 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
     tipo_contribuicao: int,
     id_plano_entrega_unidade: int,
     id_entrega: int,
-    truncate_pt,
-    truncate_pe,
+    truncate_pt,  # pylint: disable=unused-argument
+    truncate_pe,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Verifica o comportamento da API em relação à obrigatoriedade
@@ -876,7 +882,7 @@ def test_create_pt_duplicate_id_plano(
     user1_credentials: dict,
     header_usr_1: dict,
     header_usr_2: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     response = client.put(
@@ -906,7 +912,7 @@ def test_create_pt_invalid_horas_vinculadas(
     horas_vinculadas: int,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     id_plano_trabalho_participante = "138"
@@ -929,7 +935,7 @@ def test_create_pt_consolidacoes_invalid_avaliacao_plano_trabalho(
     input_pt: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     avaliacao_plano_trabalho: int,
     client: Client,
 ):
@@ -975,7 +981,7 @@ def test_put_plano_trabalho_invalid_cpf(
     cpf_participante: str,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,
+    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter um plano de trabalho com cpf inválido"""
