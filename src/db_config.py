@@ -8,7 +8,6 @@ from starlette.responses import JSONResponse
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-ALGORITHM = "HS256"
 SQLALCHEMY_DATABASE_URL = os.environ["SQLALCHEMY_DATABASE_URL"]
 
 engine = create_async_engine(SQLALCHEMY_DATABASE_URL)
