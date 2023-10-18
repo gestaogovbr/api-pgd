@@ -1,8 +1,6 @@
 """
 Testes relacionados aos status de participantes
 """
-import itertools
-
 from httpx import Client
 
 from fastapi import status
@@ -17,12 +15,18 @@ fields_participantes = (
     ["jornada_trabalho_semanal"],
 )
 
+# Os testes usam muitas fixtures, então necessariamente precisam de
+# muitos argumentos. Além disso, algumas fixtures não retornam um valor
+# para ser usado no teste, mas mesmo assim são executadas quando estão
+# presentes como um argumento da função.
+# A linha abaixo desabilita os warnings do Pylint sobre isso.
+# pylint: disable=too-many-arguments
 
 def test_put_participante(
     input_part: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes,
+    truncate_participantes, # pylint: disable=unused-argument
     client: Client,
 ):
     """Testa a submissão de um participante a partir do template"""
@@ -44,7 +48,7 @@ def test_put_duplicate_participante(
     user2_credentials: dict,
     header_usr_1: dict,
     header_usr_2: dict,
-    truncate_participantes,
+    truncate_participantes, # pylint: disable=unused-argument
     client: Client,
 ):
     """Testa o envio de um mesmo participante em unidades diferentes
@@ -74,7 +78,7 @@ def test_create_participante_inconsistent(
     input_part: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes,
+    truncate_participantes, # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter participante inconsistente (URL difere do JSON)"""
@@ -99,7 +103,7 @@ def test_put_participante_missing_mandatory_fields(
     missing_fields: list,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes,
+    truncate_participantes, # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter participantes faltando campos obrigatórios"""
@@ -120,8 +124,8 @@ def test_put_participante_missing_mandatory_fields(
 def test_get_participante(
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes,
-    example_part,
+    truncate_participantes, # pylint: disable=unused-argument
+    example_part, # pylint: disable=unused-argument
     input_part: dict,
     client: Client,
 ):
@@ -163,7 +167,7 @@ def test_put_participante_invalid_matricula_siape(
     matricula_siape: str,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes,
+    truncate_participantes, # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter um participante com matricula siape inválida"""
@@ -208,7 +212,7 @@ def test_put_participante_invalid_cpf(
     cpf: str,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes,
+    truncate_participantes, # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter um participante com cpf inválido"""
@@ -242,7 +246,7 @@ def test_put_part_invalid_ativo(
     participante_ativo_inativo_pgd: int,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes,
+    truncate_participantes, # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta criar um participante com flag participante_ativo_inativo_pgd
@@ -269,7 +273,7 @@ def test_put_part_invalid_modalidade_execucao(
     modalidade_execucao: int,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes,
+    truncate_participantes, # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter um participante com modalidade de execução inválida"""
@@ -299,7 +303,7 @@ def test_put_part_invalid_jornada_trabalho_semanal(
     jornada_trabalho_semanal: int,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_participantes,
+    truncate_participantes, # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter um participante com jornada de trabalho semanal inválida"""
