@@ -1,5 +1,5 @@
 """
-Testes relacionados aos status de participantes
+Testes relacionados aos status de participantes.
 """
 from httpx import Client
 
@@ -7,6 +7,7 @@ from fastapi import status
 
 import pytest
 
+# Relação de campos obrigatórios para testar sua ausência:
 fields_participantes = (
     ["participante_ativo_inativo_pgd"],
     ["matricula_siape"],
