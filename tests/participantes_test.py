@@ -44,6 +44,29 @@ def test_put_participante(
     assert response.json() == input_part
 
 
+def test_put_participante_unidade_nao_permitida(
+    input_part: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_participantes,  # pylint: disable=unused-argument
+    client: Client,
+):
+    """
+    Testa a submissão de um participante em outra unidade instituidora
+    (user não é superuser)
+    """
+    response = client.put(
+        f"/organizacao/2"
+        f"/participante/{input_part['cpf_participante']}",
+        json=input_part,
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    detail_msg = "Usuário não tem permissão na cod_SIAPE_instituidora informada"
+    assert response.json().get("detail", None) == detail_msg
+
+
 @pytest.mark.parametrize(
     "codigos_SIAPE_instituidora",
     [
@@ -51,6 +74,9 @@ def test_put_participante(
         (1, 2),  # unidades diferentes
     ],
 )
+
+
+
 def test_put_duplicate_participante(
     input_part: dict,
     codigos_SIAPE_instituidora: tuple[int, int],
