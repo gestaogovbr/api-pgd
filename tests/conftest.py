@@ -40,6 +40,20 @@ USERS_CREDENTIALS = [
 ]
 
 
+def prepare_header(username: Optional[str]) -> dict:
+    """Prepara o cabeçalho para ser utilizado em requisições."""
+    headers = {"accept": "application/json", "Content-Type": "application/json"}
+
+    if username:
+        user_token = fief_admin.get_access_token_for_user(email=username)
+        headers["Authorization"] = f"Bearer {user_token}"
+
+    return headers
+
+
+# Fixtures
+
+
 @pytest.fixture(scope="module", name="input_pe")
 def fixture_input_pe() -> dict:
     """Template de Plano de Entregas da Unidade.
@@ -74,20 +88,6 @@ def fixture_input_part() -> dict:
         "modalidade_execucao": 3,
         "jornada_trabalho_semanal": 40,
     }
-
-
-def prepare_header(username: Optional[str]) -> dict:
-    """Prepara o cabeçalho para ser utilizado em requisições."""
-    headers = {"accept": "application/json", "Content-Type": "application/json"}
-
-    if username:
-        user_token = fief_admin.get_access_token_for_user(email=username)
-        headers["Authorization"] = f"Bearer {user_token}"
-
-    return headers
-
-
-# Fixtures
 
 
 @pytest.fixture(scope="module", name="client")
