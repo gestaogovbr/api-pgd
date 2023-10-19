@@ -149,7 +149,6 @@ async def create_or_update_plano_trabalho(
         else:  # update
             await crud.update_plano_trabalho(
                 db_session=db,
-                cod_SIAPE_instituidora=cod_SIAPE_instituidora,
                 plano_trabalho=novo_plano_trabalho,
             )
         return novo_plano_trabalho

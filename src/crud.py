@@ -67,14 +67,21 @@ async def update_plano_trabalho(
     plano_trabalho: schemas.PlanoTrabalhoSchema,
 ):
     "Atualiza um plano de trabalho definido pelo cod_plano."
-
-    # db_plano_trabalho = (
-    #     db.query(models.PlanoTrabalho)
-    #     .filter(models.PlanoTrabalho.cod_plano == plano_trabalho.cod_plano)
-    #     .filter(models.PlanoTrabalho.cod_unidade == cod_unidade)
-    #     .first()
-    # )
-    # # db_plano_trabalho.cod_unidade = cod_unidade
+    async with db_session as session:
+        result = await session.execute(
+            select(models.PlanoTrabalho)
+            .filter_by(
+                models.PlanoTrabalho.cod_SIAPE_instituidora
+                == plano_trabalho["cod_SIAPE_instituidora"]
+            )
+            .filter_by(
+                models.PlanoTrabalho.id_plano_trabalho_participante
+                == plano_trabalho["id_plano_trabalho_participante"]
+            )
+        )
+        db_plano_trabalho = result.unique().scalar_one_or_none()
+        await session.delete(db_plano_trabalho)
+    await create_plano_trabalho(db_session, plano_trabalho)
     # for k, _ in plano_trabalho.__dict__.items():
     #     if k[0] != "_" and k != "atividades":
     #         setattr(db_plano_trabalho, k, getattr(plano_trabalho, k))
