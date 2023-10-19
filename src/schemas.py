@@ -250,6 +250,10 @@ class PlanoEntregaSchema(BaseModel):
 
 class StatusParticipanteSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+    cod_SIAPE_instituidora: int = Field(
+        title="Código SIAPE da organização que instituiu o PGD",
+        description=PlanoEntregas.cod_SIAPE_instituidora.comment,
+    )
     cpf_participante: str = Field(
         title="Número do CPF do participante",
         description=StatusParticipante.cpf_participante.comment,
