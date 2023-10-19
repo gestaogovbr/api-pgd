@@ -246,6 +246,7 @@ async def create_status_participante(
     db_status_participante = models.StatusParticipante(
         **status_participante.model_dump()
     )
+    db_status_participante.data_insercao = datetime.now()
     async with db_session as session:
         session.add(db_status_participante)
         await session.commit()
