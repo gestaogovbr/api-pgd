@@ -77,6 +77,8 @@ def test_put_participante_unidade_nao_permitida(
 def test_put_duplicate_participante(
     input_part: dict,
     codigos_SIAPE_instituidora: tuple[int, int],
+    user1_credentials: dict,
+    user2_credentials: dict,
     header_usr_1: dict,
     header_usr_2: dict,
     truncate_participantes,  # pylint: disable=unused-argument
@@ -88,17 +90,27 @@ def test_put_duplicate_participante(
     mesmo participante, na mesma unidade). Em todos os casos tem que se
     manter o(s) registro(s) anterior(es) concomitantemente.
     """
+    input_part["cod_SIAPE_instituidora"] = codigos_SIAPE_instituidora[0]
     response = client.put(
         f"/organizacao/{codigos_SIAPE_instituidora[0]}"
         f"/participante/{input_part['cpf_participante']}",
         json=input_part,
         headers=header_usr_1,
     )
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json().get("detail", None) is None
+    assert response.json() == input_part
+
+    if codigos_SIAPE_instituidora[1] == user1_credentials["cod_SIAPE_instituidora"]:
+        header_usr = header_usr_1
+    else:
+        header_usr = header_usr_2
+    input_part["cod_SIAPE_instituidora"] = codigos_SIAPE_instituidora[1]
     response = client.put(
         f"/organizacao/{codigos_SIAPE_instituidora[1]}"
         f"/participante/{input_part['cpf_participante']}",
         json=input_part,
-        headers=header_usr_2,
+        headers=header_usr,
     )
 
     assert response.status_code == status.HTTP_201_CREATED
