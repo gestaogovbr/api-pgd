@@ -10,9 +10,10 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
 from fief_client import FiefUserInfo, FiefAccessTokenInfo
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 import schemas
 import crud
-from db_config import get_db, create_db_and_tables
+from db_config import get_db, DbContextManager, create_db_and_tables
 from users import auth_backend
 
 with open("../docs/description.md", "r", encoding="utf-8") as f:
@@ -93,7 +94,7 @@ async def create_or_update_plano_trabalho(
     id_plano_trabalho_participante: int,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
     response: Response,
-    db: Session = Depends(get_db),
+    db: Session = Depends(DbContextManager),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
     # TODO: Obter meios de verificar permissão opcional. O código abaixo
     #       bloqueia o acesso, mesmo informando que é opcional.
@@ -106,7 +107,8 @@ async def create_or_update_plano_trabalho(
 
     # Validações de permissão
     if (
-        cod_SIAPE_instituidora != user["fields"]["cod_SIAPE_instituidora"]
+        cod_SIAPE_instituidora
+        != user["fields"]["cod_SIAPE_instituidora"]
         # TODO: Dar acesso ao superusuário em todas as unidades.
         # and "all:write" not in access_token_info["permissions"]
     ):
@@ -138,20 +140,26 @@ async def create_or_update_plano_trabalho(
         id_plano_trabalho_participante=id_plano_trabalho_participante,
     )
 
-    if not db_plano_trabalho:  # create
-        await crud.create_plano_trabalho(
-            db_session=db,
-            cod_SIAPE_instituidora=cod_SIAPE_instituidora,
-            plano_trabalho=novo_plano_trabalho,
+    try:
+        if not db_plano_trabalho:  # create
+            await crud.create_plano_trabalho(
+                db_session=db,
+                cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+                plano_trabalho=novo_plano_trabalho,
+            )
+            response.status_code = status.HTTP_201_CREATED
+        else:  # update
+            await crud.update_plano_trabalho(
+                db_session=db,
+                cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+                plano_trabalho=novo_plano_trabalho,
+            )
+        return novo_plano_trabalho
+    except IntegrityError as exception:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"IntegrityError: {str(exception)}"
         )
-        response.status_code = status.HTTP_201_CREATED
-    else:  # update
-        await crud.update_plano_trabalho(
-            db_session=db,
-            cod_SIAPE_instituidora=cod_SIAPE_instituidora,
-            plano_trabalho=novo_plano_trabalho,
-        )
-    return novo_plano_trabalho
 
 
 @app.get(
@@ -203,6 +211,7 @@ async def get_status_participante(
 
     return db_status_participante.__dict__
 
+
 @app.put(
     "/organizacao/{cod_SIAPE_instituidora}/participante/{cpf_participante}}",
     summary="Submete o status de um participante",
@@ -221,7 +230,8 @@ async def create_status_participante(
 
     # Validações de permissão
     if (
-        cod_SIAPE_instituidora != user["fields"]["cod_SIAPE_instituidora"]
+        cod_SIAPE_instituidora
+        != user["fields"]["cod_SIAPE_instituidora"]
         # TODO: Dar acesso ao superusuário em todas as unidades.
         # and "all:write" not in access_token_info["permissions"]
     ):
@@ -237,7 +247,9 @@ async def create_status_participante(
 
     # Validações do esquema
     try:
-        novo_status_participante = schemas.StatusParticipanteSchema.model_validate(status_participante)
+        novo_status_participante = schemas.StatusParticipanteSchema.model_validate(
+            status_participante
+        )
     except Exception as exception:
         message = getattr(exception, "message", str(exception))
         if getattr(exception, "json", None):
@@ -252,6 +264,7 @@ async def create_status_participante(
     )
     response.status_code = status.HTTP_201_CREATED
     return novo_status_participante
+
 
 # @app.patch(
 #     "/plano_trabalho/{cod_plano}",

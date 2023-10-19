@@ -1,5 +1,6 @@
 """Funções para ler, gravar, atualizar ou apagar dados no banco de dados.
 """
+from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -13,7 +14,7 @@ async def get_plano_trabalho(
     id_plano_trabalho_participante: str,
 ):
     "Traz um plano de trabalho a partir do banco de dados."
-    async for session in db_session:
+    with db_session as session:
         result = await session.execute(
             select(models.PlanoTrabalho)
             .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
@@ -33,7 +34,6 @@ async def create_plano_trabalho(
     """Cria um plano de trabalho definido pelos dados do schema Pydantic
     plano_trabalho.
     """
-
     contribuicoes = [
         models.Contribuicao(**contribuicao.model_dump())
         for contribuicao in plano_trabalho.contribuicoes
@@ -47,19 +47,19 @@ async def create_plano_trabalho(
     db_plano_trabalho = models.PlanoTrabalho(
         **plano_trabalho.model_dump()
     )
-    async for session in db_session:
-        # for contribuicao in contribuicoes:
-        #     await session.add(contribuicao)
-        #     db_plano_trabalho.contribuicoes.append(contribuicao)
-        # # db_plano_trabalho.contribuicoes = contribuicoes
-        # for consolidacao in consolidacoes:
-        #     await session.add(consolidacao)
-        #     db_plano_trabalho.consolidacoes.append(consolidacao)
-        await session.add(db_plano_trabalho)
+    db_plano_trabalho.data_insercao = datetime.now()
+    with db_session as session:
+        for contribuicao in contribuicoes:
+            session.add(contribuicao)
+            db_plano_trabalho.contribuicoes.append(contribuicao)
+            db_plano_trabalho.contribuicoes = contribuicoes
+        for consolidacao in consolidacoes:
+            session.add(consolidacao)
+            db_plano_trabalho.consolidacoes.append(consolidacao)
+        session.add(db_plano_trabalho)
         await session.commit()
-    # db_plano_trabalho.consolidacoes = consolidacoes
-    # db_session.refresh(db_plano_trabalho)
-    # return schemas.PlanoTrabalhoSchema.from_orm(db_plano_trabalho)
+        # db_session.refresh(db_plano_trabalho)
+    # return schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho)
 
 
 async def update_plano_trabalho(
@@ -139,7 +139,7 @@ async def create_status_participante(
     db_status_participante = models.StatusParticipante(
         **status_participante.model_dump()
     )
-    async for session in db_session:
+    with db_session as session:
         session.add(db_status_participante)
         await session.commit()
 
@@ -152,7 +152,7 @@ async def truncate_plano_entregas(
     """Apaga a tabela plano_entregas.
     Usado no ambiente de testes de integração contínua.
     """
-    async for session in db_session:
+    with db_session as session:
         result = await session.execute(text("TRUNCATE plano_entregas CASCADE;"))
         await session.commit()
         return result
@@ -163,7 +163,7 @@ async def truncate_plano_trabalho(
     """Apaga a tabela plano_trabalho.
     Usado no ambiente de testes de integração contínua.
     """
-    async for session in db_session:
+    with db_session as session:
         result = await session.execute(text("TRUNCATE plano_trabalho CASCADE;"))
         await session.commit()
         return result
@@ -174,7 +174,7 @@ async def truncate_status_participante(
     """Apaga a tabela status_participante.
     Usado no ambiente de testes de integração contínua.
     """
-    async for session in db_session:
+    with db_session as session:
         result = await session.execute(text("TRUNCATE status_participante CASCADE;"))
         await session.commit()
         return result

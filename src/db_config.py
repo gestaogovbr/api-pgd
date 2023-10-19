@@ -36,3 +36,13 @@ async def get_db():
         yield db
     finally:
         db.aclose()
+
+class DbContextManager:
+    def __init__(self):
+        self.db = async_session_maker()
+
+    def __enter__(self):
+        return self.db
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.db.close()
