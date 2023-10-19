@@ -127,6 +127,22 @@ async def get_status_participante(
         return db_status_participante
     return None
 
+async def create_status_participante(
+    db_session: Session,
+    status_participante: schemas.StatusParticipanteSchema,
+):
+    """Cria um status de participante definido pelos dados do schema Pydantic
+    status_participante.
+    TODO: Possibilitar inserir mais de um registro
+    """
+
+    db_status_participante = models.StatusParticipante(
+        **status_participante.model_dump()
+    )
+    async for session in db_session:
+        session.add(db_status_participante)
+        await session.commit()
+
 
 # The following methods are only for test in CI/CD environment
 

@@ -203,7 +203,55 @@ async def get_status_participante(
 
     return db_status_participante.__dict__
 
+@app.put(
+    "/organizacao/{cod_SIAPE_instituidora}/participante/{cpf_participante}}",
+    summary="Submete o status de um participante",
+    response_model=schemas.StatusParticipanteSchema,
+    tags=["status participante"],
+)
+async def create_status_participante(
+    cod_SIAPE_instituidora: int,
+    cpf_participante: int,
+    status_participante: schemas.StatusParticipanteSchema,
+    response: Response,
+    db: Session = Depends(get_db),
+    user: FiefUserInfo = Depends(auth_backend.current_user()),
+):
+    """Submete um ou mais status de Programa de Gestão de um participante."""
 
+    # Validações de permissão
+    if (
+        cod_SIAPE_instituidora != user["fields"]["cod_SIAPE_instituidora"]
+        # TODO: Dar acesso ao superusuário em todas as unidades.
+        # and "all:write" not in access_token_info["permissions"]
+    ):
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+        )
+    if cod_SIAPE_instituidora != status_participante.cod_SIAPE_instituidora:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Parâmetro cod_SIAPE_instituidora diferente do conteúdo do JSON",
+        )
+
+    # Validações do esquema
+    try:
+        novo_status_participante = schemas.StatusParticipanteSchema.model_validate(status_participante)
+    except Exception as exception:
+        message = getattr(exception, "message", str(exception))
+        if getattr(exception, "json", None):
+            message = json.loads(getattr(exception, "json"))
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
+        ) from exception
+
+    await crud.create_status_participante(
+        db_session=db,
+        status_participante=novo_status_participante,
+    )
+    response.status_code = status.HTTP_201_CREATED
+    return novo_status_participante
 
 # @app.patch(
 #     "/plano_trabalho/{cod_plano}",
