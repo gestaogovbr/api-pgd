@@ -44,9 +44,7 @@ async def create_plano_trabalho(
     ]
     plano_trabalho.contribuicoes = []
     plano_trabalho.consolidacoes = []
-    db_plano_trabalho = models.PlanoTrabalho(
-        **plano_trabalho.model_dump()
-    )
+    db_plano_trabalho = models.PlanoTrabalho(**plano_trabalho.model_dump())
     db_plano_trabalho.data_insercao = datetime.now()
     async with db_session as session:
         for contribuicao in contribuicoes:
@@ -134,6 +132,7 @@ async def get_status_participante(
         return db_status_participante
     return None
 
+
 async def create_status_participante(
     db_session: DbContextManager,
     status_participante: schemas.StatusParticipanteSchema,
@@ -153,6 +152,7 @@ async def create_status_participante(
 
 # The following methods are only for test in CI/CD environment
 
+
 def truncate_plano_entregas():
     """Apaga a tabela plano_entregas.
     Usado no ambiente de testes de integração contínua.
@@ -161,6 +161,7 @@ def truncate_plano_entregas():
         result = session.execute(text("TRUNCATE plano_entregas CASCADE;"))
     return result
 
+
 def truncate_plano_trabalho():
     """Apaga a tabela plano_trabalho.
     Usado no ambiente de testes de integração contínua.
@@ -168,6 +169,7 @@ def truncate_plano_trabalho():
     with SyncSession.begin() as session:
         result = session.execute(text("TRUNCATE plano_trabalho CASCADE;"))
     return result
+
 
 def truncate_status_participante():
     """Apaga a tabela status_participante.
