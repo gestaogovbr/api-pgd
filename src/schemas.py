@@ -305,5 +305,5 @@ class StatusParticipanteSchema(BaseModel):
     @field_validator("jornada_trabalho_semanal")
     def must_be_positive(cls, jornada_trabalho_semanal):
         if jornada_trabalho_semanal < 1:
-            raise ValueError("Carga horária semanal deve ser maior que zero")
+            raise ValueError("Jornada de trabalho semanal deve ser maior que zero")
         return jornada_trabalho_semanal
