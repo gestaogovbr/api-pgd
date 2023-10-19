@@ -268,6 +268,7 @@ async def create_or_update_plano_trabalho(
     tags=["status participante"],
 )
 async def get_status_participante(
+    cod_SIAPE_instituidora: int,
     cpf_participante: str,
     db: DbContextManager = Depends(DbContextManager),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
@@ -287,7 +288,7 @@ async def get_status_participante(
 
 
 @app.put(
-    "/organizacao/{cod_SIAPE_instituidora}/participante/{cpf_participante}}",
+    "/organizacao/{cod_SIAPE_instituidora}/participante/{cpf_participante}",
     summary="Submete o status de um participante",
     response_model=schemas.StatusParticipanteSchema,
     tags=["status participante"],
