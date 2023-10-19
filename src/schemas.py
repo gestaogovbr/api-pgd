@@ -315,3 +315,11 @@ class StatusParticipanteSchema(BaseModel):
         if jornada_trabalho_semanal < 1:
             raise ValueError("Jornada de trabalho semanal deve ser maior que zero")
         return jornada_trabalho_semanal
+
+
+class ListStatusParticipanteSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    lista_status: List[StatusParticipanteSchema] = Field(
+        title="Contribuições",
+        description="Lista de Contribuições planejadas para o Plano de Trabalho.",
+    )

@@ -176,7 +176,7 @@ def test_get_participante(
         f"/participante/{input_part['cpf_participante']}",
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == status.HTTP_200_OK
 
 
 def test_get_participante_inexistente(

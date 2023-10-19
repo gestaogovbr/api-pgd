@@ -272,19 +272,19 @@ async def get_status_participante(
     cpf_participante: str,
     db: DbContextManager = Depends(DbContextManager),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
-):
+) -> schemas.ListStatusParticipanteSchema:
     "Consulta o status do participante a partir da matricula SIAPE."
-    db_status_participante = await crud.get_status_participante(
+    status_participante = await crud.get_status_participante(
         db_session=db,
         cod_SIAPE_instituidora=user["fields"]["cod_SIAPE_instituidora"],
         cpf_participante=cpf_participante,
     )
-    if not db_status_participante:
+    if not status_participante:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail="Status de Participante não encontrado"
         )
 
-    return db_status_participante.__dict__
+    return status_participante
 
 
 @app.put(
