@@ -19,7 +19,6 @@ from crud import (
     truncate_plano_trabalho,
     truncate_status_participante,
 )
-from db_config import get_db
 from api import app
 
 # Fief admin helper object
@@ -157,20 +156,17 @@ def example_part(
 
 @pytest.fixture()
 def truncate_pe():
-    db = get_db()
-    truncate_plano_entregas(db)
+    truncate_plano_entregas()
 
 
 @pytest.fixture()
 def truncate_pt():
-    db = get_db()
-    truncate_plano_trabalho(db)
+    truncate_plano_trabalho()
 
 
 @pytest.fixture()
 def truncate_participantes():
-    db = get_db()
-    truncate_status_participante(db)
+    truncate_status_participante()
 
 
 @pytest.fixture(scope="module", name="truncate_users")

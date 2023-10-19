@@ -2,16 +2,19 @@
 """
 
 import os
-from typing import AsyncGenerator, List
+from typing import AsyncGenerator
 
-from starlette.responses import JSONResponse
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import create_engine
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 SQLALCHEMY_DATABASE_URL = os.environ["SQLALCHEMY_DATABASE_URL"]
 
 engine = create_async_engine(SQLALCHEMY_DATABASE_URL)
+sync_engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+SyncSession = sessionmaker(sync_engine)
 
 
 # database models (SQLAlchemy)
@@ -41,8 +44,8 @@ class DbContextManager:
     def __init__(self):
         self.db = async_session_maker()
 
-    def __enter__(self):
+    async def __aenter__(self):
         return self.db
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.db.close()
+    async def __aexit__(self, exc_type, exc_value, traceback):
+        await self.db.close()

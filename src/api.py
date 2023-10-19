@@ -9,11 +9,10 @@ from fastapi import Depends, FastAPI, HTTPException, status, Header, Response
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import RedirectResponse
 from fief_client import FiefUserInfo, FiefAccessTokenInfo
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 import schemas
 import crud
-from db_config import get_db, DbContextManager, create_db_and_tables
+from db_config import DbContextManager, create_db_and_tables
 from users import auth_backend
 
 with open("../docs/description.md", "r", encoding="utf-8") as f:
@@ -66,7 +65,7 @@ async def docs_redirect(accept: Union[str, None] = Header(default="text/html")):
 )
 async def get_plano_trabalho(
     id_plano_trabalho_participante: int,
-    db: Session = Depends(get_db),
+    db: DbContextManager = Depends(DbContextManager),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
 ):
     "Consulta o plano de trabalho com o código especificado."
@@ -94,7 +93,7 @@ async def create_or_update_plano_trabalho(
     id_plano_trabalho_participante: int,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
     response: Response,
-    db: Session = Depends(DbContextManager),
+    db: DbContextManager = Depends(DbContextManager),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
     # TODO: Obter meios de verificar permissão opcional. O código abaixo
     #       bloqueia o acesso, mesmo informando que é opcional.
@@ -144,7 +143,6 @@ async def create_or_update_plano_trabalho(
         if not db_plano_trabalho:  # create
             await crud.create_plano_trabalho(
                 db_session=db,
-                cod_SIAPE_instituidora=cod_SIAPE_instituidora,
                 plano_trabalho=novo_plano_trabalho,
             )
             response.status_code = status.HTTP_201_CREATED
@@ -159,7 +157,7 @@ async def create_or_update_plano_trabalho(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"IntegrityError: {str(exception)}"
-        )
+        ) from exception
 
 
 @app.get(
@@ -170,7 +168,7 @@ async def create_or_update_plano_trabalho(
 )
 async def get_plano_entrega(
     id_plano_entrega_unidade: int,
-    db: Session = Depends(get_db),
+    db: DbContextManager = Depends(DbContextManager),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
 ):
     "Consulta o plano de entregas com o código especificado."
@@ -195,7 +193,7 @@ async def get_plano_entrega(
 )
 async def get_status_participante(
     cpf_participante: str,
-    db: Session = Depends(get_db),
+    db: DbContextManager = Depends(DbContextManager),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
 ):
     "Consulta o status do participante a partir da matricula SIAPE."
@@ -220,10 +218,10 @@ async def get_status_participante(
 )
 async def create_status_participante(
     cod_SIAPE_instituidora: int,
-    cpf_participante: int,
+    cpf_participante: int, # TODO: verificar se é igual ao JSON
     status_participante: schemas.StatusParticipanteSchema,
     response: Response,
-    db: Session = Depends(get_db),
+    db: DbContextManager = Depends(DbContextManager),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
 ):
     """Submete um ou mais status de Programa de Gestão de um participante."""
@@ -355,8 +353,6 @@ def public_facing_openapi():
         version=app.version,
         routes=app.routes,
     )
-    # paths = openapi_schema["paths"]
-    # del paths["/truncate_pts_atividades"]
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
