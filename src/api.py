@@ -160,9 +160,9 @@ async def create_or_update_plano_trabalho(
 
 
 @app.get(
-    "/organizacao/{cod_SIAPE_instituidora}/plano_entrega/{id_plano_entrega_unidade}",
+    "/organizacao/{cod_SIAPE_instituidora}/plano_entregas/{id_plano_entrega_unidade}",
     summary="Consulta plano de entregas",
-    response_model=schemas.PlanoEntregaSchema,
+    response_model=schemas.PlanoEntregasSchema,
     tags=["plano de entregas"],
 )
 async def get_plano_entrega(
@@ -171,7 +171,7 @@ async def get_plano_entrega(
     user: FiefUserInfo = Depends(auth_backend.current_user()),
 ):
     "Consulta o plano de entregas com o código especificado."
-    db_plano_entrega = await crud.get_plano_entrega(
+    db_plano_entrega = await crud.get_plano_entregas(
         db_session=db,
         cod_SIAPE_instituidora=user["fields"]["cod_SIAPE_instituidora"],
         id_plano_entrega_unidade=id_plano_entrega_unidade,
@@ -182,6 +182,83 @@ async def get_plano_entrega(
         )
     # plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho.__dict__)
     return db_plano_entrega.__dict__
+
+
+@app.put(
+    "/organizacao/{cod_SIAPE_instituidora}/plano_entregas/{id_plano_entrega_unidade}",
+    summary="Cria ou substitui plano de entregas",
+    response_model=schemas.PlanoEntregasSchema,
+    tags=["plano de entregas"],
+)
+async def create_or_update_plano_trabalho(
+    cod_SIAPE_instituidora: int,
+    id_plano_entrega_unidade: int,
+    plano_entregas: schemas.PlanoEntregasSchema,
+    response: Response,
+    db: DbContextManager = Depends(DbContextManager),
+    user: FiefUserInfo = Depends(auth_backend.current_user()),
+    # TODO: Obter meios de verificar permissão opcional. O código abaixo
+    #       bloqueia o acesso, mesmo informando que é opcional.
+    # access_token_info: Optional[FiefAccessTokenInfo] = Depends(
+    #     auth_backend.authenticated(permissions=["all:read"], optional=True)
+    # ),
+):
+    """Cria um novo plano de trabalho ou, se existente, substitui um
+    plano de trabalho por um novo com os dados informados."""
+
+    # Validações de permissão
+    if (
+        cod_SIAPE_instituidora
+        != user["fields"]["cod_SIAPE_instituidora"]
+        # TODO: Dar acesso ao superusuário em todas as unidades.
+        # and "all:write" not in access_token_info["permissions"]
+    ):
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+        )
+    if cod_SIAPE_instituidora != plano_entregas.cod_SIAPE_instituidora:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Parâmetro cod_SIAPE_instituidora diferente do conteúdo do JSON",
+        )
+
+    # Validações do esquema
+    try:
+        novo_plano_entregas = schemas.PlanoEntregasSchema.model_validate(plano_entregas)
+    except Exception as exception:
+        message = getattr(exception, "message", str(exception))
+        if getattr(exception, "json", None):
+            message = json.loads(getattr(exception, "json"))
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
+        ) from exception
+
+    # Verifica se já existe
+    db_plano_entregas = await crud.get_plano_entregas(
+        db_session=db,
+        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+        id_plano_entrega_unidade=id_plano_entrega_unidade,
+    )
+
+    try:
+        if not db_plano_entregas:  # create
+            novo_plano_entregas = await crud.create_plano_entregas(
+                db_session=db,
+                plano_entregas=novo_plano_entregas,
+            )
+            response.status_code = status.HTTP_201_CREATED
+        else:  # update
+            novo_plano_entregas = await crud.update_plano_entregas(
+                db_session=db,
+                plano_entregas=novo_plano_entregas,
+            )
+        return novo_plano_entregas
+    except IntegrityError as exception:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"IntegrityError: {str(exception)}"
+        ) from exception
 
 
 @app.get(

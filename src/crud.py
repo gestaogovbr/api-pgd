@@ -34,6 +34,7 @@ async def create_plano_trabalho(
     """Cria um plano de trabalho definido pelos dados do schema Pydantic
     plano_trabalho.
     """
+    creation_timestamp = datetime.now()
     contribuicoes = [
         models.Contribuicao(**contribuicao.model_dump())
         for contribuicao in plano_trabalho.contribuicoes
@@ -45,13 +46,15 @@ async def create_plano_trabalho(
     plano_trabalho.contribuicoes = []
     plano_trabalho.consolidacoes = []
     db_plano_trabalho = models.PlanoTrabalho(**plano_trabalho.model_dump())
-    db_plano_trabalho.data_insercao = datetime.now()
+    db_plano_trabalho.data_insercao = creation_timestamp
     async with db_session as session:
         for contribuicao in contribuicoes:
+            contribuicao.data_insercao = creation_timestamp
             session.add(contribuicao)
             db_plano_trabalho.contribuicoes.append(contribuicao)
             db_plano_trabalho.contribuicoes = contribuicoes
         for consolidacao in consolidacoes:
+            consolidacao.data_insercao = creation_timestamp
             session.add(consolidacao)
             db_plano_trabalho.consolidacoes.append(consolidacao)
         session.add(db_plano_trabalho)
@@ -97,7 +100,7 @@ async def update_plano_trabalho(
     # return db_plano_trabalho
 
 
-async def get_plano_entrega(
+async def get_plano_entregas(
     db_session: DbContextManager,
     cod_SIAPE_instituidora: int,
     id_plano_entrega_unidade: int,
@@ -113,6 +116,41 @@ async def get_plano_entrega(
     if db_plano_entrega:
         return db_plano_entrega
     return None
+
+
+async def create_plano_entregas(
+    db_session: DbContextManager,
+    plano_entregas: schemas.PlanoEntregasSchema,
+):
+    """Cria um plano de trabalho definido pelos dados do schema Pydantic
+    plano_entregas.
+    """
+    creation_timestamp = datetime.now()
+    entregas = [
+        models.Entrega(**entrega.model_dump())
+        for entrega in plano_entregas.entregas
+    ]
+    plano_entregas.entregas = []
+    db_plano_entregas = models.PlanoEntregas(**plano_entregas.model_dump())
+    db_plano_entregas.data_insercao = creation_timestamp
+    async with db_session as session:
+        for entrega in entregas:
+            entrega.data_insercao = creation_timestamp
+            session.add(entrega)
+            db_plano_entregas.entregas.append(entrega)
+            db_plano_entregas.entregas = entregas
+        session.add(db_plano_entregas)
+        await session.commit()
+        await session.refresh(db_plano_entregas)
+    return schemas.PlanoEntregasSchema.model_validate(db_plano_entregas)
+
+
+async def update_plano_entregas(
+    db_session: DbContextManager,
+    plano_entregas: schemas.PlanoEntregasSchema,
+):
+    """TODO: implementar
+    """
 
 
 async def get_status_participante(

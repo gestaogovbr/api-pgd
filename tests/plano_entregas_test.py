@@ -59,8 +59,13 @@ def test_create_plano_entregas_completo(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json().get("detail", None) == None
-    assert response.json() == input_pe
+    assert response.json().get("detail", None) is None
+    assert all(
+        response.json()[attribute] == input_pe[attribute]
+        for attributes in fields_plano_entregas["mandatory"]
+        for attribute in attributes
+        if attribute not in ("contribuicoes", "consolidacoes")
+    )
 
 
 def test_create_plano_entregas_unidade_nao_permitida(

@@ -207,7 +207,7 @@ class EntregaSchema(BaseModel):
     )
 
 
-class PlanoEntregaSchema(BaseModel):
+class PlanoEntregasSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     cod_SIAPE_instituidora: int = Field(
         title="Código SIAPE da organização que instituiu o PGD",
