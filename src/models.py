@@ -507,7 +507,7 @@ class StatusParticipante(Base):
                 "pertinentes aos respectivos cargos dos participantes. "
                 "É definida em lei ou contrato.",
     )
-    data_envio = Column(
+    data_envio = Column( # TODO: verificar descrição e relação com data_insercao
         Date,
         nullable=False,
         comment="Timestamp do envio dos dados pelo órgão ou entidade via API "
