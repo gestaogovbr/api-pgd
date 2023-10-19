@@ -287,7 +287,11 @@ class StatusParticipanteSchema(BaseModel):
     def siape_validate(cls, matricula_siape):
         if len(matricula_siape) != 7:
             raise ValueError(
-                "Matricula SIAPE Inválida.", "Matrícula SIAPE deve ter 7 dígitos."
+                "Matrícula SIAPE deve ter 7 dígitos."
+            )
+        if len(set(matricula_siape)) < 2:
+            raise ValueError(
+                "Matricula SIAPE Inválida."
             )
         return matricula_siape
 

@@ -211,11 +211,11 @@ def test_put_participante_invalid_matricula_siape(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = [
+    detail_messages = [
         "Matricula SIAPE Inválida.",
         "Matrícula SIAPE deve ter 7 dígitos.",
     ]
-    assert response.json().get("detail")[0]["msg"] in detail_msg
+    assert any(message in response.json().get("detail")[0]["msg"] for message in detail_messages)
 
 
 @pytest.mark.parametrize(
