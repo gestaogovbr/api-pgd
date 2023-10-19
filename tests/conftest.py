@@ -81,11 +81,13 @@ def fixture_input_part() -> dict:
         dict: template de exemplo
     """
     return {
+        "cod_SIAPE_instituidora": 1,
         "participante_ativo_inativo_pgd": 1,
-        "matricula_siape": "123456",
+        "matricula_siape": "1234567",
         "cpf_participante": "64635210600",
         "modalidade_execucao": 3,
         "jornada_trabalho_semanal": 40,
+        "data_envio": "2023-10-19",
     }
 
 
