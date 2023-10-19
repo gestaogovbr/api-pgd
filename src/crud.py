@@ -30,9 +30,19 @@ async def get_plano_trabalho(
 async def create_plano_trabalho(
     db_session: DbContextManager,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
-):
+) -> schemas.PlanoTrabalhoSchema:
     """Cria um plano de trabalho definido pelos dados do schema Pydantic
     plano_trabalho.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão
+            async do SQL Alchemy.
+        plano_trabalho (schemas.PlanoTrabalhoSchema): Dados do plano
+            de trabalho como um esquema Pydantic.
+
+    Returns:
+        schemas.PlanoEntregasSchema: Esquema Pydantic do Plano de Trabalho
+            com os dados que foram gravados no banco.
     """
     creation_timestamp = datetime.now()
     contribuicoes = [
@@ -66,8 +76,23 @@ async def create_plano_trabalho(
 async def update_plano_trabalho(
     db_session: DbContextManager,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
-):
-    "Atualiza um plano de trabalho definido pelo cod_plano."
+) -> schemas.PlanoTrabalhoSchema:
+    """Atualiza um plano de trabalho conforme os dados recebidos no
+    esquema Pydantic em plano_trabalho.
+
+    Os dados existentes são primeiro apagados do banco para depois
+    inserir os dados recebidos.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão
+            async do SQL Alchemy.
+        plano_trabalho (schemas.PlanoTrabalhoSchema): Dados do plano
+            de trabalho como um esquema Pydantic.
+
+    Returns:
+        schemas.PlanoEntregasSchema: Esquema Pydantic do Plano de Trabalho
+            com o retorno de create_plano_trabalho.
+    """
     async with db_session as session:
         result = await session.execute(
             select(models.PlanoTrabalho)
@@ -82,7 +107,7 @@ async def update_plano_trabalho(
         )
         db_plano_trabalho = result.unique().scalar_one_or_none()
         await session.delete(db_plano_trabalho)
-    await create_plano_trabalho(db_session, plano_trabalho)
+    return await create_plano_trabalho(db_session, plano_trabalho)
     # for k, _ in plano_trabalho.__dict__.items():
     #     if k[0] != "_" and k != "atividades":
     #         setattr(db_plano_trabalho, k, getattr(plano_trabalho, k))
@@ -121,14 +146,23 @@ async def get_plano_entregas(
 async def create_plano_entregas(
     db_session: DbContextManager,
     plano_entregas: schemas.PlanoEntregasSchema,
-):
+) -> schemas.PlanoEntregasSchema:
     """Cria um plano de trabalho definido pelos dados do schema Pydantic
     plano_entregas.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão
+            async do SQL Alchemy.
+        plano_entregas (schemas.PlanoEntregasSchema): Dados do plano
+            de entregas como um esquema Pydantic.
+
+    Returns:
+        schemas.PlanoEntregasSchema: Esquema Pydantic do Plano de Entregas
+            com os dados que foram gravados no banco.
     """
     creation_timestamp = datetime.now()
     entregas = [
-        models.Entrega(**entrega.model_dump())
-        for entrega in plano_entregas.entregas
+        models.Entrega(**entrega.model_dump()) for entrega in plano_entregas.entregas
     ]
     plano_entregas.entregas = []
     db_plano_entregas = models.PlanoEntregas(**plano_entregas.model_dump())
@@ -148,9 +182,38 @@ async def create_plano_entregas(
 async def update_plano_entregas(
     db_session: DbContextManager,
     plano_entregas: schemas.PlanoEntregasSchema,
-):
-    """TODO: implementar
+) -> schemas.PlanoEntregasSchema:
+    """Atualiza um plano de entregas conforme os dados recebidos no
+    esquema Pydantic em plano_entregas.
+
+    Os dados existentes são primeiro apagados do banco para depois
+    inserir os dados recebidos.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão
+            async do SQL Alchemy.
+        plano_entregas (schemas.PlanoEntregasSchema): Dados do plano
+            de entregas como um esquema Pydantic.
+
+    Returns:
+        schemas.PlanoEntregasSchema: Esquema Pydantic do Plano de Entregas
+            com o retorno de create_plano_entregas.
     """
+    async with db_session as session:
+        result = await session.execute(
+            select(models.PlanoTrabalho)
+            .filter_by(
+                models.PlanoTrabalho.cod_SIAPE_instituidora
+                == plano_entregas["cod_SIAPE_instituidora"]
+            )
+            .filter_by(
+                models.PlanoTrabalho.id_plano_entrega_unidade
+                == plano_entregas["id_plano_entrega_unidade"]
+            )
+        )
+        db_plano_entregas = result.unique().scalar_one_or_none()
+        await session.delete(db_plano_entregas)
+    return await create_plano_entregas(db_session, plano_entregas)
 
 
 async def get_status_participante(
