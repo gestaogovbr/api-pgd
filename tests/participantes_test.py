@@ -8,13 +8,15 @@ from fastapi import status
 import pytest
 
 # Relação de campos obrigatórios para testar sua ausência:
-fields_participantes = (
-    ["participante_ativo_inativo_pgd"],
-    ["matricula_siape"],
-    ["cpf_participante"],
-    ["modalidade_execucao"],
-    ["jornada_trabalho_semanal"],
-)
+fields_participantes = {
+    "optional": (["matricula_siape"],),
+    "mandatory": (
+        ["participante_ativo_inativo_pgd"],
+        ["cpf_participante"],
+        ["modalidade_execucao"],
+        ["jornada_trabalho_semanal"],
+    ),
+}
 
 # Os testes usam muitas fixtures, então necessariamente precisam de
 # muitos argumentos. Além disso, algumas fixtures não retornam um valor
@@ -131,14 +133,49 @@ def test_create_participante_inconsistent(
         f"/participante/{novo_cpf_participante}",
         json={"lista_status": [input_part]},
         headers=header_usr_1,
-
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "Parâmetro cpf_participante na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_msg
 
 
-@pytest.mark.parametrize("missing_fields", enumerate(fields_participantes))
+@pytest.mark.parametrize("omitted_fields", enumerate(fields_participantes["optional"]))
+def test_put_participante_omit_optional_fields(
+    input_part: dict,
+    omitted_fields: list,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_participantes,  # pylint: disable=unused-argument
+    client: Client,
+):
+    """Tenta criar uma nova lista de status de participante omitindo
+    campos opcionais.
+    """
+    partial_input_part = input_part.copy()
+    cpf_participante = partial_input_part["cpf_participante"]
+    offset, field_list = omitted_fields
+    for field in field_list:
+        del partial_input_part[field]
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/participante/{cpf_participante}",
+        json={"lista_status": [partial_input_part]},
+        headers=header_usr_1,
+    )
+    print("partial_input_part: ", partial_input_part)
+    print("response.json(): ", response.json())
+    assert response.status_code == status.HTTP_201_CREATED
+    assert any(
+        all(
+            response_part[attribute] == partial_input_part[attribute]
+            for attributes in fields_participantes["mandatory"]
+            for attribute in attributes
+        ) for response_part in response.json()["lista_status"]
+    )
+
+
+@pytest.mark.parametrize("missing_fields", enumerate(fields_participantes["mandatory"]))
 def test_put_participante_missing_mandatory_fields(
     input_part: dict,
     missing_fields: list,
@@ -148,6 +185,7 @@ def test_put_participante_missing_mandatory_fields(
     client: Client,
 ):
     """Tenta submeter participantes faltando campos obrigatórios"""
+    cpf_participante = input_part["cpf_participante"]
     offset, field_list = missing_fields
     for field in field_list:
         del input_part[field]
@@ -157,7 +195,7 @@ def test_put_participante_missing_mandatory_fields(
     ] = f"{1800 + offset}"  # precisa ser um novo participante
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['cpf_participante']}",
+        f"/participante/{cpf_participante}",
         json={"lista_status": [input_part]},
         headers=header_usr_1,
     )

@@ -487,7 +487,6 @@ class StatusParticipante(Base):
     )
     matricula_siape = Column(
         String,
-        nullable=False,
         comment="Número da matrícula do participante no Sistema Integrado "
                 "de Administração de Recursos Humanos (Siape)",
     )

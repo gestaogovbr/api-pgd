@@ -270,6 +270,7 @@ class StatusParticipanteSchema(BaseModel):
         description=StatusParticipante.cpf_participante.comment,
     )
     matricula_siape: Optional[str] = Field(
+        default=None,
         title="Número da matrícula do participante",
         description=StatusParticipante.matricula_siape.comment,
     )
