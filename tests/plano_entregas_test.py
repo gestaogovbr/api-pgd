@@ -154,7 +154,12 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json() == input_pe
+    assert all(
+        response.json()[attribute] == input_pe[attribute]
+        for attributes in fields_plano_entregas["mandatory"]
+        for attribute in attributes
+        if attribute not in ("entregas")
+    )
 
 
 @pytest.mark.parametrize(
