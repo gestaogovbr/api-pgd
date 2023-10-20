@@ -71,6 +71,7 @@ class ConsolidacaoSchema(BaseModel):
         description=Consolidacao.data_fim_registro.comment,
     )
     avaliacao_plano_trabalho: Optional[int] = Field(
+        default=None,
         title="Avaliação do plano de trabalho",
         description=Consolidacao.avaliacao_plano_trabalho.comment,
     )
@@ -116,10 +117,12 @@ class PlanoTrabalhoSchema(BaseModel):
         description=PlanoTrabalho.carga_horaria_total_periodo_plano.comment,
     )
     contribuicoes: Optional[List[ContribuicaoSchema]] = Field(
+        default=None,
         title="Contribuições",
         description="Lista de Contribuições planejadas para o Plano de Trabalho.",
     )
     consolidacoes: Optional[List[ConsolidacaoSchema]] = Field(
+        default=None,
         title="Consolidações",
         description="Lista de Consolidações (registros) de execução do Plano de Trabalho.",
     )
