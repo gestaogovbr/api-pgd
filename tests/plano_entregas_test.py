@@ -471,11 +471,14 @@ def test_create_pe_invalid_period(
     )
     if data_inicio > data_fim:
         assert response.status_code == 422
-        detail_msg = (
+        detail_message = (
             "Data fim do Plano de Entregas deve ser maior"
             " ou igual que Data de início."
         )
-        assert response.json().get("detail")[0]["msg"] == detail_msg
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
@@ -517,11 +520,14 @@ def test_create_data_entrega_out_of_bounds(
         or data_entrega > data_termino_plano_entregas
     ):
         assert response.status_code == 422
-        detail_msg = (
+        detail_message = (
             "Data de entrega precisa estar dentro do intervalo entre início "
             "e término do Plano de Entregas."
         )
-        assert response.json().get("detail")[0]["msg"] == detail_msg
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
@@ -557,11 +563,14 @@ def test_create_pe_invalid_data_avaliacao(
     )
     if data_avaliacao_plano_entregas < data_inicio_plano_entregas:
         assert response.status_code == 422
-        detail_msg = (
+        detail_message = (
             "Data de avaliação do Plano de Entrega deve ser maior ou igual"
             " que a Data de início do Plano de Entrega."
         )
-        assert response.json().get("detail")[0]["msg"] == detail_msg
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
@@ -599,8 +608,11 @@ def test_create_pe_duplicate_entrega(
     )
     if id_ent_1 == id_ent_2:
         assert response.status_code == 422
-        detail_msg = "Entregas devem possuir id_entrega diferentes."
-        assert response.json().get("detail")[0]["msg"] == detail_msg
+        detail_message = "Entregas devem possuir id_entrega diferentes."
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
@@ -614,7 +626,9 @@ def test_create_pe_duplicate_id_plano(
     truncate_pe,
     client: Client,
 ):
-    """Tenta criar um plano de entregas duplicados"""
+    """Tenta criar um plano de entregas duplicado. O envio do mesmo
+    plano de entregas pela segunda vez deve substituir o primeiro.
+    """
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
@@ -714,8 +728,11 @@ def test_create_entrega_invalid_percent(
         assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = "Valor percentual inválido."
-        assert response.json().get("detail")[0]["msg"] == detail_msg
+        detail_message = "Valor percentual inválido."
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
 
 
 @pytest.mark.parametrize("tipo_meta", [0, 1, 2, 3, 10])
@@ -741,8 +758,11 @@ def test_create_entrega_invalid_tipo_meta(
         assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = "Tipo de meta inválido; permitido: 1, 2"
-        assert response.json().get("detail")[0]["msg"] == detail_msg
+        detail_message = "Tipo de meta inválido; permitido: 1, 2"
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
 
 
 @pytest.mark.parametrize("avaliacao_plano_entregas", [-1, 0, 1, 6])
@@ -768,5 +788,8 @@ def test_create_pe_invalid_avaliacao(
         assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
-        assert response.json().get("detail")[0]["msg"] == detail_msg
+        detail_message = "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )

@@ -1,7 +1,6 @@
 """
 Testes relacionados ao plano de trabalho do participante.
 """
-import itertools
 from datetime import date, timedelta
 
 from httpx import Client
@@ -109,9 +108,10 @@ def test_create_plano_trabalho_unidade_nao_permitida(
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert (
-        response.json().get("detail", None)
-        == "Usuário não tem permissão na cod_SIAPE_instituidora informada"
+    detail_message = "Usuário não tem permissão na cod_SIAPE_instituidora informada"
+    assert any(
+        f"Value error, {detail_message}" in error["msg"]
+        for error in response.json().get("detail")
     )
 
 
@@ -196,9 +196,13 @@ def test_create_plano_trabalho_id_entrega_check(
 
     if tipo_contribuicao == 1 and id_entrega is None:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        assert (
-            response.json().get("detail", None) == "O campo id_entrega é"
-            " obrigatório quando tipo_contribuicao tiver o valor 1."
+        detail_message = (
+            "O campo id_entrega é obrigatório quando tipo_contribuicao "
+            "tiver o valor 1."
+        )
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
         )
     else:
         assert response.status_code == status.HTTP_201_CREATED
@@ -588,11 +592,14 @@ def test_create_pt_invalid_dates(
     )
     if data_inicio_plano > data_termino_plano:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = (
-            "Data fim do Plano de Trabalho deve ser maior"
-            " ou igual que Data de início."
+        detail_message = (
+            "Data fim do Plano de Trabalho deve ser maior "
+            "ou igual que Data de início."
         )
-        assert response.json().get("detail")[0]["msg"] == detail_msg
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
@@ -882,10 +889,13 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
     if tipo_contribuicao == 1:
         if not id_entrega:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_msg = (
+            detail_message = (
                 "É necessário informar id_entrega quando tipo_contribuicao == 1"
             )
-            assert response.json().get("detail")[0]["msg"] == detail_msg
+            assert any(
+                f"Value error, {detail_message}" in error["msg"]
+                for error in response.json().get("detail")
+            )
         elif (
             id_plano_entrega_unidade != id_plano_entrega_existente
             or id_entrega not in ids_entregas_existentes
@@ -893,12 +903,18 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
             # TODO: Verificar impacto no desempenho com grande volume de requisições
             # e se pode ser aproveitada a verificação de FK no banco
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_msg = "Referência a id_entrega não encontrada"
-            assert response.json().get("detail")[0]["msg"] == detail_msg
+            detail_message = "Referência a id_entrega não encontrada"
+            assert any(
+                f"Value error, {detail_message}" in error["msg"]
+                for error in response.json().get("detail")
+            )
     elif tipo_contribuicao == 2 and id_entrega:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = "Não se deve informar id_entrega quando tipo_contribuicao == 2"
-        assert response.json().get("detail")[0]["msg"] == detail_msg
+        detail_message = "Não se deve informar id_entrega quando tipo_contribuicao == 2"
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
@@ -952,8 +968,11 @@ def test_create_pt_invalid_horas_vinculadas(
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Valor de horas_vinculadas deve ser maior ou igual a zero"
-    assert response.json().get("detail")[0]["msg"] == detail_msg
+    detail_message = "Valor de horas_vinculadas deve ser maior ou igual a zero"
+    assert any(
+        f"Value error, {detail_message}" in error["msg"]
+        for error in response.json().get("detail")
+    )
 
 
 @pytest.mark.parametrize("avaliacao_plano_trabalho", [0, 1, 2, 5, 6])
@@ -1020,10 +1039,14 @@ def test_put_plano_trabalho_invalid_cpf(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = [
+    detail_messages = [
         "Value error, Dígitos verificadores do CPF inválidos.",
         "Value error, CPF inválido.",
         "Value error, CPF precisa ter 11 dígitos.",
         "Value error, CPF deve conter apenas dígitos.",
     ]
-    assert response.json().get("detail")[0]["msg"] in detail_msg
+    assert any(
+        f"Value error, {message}" in error["msg"]
+        for message in detail_messages
+        for error in response.json().get("detail")
+    )
