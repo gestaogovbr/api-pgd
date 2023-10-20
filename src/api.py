@@ -318,6 +318,11 @@ async def create_status_participante(
         if cod_SIAPE_instituidora != status_participante.cod_SIAPE_instituidora:
             raise HTTPException(
                 status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais",
+            )
+        if cpf_participante != status_participante.cpf_participante:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Parâmetro cpf_participante na URL e no JSON devem ser iguais",
             )
 

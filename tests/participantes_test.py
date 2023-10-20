@@ -125,12 +125,12 @@ def test_create_participante_inconsistent(
     client: Client,
 ):
     """Tenta submeter participante inconsistente (URL difere do JSON)"""
-    input_part["cpf_participante"] = "82893311776"
+    novo_cpf_participante = "82893311776"
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['cpf_participante']}",
+        f"/participante/{novo_cpf_participante}",
         json={"lista_status": [input_part]},
-        headers=header_usr_1,  # diferente de 678910
+        headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "Parâmetro cpf_participante na URL e no JSON devem ser iguais"
