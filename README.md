@@ -2,7 +2,7 @@
 
 Repositório com o código-fonte da API do Programa de Gestão (PGD).
 
-[![Docker Image Build & CI Tests](https://github.com/gestaogovbr/api-pgd/actions/workflows/docker-image.yml/badge.svg)](https://github.com/gestaogovbr/api-pgd/actions/workflows/docker-image.yml)
+[![Docker Image Build & CI Tests](https://github.com/gestaogovbr/api-pgd/actions/workflows/ci_tests.yml/badge.svg)](https://github.com/gestaogovbr/api-pgd/actions/workflows/ci_tests.yml)
 
 ## Contextualização
 
