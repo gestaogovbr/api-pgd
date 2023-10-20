@@ -273,13 +273,17 @@ def test_put_participante_invalid_cpf(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = [
+    detail_messages = [
         "Dígitos verificadores do CPF inválidos.",
         "CPF inválido.",
         "CPF precisa ter 11 dígitos.",
         "CPF deve conter apenas dígitos.",
     ]
-    assert response.json().get("detail")[0]["msg"] in detail_msg
+    assert any(
+        f"Value error, {message}" in error["msg"]
+        for message in detail_messages
+        for error in response.json().get("detail")
+    )
 
 
 @pytest.mark.parametrize(
@@ -308,11 +312,14 @@ def test_put_part_invalid_ativo(
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = (
+    detail_messages = (
         "Valor do campo 'participante_ativo_inativo_pgd' inválida; permitido: 0, 1"
     )
-    # detail_msg = "value is not a valid enumeration member; permitted: 0,1"
-    assert response.json().get("detail")[0]["msg"] == detail_msg
+    assert any(
+        f"Value error, {message}" in error["msg"]
+        for message in detail_messages
+        for error in response.json().get("detail")
+    )
 
 
 @pytest.mark.parametrize("modalidade_execucao", [(0), (-1), (5)])
@@ -334,9 +341,12 @@ def test_put_part_invalid_modalidade_execucao(
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Modalidade de execução inválida; permitido: 1, 2, 3, 4"
-    # detail_msg = "value is not a valid enumeration member; permitted: 1, 2, 3, 4"
-    assert response.json().get("detail")[0]["msg"] == detail_msg
+    detail_messages = "Modalidade de execução inválida; permitido: 1, 2, 3, 4"
+    assert any(
+        f"Value error, {message}" in error["msg"]
+        for message in detail_messages
+        for error in response.json().get("detail")
+    )
 
 
 @pytest.mark.parametrize(
@@ -364,5 +374,9 @@ def test_put_part_invalid_jornada_trabalho_semanal(
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Carga horária semanal deve ser maior que zero"
-    assert response.json().get("detail")[0]["msg"] == detail_msg
+    detail_messages = "Carga horária semanal deve ser maior que zero"
+    assert any(
+        f"Value error, {message}" in error["msg"]
+        for message in detail_messages
+        for error in response.json().get("detail")
+    )
