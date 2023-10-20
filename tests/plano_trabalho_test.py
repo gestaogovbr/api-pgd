@@ -211,6 +211,8 @@ def test_create_plano_trabalho_id_entrega_check(
 
 @pytest.mark.parametrize("omitted_fields", enumerate(fields_consolidacao["optional"]))
 def test_create_plano_trabalho_consolidacao_omit_optional_fields(
+    # fixture example_pe é necessária para cumprir IntegrityConstraint (FK)
+    example_pe,  # pylint: disable=unused-argument
     input_pt: dict,
     omitted_fields: list,
     user1_credentials: dict,
@@ -219,18 +221,18 @@ def test_create_plano_trabalho_consolidacao_omit_optional_fields(
     client: Client,
 ):
     """Tenta criar um novo plano de trabalho omitindo campos opcionais"""
-
+    partial_input_pt = input_pt.copy()
     offset, field_list = omitted_fields
     for field in field_list:
-        for consolidacao in input_pt["consolidacoes"]:
+        for consolidacao in partial_input_pt["consolidacoes"]:
             if field in consolidacao:
                 del consolidacao[field]
 
-    input_pt["id_plano_entrega_unidade"] = 557 + offset
+    partial_input_pt["id_plano_entrega_unidade"] = 557 + offset
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
-        json=input_pt,
+        f"/plano_entregas/{partial_input_pt['id_plano_trabalho_participante']}",
+        json=partial_input_pt,
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_201_CREATED
