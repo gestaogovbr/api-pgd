@@ -295,7 +295,7 @@ async def get_status_participante(
 )
 async def create_status_participante(
     cod_SIAPE_instituidora: int,
-    cpf_participante: int,  # TODO: verificar se é igual ao JSON
+    cpf_participante: str,
     lista_status_participante: schemas.ListaStatusParticipanteSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
