@@ -348,10 +348,12 @@ class Contribuicao(Base):
         "realizadas no período de vigência do plano de trabalho com o "
         "intuito de contribuir com a execução de determinada entrega",
     )
-    id_plano_entrega_unidade = Column(Integer, nullable=False)
+    id_plano_entrega_unidade = Column(
+        Integer, nullable=True
+    )  # se tipo_contribuicao != 1
     id_entrega = Column(
         Integer,
-        nullable=False,
+        nullable=True,  # se tipo_contribuicao != 1
         comment="Identificador único da entrega",
     )
     horas_vinculadas = Column(
