@@ -73,7 +73,7 @@ def fixture_input_pt() -> dict:
     return json.load(open("data/plano_trabalho.json", "r", encoding="utf-8"))
 
 
-@pytest.fixture(scope="module", name="input_part")
+@pytest.fixture(scope="function", name="input_part")
 def fixture_input_part() -> dict:
     """Template de Participante.
 
