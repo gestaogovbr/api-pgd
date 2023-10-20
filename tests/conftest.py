@@ -53,7 +53,7 @@ def prepare_header(username: Optional[str]) -> dict:
 # Fixtures
 
 
-@pytest.fixture(scope="module", name="input_pe")
+@pytest.fixture(scope="function", name="input_pe")
 def fixture_input_pe() -> dict:
     """Template de Plano de Entregas da Unidade.
 
@@ -63,7 +63,7 @@ def fixture_input_pe() -> dict:
     return json.load(open("data/plano_entregas.json", "r", encoding="utf-8"))
 
 
-@pytest.fixture(scope="module", name="input_pt")
+@pytest.fixture(scope="function", name="input_pt")
 def fixture_input_pt() -> dict:
     """Template de Plano de Trabalho do Participante.
 
