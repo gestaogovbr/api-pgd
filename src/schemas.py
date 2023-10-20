@@ -181,29 +181,37 @@ class EntregaSchema(BaseModel):
     )
     tipo_meta: int = Field(title="Tipo da meta", description=Entrega.tipo_meta.comment)
     nome_vinculacao_cadeia_valor: Optional[str] = Field(
+        default=None,
         title="Nome da vinculação de cadeia de valor",
         description=Entrega.nome_vinculacao_cadeia_valor.comment,
     )
     nome_vinculacao_planejamento: Optional[str] = Field(
+        default=None,
         title="Nome da vinculação do planejamento",
         description=Entrega.nome_vinculacao_planejamento.comment,
     )
     percentual_progresso_esperado: Optional[int] = Field(
+        default=None,
         title="Percentual de progresso esperado",
         description=Entrega.percentual_progresso_esperado.comment,
     )
     percentual_progresso_realizado: Optional[int] = Field(
+        default=None,
         title="Percentual de progresso realizado",
         description=Entrega.percentual_progresso_realizado.comment,
     )
     data_entrega: Optional[date] = Field(
-        title="Data da entrega", description=Entrega.data_entrega.comment
+        default=None, title="Data da entrega", description=Entrega.data_entrega.comment
     )
     nome_demandante: Optional[str] = Field(
-        title="Nome do demandante", description=Entrega.nome_demandante.comment
+        default=None,
+        title="Nome do demandante",
+        description=Entrega.nome_demandante.comment,
     )
     nome_destinatario: Optional[str] = Field(
-        title="Nome do destinatário", description=Entrega.nome_destinatario.comment
+        default=None,
+        title="Nome do destinatário",
+        description=Entrega.nome_destinatario.comment,
     )
 
 
@@ -231,10 +239,12 @@ class PlanoEntregasSchema(BaseModel):
         description=PlanoEntregas.data_termino_plano_entregas.comment,
     )
     avaliacao_plano_entregas: Optional[int] = Field(
+        default=None,
         title="Avaliação do plano de entregas",
         description=PlanoEntregas.avaliacao_plano_entregas.comment,
     )
     data_avaliacao_plano_entregas: Optional[date] = Field(
+        default=None,
         title="Data de avaliação do plano de entregas",
         description=PlanoEntregas.data_avaliacao_plano_entregas.comment,
     )
@@ -243,6 +253,7 @@ class PlanoEntregasSchema(BaseModel):
         description=PlanoEntregas.cod_SIAPE_unidade_plano.comment,
     )
     entregas: Optional[List[EntregaSchema]] = Field(
+        default=None,
         title="Entregas",
         description="Lista de entregas associadas ao Plano de Entregas",
     )
