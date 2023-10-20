@@ -220,7 +220,7 @@ async def get_status_participante(
     db_session: DbContextManager,
     cod_SIAPE_instituidora: int,
     cpf_participante: str,
-) -> schemas.ListStatusParticipanteSchema:
+) -> schemas.ListaStatusParticipanteSchema:
     "Traz os status do participante a partir do banco de dados."
     async with db_session as session:
         result = await session.execute(
@@ -228,12 +228,14 @@ async def get_status_participante(
             .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
             .filter_by(cpf_participante=cpf_participante)
         )
-        db_list_status_participante = result.all()
+        db_list_status_participante = result.scalars().all()
     if db_list_status_participante:
-        return [
-            schemas.StatusParticipanteSchema.model_validate(status_participante)
-            for status_participante in db_list_status_participante
-        ]
+        return {
+            "lista_status": [
+                schemas.StatusParticipanteSchema.model_validate(status_participante)
+                for status_participante in db_list_status_participante
+            ]
+        }
     return None
 
 

@@ -264,7 +264,7 @@ async def create_or_update_plano_trabalho(
 @app.get(
     "/organizacao/{cod_SIAPE_instituidora}/participante/{cpf_participante}",
     summary="Consulta Status do Participante",
-    response_model=schemas.StatusParticipanteSchema,
+    response_model=schemas.ListaStatusParticipanteSchema,
     tags=["status participante"],
 )
 async def get_status_participante(
@@ -272,36 +272,36 @@ async def get_status_participante(
     cpf_participante: str,
     db: DbContextManager = Depends(DbContextManager),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
-) -> schemas.ListStatusParticipanteSchema:
+) -> schemas.ListaStatusParticipanteSchema:
     "Consulta o status do participante a partir da matricula SIAPE."
-    status_participante = await crud.get_status_participante(
+    lista_status_participante = await crud.get_status_participante(
         db_session=db,
         cod_SIAPE_instituidora=user["fields"]["cod_SIAPE_instituidora"],
         cpf_participante=cpf_participante,
     )
-    if not status_participante:
+    if not lista_status_participante:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail="Status de Participante não encontrado"
         )
 
-    return status_participante
+    return lista_status_participante
 
 
 @app.put(
     "/organizacao/{cod_SIAPE_instituidora}/participante/{cpf_participante}",
-    summary="Submete o status de um participante",
-    response_model=schemas.StatusParticipanteSchema,
+    summary="Envia o status de um participante",
+    response_model=schemas.ListaStatusParticipanteSchema,
     tags=["status participante"],
 )
 async def create_status_participante(
     cod_SIAPE_instituidora: int,
-    cpf_participante: int, # TODO: verificar se é igual ao JSON
-    status_participante: schemas.StatusParticipanteSchema,
+    cpf_participante: int,  # TODO: verificar se é igual ao JSON
+    lista_status_participante: schemas.ListaStatusParticipanteSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
     user: FiefUserInfo = Depends(auth_backend.current_user()),
-):
-    """Submete um ou mais status de Programa de Gestão de um participante."""
+) -> schemas.ListaStatusParticipanteSchema:
+    """Envia um ou mais status de Programa de Gestão de um participante."""
 
     # Validações de permissão
     if (
@@ -314,16 +314,19 @@ async def create_status_participante(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
         )
-    if cod_SIAPE_instituidora != status_participante.cod_SIAPE_instituidora:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro cpf_participante na URL e no JSON devem ser iguais",
-        )
+    for status_participante in lista_status_participante.lista_status:
+        if cod_SIAPE_instituidora != status_participante.cod_SIAPE_instituidora:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Parâmetro cpf_participante na URL e no JSON devem ser iguais",
+            )
 
     # Validações do esquema
     try:
-        novo_status_participante = schemas.StatusParticipanteSchema.model_validate(
-            status_participante
+        nova_lista_status_participante = (
+            schemas.ListaStatusParticipanteSchema.model_validate(
+                lista_status_participante
+            )
         )
     except Exception as exception:
         message = getattr(exception, "message", str(exception))
@@ -333,12 +336,13 @@ async def create_status_participante(
             status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
         ) from exception
 
-    await crud.create_status_participante(
-        db_session=db,
-        status_participante=novo_status_participante,
-    )
+    for status_participante in nova_lista_status_participante.lista_status:
+        await crud.create_status_participante(
+            db_session=db,
+            status_participante=status_participante,
+        )
     response.status_code = status.HTTP_201_CREATED
-    return novo_status_participante
+    return nova_lista_status_participante
 
 
 # @app.patch(

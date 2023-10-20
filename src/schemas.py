@@ -313,7 +313,7 @@ class StatusParticipanteSchema(BaseModel):
         return jornada_trabalho_semanal
 
 
-class ListStatusParticipanteSchema(BaseModel):
+class ListaStatusParticipanteSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     lista_status: List[StatusParticipanteSchema] = Field(
         title="Contribuições",

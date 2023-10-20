@@ -151,7 +151,7 @@ def example_part(
     client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
-        json=input_part,
+        json={"lista_status": [input_part]},
         headers=header_usr_1,
     )
 

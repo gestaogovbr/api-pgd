@@ -35,13 +35,13 @@ def test_put_participante(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
-        json=input_part,
+        json={"lista_status": [input_part]},
         headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) == None
-    assert response.json() == input_part
+    assert response.json() == {"lista_status": [input_part]}
 
 
 def test_put_participante_unidade_nao_permitida(
@@ -56,9 +56,8 @@ def test_put_participante_unidade_nao_permitida(
     (user não é superuser)
     """
     response = client.put(
-        f"/organizacao/2"
-        f"/participante/{input_part['cpf_participante']}",
-        json=input_part,
+        f"/organizacao/2" f"/participante/{input_part['cpf_participante']}",
+        json={"lista_status": [input_part]},
         headers=header_usr_1,
     )
 
@@ -94,12 +93,12 @@ def test_put_duplicate_participante(
     response = client.put(
         f"/organizacao/{codigos_SIAPE_instituidora[0]}"
         f"/participante/{input_part['cpf_participante']}",
-        json=input_part,
+        json={"lista_status": [input_part]},
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert response.json() == input_part
+    assert response.json() == {"lista_status": [input_part]}
 
     if codigos_SIAPE_instituidora[1] == user1_credentials["cod_SIAPE_instituidora"]:
         header_usr = header_usr_1
@@ -109,13 +108,13 @@ def test_put_duplicate_participante(
     response = client.put(
         f"/organizacao/{codigos_SIAPE_instituidora[1]}"
         f"/participante/{input_part['cpf_participante']}",
-        json=input_part,
+        json={"lista_status": [input_part]},
         headers=header_usr,
     )
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert response.json() == input_part
+    assert response.json() == {"lista_status": [input_part]}
 
 
 def test_create_participante_inconsistent(
@@ -130,7 +129,7 @@ def test_create_participante_inconsistent(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
-        json=input_part,
+        json={"lista_status": [input_part]},
         headers=header_usr_1,  # diferente de 678910
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -158,7 +157,7 @@ def test_put_participante_missing_mandatory_fields(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
-        json=input_part,
+        json={"lista_status": [input_part]},
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -221,7 +220,7 @@ def test_put_participante_invalid_matricula_siape(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
-        json=input_part,
+        json={"lista_status": [input_part]},
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -268,7 +267,7 @@ def test_put_participante_invalid_cpf(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
-        json=input_part,
+        json={"lista_status": [input_part]},
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -302,7 +301,7 @@ def test_put_part_invalid_ativo(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
-        json=input_part,
+        json={"lista_status": [input_part]},
         headers=header_usr_1,
     )
 
@@ -328,7 +327,7 @@ def test_put_part_invalid_modalidade_execucao(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
-        json=input_part,
+        json={"lista_status": [input_part]},
         headers=header_usr_1,
     )
 
@@ -358,7 +357,7 @@ def test_put_part_invalid_jornada_trabalho_semanal(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
-        json=input_part,
+        json={"lista_status": [input_part]},
         headers=header_usr_1,
     )
 
