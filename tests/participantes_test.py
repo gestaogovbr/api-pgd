@@ -228,9 +228,11 @@ def test_put_participante_invalid_matricula_siape(
         "Matricula SIAPE Inválida.",
         "Matrícula SIAPE deve ter 7 dígitos.",
     ]
+    print(response.json())
     assert any(
-        message in response.json().get("detail")[0]["msg"]
+        f"Value error, {message}" in error["msg"]
         for message in detail_messages
+        for error in response.json().get("detail")
     )
 
 
