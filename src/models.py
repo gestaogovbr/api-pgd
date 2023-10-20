@@ -31,8 +31,8 @@ class PlanoEntregas(Base):
         index=True,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no "
-                "Sistema Integrado de Administração de Recursos Humanos"
-                "(Siape) corresponde à Unidade de Instituição",
+        "Sistema Integrado de Administração de Recursos Humanos"
+        "(Siape) corresponde à Unidade de Instituição",
     )
     id_plano_entrega_unidade = Column(
         Integer,
@@ -44,47 +44,47 @@ class PlanoEntregas(Base):
     cancelado = Column(
         Boolean,
         comment="TRUE se o plano tiver sido cancelado; FALSE caso contrário. "
-                "O valor padrão é FALSE. A ausência do atributo ou NULL "
-                "deve ser interpretada como FALSE."
+        "O valor padrão é FALSE. A ausência do atributo ou NULL "
+        "deve ser interpretada como FALSE.",
     )
     data_inicio_plano_entregas = Column(
         Date,
         nullable=False,
         comment="Data de início da vigência do plano de entregas da"
-                "Unidade de Execução",
+        "Unidade de Execução",
     )
     data_termino_plano_entregas = Column(
         Date,
         nullable=False,
         comment="Data de término da vigência do plano de entregas da"
-                "Unidade de Execução",
+        "Unidade de Execução",
     )
     avaliacao_plano_entregas = Column(
         Integer,
-    comment="Avaliação do plano de entregas pelo nível hierárquico "
-            "superior ao da chefia da unidade de execução, em até trinta "
-            "dias após o término do plano de entregas, em uma das seguintes "
-            "escalas:\n\n\n"
-            "I - excepcional: plano de entregas executado com "
-            "desempenho muito acima do esperado;\n\n"
-            "II - alto desempenho: "
-            "plano de entregas executado com desempenho acima do esperado;\n\n"
-            "III - adequado: plano de entregas executado dentro do esperado;\n\n"
-            "IV - inadequado: plano de entregas executado abaixo do esperado;\n\n"
-            "ou V - plano de entregas não executado"
+        comment="Avaliação do plano de entregas pelo nível hierárquico "
+        "superior ao da chefia da unidade de execução, em até trinta "
+        "dias após o término do plano de entregas, em uma das seguintes "
+        "escalas:\n\n\n"
+        "I - excepcional: plano de entregas executado com "
+        "desempenho muito acima do esperado;\n\n"
+        "II - alto desempenho: "
+        "plano de entregas executado com desempenho acima do esperado;\n\n"
+        "III - adequado: plano de entregas executado dentro do esperado;\n\n"
+        "IV - inadequado: plano de entregas executado abaixo do esperado;\n\n"
+        "ou V - plano de entregas não executado",
     )
     data_avaliacao_plano_entregas = Column(
         Date,
         comment="Data em que o nível hierárquico superior ao da chefia "
-                "da unidade de execução avaliou o cumprimento do plano de "
-                "entregas",
+        "da unidade de execução avaliou o cumprimento do plano de "
+        "entregas",
     )
     cod_SIAPE_unidade_plano = Column(
         Integer,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema "
-                "Integrado de Administração de Recursos Humanos (Siape) "
-                "corresponde à Unidade de Execução"
+        "Integrado de Administração de Recursos Humanos (Siape) "
+        "corresponde à Unidade de Execução",
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
@@ -125,7 +125,7 @@ class Entrega(Base):
         primary_key=True,
         index=True,
         nullable=False,
-        comment="Identificador único do plano de entregas"
+        comment="Identificador único do plano de entregas",
     )
     cod_SIAPE_instituidora = Column(
         Integer,
@@ -133,50 +133,50 @@ class Entrega(Base):
         index=True,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no "
-                "Sistema Integrado de Administração de Recursos Humanos "
-                "(Siape) corresponde à Unidade de Instituição",
+        "Sistema Integrado de Administração de Recursos Humanos "
+        "(Siape) corresponde à Unidade de Instituição",
     )
     nome_entrega = Column(
         String,
         nullable=False,
         comment="Título do produto ou serviço gerado por uma Unidade "
-                "de Execução, resultante da contribuição de seus membros",
+        "de Execução, resultante da contribuição de seus membros",
     )
     meta_entrega = Column(
         Integer,
         nullable=False,
         comment="Quantidade unitária de produto ou serviço a ser gerado "
-                "pela Unidade de Execução; ou Desempenho percentual da geração "
-                "de entrega em relação à quantidade, tempo ou qualidade a ser "
-                "alcançada",
+        "pela Unidade de Execução; ou Desempenho percentual da geração "
+        "de entrega em relação à quantidade, tempo ou qualidade a ser "
+        "alcançada",
     )
     tipo_meta = Column(
         Integer,
         Enum(TipoMeta),
         nullable=False,
-        comment="Qualificação do tipo da meta: unidade ou percentual"
+        comment="Qualificação do tipo da meta: unidade ou percentual",
     )
     nome_vinculacao_cadeia_valor = Column(
         String,
         comment="Nome do processo da cadeia de valor da instituição no "
-                "qual a entrega se vincula diretamente",
+        "qual a entrega se vincula diretamente",
     )
     nome_vinculacao_planejamento = Column(
         String,
         comment="Nome do item mais próximo do planejamento da instituição "
-                "no qual a entrega se vincula diretamente",
+        "no qual a entrega se vincula diretamente",
     )
     percentual_progresso_esperado = Column(
         Integer,
         comment="Percentual de execução da meta da entrega a ser alcançado "
-                "no prazo de vigência do plano de entregas. Indica o nível de "
-                "progresso esperado em relação à meta definida",
+        "no prazo de vigência do plano de entregas. Indica o nível de "
+        "progresso esperado em relação à meta definida",
     )
     percentual_progresso_realizado = Column(
         Integer,
         comment="Percentual de execução da meta da entrega alcançado no "
-                "prazo de vigência do plano de entregas. Indica o nível de "
-                "progresso alcançado em relação à meta definida",
+        "prazo de vigência do plano de entregas. Indica o nível de "
+        "progresso alcançado em relação à meta definida",
     )
     data_entrega = Column(
         Date,
@@ -220,8 +220,8 @@ class PlanoTrabalho(Base):
         index=True,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no "
-                "Sistema Integrado de Administração de Recursos Humanos "
-                "(Siape) corresponde à Unidade de Instituição",
+        "Sistema Integrado de Administração de Recursos Humanos "
+        "(Siape) corresponde à Unidade de Instituição",
     )
     id_plano_trabalho_participante = Column(
         Integer,
@@ -233,8 +233,8 @@ class PlanoTrabalho(Base):
     cancelado = Column(
         Boolean,
         comment="TRUE se o plano tiver sido cancelado; FALSE caso contrário. "
-                "O valor padrão é FALSE. A ausência do atributo ou NULL "
-                "deve ser interpretada como FALSE."
+        "O valor padrão é FALSE. A ausência do atributo ou NULL "
+        "deve ser interpretada como FALSE.",
     )
     id_plano_entrega_unidade = Column(
         Integer,
@@ -245,34 +245,31 @@ class PlanoTrabalho(Base):
         Integer,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema Integrado "
-                "de Administração de Recursos Humanos (Siape) onde o participante "
-                "se encontra formalmente em exercício",
+        "de Administração de Recursos Humanos (Siape) onde o participante "
+        "se encontra formalmente em exercício",
     )
     cpf_participante = Column(
         String,
         # ForeignKey("status_participante.cpf_participante"),
         nullable=False,
-        comment="Número do CPF do participante responsável pelo "
-                "plano de trabalho",
+        comment="Número do CPF do participante responsável pelo " "plano de trabalho",
     )
     data_inicio_plano = Column(
         Date,
         nullable=False,
-        comment="Data de início da vigência do plano de trabalho do "
-                "participante."
+        comment="Data de início da vigência do plano de trabalho do " "participante.",
     )
     data_termino_plano = Column(
         Date,
         nullable=False,
-        comment="Data de término da vigência do plano de trabalho do "
-                "participante"
+        comment="Data de término da vigência do plano de trabalho do " "participante",
     )
     carga_horaria_total_periodo_plano = Column(
         Integer,
         nullable=False,
         comment="Carga horária útil total do participante disponível no "
-                "período de vigência do plano de trabalho. Não inclui "
-                "períodos de férias,  ocorrências e afastamentos",
+        "período de vigência do plano de trabalho. Não inclui "
+        "períodos de férias,  ocorrências e afastamentos",
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
@@ -324,9 +321,9 @@ class Contribuicao(Base):
         index=True,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no "
-                "Sistema Integrado de Administração de Recursos Humanos "
-                "(Siape) corresponde à Unidade de Instituição",
-        )
+        "Sistema Integrado de Administração de Recursos Humanos "
+        "(Siape) corresponde à Unidade de Instituição",
+    )
     id_plano_trabalho_participante = Column(
         Integer,
         nullable=False,
@@ -337,19 +334,19 @@ class Contribuicao(Base):
         Enum(TipoContribuicao),
         nullable=False,
         comment="Tipos de contribuição que o participante pode realizar: "
-                "1 - Contribuição para entrega da própria unidade de execução "
-                "do participante; 2 - Contribuição não vinculada diretamente a entrega, "
-                "mas necessária ao adequado funcionamento administrativo (por exemplo, "
-                "Atividades de apoio, assessoramento e desenvolvimento, e Atividades "
-                "de gestão de equipes e entregas); 3 - Contribuição vinculada a "
-                "entrega de outra unidade de execução, inclusive de outros órgãos "
-                "e entidades",
+        "1 - Contribuição para entrega da própria unidade de execução "
+        "do participante; 2 - Contribuição não vinculada diretamente a entrega, "
+        "mas necessária ao adequado funcionamento administrativo (por exemplo, "
+        "Atividades de apoio, assessoramento e desenvolvimento, e Atividades "
+        "de gestão de equipes e entregas); 3 - Contribuição vinculada a "
+        "entrega de outra unidade de execução, inclusive de outros órgãos "
+        "e entidades",
     )
     descricao_contribuicao = Column(
         String,
         comment="Descrição do conjunto de tarefas e/ou atividades a serem "
-                "realizadas no período de vigência do plano de trabalho com o "
-                "intuito de contribuir com a execução de determinada entrega",
+        "realizadas no período de vigência do plano de trabalho com o "
+        "intuito de contribuir com a execução de determinada entrega",
     )
     id_plano_entrega_unidade = Column(Integer, nullable=False)
     id_entrega = Column(
@@ -361,8 +358,8 @@ class Contribuicao(Base):
         Integer,
         nullable=False,
         comment="Quantidade de horas da carga horária útil total do "
-                "participante disponível no período de vigência do plano de "
-                "trabalho vinculadas a uma determinada entrega",
+        "participante disponível no período de vigência do plano de "
+        "trabalho vinculadas a uma determinada entrega",
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
@@ -402,8 +399,8 @@ class Consolidacao(Base):
         index=True,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no "
-                "Sistema Integrado de Administração de Recursos Humanos "
-                "(Siape) corresponde à Unidade de Instituição",
+        "Sistema Integrado de Administração de Recursos Humanos "
+        "(Siape) corresponde à Unidade de Instituição",
     )
     id_plano_trabalho_participante = Column(
         Integer,
@@ -469,53 +466,54 @@ class StatusParticipante(Base):
         index=True,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no "
-                "Sistema Integrado de Administração de Recursos Humanos "
-                "(Siape) corresponde à Unidade de Instituição",
+        "Sistema Integrado de Administração de Recursos Humanos "
+        "(Siape) corresponde à Unidade de Instituição",
     )
     cpf_participante = Column(
         String,
         nullable=False,
         comment="Número do CPF do participante responsável pelo plano de "
-                "trabalho, sem pontos, hífen ou caracteres especiais",
+        "trabalho, sem pontos, hífen ou caracteres especiais",
     )
     participante_ativo_inativo_pgd = Column(
         Integer,
         nullable=False,
         comment="Situação do participante no Programa de Gestão e Desempenho "
-                "(PGD): 0 - Inativo; 1 - Ativo. Participante ativo é aquele "
-                "habilitado para a proposição e/ou execução do plano de trabalho",
+        "(PGD): 0 - Inativo; 1 - Ativo. Participante ativo é aquele "
+        "habilitado para a proposição e/ou execução do plano de trabalho",
     )
     matricula_siape = Column(
         String,
         comment="Número da matrícula do participante no Sistema Integrado "
-                "de Administração de Recursos Humanos (Siape)",
+        "de Administração de Recursos Humanos (Siape)",
     )
     modalidade_execucao = Column(
         Integer,
         Enum(ModalidadesExecucao),
         nullable=False,
         comment="Modalidade e regime de execução do trabalho do participante, "
-                "restrito a uma das quatro opções: 1 - Presencial; "
-                "2 - Teletrabalho Parcial; 3 - Teletrabalho Integral; "
-                "4 - Teletrabalho com Residência no Exterior.",
+        "restrito a uma das quatro opções: 1 - Presencial; "
+        "2 - Teletrabalho Parcial; 3 - Teletrabalho Integral; "
+        "4 - Teletrabalho com Residência no Exterior.",
     )
     jornada_trabalho_semanal = Column(
         Integer,
         nullable=False,
         comment="Jornada de trabalho semanal fixada em razão das atribuições "
-                "pertinentes aos respectivos cargos dos participantes. "
-                "É definida em lei ou contrato.",
+        "pertinentes aos respectivos cargos dos participantes. "
+        "É definida em lei ou contrato.",
     )
-    data_envio = Column( # TODO: verificar descrição e relação com data_insercao
+    data_envio = Column(  # TODO: verificar descrição e relação com data_insercao
         Date,
         nullable=False,
         comment="Timestamp do envio dos dados pelo órgão ou entidade via API "
-                "(Application Programming Interface) para o Órgão Central do SIORG. "
-                "Cada envio é completo e não substitui envios anteriores; portanto, "
-                "não há uma chave para atualização.",
+        "(Application Programming Interface) para o Órgão Central do SIORG. "
+        "Cada envio é completo e não substitui envios anteriores; portanto, "
+        "não há uma chave para atualização.",
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
+
 
 # trigger = DDL("""
 #     CREATE TRIGGER inseredata_trigger
