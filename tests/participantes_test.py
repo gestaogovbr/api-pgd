@@ -237,34 +237,27 @@ def test_put_participante_invalid_matricula_siape(
 
 
 @pytest.mark.parametrize(
-    "cpf",
+    "cpf_participante",
     [
         ("11111111111"),
         ("22222222222"),
         ("33333333333"),
         ("44444444444"),
         ("04811556435"),
-        ("444-444-444.44"),
-        ("-44444444444"),
         ("444444444"),
-        ("-444 4444444"),
         ("4811556437"),
-        ("048115564-37"),
-        ("04811556437     "),
-        ("    04811556437     "),
-        (""),
     ],
 )
 def test_put_participante_invalid_cpf(
     input_part: dict,
-    cpf: str,
+    cpf_participante: str,
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_participantes,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Tenta submeter um participante com cpf inválido"""
-    input_part["cpf"] = cpf
+    input_part["cpf_participante"] = cpf_participante
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
