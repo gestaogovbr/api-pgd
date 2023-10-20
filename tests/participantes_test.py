@@ -131,6 +131,7 @@ def test_create_participante_inconsistent(
         f"/participante/{novo_cpf_participante}",
         json={"lista_status": [input_part]},
         headers=header_usr_1,
+
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "Parâmetro cpf_participante na URL e no JSON devem ser iguais"
@@ -367,7 +368,7 @@ def test_put_part_invalid_jornada_trabalho_semanal(
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_messages = "Carga horária semanal deve ser maior que zero"
+    detail_messages = "Jornada de trabalho semanal deve ser maior que zero"
     assert any(
         f"Value error, {message}" in error["msg"]
         for message in detail_messages
