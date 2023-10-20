@@ -96,13 +96,9 @@ async def update_plano_trabalho(
     async with db_session as session:
         result = await session.execute(
             select(models.PlanoTrabalho)
+            .filter_by(cod_SIAPE_instituidora=plano_trabalho.cod_SIAPE_instituidora)
             .filter_by(
-                models.PlanoTrabalho.cod_SIAPE_instituidora
-                == plano_trabalho["cod_SIAPE_instituidora"]
-            )
-            .filter_by(
-                models.PlanoTrabalho.id_plano_trabalho_participante
-                == plano_trabalho["id_plano_trabalho_participante"]
+                id_plano_trabalho_participante=plano_trabalho.id_plano_trabalho_participante
             )
         )
         db_plano_trabalho = result.unique().scalar_one_or_none()
