@@ -152,7 +152,9 @@ def test_put_participante_missing_mandatory_fields(
     for field in field_list:
         del input_part[field]
 
-    input_part["cpf_participante"] = f"{1800 + offset}"  # precisa ser um novo participante
+    input_part[
+        "cpf_participante"
+    ] = f"{1800 + offset}"  # precisa ser um novo participante
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
@@ -227,7 +229,10 @@ def test_put_participante_invalid_matricula_siape(
         "Matricula SIAPE Inválida.",
         "Matrícula SIAPE deve ter 7 dígitos.",
     ]
-    assert any(message in response.json().get("detail")[0]["msg"] for message in detail_messages)
+    assert any(
+        message in response.json().get("detail")[0]["msg"]
+        for message in detail_messages
+    )
 
 
 @pytest.mark.parametrize(

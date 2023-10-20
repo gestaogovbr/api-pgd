@@ -286,13 +286,9 @@ class StatusParticipanteSchema(BaseModel):
     @field_validator("matricula_siape")
     def siape_validate(cls, matricula_siape):
         if len(matricula_siape) != 7:
-            raise ValueError(
-                "Matrícula SIAPE deve ter 7 dígitos."
-            )
+            raise ValueError("Matrícula SIAPE deve ter 7 dígitos.")
         if len(set(matricula_siape)) < 2:
-            raise ValueError(
-                "Matricula SIAPE Inválida."
-            )
+            raise ValueError("Matricula SIAPE Inválida.")
         return matricula_siape
 
     @field_validator("participante_ativo_inativo_pgd")
