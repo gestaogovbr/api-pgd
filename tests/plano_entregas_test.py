@@ -717,7 +717,7 @@ def test_create_entrega_invalid_percent(
         "percentual_progresso_esperado"
     ] = percentual_progresso_esperado
     input_pe["entregas"][1][
-        "percentual_progresso_esperado"
+        "percentual_progresso_realizado"
     ] = percentual_progresso_realizado
 
     response = client.put(
