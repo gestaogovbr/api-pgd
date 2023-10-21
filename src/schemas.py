@@ -266,6 +266,12 @@ class PlanoEntregasSchema(BaseModel):
         if avaliacao_plano_entregas not in range(1, 6):
             raise ValueError("Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5")
         return avaliacao_plano_entregas
+
+    @field_validator("cod_SIAPE_unidade_plano")
+    def must_be_positive(cls, cod_SIAPE_unidade_plano):
+        if cod_SIAPE_unidade_plano < 1:
+            raise ValueError("cod_SIAPE_unidade_plano inválido")
+        return cod_SIAPE_unidade_plano
 class StatusParticipanteSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     cod_SIAPE_instituidora: int = Field(

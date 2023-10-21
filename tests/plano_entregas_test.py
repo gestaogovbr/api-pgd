@@ -682,6 +682,11 @@ def test_create_invalid_cod_siape_unidade(
         assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_message = "cod_SIAPE_unidade_plano inválido"
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
 
 
 @pytest.mark.parametrize(
