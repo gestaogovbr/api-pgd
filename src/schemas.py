@@ -225,6 +225,16 @@ class EntregaSchema(BaseModel):
             raise ValueError("Tipo de meta inválido; permitido: 1, 2")
         return tipo_meta
 
+    @field_validator("meta_entrega",
+                     "percentual_progresso_esperado",
+                     "percentual_progresso_realizado",
+                     )
+    def must_be_percent(cls, percent):
+        if not (0 <= percent <= 100):
+            raise ValueError("Valor percentual inválido.")
+        return percent
+
+
 
 class PlanoEntregasSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
