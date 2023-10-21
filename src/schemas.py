@@ -182,7 +182,9 @@ class EntregaSchema(BaseModel):
         title="Meta estipulada na inclusão no plano",
         description=Entrega.meta_entrega.comment,
     )
-    tipo_meta: int = Field(title="Tipo da meta", description=Entrega.tipo_meta.comment)
+    tipo_meta: int = Field(
+        title="Tipo da meta", description=Entrega.tipo_meta.comment
+    )
     nome_vinculacao_cadeia_valor: Optional[str] = Field(
         default=None,
         title="Nome da vinculação de cadeia de valor",
@@ -216,6 +218,12 @@ class EntregaSchema(BaseModel):
         title="Nome do destinatário",
         description=Entrega.nome_destinatario.comment,
     )
+
+    @field_validator("tipo_meta")
+    def must_be_in(cls, tipo_meta):
+        if tipo_meta not in (1, 2):
+            raise ValueError("Tipo de meta inválido; permitido: 1, 2")
+        return tipo_meta
 
 
 class PlanoEntregasSchema(BaseModel):
