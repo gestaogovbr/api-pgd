@@ -261,7 +261,11 @@ class PlanoEntregasSchema(BaseModel):
         description="Lista de entregas associadas ao Plano de Entregas",
     )
 
-
+    @field_validator("avaliacao_plano_entregas")
+    def must_be_between(cls, avaliacao_plano_entregas):
+        if avaliacao_plano_entregas not in range(1, 6):
+            raise ValueError("Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5")
+        return avaliacao_plano_entregas
 class StatusParticipanteSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     cod_SIAPE_instituidora: int = Field(
