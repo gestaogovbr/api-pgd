@@ -255,8 +255,7 @@ class PlanoEntregasSchema(BaseModel):
         title="Código SIAPE da unidade do plano de entregas",
         description=PlanoEntregas.cod_SIAPE_unidade_plano.comment,
     )
-    entregas: Optional[List[EntregaSchema]] = Field(
-        default=None,
+    entregas: List[EntregaSchema] = Field(
         title="Entregas",
         description="Lista de entregas associadas ao Plano de Entregas",
     )
