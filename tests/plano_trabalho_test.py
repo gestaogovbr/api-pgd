@@ -398,7 +398,9 @@ def test_create_huge_plano_trabalho(
     ],
 )
 def test_create_plano_trabalho_overlapping_date_interval(
+    truncate_pe,  # pylint: disable=unused-argument
     truncate_pt,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     input_pt: dict,
     id_plano_trabalho_participante: int,
     cod_SIAPE_unidade_exercicio: int,
