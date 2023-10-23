@@ -190,7 +190,7 @@ async def get_plano_entrega(
     response_model=schemas.PlanoEntregasSchema,
     tags=["plano de entregas"],
 )
-async def create_or_update_plano_trabalho(
+async def create_or_update_plano_entregas(
     cod_SIAPE_instituidora: int,
     id_plano_entrega_unidade: int,
     plano_entregas: schemas.PlanoEntregasSchema,
@@ -203,8 +203,8 @@ async def create_or_update_plano_trabalho(
     #     auth_backend.authenticated(permissions=["all:read"], optional=True)
     # ),
 ):
-    """Cria um novo plano de trabalho ou, se existente, substitui um
-    plano de trabalho por um novo com os dados informados."""
+    """Cria um novo plano de entregas ou, se existente, substitui um
+    plano de entregas por um novo com os dados informados."""
 
     # Validações de permissão
     if (
@@ -221,6 +221,12 @@ async def create_or_update_plano_trabalho(
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Parâmetro cod_SIAPE_instituidora diferente do conteúdo do JSON",
+        )
+
+    if id_plano_entrega_unidade != plano_entregas.id_plano_entrega_unidade:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Parâmetro id_plano_entrega_unidade diferente do conteúdo do JSON",
         )
 
     # Validações do esquema
