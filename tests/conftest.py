@@ -124,8 +124,8 @@ def example_pe(
 ):
     """Cria um Plano de Entrega como exemplo."""
     client.put(
-        f"/plano_entrega/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
