@@ -230,7 +230,7 @@ class EntregaSchema(BaseModel):
                      "percentual_progresso_realizado",
                      )
     def must_be_percent(cls, percent):
-        if not (0 <= percent <= 100):
+        if percent is not None and not (0 <= percent <= 100):
             raise ValueError("Valor percentual inválido.")
         return percent
 
