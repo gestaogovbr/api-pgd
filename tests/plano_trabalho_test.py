@@ -1040,12 +1040,13 @@ def test_put_plano_trabalho_invalid_cpf(
         json=input_pt,
         headers=header_usr_1,
     )
+    print (response.text)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_messages = [
-        "Value error, Dígitos verificadores do CPF inválidos.",
-        "Value error, CPF inválido.",
-        "Value error, CPF precisa ter 11 dígitos.",
-        "Value error, CPF deve conter apenas dígitos.",
+        "Dígitos verificadores do CPF inválidos.",
+        "CPF inválido.",
+        "CPF precisa ter 11 dígitos.",
+        "CPF deve conter apenas dígitos.",
     ]
     assert any(
         f"Value error, {message}" in error["msg"]
