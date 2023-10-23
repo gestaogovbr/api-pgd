@@ -544,7 +544,7 @@ def test_get_plano_trabalho(
 ):
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_entrega_unidade']}",
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK

@@ -137,8 +137,8 @@ def example_pt(
 ):
     """Cria um Plano de Trabalho do Participante como exemplo."""
     client.put(
-        f"/plano_trabalho/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
