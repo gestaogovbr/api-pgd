@@ -423,7 +423,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=original_pt,
         headers=header_usr_1,
     )
@@ -438,7 +438,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
