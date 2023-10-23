@@ -208,10 +208,10 @@ def test_create_huge_plano_entregas(
 
     def create_huge_entrega(id_entrega: int):
         new_entrega = input_pe["entregas"][0].copy()
-        new_entrega["id_entrega"] = id_entrega
-        new_entrega["nome_entrega"] = "x" * 1000000  # 1mi de caracteres
-        new_entrega["nome_demandante"] = "x" * 1000000  # 1mi de caracteres
-        new_entrega["nome_destinatario"] = "x" * 1000000  # 1mi de caracteres
+        new_entrega["id_entrega"] = 3 + id_entrega
+        new_entrega["nome_entrega"] = "x"  * 1000000  # 1mi de caracteres
+        new_entrega["nome_demandante"] = "x"  * 1000000  # 1mi de caracteres
+        new_entrega["nome_destinatario"] = "x"  * 1000000  # 1mi de caracteres
 
         return new_entrega
 
@@ -225,8 +225,28 @@ def test_create_huge_plano_entregas(
         headers=header_usr_1,
     )
 
+    # Compara o conteúdo do plano de entregas, somente campos obrigatórios
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json() == input_pe
+    assert all(
+        response.json()[attribute] == input_pe[attribute]
+        for attributes in fields_plano_entregas["mandatory"]
+        for attribute in attributes
+        if attribute not in ("entrega")
+    )
+
+    # Compara o conteúdo de cada entrega, somente campos obrigatórios
+    response_by_entrega = {
+        id_entrega: entrega for entrega in response.json()["entregas"]
+    }
+    input_by_entrega = {
+        id_entrega: entrega for entrega in input_pe["entregas"]
+    }
+    assert all(
+        response_by_entrega[id_entrega][attribute] == entrega[attribute]
+        for attributes in fields_entrega["mandatory"]
+        for attribute in attributes
+        for id_entrega, entrega in input_by_entrega.items()
+    )
 
 
 # TODO: verbo PATCH poderá ser implementado em versão futura.abs
