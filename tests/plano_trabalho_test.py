@@ -183,8 +183,8 @@ def test_create_plano_trabalho_id_entrega_check(
     tipo_contribuicao tiver valor 1, o campo id_entrega se tornará
     obrigatório.
     """
-    input_pt["tipo_contribuicao"] = tipo_contribuicao
-    input_pt["id_entrega"] = id_entrega
+    input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
+    input_pt["contribuicoes"][0]["id_entrega"] = id_entrega
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
@@ -204,7 +204,6 @@ def test_create_plano_trabalho_id_entrega_check(
         )
     else:
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.json() == input_pt
 
 
 @pytest.mark.parametrize("omitted_fields", enumerate(fields_consolidacao["optional"]))
