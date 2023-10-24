@@ -101,8 +101,9 @@ async def update_plano_trabalho(
                 id_plano_trabalho_participante=plano_trabalho.id_plano_trabalho_participante
             )
         )
-        db_plano_trabalho = result.unique().scalar_one_or_none()
+        db_plano_trabalho = result.unique().scalar_one()
         await session.delete(db_plano_trabalho)
+        await session.commit()
     return await create_plano_trabalho(db_session, plano_trabalho)
     # for k, _ in plano_trabalho.__dict__.items():
     #     if k[0] != "_" and k != "atividades":
@@ -197,18 +198,13 @@ async def update_plano_entregas(
     """
     async with db_session as session:
         result = await session.execute(
-            select(models.PlanoTrabalho)
-            .filter_by(
-                models.PlanoTrabalho.cod_SIAPE_instituidora
-                == plano_entregas["cod_SIAPE_instituidora"]
-            )
-            .filter_by(
-                models.PlanoTrabalho.id_plano_entrega_unidade
-                == plano_entregas["id_plano_entrega_unidade"]
-            )
+            select(models.PlanoEntregas)
+            .filter_by(cod_SIAPE_instituidora=plano_entregas.cod_SIAPE_instituidora)
+            .filter_by(id_plano_entrega_unidade=plano_entregas.id_plano_entrega_unidade)
         )
-        db_plano_entregas = result.unique().scalar_one_or_none()
+        db_plano_entregas = result.unique().scalar_one()
         await session.delete(db_plano_entregas)
+        await session.commit()
     return await create_plano_entregas(db_session, plano_entregas)
 
 

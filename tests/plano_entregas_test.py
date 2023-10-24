@@ -4,10 +4,11 @@ Testes relacionados ao Plano de Entregas da Unidade
 from datetime import date, timedelta
 
 from httpx import Client
-
 from fastapi import status
 
 import pytest
+
+from util import over_a_year
 
 # grupos de campos opcionais e obrigatórios a testar
 
@@ -385,15 +386,24 @@ def test_create_plano_entregas_date_interval_over_a_year(
         headers=header_usr_1,
     )
 
-    if date.fromisoformat(data_termino_plano_entregas) - date.fromisoformat(
-        data_inicio_plano_entregas
-    ) > timedelta(days=366):
+    if over_a_year(
+        date.fromisoformat(data_termino_plano_entregas),
+        date.fromisoformat(data_inicio_plano_entregas),
+    ) == 1:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = "Plano de entregas não pode abranger período maior que 1 ano."
-        assert response.json().get("detail", None) == detail_msg
+        detail_message = "Plano de entregas não pode abranger período maior que 1 ano."
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
     else:
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.json() == input_pe
+        assert all(
+            response.json()[attribute] == input_pe[attribute]
+            for attributes in fields_plano_entregas["mandatory"]
+            for attribute in attributes
+            if attribute not in ("entregas")
+        )
 
 
 def test_create_pe_cod_plano_inconsistent(

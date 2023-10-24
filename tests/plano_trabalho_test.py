@@ -2,13 +2,14 @@
 Testes relacionados ao plano de trabalho do participante.
 """
 from datetime import date, timedelta
+import calendar
 
 from httpx import Client
-
 from fastapi import status
 
 import pytest
 
+from util import over_a_year
 
 # grupos de campos opcionais e obrigatórios a testar
 
@@ -110,7 +111,6 @@ def test_create_plano_trabalho_unidade_nao_permitida(
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     detail_message = "Usuário não tem permissão na cod_SIAPE_instituidora informada"
     assert detail_message in response.json().get("detail")
-
 
 
 def test_update_plano_trabalho(
@@ -482,7 +482,9 @@ def test_create_plano_trabalho_overlapping_date_interval(
     ],
 )
 def test_create_plano_trabalho_date_interval_over_a_year(
+    truncate_pe,  # pylint: disable=unused-argument
     truncate_pt,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     input_pt: dict,
     data_inicio_plano: str,
     data_termino_plano: str,
@@ -496,17 +498,20 @@ def test_create_plano_trabalho_date_interval_over_a_year(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pt['id_plano_trabalho_participante']}",
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
 
-    if date.fromisoformat(data_termino_plano) - date.fromisoformat(
-        data_inicio_plano
-    ) > timedelta(days=366):
+    if over_a_year(
+        date.fromisoformat(data_termino_plano), date.fromisoformat(data_inicio_plano)
+    ) == 1:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = "Plano de trabalho não pode abranger período maior que 1 ano."
-        assert response.json().get("detail", None) == detail_msg
+        detail_message = "Plano de trabalho não pode abranger período maior que 1 ano."
+        assert any(
+            f"Value error, {detail_message}" == error["msg"]
+            for error in response.json().get("detail")
+        )
     else:
         assert response.status_code == status.HTTP_201_CREATED
         assert all(
@@ -559,7 +564,6 @@ def test_get_plano_trabalho(
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == input_pt
-
 
 
 def test_get_pt_inexistente(
@@ -1053,7 +1057,6 @@ def test_put_plano_trabalho_invalid_cpf(
         json=input_pt,
         headers=header_usr_1,
     )
-    print (response.text)
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_messages = [
         "Dígitos verificadores do CPF inválidos.",

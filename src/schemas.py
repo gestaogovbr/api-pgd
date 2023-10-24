@@ -6,13 +6,14 @@ Pydantic: https://docs.pydantic.dev/2.0/
 """
 
 from typing import List, Optional
+from datetime import date
+
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic import model_validator, field_validator
-from datetime import date
-from enum import IntEnum
 
 from models import PlanoEntregas, PlanoTrabalho, Entrega
 from models import Consolidacao, Contribuicao, StatusParticipante
+from util import over_a_year
 
 
 # Função para validar CPF
@@ -193,6 +194,16 @@ class PlanoTrabalhoSchema(BaseModel):
     #         raise ValueError("Horas homologadas devem ser maior que zero")
     #     return horas_homologadas
 
+    @model_validator(mode="after")
+    def year_interval(self):
+        if over_a_year(
+            self.data_termino_plano, self.data_inicio_plano
+        ) == 1:
+            raise ValueError(
+                "Plano de trabalho não pode abranger período maior que 1 ano."
+            )
+        return self
+
 
 class EntregaSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -329,9 +340,14 @@ class PlanoEntregasSchema(BaseModel):
             raise ValueError("Entregas devem possuir id_entrega diferentes")
         return self
 
-    # @model_validator(mode="after")
-    # def year_interval(cls):
-    #     pass
+    def year_interval(self):
+        if over_a_year(
+            self.data_termino_plano_entregas, self.data_inicio_plano_entregas
+        ) == 1:
+            raise ValueError(
+                "Plano de entregas não pode abranger período maior que 1 ano."
+            )
+        return self
 
 
 class StatusParticipanteSchema(BaseModel):
