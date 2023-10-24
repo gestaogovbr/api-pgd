@@ -134,7 +134,7 @@ def test_update_plano_trabalho(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == status.HTTP_200_OK
     assert all(
         response.json()[attribute] == input_pt[attribute]
         for attributes in fields_plano_trabalho["mandatory"]
