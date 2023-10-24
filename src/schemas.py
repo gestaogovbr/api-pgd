@@ -64,6 +64,12 @@ class ContribuicaoSchema(BaseModel):
             raise ValueError("Tipo de contribuição inválida; permitido: 1 a 3")
         return tipo_contribuicao
 
+    @field_validator("horas_vinculadas")
+    def must_be_positive(cls, horas_vinculadas):
+        if horas_vinculadas <= 0:
+            raise ValueError("Valor de horas_vinculadas deve ser maior ou igual a zero")
+        return horas_vinculadas
+
 class ConsolidacaoSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     data_inicio_registro: date = Field(
