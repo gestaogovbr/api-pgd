@@ -7,7 +7,7 @@ Pydantic: https://docs.pydantic.dev/2.0/
 
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic import field_validator
+from pydantic import model_validator, field_validator
 from datetime import date
 from enum import IntEnum
 
@@ -58,6 +58,13 @@ class ContribuicaoSchema(BaseModel):
         title="Horas vinculadas à determinada entrega",
         description=Contribuicao.horas_vinculadas.comment,
     )
+    @model_validator(mode="after")
+    def must_be_mandatory_if(cls, values):
+        if values.tipo_contribuicao == 1 and values.id_entrega is None:
+            raise ValueError("O campo id_entrega é obrigatório quando tipo_contribuicao "
+            "tiver o valor 1.")
+        return values
+
     @field_validator("tipo_contribuicao")
     def must_be_between(cls, tipo_contribuicao):
         if tipo_contribuicao not in range(1, 4):
