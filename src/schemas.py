@@ -58,7 +58,11 @@ class ContribuicaoSchema(BaseModel):
         title="Horas vinculadas à determinada entrega",
         description=Contribuicao.horas_vinculadas.comment,
     )
-
+    @field_validator("tipo_contribuicao")
+    def must_be_between(cls, tipo_contribuicao):
+        if tipo_contribuicao not in range(1, 4):
+            raise ValueError("Tipo de contribuição inválida; permitido: 1 a 3")
+        return tipo_contribuicao
 
 class ConsolidacaoSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
