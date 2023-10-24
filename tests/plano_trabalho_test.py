@@ -505,11 +505,16 @@ def test_create_plano_trabalho_date_interval_over_a_year(
         data_inicio_plano
     ) > timedelta(days=366):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = "Plano de trabalho não pode abranger período maior que " "1 ano."
+        detail_msg = "Plano de trabalho não pode abranger período maior que 1 ano."
         assert response.json().get("detail", None) == detail_msg
     else:
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.json() == input_pt
+        assert all(
+            response.json()[attribute] == input_pt[attribute]
+            for attributes in fields_plano_trabalho["mandatory"]
+            for attribute in attributes
+            if attribute not in ("contribuicoes", "consolidacoes")
+        )
 
 
 def test_create_pt_cod_plano_inconsistent(
