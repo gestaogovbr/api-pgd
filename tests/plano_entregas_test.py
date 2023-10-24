@@ -441,7 +441,12 @@ def test_create_pe_cod_unidade_inconsistent(
 
 
 def test_get_plano_entrega(
-    user1_credentials: dict, header_usr_1: dict, truncate_pe, input_pe, client: Client
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pe,
+    input_pe,
+    example_pe,
+    client: Client
 ):
     """Tenta buscar um plano de entrega existente"""
 
