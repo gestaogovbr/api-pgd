@@ -115,10 +115,17 @@ async def create_or_update_plano_trabalho(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
         )
+
+    # Validações de conteúdo JSON e URL
     if cod_SIAPE_instituidora != plano_trabalho.cod_SIAPE_instituidora:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Parâmetro cod_SIAPE_instituidora diferente do conteúdo do JSON",
+        )
+    if id_plano_trabalho_participante != plano_trabalho.id_plano_trabalho_participante:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Parâmetro id_plano_trabalho_participante na URL e no JSON devem ser iguais",
         )
 
     # Validações do esquema

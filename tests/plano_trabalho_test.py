@@ -529,10 +529,12 @@ def test_create_plano_trabalho_date_interval_over_a_year(
 
 
 def test_create_pt_cod_plano_inconsistent(
+    truncate_pe,  # pylint: disable=unused-argument
+    truncate_pt,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     input_pt: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     input_pt["id_plano_trabalho_participante"] = 110
@@ -543,10 +545,10 @@ def test_create_pt_cod_plano_inconsistent(
         headers=header_usr_1,  # diferente de 110
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = (
+    detail_message = (
         "Parâmetro id_plano_trabalho_participante na URL e no JSON devem ser iguais"
     )
-    assert response.json().get("detail", None) == detail_msg
+    assert response.json().get("detail", None) == detail_message
 
 
 def test_get_plano_trabalho(
