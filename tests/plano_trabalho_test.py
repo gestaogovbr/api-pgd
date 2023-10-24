@@ -114,11 +114,13 @@ def test_create_plano_trabalho_unidade_nao_permitida(
 
 
 def test_update_plano_trabalho(
-    input_pt: dict,
+    truncate_pe,  # pylint: disable=unused-argument
+    truncate_pt,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     example_pt,  # pylint: disable=unused-argument
+    input_pt: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Atualiza um Plano de Trabalho existente usando o método PUT."""
