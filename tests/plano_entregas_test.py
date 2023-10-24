@@ -209,9 +209,9 @@ def test_create_huge_plano_entregas(
     def create_huge_entrega(id_entrega: int):
         new_entrega = input_pe["entregas"][0].copy()
         new_entrega["id_entrega"] = 3 + id_entrega
-        new_entrega["nome_entrega"] = "x"  * 1000000  # 1mi de caracteres
-        new_entrega["nome_demandante"] = "x"  * 1000000  # 1mi de caracteres
-        new_entrega["nome_destinatario"] = "x"  * 1000000  # 1mi de caracteres
+        new_entrega["nome_entrega"] = "x" * 1000000  # 1mi de caracteres
+        new_entrega["nome_demandante"] = "x" * 1000000  # 1mi de caracteres
+        new_entrega["nome_destinatario"] = "x" * 1000000  # 1mi de caracteres
 
         return new_entrega
 
@@ -238,9 +238,7 @@ def test_create_huge_plano_entregas(
     response_by_entrega = {
         id_entrega: entrega for entrega in response.json()["entregas"]
     }
-    input_by_entrega = {
-        id_entrega: entrega for entrega in input_pe["entregas"]
-    }
+    input_by_entrega = {id_entrega: entrega for entrega in input_pe["entregas"]}
     assert all(
         response_by_entrega[id_entrega][attribute] == entrega[attribute]
         for attributes in fields_entrega["mandatory"]
@@ -391,7 +389,7 @@ def test_create_plano_entregas_date_interval_over_a_year(
         data_inicio_plano_entregas
     ) > timedelta(days=366):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = "Plano de entregas não pode abranger período maior que " "1 ano."
+        detail_msg = "Plano de entregas não pode abranger período maior que 1 ano."
         assert response.json().get("detail", None) == detail_msg
     else:
         assert response.status_code == status.HTTP_201_CREATED
@@ -446,7 +444,7 @@ def test_get_plano_entrega(
     truncate_pe,
     input_pe,
     example_pe,
-    client: Client
+    client: Client,
 ):
     """Tenta buscar um plano de entrega existente"""
 
