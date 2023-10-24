@@ -350,7 +350,8 @@ class PlanoEntregasSchema(BaseModel):
             raise ValueError("Entregas devem possuir id_entrega diferentes")
         return self
 
-    def year_interval(self):
+    @model_validator(mode="after")
+    def year_interval(self) -> "PlanoEntregasSchema":
         if over_a_year(
             self.data_termino_plano_entregas, self.data_inicio_plano_entregas
         ) == 1:
