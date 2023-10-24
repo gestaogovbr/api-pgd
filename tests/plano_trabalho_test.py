@@ -546,7 +546,15 @@ def test_get_plano_trabalho(
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         headers=header_usr_1,
     )
+
+    # Inclui os campos de resposta do json que não estavam no template
+    input_pt["cancelado"] = False
+    input_pt["contribuicoes"][1]["id_entrega"] = None
+    input_pt["contribuicoes"][1]["descricao_contribuicao"] = None
+
     assert response.status_code == status.HTTP_200_OK
+    assert response.json() == input_pt
+
 
 
 def test_get_pt_inexistente(
