@@ -962,12 +962,10 @@ def test_create_pt_invalid_horas_vinculadas(
     truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
-    id_plano_trabalho_participante = "138"
-    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["horas_vinculadas"] = horas_vinculadas
+    input_pt["contribuicoes"][0]["horas_vinculadas"] = horas_vinculadas
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
