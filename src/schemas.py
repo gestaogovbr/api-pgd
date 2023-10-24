@@ -69,13 +69,15 @@ class ContribuicaoSchema(BaseModel):
         return self
 
     @field_validator("tipo_contribuicao")
-    def must_be_between(cls, tipo_contribuicao: int) -> int:
+    @staticmethod
+    def must_be_between(tipo_contribuicao: int) -> int:
         if tipo_contribuicao not in range(1, 4):
             raise ValueError("Tipo de contribuição inválida; permitido: 1 a 3")
         return tipo_contribuicao
 
     @field_validator("horas_vinculadas")
-    def must_be_zero_or_positive(cls, horas_vinculadas: int) -> int:
+    @staticmethod
+    def must_be_zero_or_positive(horas_vinculadas: int) -> int:
         if horas_vinculadas < 0:
             raise ValueError("Valor de horas_vinculadas deve ser maior ou igual a zero")
         return horas_vinculadas
@@ -175,7 +177,8 @@ class PlanoTrabalhoSchema(BaseModel):
     #     return atividades
 
     @field_validator("cpf_participante")
-    def cpf_part_validate(cls, cpf_participante: str) -> str:
+    @staticmethod
+    def cpf_part_validate(cpf_participante: str) -> str:
         return cpf_validate(cpf_participante)
 
     # @validator("carga_horaria_semanal")
@@ -239,7 +242,8 @@ class EntregaSchema(BaseModel):
     )
 
     @field_validator("tipo_meta")
-    def must_be_in(cls, tipo_meta: int) -> int:
+    @staticmethod
+    def must_be_in(tipo_meta: int) -> int:
         if tipo_meta not in (1, 2):
             raise ValueError("Tipo de meta inválido; permitido: 1, 2")
         return tipo_meta
@@ -249,7 +253,8 @@ class EntregaSchema(BaseModel):
         "percentual_progresso_esperado",
         "percentual_progresso_realizado",
     )
-    def must_be_percent(cls, percent: int) -> int:
+    @staticmethod
+    def must_be_percent(percent: int) -> int:
         if percent is not None and not 0 <= percent <= 100:
             raise ValueError("Valor percentual inválido.")
         return percent
@@ -298,7 +303,8 @@ class PlanoEntregasSchema(BaseModel):
     )
 
     @field_validator("avaliacao_plano_entregas")
-    def must_be_between(cls, avaliacao_plano_entregas: int) -> int:
+    @staticmethod
+    def must_be_between(avaliacao_plano_entregas: int) -> int:
         if (
             avaliacao_plano_entregas is not None
             and avaliacao_plano_entregas not in range(1, 6)
@@ -307,7 +313,8 @@ class PlanoEntregasSchema(BaseModel):
         return avaliacao_plano_entregas
 
     @field_validator("cod_SIAPE_instituidora")
-    def must_be_positive(cls, cod_SIAPE_instituidora: int) -> int:
+    @staticmethod
+    def must_be_positive(cod_SIAPE_instituidora: int) -> int:
         if cod_SIAPE_instituidora < 1:
             raise ValueError("cod_SIAPE_instituidora inválido")
         return cod_SIAPE_instituidora
@@ -350,11 +357,13 @@ class StatusParticipanteSchema(BaseModel):
     )
 
     @field_validator("cpf_participante")
-    def cpf_part_validate(cls, cpf_participante: str) -> str:
+    @staticmethod
+    def cpf_part_validate(cpf_participante: str) -> str:
         return cpf_validate(cpf_participante)
 
     @field_validator("matricula_siape")
-    def siape_validate(cls, matricula_siape: str) -> str:
+    @staticmethod
+    def siape_validate(matricula_siape: str) -> str:
         if len(matricula_siape) != 7:
             raise ValueError("Matrícula SIAPE deve ter 7 dígitos.")
         if len(set(matricula_siape)) < 2:
@@ -362,7 +371,8 @@ class StatusParticipanteSchema(BaseModel):
         return matricula_siape
 
     @field_validator("participante_ativo_inativo_pgd")
-    def must_be_bool(cls, participante_ativo_inativo_pgd: int) -> int:
+    @staticmethod
+    def must_be_bool(participante_ativo_inativo_pgd: int) -> int:
         """Verifica se o campo participante_ativo_inativo_pgd está
         entre os valores permitidos.
 
@@ -377,13 +387,15 @@ class StatusParticipanteSchema(BaseModel):
         return participante_ativo_inativo_pgd
 
     @field_validator("modalidade_execucao")
-    def must_be_between(cls, modalidade_execucao: int) -> int:
+    @staticmethod
+    def must_be_between(modalidade_execucao: int) -> int:
         if modalidade_execucao not in range(1, 4):
             raise ValueError("Modalidade de execução inválida; permitido: 1, 2, 3, 4")
         return modalidade_execucao
 
     @field_validator("jornada_trabalho_semanal")
-    def must_be_positive(cls, jornada_trabalho_semanal: int) -> int:
+    @staticmethod
+    def must_be_positive(jornada_trabalho_semanal: int) -> int:
         if jornada_trabalho_semanal < 1:
             raise ValueError("Jornada de trabalho semanal deve ser maior que zero")
         return jornada_trabalho_semanal
