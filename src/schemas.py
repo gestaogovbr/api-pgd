@@ -211,6 +211,7 @@ class PlanoTrabalhoSchema(BaseModel):
                 "Data fim do Plano de Trabalho deve ser maior "
                 "ou igual que Data de início."
             )
+        return self
 
 
 
