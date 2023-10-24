@@ -109,10 +109,8 @@ def test_create_plano_trabalho_unidade_nao_permitida(
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     detail_message = "Usuário não tem permissão na cod_SIAPE_instituidora informada"
-    assert any(
-        f"Value error, {detail_message}" in error["msg"]
-        for error in response.json().get("detail")
-    )
+    assert detail_message in response.json().get("detail")
+
 
 
 def test_update_plano_trabalho(
