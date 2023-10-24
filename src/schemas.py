@@ -319,6 +319,16 @@ class PlanoEntregasSchema(BaseModel):
             raise ValueError("cod_SIAPE_instituidora inválido")
         return cod_SIAPE_instituidora
 
+    @model_validator(mode="after")
+    def must_be_unique(self) -> "PlanoEntregasSchema":
+        entregas_list = []
+        for entrega in self.entregas:
+            entregas_list.append(entrega.id_entrega)
+
+        if any(entregas_list.count(x) > 1 for x in entregas_list):
+            raise ValueError("Entregas devem possuir id_entrega diferentes")
+        return self
+
     # @model_validator(mode="after")
     # def year_interval(cls):
     #     pass
