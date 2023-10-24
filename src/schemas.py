@@ -58,11 +58,14 @@ class ContribuicaoSchema(BaseModel):
         title="Horas vinculadas à determinada entrega",
         description=Contribuicao.horas_vinculadas.comment,
     )
+
     @model_validator(mode="after")
     def must_be_mandatory_if(cls, values):
         if values.tipo_contribuicao == 1 and values.id_entrega is None:
-            raise ValueError("O campo id_entrega é obrigatório quando tipo_contribuicao "
-            "tiver o valor 1.")
+            raise ValueError(
+                "O campo id_entrega é obrigatório quando tipo_contribuicao "
+                "tiver o valor 1."
+            )
         return values
 
     @field_validator("tipo_contribuicao")
@@ -76,6 +79,7 @@ class ContribuicaoSchema(BaseModel):
         if horas_vinculadas < 0:
             raise ValueError("Valor de horas_vinculadas deve ser maior ou igual a zero")
         return horas_vinculadas
+
 
 class ConsolidacaoSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -199,9 +203,7 @@ class EntregaSchema(BaseModel):
         title="Meta estipulada na inclusão no plano",
         description=Entrega.meta_entrega.comment,
     )
-    tipo_meta: int = Field(
-        title="Tipo da meta", description=Entrega.tipo_meta.comment
-    )
+    tipo_meta: int = Field(title="Tipo da meta", description=Entrega.tipo_meta.comment)
     nome_vinculacao_cadeia_valor: Optional[str] = Field(
         default=None,
         title="Nome da vinculação de cadeia de valor",
@@ -242,15 +244,15 @@ class EntregaSchema(BaseModel):
             raise ValueError("Tipo de meta inválido; permitido: 1, 2")
         return tipo_meta
 
-    @field_validator("meta_entrega",
-                     "percentual_progresso_esperado",
-                     "percentual_progresso_realizado",
-                     )
+    @field_validator(
+        "meta_entrega",
+        "percentual_progresso_esperado",
+        "percentual_progresso_realizado",
+    )
     def must_be_percent(cls, percent):
         if percent is not None and not (0 <= percent <= 100):
             raise ValueError("Valor percentual inválido.")
         return percent
-
 
 
 class PlanoEntregasSchema(BaseModel):
@@ -306,6 +308,8 @@ class PlanoEntregasSchema(BaseModel):
         if cod_SIAPE_unidade_plano < 1:
             raise ValueError("cod_SIAPE_unidade_plano inválido")
         return cod_SIAPE_unidade_plano
+
+
 class StatusParticipanteSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     cod_SIAPE_instituidora: int = Field(
