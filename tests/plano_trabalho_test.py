@@ -819,8 +819,11 @@ def test_create_pt_invalid_tipo_contribuicao(
         assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = "Tipo de contribuição inválida; permitido: 1 a 3"
-        assert response.json().get("detail") == detail_msg
+        detail_message = "Tipo de contribuição inválida; permitido: 1 a 3"
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
 
 
 @pytest.mark.parametrize(
