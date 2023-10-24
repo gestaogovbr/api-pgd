@@ -303,11 +303,15 @@ class PlanoEntregasSchema(BaseModel):
             raise ValueError("Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5")
         return avaliacao_plano_entregas
 
-    @field_validator("cod_SIAPE_unidade_plano")
-    def must_be_positive(cls, cod_SIAPE_unidade_plano):
-        if cod_SIAPE_unidade_plano < 1:
-            raise ValueError("cod_SIAPE_unidade_plano inválido")
-        return cod_SIAPE_unidade_plano
+    @field_validator("cod_SIAPE_instituidora")
+    def must_be_positive(cls, cod_SIAPE_instituidora: int) -> int:
+        if cod_SIAPE_instituidora < 1:
+            raise ValueError("cod_SIAPE_instituidora inválido")
+        return cod_SIAPE_instituidora
+
+    # @model_validator(mode="after")
+    # def year_interval(cls):
+    #     pass
 
 
 class StatusParticipanteSchema(BaseModel):
