@@ -505,9 +505,13 @@ def test_create_plano_trabalho_date_interval_over_a_year(
         headers=header_usr_1,
     )
 
-    if over_a_year(
-        date.fromisoformat(data_termino_plano), date.fromisoformat(data_inicio_plano)
-    ) == 1:
+    if (
+        over_a_year(
+            date.fromisoformat(data_termino_plano),
+            date.fromisoformat(data_inicio_plano),
+        )
+        == 1
+    ):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "Plano de trabalho não pode abranger período maior que 1 ano."
         assert any(
