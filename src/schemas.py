@@ -65,8 +65,8 @@ class ContribuicaoSchema(BaseModel):
         return tipo_contribuicao
 
     @field_validator("horas_vinculadas")
-    def must_be_positive(cls, horas_vinculadas):
-        if horas_vinculadas <= 0:
+    def must_be_zero_or_positive(cls, horas_vinculadas):
+        if horas_vinculadas < 0:
             raise ValueError("Valor de horas_vinculadas deve ser maior ou igual a zero")
         return horas_vinculadas
 
