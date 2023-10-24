@@ -634,9 +634,10 @@ def test_create_pe_duplicate_entrega(
         json=input_pe,
         headers=header_usr_1,
     )
+    print (response.text)
     if id_ent_1 == id_ent_2:
         assert response.status_code == 422
-        detail_message = "Entregas devem possuir id_entrega diferentes."
+        detail_message = "Entregas devem possuir id_entrega diferentes"
         assert any(
             f"Value error, {detail_message}" in error["msg"]
             for error in response.json().get("detail")
