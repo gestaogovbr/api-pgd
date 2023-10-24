@@ -204,6 +204,15 @@ class PlanoTrabalhoSchema(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def must_be_sequencial_dates(self):
+        if self.data_inicio_plano > self.data_termino_plano:
+            raise ValueError(
+                "Data fim do Plano de Trabalho deve ser maior "
+                "ou igual que Data de início."
+            )
+
+
 
 class EntregaSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
