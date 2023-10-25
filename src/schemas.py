@@ -156,48 +156,10 @@ class PlanoTrabalhoSchema(BaseModel):
         description="Lista de Consolidações (registros) de execução do Plano de Trabalho.",
     )
 
-    # Validações
-    # @root_validator
-    # def data_validate(cls, values):
-    #     data_inicio = values.get("data_inicio", None)
-    #     data_fim = values.get("data_fim", None)
-    #     if data_inicio > data_fim:
-    #         raise ValueError("Data fim do Plano de Trabalho deve ser maior" \
-    #                  " ou igual que Data de início.")
-    #     for atividade in values.get("atividades", []):
-    #         if getattr(atividade, "data_avaliacao", None) is not None and \
-    #             atividade.data_avaliacao < data_inicio:
-    #                 raise ValueError("Data de avaliação da atividade deve ser maior ou igual" \
-    #                     " que a Data de início do Plano de Trabalho.")
-    #     return values
-
-    # @validator("atividades")
-    # def valida_atividades(cls, atividades):
-    #     ids_atividades = [a.id_atividade for a in atividades]
-    #     duplicados = []
-    #     for id_atividade in ids_atividades:
-    #         if id_atividade not in duplicados:
-    #             duplicados.append(id_atividade)
-    #         else:
-    #             raise ValueError("Atividades devem possuir id_atividade diferentes.")
-    #     return atividades
-
     @field_validator("cpf_participante")
     @staticmethod
     def cpf_part_validate(cpf_participante: str) -> str:
         return cpf_validate(cpf_participante)
-
-    # @validator("carga_horaria_semanal")
-    # def must_be_less(cls, carga_horaria_semanal):
-    #     if carga_horaria_semanal > 40 or carga_horaria_semanal <= 0:
-    #         raise ValueError("Carga horária semanal deve ser entre 1 e 40")
-    #     return carga_horaria_semanal
-
-    # @validator("horas_homologadas")
-    # def must_be_positive(cls, horas_homologadas):
-    #     if horas_homologadas <= 0:
-    #         raise ValueError("Horas homologadas devem ser maior que zero")
-    #     return horas_homologadas
 
     @model_validator(mode="after")
     def year_interval(self):
