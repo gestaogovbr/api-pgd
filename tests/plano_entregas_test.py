@@ -43,13 +43,15 @@ fields_entrega = {
     ),
 }
 
+# Helper functions
+
 
 def assert_equal_plano_entregas(plano_entregas_1: dict, plano_entregas_2: dict):
     """Verifica a igualdade de dois planos de entregas, considerando
     apenas os campos obrigatórios.
     """
-    # Compara o conteúdo de todos os campos obrigatórios da entrega,
-    # exceto a lista de entregas
+    # Compara o conteúdo de todos os campos obrigatórios do plano de
+    # entregas, exceto a lista de entregas
     assert all(
         plano_entregas_1[attribute] == plano_entregas_2[attribute]
         for attributes in fields_plano_entregas["mandatory"]
@@ -58,17 +60,17 @@ def assert_equal_plano_entregas(plano_entregas_1: dict, plano_entregas_2: dict):
     )
 
     # Compara o conteúdo de cada entrega, somente campos obrigatórios
-    response_by_entrega = {
+    first_plan_by_entrega = {
         entrega["id_entrega"]: entrega for entrega in plano_entregas_1["entregas"]
     }
-    input_by_entrega = {
+    second_plan_by_entrega = {
         entrega["id_entrega"]: entrega for entrega in plano_entregas_2["entregas"]
     }
     assert all(
-        response_by_entrega[id_entrega][attribute] == entrega[attribute]
+        first_plan_by_entrega[id_entrega][attribute] == entrega[attribute]
         for attributes in fields_entrega["mandatory"]
         for attribute in attributes
-        for id_entrega, entrega in input_by_entrega.items()
+        for id_entrega, entrega in second_plan_by_entrega.items()
     )
 
 

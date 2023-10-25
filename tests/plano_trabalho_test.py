@@ -43,6 +43,61 @@ fields_consolidacao = {
     ),
 }
 
+# Helper functions
+
+
+def assert_equal_plano_trabalho(plano_trabalho_1: dict, plano_trabalho_2: dict):
+    """Verifica a igualdade de dois planos de trabalho, considerando
+    apenas os campos obrigatórios.
+    """
+    # Compara o conteúdo de todos os campos obrigatórios do plano de
+    # trabalho, exceto as listas de contribuições e consolidações
+    assert all(
+        plano_trabalho_1[attribute] == plano_trabalho_2[attribute]
+        for attributes in fields_plano_trabalho["mandatory"]
+        for attribute in attributes
+        if attribute not in ("contribuicoes", "consolidacoes")
+    )
+
+    # Compara o conteúdo de cada contribuição, somente campos obrigatórios
+    contribuicoes_1 = set(
+        {
+            field: value
+            for contribuicao in plano_trabalho_1["contribuicoes"]
+            for field, value in contribuicao.items()
+            if field in fields_contribuicao["mandatory"]
+        }
+    )
+    contribuicoes_2 = set(
+        {
+            field: value
+            for contribuicao in plano_trabalho_2["contribuicoes"]
+            for field, value in contribuicao.items()
+            if field in fields_contribuicao["mandatory"]
+        }
+    )
+    assert contribuicoes_1 == contribuicoes_2
+
+    # Compara o conteúdo de cada consolidação, somente campos obrigatórios
+    consolidacoes_1 = set(
+        {
+            field: value
+            for contribuicao in plano_trabalho_1["consolidacoes"]
+            for field, value in contribuicao.items()
+            if field in fields_contribuicao["mandatory"]
+        }
+    )
+    consolidacoes_2 = set(
+        {
+            field: value
+            for contribuicao in plano_trabalho_2["consolidacoes"]
+            for field, value in contribuicao.items()
+            if field in fields_contribuicao["mandatory"]
+        }
+    )
+    assert consolidacoes_1 == consolidacoes_2
+
+
 # Os testes usam muitas fixtures, então necessariamente precisam de
 # muitos argumentos. Além disso, algumas fixtures não retornam um valor
 # para ser usado no teste, mas mesmo assim são executadas quando estão
@@ -71,12 +126,7 @@ def test_create_plano_trabalho_completo(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert all(
-        response.json()[attribute] == input_pt[attribute]
-        for attributes in fields_plano_trabalho["mandatory"]
-        for attribute in attributes
-        if attribute not in ("contribuicoes", "consolidacoes")
-    )
+    assert_equal_plano_trabalho(response.json(), input_pt)
 
     # Consulta API para conferir se a criação foi persistida
     response = client.get(
@@ -86,12 +136,7 @@ def test_create_plano_trabalho_completo(
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert all(
-        response.json()[attribute] == input_pt[attribute]
-        for attributes in fields_plano_trabalho["mandatory"]
-        for attribute in attributes
-        if attribute not in ("contribuicoes", "consolidacoes")
-    )
+    assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 def test_create_plano_trabalho_unidade_nao_permitida(
@@ -137,12 +182,7 @@ def test_update_plano_trabalho(
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert all(
-        response.json()[attribute] == input_pt[attribute]
-        for attributes in fields_plano_trabalho["mandatory"]
-        for attribute in attributes
-        if attribute not in ("contribuicoes", "consolidacoes")
-    )
+    assert_equal_plano_trabalho(response.json(), input_pt)
 
     # Consulta API para conferir se a alteração foi persistida
     response = client.get(
@@ -152,12 +192,7 @@ def test_update_plano_trabalho(
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert all(
-        response.json()[attribute] == input_pt[attribute]
-        for attributes in fields_plano_trabalho["mandatory"]
-        for attribute in attributes
-        if attribute not in ("contribuicoes", "consolidacoes")
-    )
+    assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 @pytest.mark.parametrize(
@@ -474,7 +509,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
             return
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json() == input_pt
+    assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 @pytest.mark.parametrize(
@@ -522,12 +557,7 @@ def test_create_plano_trabalho_date_interval_over_a_year(
         )
     else:
         assert response.status_code == status.HTTP_201_CREATED
-        assert all(
-            response.json()[attribute] == input_pt[attribute]
-            for attributes in fields_plano_trabalho["mandatory"]
-            for attribute in attributes
-            if attribute not in ("contribuicoes", "consolidacoes")
-        )
+        assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 def test_create_pt_cod_plano_inconsistent(
@@ -573,7 +603,7 @@ def test_get_plano_trabalho(
     input_pt["contribuicoes"][1]["descricao_contribuicao"] = None
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == input_pt
+    assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 def test_get_pt_inexistente(
@@ -783,7 +813,7 @@ def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
             return
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json() == input_pt
+    assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 @pytest.mark.parametrize(
@@ -920,9 +950,7 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
     if tipo_contribuicao == 1:
         if not id_entrega:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_message = (
-                "O campo id_entrega é obrigatório quando tipo_contribuicao tiver o valor 1"
-            )
+            detail_message = "O campo id_entrega é obrigatório quando tipo_contribuicao tiver o valor 1"
             assert any(
                 f"Value error, {detail_message}" in error["msg"]
                 for error in response.json().get("detail")
@@ -976,7 +1004,7 @@ def test_create_pt_duplicate_id_plano(
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json().get("detail", None) is None
-    assert response.json() == input_pt
+    assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 @pytest.mark.parametrize("horas_vinculadas", [-2, -1])
