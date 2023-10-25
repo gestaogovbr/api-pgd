@@ -105,6 +105,15 @@ class ConsolidacaoSchema(BaseModel):
         description=Consolidacao.avaliacao_plano_trabalho.comment,
     )
 
+    @field_validator("avaliacao_plano_trabalho")
+    @staticmethod
+    def must_be_between(avaliacao_plano_trabalho: int) -> int:
+        if avaliacao_plano_trabalho not in range(1, 6):
+            raise ValueError(
+                "Avaliação de plano de trabalho inválida; permitido: 1 a 5"
+            )
+        return avaliacao_plano_trabalho
+
 
 class PlanoTrabalhoSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)

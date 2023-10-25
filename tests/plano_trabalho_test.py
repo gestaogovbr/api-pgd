@@ -1056,8 +1056,11 @@ def test_create_pt_consolidacoes_invalid_avaliacao_plano_trabalho(
         assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = "Avaliação de plano de trabalho inválida; permitido: 1 a 5"
-        assert response.json().get("detail") == detail_msg
+        detail_message = "Avaliação de plano de trabalho inválida; permitido: 1 a 5"
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
 
 
 @pytest.mark.parametrize(
