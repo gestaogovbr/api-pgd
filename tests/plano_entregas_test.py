@@ -510,8 +510,8 @@ def test_create_pe_invalid_period(
     if data_inicio > data_fim:
         assert response.status_code == 422
         detail_message = (
-            "Data fim do Plano de Entregas deve ser maior"
-            " ou igual que Data de início."
+            "data_termino_plano_entregas deve ser maior"
+            " ou igual que data_inicio_plano_entregas."
         )
         assert any(
             f"Value error, {detail_message}" in error["msg"]
