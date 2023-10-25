@@ -979,16 +979,17 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
 
 
 def test_create_pt_duplicate_id_plano(
+    truncate_pe,  # pylint: disable=unused-argument
+    truncate_pt,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     input_pt: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    header_usr_2: dict,
-    truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/555",
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -997,9 +998,9 @@ def test_create_pt_duplicate_id_plano(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/555",
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
-        headers=header_usr_2,
+        headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_200_OK
