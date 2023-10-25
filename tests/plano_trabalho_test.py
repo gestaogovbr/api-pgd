@@ -951,10 +951,7 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
         if not id_entrega:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = "O campo id_entrega é obrigatório quando tipo_contribuicao tiver o valor 1"
-            assert any(
-                f"Value error, {detail_message}" in error["msg"]
-                for error in response.json().get("detail")
-            )
+            assert response.json().get("detail", None) == detail_message
         elif (
             id_plano_entrega_unidade != id_plano_entrega_existente
             or id_entrega not in ids_entregas_existentes
@@ -963,17 +960,11 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
             # e se pode ser aproveitada a verificação de FK no banco
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = "Referência a id_entrega não encontrada"
-            assert any(
-                f"Value error, {detail_message}" in error["msg"]
-                for error in response.json().get("detail")
-            )
+            assert response.json().get("detail", None) == detail_message
     elif tipo_contribuicao == 2 and id_entrega:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "Não se deve informar id_entrega quando tipo_contribuicao == 2"
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
+        assert response.json().get("detail", None) == detail_message
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
