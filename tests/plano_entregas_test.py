@@ -65,7 +65,19 @@ def test_create_plano_entregas_completo(
         response.json()[attribute] == input_pe[attribute]
         for attributes in fields_plano_entregas["mandatory"]
         for attribute in attributes
-        if attribute not in ("contribuicoes", "consolidacoes")
+        if attribute not in ("entregas")
+    )
+
+    # Compara o conteúdo de cada entrega, somente campos obrigatórios
+    response_by_entrega = {
+        entrega["id_entrega"]: entrega for entrega in response.json()["entregas"]
+    }
+    input_by_entrega = {entrega["id_entrega"]: entrega for entrega in input_pe["entregas"]}
+    assert all(
+        response_by_entrega[id_entrega][attribute] == entrega[attribute]
+        for attributes in fields_entrega["mandatory"]
+        for attribute in attributes
+        for id_entrega, entrega in input_by_entrega.items()
     )
 
 
