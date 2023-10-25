@@ -423,7 +423,7 @@ def test_create_pe_cod_plano_inconsistent(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro id_plano_entrega_unidade diferente do conteúdo do JSON"
+    detail_msg = "Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_msg
 
 
@@ -435,11 +435,11 @@ def test_create_pe_cod_unidade_inconsistent(
     client: Client,
 ):
     """Tenta criar um plano de entrega com código de unidade divergente"""
-
-    input_pe["cod_SIAPE_instituidora"] = 999
+    original_input_pe = input_pe.copy()
+    input_pe["cod_SIAPE_instituidora"] = 999 # era 1
     response = client.put(
-        f"/organizacao/1000"  # diferente de 999
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/{original_input_pe['cod_SIAPE_instituidora']}"
+        f"/plano_entregas/{original_input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )

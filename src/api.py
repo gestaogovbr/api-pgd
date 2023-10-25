@@ -224,16 +224,17 @@ async def create_or_update_plano_entregas(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
         )
+
+    # Validações de conteúdo JSON e URL
     if cod_SIAPE_instituidora != plano_entregas.cod_SIAPE_instituidora:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro cod_SIAPE_instituidora diferente do conteúdo do JSON",
+            detail="Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais",
         )
-
     if id_plano_entrega_unidade != plano_entregas.id_plano_entrega_unidade:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro id_plano_entrega_unidade diferente do conteúdo do JSON",
+            detail="Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais",
         )
 
     # Validações do esquema
