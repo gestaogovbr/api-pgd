@@ -67,6 +67,11 @@ class ContribuicaoSchema(BaseModel):
                 "O campo id_entrega é obrigatório quando tipo_contribuicao "
                 "tiver o valor 1."
             )
+        if self.tipo_contribuicao == 2 and self.id_entrega is not None:
+            raise ValueError(
+                "Não se deve informar id_entrega quando tipo_contribuicao == 2"
+            )
+
         return self
 
     @field_validator("tipo_contribuicao")
