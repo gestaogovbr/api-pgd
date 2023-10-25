@@ -728,16 +728,15 @@ def test_create_pe_same_id_plano_different_instituidora(
         json=input_pe,
         headers=header_usr_1,
     )
-
     assert response.status_code == status.HTTP_201_CREATED
 
+    input_pe["cod_SIAPE_instituidora"] = user2_credentials["cod_SIAPE_instituidora"]
     response = client.put(
         f"/organizacao/{user2_credentials['cod_SIAPE_instituidora']}"
         f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_2,
     )
-
     assert response.status_code == status.HTTP_201_CREATED
 
 
