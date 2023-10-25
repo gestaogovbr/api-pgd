@@ -178,12 +178,7 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_201_CREATED
-    assert all(
-        response.json()[attribute] == input_pe[attribute]
-        for attributes in fields_plano_entregas["mandatory"]
-        for attribute in attributes
-        if attribute not in ("entregas")
-    )
+    assert_equal_plano_entregas(response.json(), input_pe)
 
 
 @pytest.mark.parametrize(
@@ -251,12 +246,7 @@ def test_create_huge_plano_entregas(
 
     # Compara o conteúdo do plano de entregas, somente campos obrigatórios
     assert response.status_code == status.HTTP_201_CREATED
-    assert all(
-        response.json()[attribute] == input_pe[attribute]
-        for attributes in fields_plano_entregas["mandatory"]
-        for attribute in attributes
-        if attribute not in ("entrega")
-    )
+    assert_equal_plano_entregas(response.json(), input_pe)
 
     # Compara o conteúdo de cada entrega, somente campos obrigatórios
     response_by_entrega = {
@@ -378,7 +368,7 @@ def test_create_plano_entregas_overlapping_date_interval(
             assert response.json().get("detail", None) == detail_msg
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json() == input_pe
+    assert_equal_plano_entregas(response.json(), input_pe)
 
 
 @pytest.mark.parametrize(
@@ -424,12 +414,7 @@ def test_create_plano_entregas_date_interval_over_a_year(
         )
     else:
         assert response.status_code == status.HTTP_201_CREATED
-        assert all(
-            response.json()[attribute] == input_pe[attribute]
-            for attributes in fields_plano_entregas["mandatory"]
-            for attribute in attributes
-            if attribute not in ("entregas")
-        )
+        assert_equal_plano_entregas(response.json(), input_pe)
 
 
 def test_create_pe_cod_plano_inconsistent(
