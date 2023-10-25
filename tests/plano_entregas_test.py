@@ -61,7 +61,9 @@ def assert_equal_plano_entregas(plano_entregas_1: dict, plano_entregas_2: dict):
     response_by_entrega = {
         entrega["id_entrega"]: entrega for entrega in plano_entregas_1["entregas"]
     }
-    input_by_entrega = {entrega["id_entrega"]: entrega for entrega in plano_entregas_2["entregas"]}
+    input_by_entrega = {
+        entrega["id_entrega"]: entrega for entrega in plano_entregas_2["entregas"]
+    }
     assert all(
         response_by_entrega[id_entrega][attribute] == entrega[attribute]
         for attributes in fields_entrega["mandatory"]
@@ -407,10 +409,13 @@ def test_create_plano_entregas_date_interval_over_a_year(
         headers=header_usr_1,
     )
 
-    if over_a_year(
-        date.fromisoformat(data_termino_plano_entregas),
-        date.fromisoformat(data_inicio_plano_entregas),
-    ) == 1:
+    if (
+        over_a_year(
+            date.fromisoformat(data_termino_plano_entregas),
+            date.fromisoformat(data_inicio_plano_entregas),
+        )
+        == 1
+    ):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "Plano de entregas não pode abranger período maior que 1 ano."
         assert any(
@@ -457,7 +462,7 @@ def test_create_pe_cod_unidade_inconsistent(
 ):
     """Tenta criar um plano de entrega com código de unidade divergente"""
     original_input_pe = input_pe.copy()
-    input_pe["cod_SIAPE_instituidora"] = 999 # era 1
+    input_pe["cod_SIAPE_instituidora"] = 999  # era 1
     response = client.put(
         f"/organizacao/{original_input_pe['cod_SIAPE_instituidora']}"
         f"/plano_entregas/{original_input_pe['id_plano_entrega_unidade']}",
