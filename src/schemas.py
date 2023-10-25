@@ -372,6 +372,7 @@ class PlanoEntregasSchema(BaseModel):
                 "data_termino_plano_entregas deve ser maior ou igual que "
                 "data_inicio_plano_entregas."
             )
+        return self
 
     @model_validator(mode="after")
     def must_be_sequential_dates(self) -> "PlanoEntregasSchema":
