@@ -599,6 +599,7 @@ def test_create_pe_invalid_data_avaliacao(
         json=input_pe,
         headers=header_usr_1,
     )
+
     if data_avaliacao_plano_entregas < data_inicio_plano_entregas:
         assert response.status_code == 422
         detail_message = (
@@ -644,7 +645,6 @@ def test_create_pe_duplicate_entrega(
         json=input_pe,
         headers=header_usr_1,
     )
-    print (response.text)
     if id_ent_1 == id_ent_2:
         assert response.status_code == 422
         detail_message = "Entregas devem possuir id_entrega diferentes"
@@ -716,7 +716,7 @@ def test_create_invalid_cod_siape_unidade(
         assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "cod_SIAPE_unidade_plano inválido"
+        detail_message = "cod_SIAPE inválido"
         assert any(
             f"Value error, {detail_message}" in error["msg"]
             for error in response.json().get("detail")
