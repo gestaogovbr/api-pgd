@@ -787,7 +787,7 @@ def test_create_entrega_invalid_percent(
     client: Client,
 ):
     """Tenta criar um Plano de Entrega com entrega com percentuais inválidos"""
-
+    input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
     input_pe["entregas"][1]["meta_entrega"] = meta_entrega
     input_pe["entregas"][1][
         "percentual_progresso_esperado"
@@ -798,7 +798,7 @@ def test_create_entrega_invalid_percent(
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{id_plano_entrega_unidade}",
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
