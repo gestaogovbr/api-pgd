@@ -360,6 +360,15 @@ class PlanoEntregasSchema(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def must_be_sequencial_dates(self) -> "PlanoEntregasSchema":
+        if self.data_avaliacao_plano_entregas < self.data_inicio_plano_entregas:
+            raise ValueError(
+                "Data de avaliação do Plano de Entrega deve ser maior ou igual"
+                " que a Data de início do Plano de Entrega."
+            )
+        return self
+
 
 class StatusParticipanteSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
