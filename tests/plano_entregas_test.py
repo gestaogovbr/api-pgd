@@ -44,6 +44,32 @@ fields_entrega = {
 }
 
 
+def assert_equal_plano_entregas(plano_entregas_1: dict, plano_entregas_2: dict):
+    """Verifica a igualdade de dois planos de entregas, considerando
+    apenas os campos obrigatórios.
+    """
+    # Compara o conteúdo de todos os campos obrigatórios da entrega,
+    # exceto a lista de entregas
+    assert all(
+        plano_entregas_1[attribute] == plano_entregas_2[attribute]
+        for attributes in fields_plano_entregas["mandatory"]
+        for attribute in attributes
+        if attribute not in ("entregas")
+    )
+
+    # Compara o conteúdo de cada entrega, somente campos obrigatórios
+    response_by_entrega = {
+        entrega["id_entrega"]: entrega for entrega in plano_entregas_1["entregas"]
+    }
+    input_by_entrega = {entrega["id_entrega"]: entrega for entrega in plano_entregas_2["entregas"]}
+    assert all(
+        response_by_entrega[id_entrega][attribute] == entrega[attribute]
+        for attributes in fields_entrega["mandatory"]
+        for attribute in attributes
+        for id_entrega, entrega in input_by_entrega.items()
+    )
+
+
 def test_create_plano_entregas_completo(
     input_pe: dict,
     user1_credentials: dict,
@@ -61,24 +87,7 @@ def test_create_plano_entregas_completo(
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert all(
-        response.json()[attribute] == input_pe[attribute]
-        for attributes in fields_plano_entregas["mandatory"]
-        for attribute in attributes
-        if attribute not in ("entregas")
-    )
-
-    # Compara o conteúdo de cada entrega, somente campos obrigatórios
-    response_by_entrega = {
-        entrega["id_entrega"]: entrega for entrega in response.json()["entregas"]
-    }
-    input_by_entrega = {entrega["id_entrega"]: entrega for entrega in input_pe["entregas"]}
-    assert all(
-        response_by_entrega[id_entrega][attribute] == entrega[attribute]
-        for attributes in fields_entrega["mandatory"]
-        for attribute in attributes
-        for id_entrega, entrega in input_by_entrega.items()
-    )
+    assert_equal_plano_entregas(response.json(), input_pe)
 
 
 def test_create_plano_entregas_unidade_nao_permitida(
@@ -105,11 +114,11 @@ def test_create_plano_entregas_unidade_nao_permitida(
 
 
 def test_update_plano_entregas(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     example_pe,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
 ):
     """Tenta criar um novo plano de entregas e atualizar alguns campos.
@@ -126,7 +135,7 @@ def test_update_plano_entregas(
         headers=header_usr_1,
     )
 
-    assert response.status_code in (status.HTTP_200_OK, status.HTTP_201_CREATED)
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()["avaliacao_plano_entregas"] == 3
     assert response.json()["data_avaliacao_plano_entregas"] == "2023-08-15"
 
@@ -669,6 +678,38 @@ def test_create_pe_duplicate_entrega(
 
 
 def test_create_pe_duplicate_id_plano(
+    truncate_pe,  # pylint: disable=unused-argument
+    input_pe: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
+):
+    """Tenta criar um plano de entregas duplicado. O envio do mesmo
+    plano de entregas pela segunda vez deve substituir o primeiro.
+    """
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json().get("detail", None) is None
+    assert response.json() == input_pe
+
+
+def test_create_pe_same_id_plano_different_instituidora(
     input_pe: dict,
     user1_credentials: dict,
     user2_credentials: dict,
@@ -697,9 +738,7 @@ def test_create_pe_duplicate_id_plano(
         headers=header_usr_2,
     )
 
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json().get("detail", None) is None
-    assert response.json() == input_pe
+    assert response.status_code == status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize("cod_SIAPE_unidade_plano", [99, 0, -1])
