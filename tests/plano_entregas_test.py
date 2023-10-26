@@ -296,15 +296,17 @@ def test_create_huge_plano_entregas(
 
 @pytest.mark.parametrize(
     "id_plano_entrega_unidade, cod_SIAPE_unidade_plano, "
-    "data_inicio_plano_entregas, data_termino_plano_entregas",
+    "data_inicio_plano_entregas, data_termino_plano_entregas, "
+    "cancelado",
     [
-        (101, 99, "2023-01-01", "2023-06-30"),  # igual ao exemplo
-        (102, 99, "2023-07-01", "2023-12-31"),  # sem sobreposição
-        (103, 99, "2022-12-01", "2023-01-31"),  # sobreposição no início
-        (104, 99, "2023-06-01", "2023-11-30"),  # sobreposição no fim
-        (105, 99, "2023-02-01", "2023-05-31"),  # contido no período
-        (106, 99, "2022-12-01", "2023-07-31"),  # contém o período
-        (105, 100, "2023-02-01", "2023-05-31"),  # outra unidade
+        (101, 99, "2023-01-01", "2023-06-30", False),  # igual ao exemplo
+        (102, 99, "2023-07-01", "2023-12-31", False),  # sem sobreposição
+        (103, 99, "2022-12-01", "2023-01-31", False),  # sobreposição no início
+        (104, 99, "2023-06-01", "2023-11-30", False),  # sobreposição no fim
+        (105, 99, "2023-02-01", "2023-05-31", False),  # contido no período
+        (106, 99, "2022-12-01", "2023-07-31", False),  # contém o período
+        (105, 100, "2023-02-01", "2023-05-31", False),  # outra unidade
+        (103, 99, "2022-12-01", "2023-01-31", True),  # sobreposição porém um é cancelado
     ],
 )
 def test_create_plano_entregas_overlapping_date_interval(
@@ -314,6 +316,7 @@ def test_create_plano_entregas_overlapping_date_interval(
     cod_SIAPE_unidade_plano: int,
     data_inicio_plano_entregas: str,
     data_termino_plano_entregas: str,
+    cancelado: bool,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
@@ -333,21 +336,19 @@ def test_create_plano_entregas_overlapping_date_interval(
         json=original_pe,
         headers=header_usr_1,
     )
-
     assert response.status_code in (status.HTTP_200_OK, status.HTTP_201_CREATED)
 
     input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
     input_pe["cod_SIAPE_unidade_plano"] = cod_SIAPE_unidade_plano
     input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
     input_pe["data_termino_plano_entregas"] = data_termino_plano_entregas
-
+    input_pe["cancelado"] = cancelado
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
     )
-
     if (
         # se algum dos planos estiver cancelado, não há problema em haver
         # sobreposição
@@ -368,9 +369,14 @@ def test_create_plano_entregas_overlapping_date_interval(
                 "cod_SIAPE_unidade_plano no período informado."
             )
             assert response.json().get("detail", None) == detail_msg
-
-    assert response.status_code == status.HTTP_201_CREATED
-    assert_equal_plano_entregas(response.json(), input_pe)
+        else:
+            # não há sobreposição de datas
+            assert response.status_code == status.HTTP_201_CREATED
+            assert_equal_plano_entregas(response.json(), input_pe)
+    else:
+        # um dos planos está cancelado, deve ser criado
+        assert response.status_code == status.HTTP_201_CREATED
+        assert_equal_plano_entregas(response.json(), input_pe)
 
 
 @pytest.mark.parametrize(
