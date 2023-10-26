@@ -43,6 +43,7 @@ def cpf_validate(input_cpf: str) -> str:
 
 
 class ContribuicaoSchema(BaseModel):
+    __doc__ = Contribuicao.__doc__
     model_config = ConfigDict(from_attributes=True)
     tipo_contribuicao: int = Field(
         title="Tipo de contribuição", description=Contribuicao.tipo_contribuicao.comment
@@ -90,6 +91,7 @@ class ContribuicaoSchema(BaseModel):
 
 
 class ConsolidacaoSchema(BaseModel):
+    __doc__ = Consolidacao.__doc__
     model_config = ConfigDict(from_attributes=True)
     data_inicio_registro: date = Field(
         title="Data de início do registro",
@@ -116,6 +118,7 @@ class ConsolidacaoSchema(BaseModel):
 
 
 class PlanoTrabalhoSchema(BaseModel):
+    __doc__ = PlanoTrabalho.__doc__
     model_config = ConfigDict(from_attributes=True)
     cod_SIAPE_instituidora: int = Field(
         title="Código SIAPE da organização que instituiu o PGD",
@@ -189,6 +192,7 @@ class PlanoTrabalhoSchema(BaseModel):
 
 
 class EntregaSchema(BaseModel):
+    __doc__ = Entrega.__doc__
     model_config = ConfigDict(from_attributes=True)
     id_entrega: int = Field(
         title="Id da entrega",
@@ -255,6 +259,7 @@ class EntregaSchema(BaseModel):
 
 
 class PlanoEntregasSchema(BaseModel):
+    __doc__ = PlanoEntregas.__doc__
     model_config = ConfigDict(from_attributes=True)
     cod_SIAPE_instituidora: int = Field(
         title="Código SIAPE da organização que instituiu o PGD",
@@ -356,6 +361,7 @@ class PlanoEntregasSchema(BaseModel):
 
 
 class StatusParticipanteSchema(BaseModel):
+    __doc__ = StatusParticipante.__doc__
     model_config = ConfigDict(from_attributes=True)
     cod_SIAPE_instituidora: int = Field(
         title="Código SIAPE da organização que instituiu o PGD",
@@ -433,6 +439,8 @@ class StatusParticipanteSchema(BaseModel):
 
 
 class ListaStatusParticipanteSchema(BaseModel):
+    """Lista de status do participante.
+    """
     model_config = ConfigDict(from_attributes=True)
     lista_status: List[StatusParticipanteSchema] = Field(
         title="Contribuições",
