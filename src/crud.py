@@ -2,7 +2,7 @@
 """
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from sqlalchemy.sql import text
 from sqlalchemy.exc import IntegrityError
 import models, schemas
@@ -147,6 +147,24 @@ async def get_plano_entregas(
         return db_plano_entrega
     return None
 
+async def get_latest_plano_entregas_unidade(
+    db_session: DbContextManager,
+    cod_SIAPE_instituidora: int,
+    cod_SIAPE_unidade_plano: int,
+):
+    "Traz os status do participante a partir do banco de dados."
+    async with db_session as session:
+        result = await session.execute(
+            select(models.PlanoEntregas)
+            .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
+            .filter_by(cod_SIAPE_unidade_plano=cod_SIAPE_unidade_plano)
+            .order_by(desc(models.PlanoEntregas.data_inicio_plano_entregas))
+        )
+        db_latest_plano_entregas_unidade = result.unique().scalar_one_or_none()
+    if db_latest_plano_entregas_unidade:
+        # return db_latest_plano_entregas_unidade
+        return schemas.PlanoEntregasSchema.model_validate(db_latest_plano_entregas_unidade)
+    return None
 
 async def create_plano_entregas(
     db_session: DbContextManager,

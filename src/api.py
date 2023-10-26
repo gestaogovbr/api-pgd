@@ -282,7 +282,6 @@ async def create_or_update_plano_entregas(
                         plano_entregas.data_termino_plano_entregas
                         > db_latest_plano.data_inicio_plano_entregas
                     ):
-                        print ("testes")
                         detail_msg = (
                             "Já existe um plano de entregas para este "
                             "cod_SIAPE_unidade_plano no período informado."
