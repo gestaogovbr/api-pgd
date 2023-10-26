@@ -4,10 +4,10 @@ from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.sql import text
-
+from sqlalchemy.exc import IntegrityError
 import models, schemas
 from db_config import DbContextManager, SyncSession
-
+from fastapi import HTTPException
 
 async def get_plano_trabalho(
     db_session: DbContextManager,
@@ -49,6 +49,7 @@ async def create_plano_trabalho(
         models.Contribuicao(**contribuicao.model_dump())
         for contribuicao in plano_trabalho.contribuicoes
     ]
+
     consolidacoes = [
         models.Consolidacao(**consolidacao.model_dump())
         for consolidacao in plano_trabalho.consolidacoes
@@ -69,7 +70,13 @@ async def create_plano_trabalho(
             session.add(consolidacao)
             db_plano_trabalho.consolidacoes.append(consolidacao)
         session.add(db_plano_trabalho)
-        await session.commit()
+        try:
+            await session.commit()
+        except IntegrityError as e:
+            raise HTTPException(status_code=422,
+                                detail="Referência a tabela entrega não encontrada") from e
+
+
         # db_session.refresh(db_plano_trabalho)
     # return schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho)
 
