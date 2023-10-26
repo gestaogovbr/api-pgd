@@ -231,12 +231,22 @@ def test_create_plano_trabalho_id_entrega_check(
         headers=header_usr_1,
     )
 
+    print (tipo_contribuicao)
+    print (id_entrega)
+    print (response.text)
     if tipo_contribuicao == 1 and id_entrega is None:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
             "O campo id_entrega é obrigatório quando tipo_contribuicao "
             "tiver o valor 1."
         )
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
+    elif tipo_contribuicao == 2 and id_entrega:
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_message = "Não se deve informar id_entrega quando tipo_contribuicao == 2"
         assert any(
             f"Value error, {detail_message}" in error["msg"]
             for error in response.json().get("detail")
