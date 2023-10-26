@@ -885,13 +885,13 @@ def test_create_pt_invalid_tipo_contribuicao(
 @pytest.mark.parametrize(
     "id_plano_trabalho_participante, tipo_contribuicao, id_plano_entrega_unidade, id_entrega",
     [
-        (120, 1, None, None),
+        (120, 1, 1, None),
         (121, 1, 1, 1),
         (121, 1, 1, 999),  # id_entrega não existente
         (122, 1, 999, 1),  # id_plano_entrega_unidade não existente
-        (123, 2, None, None),
+        (123, 2, 1, None),
         (124, 2, 1, 1),
-        (125, 3, None, None),
+        (125, 3, 1, None),
         (126, 3, 1, 1),
     ],
 )
@@ -951,7 +951,10 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
         if not id_entrega:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = "O campo id_entrega é obrigatório quando tipo_contribuicao tiver o valor 1"
-            assert response.json().get("detail", None) == detail_message
+            assert any(
+                f"Value error, {detail_message}" in error["msg"]
+                for error in response.json().get("detail")
+            )
         elif (
             id_plano_entrega_unidade != id_plano_entrega_existente
             or id_entrega not in ids_entregas_existentes
@@ -959,12 +962,16 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
             # TODO: Verificar impacto no desempenho com grande volume de requisições
             # e se pode ser aproveitada a verificação de FK no banco
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_message = "Referência a id_entrega não encontrada"
-            assert response.json().get("detail", None) == detail_message
+            detail_message = "Referência a tabela entrega não encontrada"
+            assert detail_message in response.json().get("detail")
+
     elif tipo_contribuicao == 2 and id_entrega:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "Não se deve informar id_entrega quando tipo_contribuicao == 2"
-        assert response.json().get("detail", None) == detail_message
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
