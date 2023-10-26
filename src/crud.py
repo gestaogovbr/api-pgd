@@ -60,6 +60,7 @@ async def create_plano_trabalho(
     async with db_session as session:
         for contribuicao in contribuicoes:
             contribuicao.data_insercao = creation_timestamp
+            contribuicao.id_plano_entrega_unidade = plano_trabalho.id_plano_entrega_unidade
             session.add(contribuicao)
             db_plano_trabalho.contribuicoes.append(contribuicao)
             db_plano_trabalho.contribuicoes = contribuicoes
