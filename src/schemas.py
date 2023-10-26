@@ -190,6 +190,19 @@ class PlanoTrabalhoSchema(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def consolidacao_must_be_in_period(self):
+        if any(
+            (consolidacao.data_inicio_registro < self.data_inicio_plano)
+            or (consolidacao.data_fim_registro > self.data_termino_plano)
+            for consolidacao in self.consolidacoes
+        ):
+            raise ValueError(
+                "Data de início e de fim de registro devem ser maiores ou "
+                "iguais que a Data de início do Plano de Trabalho."
+            )
+        return self
+
 
 class EntregaSchema(BaseModel):
     __doc__ = Entrega.__doc__
@@ -439,8 +452,8 @@ class StatusParticipanteSchema(BaseModel):
 
 
 class ListaStatusParticipanteSchema(BaseModel):
-    """Lista de status do participante.
-    """
+    """Lista de status do participante."""
+
     model_config = ConfigDict(from_attributes=True)
     lista_status: List[StatusParticipanteSchema] = Field(
         title="Contribuições",

@@ -708,15 +708,19 @@ def test_create_pt_data_consolidacao_out_of_bounds(
         headers=header_usr_1,
     )
     if (
-        data_inicio_registro < data_inicio_plano
-        or data_fim_registro > data_termino_plano
+        date.fromisoformat(data_inicio_registro) < date.fromisoformat(data_inicio_plano)
+    ) or (
+        date.fromisoformat(data_fim_registro) > date.fromisoformat(data_termino_plano)
     ):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_msg = (
+        detail_message = (
             "Data de início e de fim de registro devem ser maiores ou iguais"
             " que a Data de início do Plano de Trabalho."
         )
-        assert response.json().get("detail")[0]["msg"] == detail_msg
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
