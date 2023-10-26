@@ -2,6 +2,7 @@
 """
 
 import os
+from datetime import date, timedelta
 from typing import Union, Optional
 import json
 
@@ -257,6 +258,38 @@ async def create_or_update_plano_entregas(
 
     try:
         if not db_plano_entregas:  # create
+
+            # Verifica se há sobreposição da data de inicio e fim do plano
+            # com planos já existentes
+            db_latest_plano = await crud.get_latest_plano_entregas_unidade(
+                db_session=db,
+                cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+                cod_SIAPE_unidade_plano=plano_entregas.cod_SIAPE_unidade_plano,
+            )
+
+            if db_latest_plano is not None:
+                if (
+                    # se algum dos planos estiver cancelado, não há problema em haver
+                    # sobreposição
+                    not any(plano.cancelado is not False
+                            for plano in (db_latest_plano, plano_entregas))
+                ):
+
+                    if (
+                        plano_entregas.data_inicio_plano_entregas
+                        < db_latest_plano.data_termino_plano_entregas
+                    ) and (
+                        plano_entregas.data_termino_plano_entregas
+                        > db_latest_plano.data_inicio_plano_entregas
+                    ):
+                        print ("testes")
+                        detail_msg = (
+                            "Já existe um plano de entregas para este "
+                            "cod_SIAPE_unidade_plano no período informado."
+                        )
+                        raise HTTPException(
+                            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg
+                        )
             novo_plano_entregas = await crud.create_plano_entregas(
                 db_session=db,
                 plano_entregas=novo_plano_entregas,
