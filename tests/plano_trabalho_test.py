@@ -231,9 +231,6 @@ def test_create_plano_trabalho_id_entrega_check(
         headers=header_usr_1,
     )
 
-    print (tipo_contribuicao)
-    print (id_entrega)
-    print (response.text)
     if tipo_contribuicao == 1 and id_entrega is None:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
