@@ -194,7 +194,8 @@ class PlanoTrabalhoSchema(BaseModel):
     def consolidacao_must_be_in_period(self):
         if any(
             (consolidacao.data_inicio_registro < self.data_inicio_plano)
-            or (consolidacao.data_fim_registro > self.data_termino_plano)
+            # TODO: verificar requisito de negócio
+            # or (consolidacao.data_fim_registro > self.data_termino_plano)
             for consolidacao in self.consolidacoes
         ):
             raise ValueError(
