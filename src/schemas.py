@@ -366,7 +366,9 @@ class PlanoEntregasSchema(BaseModel):
 
     @model_validator(mode="after")
     def must_be_sequential_dates(self) -> "PlanoEntregasSchema":
-        if self.data_avaliacao_plano_entregas < self.data_inicio_plano_entregas:
+        if (self.data_avaliacao_plano_entregas is not None) and (
+            self.data_avaliacao_plano_entregas < self.data_inicio_plano_entregas
+        ):
             raise ValueError(
                 "Data de avaliação do Plano de Entrega deve ser maior ou igual"
                 " que a Data de início do Plano de Entrega."

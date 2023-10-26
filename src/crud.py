@@ -1,13 +1,14 @@
 """Funções para ler, gravar, atualizar ou apagar dados no banco de dados.
 """
-from datetime import datetime
+from datetime import datetime, date
 
-from sqlalchemy import select, desc
+from sqlalchemy import select, and_, or_, func
 from sqlalchemy.sql import text
 from sqlalchemy.exc import IntegrityError
 import models, schemas
 from db_config import DbContextManager, SyncSession
 from fastapi import HTTPException
+
 
 async def get_plano_trabalho(
     db_session: DbContextManager,
@@ -61,7 +62,9 @@ async def create_plano_trabalho(
     async with db_session as session:
         for contribuicao in contribuicoes:
             contribuicao.data_insercao = creation_timestamp
-            contribuicao.id_plano_entrega_unidade = plano_trabalho.id_plano_entrega_unidade
+            contribuicao.id_plano_entrega_unidade = (
+                plano_trabalho.id_plano_entrega_unidade
+            )
             session.add(contribuicao)
             db_plano_trabalho.contribuicoes.append(contribuicao)
             db_plano_trabalho.contribuicoes = contribuicoes
@@ -73,9 +76,9 @@ async def create_plano_trabalho(
         try:
             await session.commit()
         except IntegrityError as e:
-            raise HTTPException(status_code=422,
-                                detail="Referência a tabela entrega não encontrada") from e
-
+            raise HTTPException(
+                status_code=422, detail="Referência a tabela entrega não encontrada"
+            ) from e
 
         # db_session.refresh(db_plano_trabalho)
     # return schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho)
@@ -147,24 +150,47 @@ async def get_plano_entregas(
         return db_plano_entrega
     return None
 
-async def get_latest_plano_entregas_unidade(
+
+async def check_planos_entregas_unidade_per_period(
     db_session: DbContextManager,
     cod_SIAPE_instituidora: int,
     cod_SIAPE_unidade_plano: int,
-):
-    "Traz os status do participante a partir do banco de dados."
+    id_plano_entrega_unidade: int,
+    data_inicio_plano_entregas: date,
+    data_termino_plano_entregas: date,
+) -> bool:
+    """Verifica se há outros Planos de Entrega no período informado."""
     async with db_session as session:
-        result = await session.execute(
-            select(models.PlanoEntregas)
+        query = (
+            select(func.count())
+            .select_from(models.PlanoEntregas)
             .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
             .filter_by(cod_SIAPE_unidade_plano=cod_SIAPE_unidade_plano)
-            .order_by(desc(models.PlanoEntregas.data_inicio_plano_entregas))
+            .filter_by(cancelado=False)
+            .where(
+                and_(
+                    (
+                        models.PlanoEntregas.id_plano_entrega_unidade
+                        != id_plano_entrega_unidade
+                    ),
+                    (
+                        models.PlanoEntregas.data_inicio_plano_entregas
+                        <= data_termino_plano_entregas
+                    ),
+                    (
+                        models.PlanoEntregas.data_termino_plano_entregas
+                        >= data_inicio_plano_entregas
+                    ),
+                )
+            )
         )
-        db_latest_plano_entregas_unidade = result.unique().scalar_one_or_none()
-    if db_latest_plano_entregas_unidade:
-        # return db_latest_plano_entregas_unidade
-        return schemas.PlanoEntregasSchema.model_validate(db_latest_plano_entregas_unidade)
-    return None
+        print(str(query))
+        result = await session.execute(query)
+        count_plano_entregas = result.scalar()
+    if count_plano_entregas > 0:
+        return True
+    return False
+
 
 async def create_plano_entregas(
     db_session: DbContextManager,

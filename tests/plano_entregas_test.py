@@ -300,17 +300,19 @@ def test_create_huge_plano_entregas(
     "cancelado",
     [
         (101, 99, "2023-01-01", "2023-06-30", False),  # igual ao exemplo
-        (102, 99, "2023-07-01", "2023-12-31", False),  # sem sobreposição
+        (102, 99, "2024-01-01", "2024-06-30", False),  # sem sobreposição
         (103, 99, "2022-12-01", "2023-01-31", False),  # sobreposição no início
-        (104, 99, "2023-06-01", "2023-11-30", False),  # sobreposição no fim
+        (104, 99, "2023-12-01", "2024-01-31", False),  # sobreposição no fim
         (105, 99, "2023-02-01", "2023-05-31", False),  # contido no período
-        (106, 99, "2022-12-01", "2023-07-31", False),  # contém o período
-        (105, 100, "2023-02-01", "2023-05-31", False),  # outra unidade
-        (103, 99, "2022-12-01", "2023-01-31", True),  # sobreposição porém um é cancelado
+        (106, 99, "2022-12-01", "2024-01-31", False),  # contém o período
+        (107, 100, "2023-02-01", "2023-05-31", False),  # outra unidade
+        # sobreposição porém um é cancelado
+        (108, 99, "2022-12-01", "2023-01-31", True),
     ],
 )
 def test_create_plano_entregas_overlapping_date_interval(
-    truncate_pe,
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     id_plano_entrega_unidade: int,
     cod_SIAPE_unidade_plano: int,
@@ -329,20 +331,25 @@ def test_create_plano_entregas_overlapping_date_interval(
     conforme especificado nos parâmetros de teste.
     """
     original_pe = input_pe.copy()
-
+    input_pe2 = original_pe.copy()
+    input_pe2["id_plano_entrega_unidade"] = 2
+    input_pe2["data_inicio_plano_entregas"] = "2023-07-01"
+    input_pe2["data_termino_plano_entregas"] = "2023-12-31"
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
-        json=original_pe,
+        f"/plano_entregas/{input_pe2['id_plano_entrega_unidade']}",
+        json=input_pe2,
         headers=header_usr_1,
     )
-    assert response.status_code in (status.HTTP_200_OK, status.HTTP_201_CREATED)
+    assert response.status_code == status.HTTP_201_CREATED
 
     input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
     input_pe["cod_SIAPE_unidade_plano"] = cod_SIAPE_unidade_plano
     input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
     input_pe["data_termino_plano_entregas"] = data_termino_plano_entregas
     input_pe["cancelado"] = cancelado
+    del input_pe["avaliacao_plano_entregas"]
+    del input_pe["data_avaliacao_plano_entregas"]
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
@@ -352,16 +359,20 @@ def test_create_plano_entregas_overlapping_date_interval(
     if (
         # se algum dos planos estiver cancelado, não há problema em haver
         # sobreposição
-        not any((plano.get("cancelado", False) for plano in (input_pe, original_pe)))
+        not cancelado
         and input_pe["cod_SIAPE_unidade_plano"]
         == original_pe["cod_SIAPE_unidade_plano"]
     ):
-        if (
-            date.fromisoformat(input_pe["data_inicio_plano_entregas"])
-            < date.fromisoformat(original_pe["data_termino_plano_entregas"])
-        ) and (
-            date.fromisoformat(input_pe["data_termino_plano_entregas"])
-            > date.fromisoformat(original_pe["data_inicio_plano_entregas"])
+        if any(
+            (
+                date.fromisoformat(input_pe["data_inicio_plano_entregas"])
+                < date.fromisoformat(existing_pe["data_termino_plano_entregas"])
+            )
+            and (
+                date.fromisoformat(input_pe["data_termino_plano_entregas"])
+                > date.fromisoformat(existing_pe["data_inicio_plano_entregas"])
+            )
+            for existing_pe in (original_pe, input_pe2)
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_msg = (
