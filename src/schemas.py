@@ -192,7 +192,7 @@ class PlanoTrabalhoSchema(BaseModel):
 
     @model_validator(mode="after")
     def consolidacao_must_be_in_period(self):
-        if any(
+        if self.consolidacoes is not None and any(
             (consolidacao.data_inicio_registro < self.data_inicio_plano)
             # TODO: verificar requisito de negócio
             # or (consolidacao.data_fim_registro > self.data_termino_plano)
