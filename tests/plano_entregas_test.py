@@ -364,6 +364,7 @@ def test_create_plano_entregas_overlapping_date_interval(
         # se algum dos planos estiver cancelado, não há problema em haver
         # sobreposição
         not cancelado
+        # se são unidades diferentes, não há problema em haver sobreposição
         and input_pe["cod_SIAPE_unidade_plano"]
         == original_pe["cod_SIAPE_unidade_plano"]
     ):
