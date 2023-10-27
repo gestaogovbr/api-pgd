@@ -140,6 +140,26 @@ async def create_or_update_plano_trabalho(
             status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
         ) from exception
 
+    # Verifica se há sobreposição da data de inicio e fim do plano
+    # com planos já existentes
+    conflicting_period = await crud.check_planos_trabalho_per_period(
+        db_session=db,
+        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+        cod_SIAPE_unidade_exercicio=plano_trabalho.cod_SIAPE_unidade_exercicio,
+        cpf_participante=plano_trabalho.cpf_participante,
+        id_plano_trabalho_participante=plano_trabalho.id_plano_trabalho_participante,
+        data_inicio_plano=plano_trabalho.data_inicio_plano,
+        data_termino_plano=plano_trabalho.data_termino_plano,
+    )
+
+    if conflicting_period and not plano_trabalho.cancelado:
+        detail_msg = (
+            "Já existe um plano de trabalho para este "
+            "cod_SIAPE_unidade_exercicio para este cpf_participante "
+            "no período informado."
+        )
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
+
     # Verifica se já existe
     db_plano_trabalho = await crud.get_plano_trabalho(
         db_session=db,

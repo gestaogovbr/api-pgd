@@ -427,29 +427,35 @@ def test_create_huge_plano_trabalho(
 @pytest.mark.parametrize(
     "id_plano_trabalho_participante, cod_SIAPE_unidade_exercicio, "
     "cpf_participante, "
-    "data_inicio_plano, data_termino_plano",
+    "data_inicio_plano, data_termino_plano, "
+    "cancelado",
     [
-        (101, 99, 64635210600, "2023-01-01", "2023-01-15"),  # igual ao exemplo
-        (102, 99, 64635210600, "2023-01-06", "2023-01-31"),  # sem sobreposição
-        (103, 99, 64635210600, "2022-12-01", "2023-01-08"),  # sobreposição no início
-        (104, 99, 64635210600, "2023-01-09", "2023-01-31"),  # sobreposição no fim
-        (105, 99, 64635210600, "2023-01-02", "2023-01-08"),  # contido no período
-        (106, 99, 64635210600, "2022-12-31", "2023-01-16"),  # contém o período
-        (105, 100, 64635210600, "2023-01-01", "2023-01-15"),  # outra unidade
-        (105, 99, 82893311776, "2023-01-01", "2023-01-15"),  # outro participante
-        (105, 100, 82893311776, "2023-01-01", "2023-01-15"),  # ambos diferentes
+        (101, 99, 64635210600, "2023-01-01", "2023-01-15", False),  # igual ao exemplo
+        (102, 99, 64635210600, "2023-02-01", "2023-02-15", False),  # sem sobreposição
+        # sobreposição no início
+        (103, 99, 64635210600, "2022-12-01", "2023-01-08", False),
+        # sobreposição no fim
+        (104, 99, 64635210600, "2023-01-30", "2023-02-15", False),
+        (105, 99, 64635210600, "2023-01-02", "2023-01-08", False),  # contido no período
+        (106, 99, 64635210600, "2022-12-31", "2023-01-16", False),  # contém o período
+        (107, 99, 64635210600, "2022-12-01", "2023-01-08", True),  # cancelado
+        (108, 100, 64635210600, "2023-01-01", "2023-01-15", False),  # outra unidade
+        (109, 99, 82893311776, "2023-01-01", "2023-01-15", False),  # outro participante
+        (110, 100, 82893311776, "2023-01-01", "2023-01-15", False),  # ambos diferentes
     ],
 )
 def test_create_plano_trabalho_overlapping_date_interval(
     truncate_pe,  # pylint: disable=unused-argument
     truncate_pt,  # pylint: disable=unused-argument
     example_pe,  # pylint: disable=unused-argument
+    example_pt,  # pylint: disable=unused-argument
     input_pt: dict,
     id_plano_trabalho_participante: int,
     cod_SIAPE_unidade_exercicio: int,
     cpf_participante: int,
     data_inicio_plano: str,
     data_termino_plano: str,
+    cancelado: bool,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
@@ -463,22 +469,33 @@ def test_create_plano_trabalho_overlapping_date_interval(
     especificado nos parâmetros de teste.
     """
     original_pt = input_pt.copy()
-
+    input_pt2 = original_pt.copy()
+    input_pt2["id_plano_trabalho_participante"] = 556
+    input_pt2["data_inicio_plano"] = "2023-01-16"
+    input_pt2["data_termino_plano"] = "2023-01-31"
+    input_pt2["consolidacoes"] = [
+        {
+            "data_inicio_registro": "2023-01-16",
+            "data_fim_registro": "2023-01-23",
+            "avaliacao_plano_trabalho": 5,
+        }
+    ]
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
-        json=original_pt,
+        f"/plano_trabalho/{input_pt2['id_plano_trabalho_participante']}",
+        json=input_pt2,
         headers=header_usr_1,
     )
 
-    assert response.status_code in (status.HTTP_200_OK, status.HTTP_201_CREATED)
+    assert response.status_code == status.HTTP_201_CREATED
 
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["cod_SIAPE_unidade_exercicio"] = cod_SIAPE_unidade_exercicio
     input_pt["cpf_participante"] = cpf_participante
     input_pt["data_inicio_plano"] = data_inicio_plano
     input_pt["data_termino_plano"] = data_termino_plano
-
+    input_pt["cancelado"] = cancelado
+    input_pt["consolidacoes"] = []
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
@@ -487,24 +504,28 @@ def test_create_plano_trabalho_overlapping_date_interval(
     )
 
     if (
+        # se algum dos planos estiver cancelado, não há problema em haver
+        # sobreposição
+        not cancelado
         # se são unidades diferentes, não há problema em haver sobreposição
-        (
+        and (
             input_pt["cod_SIAPE_unidade_exercicio"]
             == original_pt["cod_SIAPE_unidade_exercicio"]
         )
         # se são participantes diferentes, não há problema em haver
         # sobreposição
         and (input_pt["cpf_participante"] == original_pt["cpf_participante"])
-        # se algum dos planos estiver cancelado, não há problema em haver
-        # sobreposição
-        and any((plano.get("cancelado", False) for plano in (input_pt, original_pt)))
     ):
-        if (
-            date(input_pt["data_inicio_plano"])
-            < date(original_pt["data_termino_plano"])
-        ) and (
-            date(input_pt["data_termino_plano"])
-            > date(original_pt["data_inicio_plano"])
+        if any(
+            (
+                date.fromisoformat(input_pt["data_inicio_plano"])
+                < date.fromisoformat(existing_pt["data_termino_plano"])
+            )
+            and (
+                date.fromisoformat(input_pt["data_termino_plano"])
+                > date.fromisoformat(existing_pt["data_inicio_plano"])
+            )
+            for existing_pt in (original_pt, input_pt2)
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_msg = (
@@ -513,10 +534,14 @@ def test_create_plano_trabalho_overlapping_date_interval(
                 "no período informado."
             )
             assert response.json().get("detail", None) == detail_msg
-            return
-
-    assert response.status_code == status.HTTP_201_CREATED
-    assert_equal_plano_trabalho(response.json(), input_pt)
+        else:
+            # não há sobreposição de datas
+            assert response.status_code == status.HTTP_201_CREATED
+            assert_equal_plano_trabalho(response.json(), input_pt)
+    else:
+        # um dos planos está cancelado, deve ser criado
+        assert response.status_code == status.HTTP_201_CREATED
+        assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 @pytest.mark.parametrize(

@@ -28,6 +28,48 @@ async def get_plano_trabalho(
     return None
 
 
+async def check_planos_trabalho_per_period(
+    db_session: DbContextManager,
+    cod_SIAPE_instituidora: int,
+    cod_SIAPE_unidade_exercicio: int,
+    cpf_participante: str,
+    id_plano_trabalho_participante: int,
+    data_inicio_plano: date,
+    data_termino_plano: date,
+) -> bool:
+    """Verifica se há outros Planos de Trabalho no período informado."""
+    async with db_session as session:
+        query = (
+            select(func.count())
+            .select_from(models.PlanoTrabalho)
+            .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
+            .filter_by(cod_SIAPE_unidade_exercicio=cod_SIAPE_unidade_exercicio)
+            .filter_by(cpf_participante=cpf_participante)
+            .filter_by(cancelado=False)
+            .where(
+                and_(
+                    (
+                        models.PlanoTrabalho.id_plano_trabalho_participante
+                        != id_plano_trabalho_participante
+                    ),
+                    (
+                        models.PlanoTrabalho.data_inicio_plano
+                        <= data_termino_plano
+                    ),
+                    (
+                        models.PlanoTrabalho.data_termino_plano
+                        >= data_inicio_plano
+                    ),
+                )
+            )
+        )
+        result = await session.execute(query)
+        count_plano_trabalho = result.scalar()
+    if count_plano_trabalho > 0:
+        return True
+    return False
+
+
 async def create_plano_trabalho(
     db_session: DbContextManager,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
