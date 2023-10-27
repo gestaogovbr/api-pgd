@@ -261,6 +261,51 @@ def test_create_huge_plano_entregas(
         for attribute in attributes
         for id_entrega, entrega in input_by_entrega.items()
     )
+@pytest.mark.parametrize(
+    "id_plano_entrega_unidade, nome_entrega, nome_demandante, nome_destinatario",
+    [
+        (1, "x" * 301, "string", "string"),
+        (2, "string", "x" * 301, "string"),
+        (3, "string", "string", "x" * 301),
+        (4, "x" * 300, "x" * 300, "x" * 300),
+    ],
+)
+def test_create_pe_exceed_string_max_size(
+    input_pe: dict,
+    id_plano_entrega_unidade: int,
+    nome_entrega: str, # 300 caracteres
+    nome_demandante: str, # 300 de caracteres
+    nome_destinatario: str,  # 300 de caracteres
+    user1_credentials: dict,
+    header_usr_1: dict,
+    truncate_pe,
+    client: Client,
+    str_max_size: int = 300,
+):
+    """Testa a criação de um plano de entregas excedendo o tamanho
+       máximo de cada campo"""
+
+    input_pe['id_plano_entrega_unidade'] = id_plano_entrega_unidade
+    input_pe["entregas"][0]["nome_entrega"] = nome_entrega  # 300 caracteres
+    input_pe["entregas"][0]["nome_demandante"] = nome_demandante  # 300 de caracteres
+    input_pe["entregas"][0]["nome_destinatario"] = nome_destinatario  # 300 de caracteres
+
+    response = client.put(
+    f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+    f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+    json=input_pe,
+    headers=header_usr_1,
+    )
+
+    if any(
+        len(campo) > str_max_size
+        for campo in (nome_entrega, nome_demandante, nome_destinatario)
+    ):
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_message="String should have at most 300 characters"
+        assert response.json().get("detail")[0]["msg"] == detail_message
+    else:
+        assert response.status_code == status.HTTP_201_CREATED
 
 
 # TODO: verbo PATCH poderá ser implementado em versão futura.abs
