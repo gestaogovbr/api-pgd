@@ -116,21 +116,6 @@ async def update_plano_trabalho(
         await session.delete(db_plano_trabalho)
         await session.commit()
     return await create_plano_trabalho(db_session, plano_trabalho)
-    # for k, _ in plano_trabalho.__dict__.items():
-    #     if k[0] != "_" and k != "atividades":
-    #         setattr(db_plano_trabalho, k, getattr(plano_trabalho, k))
-    # for atividade in db_plano_trabalho.atividades:
-    #     db.delete(atividade)
-    # db.commit()
-    # sa_atividades = [
-    #     models.Atividade(cod_unidade=cod_unidade, **a.dict())
-    #     for a in plano_trabalho.atividades
-    # ]
-    # for atividade in sa_atividades:
-    #     db_plano_trabalho.atividades.append(atividade)
-    # db.commit()
-    # db.refresh(db_plano_trabalho)
-    # return db_plano_trabalho
 
 
 async def get_plano_entregas(
