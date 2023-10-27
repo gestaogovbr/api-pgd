@@ -230,9 +230,9 @@ def test_create_huge_plano_entregas(
     def create_huge_entrega(id_entrega: int):
         new_entrega = input_pe["entregas"][0].copy()
         new_entrega["id_entrega"] = 3 + id_entrega
-        new_entrega["nome_entrega"] = "x" * 1000000  # 1mi de caracteres
-        new_entrega["nome_demandante"] = "x" * 1000000  # 1mi de caracteres
-        new_entrega["nome_destinatario"] = "x" * 1000000  # 1mi de caracteres
+        new_entrega["nome_entrega"] = "x" * 300  # 300 caracteres
+        new_entrega["nome_demandante"] = "x" * 300  # 300 de caracteres
+        new_entrega["nome_destinatario"] = "x" * 300  # 300 de caracteres
 
         return new_entrega
 

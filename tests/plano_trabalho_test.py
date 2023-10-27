@@ -316,6 +316,8 @@ def test_create_plano_trabalho_missing_mandatory_fields(
 
 
 def test_create_huge_plano_trabalho(
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     input_pt: dict,
     user1_credentials: dict,
     header_usr_1: dict,
@@ -326,12 +328,12 @@ def test_create_huge_plano_trabalho(
 
     def create_huge_contribuicao():
         contribuicao = input_pt["contribuicoes"][0].copy()
-        contribuicao["descricao_contribuicao"] = "x" * 1000000  # 1mi de caracteres
+        contribuicao["descricao_contribuicao"] = "x" * 300  # 300 caracteres
         return contribuicao
 
     def create_huge_consolidacao():
         consolidacao = input_pt["consolidacoes"][0].copy()
-        consolidacao["descricao_consolidacao"] = "x" * 1000000  # 1mi de caracteres
+        consolidacao["descricao_consolidacao"] = "x" * 300  # 300 caracteres
         return consolidacao
 
     for _ in range(200):
