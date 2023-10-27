@@ -697,7 +697,7 @@ def test_create_pt_data_consolidacao_out_of_bounds(
     """
     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
     input_pt["data_inicio_plano"] = data_inicio_plano
-    input_pt["data_termino_plano"] = "2025-01-01"
+    input_pt["data_termino_plano"] = data_termino_plano
     input_pt["consolidacoes"][0]["data_inicio_registro"] = data_inicio_registro
     input_pt["consolidacoes"][0]["data_fim_registro"] = data_fim_registro
 
@@ -714,8 +714,8 @@ def test_create_pt_data_consolidacao_out_of_bounds(
     ):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
-            "Data de início e de fim de registro devem ser maiores ou iguais"
-            " que a Data de início do Plano de Trabalho."
+            "Data de início e de fim de registro devem estar contidos no "
+            "período do Plano de Trabalho."
         )
         assert any(
             f"Value error, {detail_message}" in error["msg"]

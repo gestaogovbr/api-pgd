@@ -194,13 +194,12 @@ class PlanoTrabalhoSchema(BaseModel):
     def consolidacao_must_be_in_period(self):
         if self.consolidacoes is not None and any(
             (consolidacao.data_inicio_registro < self.data_inicio_plano)
-            # TODO: verificar requisito de negócio
-            # or (consolidacao.data_fim_registro > self.data_termino_plano)
+            or (consolidacao.data_fim_registro > self.data_termino_plano)
             for consolidacao in self.consolidacoes
         ):
             raise ValueError(
-                "Data de início e de fim de registro devem ser maiores ou "
-                "iguais que a Data de início do Plano de Trabalho."
+                "Data de início e de fim de registro devem estar contidos "
+                "no período do Plano de Trabalho."
             )
         return self
 
