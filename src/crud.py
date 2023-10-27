@@ -184,7 +184,6 @@ async def check_planos_entregas_unidade_per_period(
                 )
             )
         )
-        print(str(query))
         result = await session.execute(query)
         count_plano_entregas = result.scalar()
     if count_plano_entregas > 0:
