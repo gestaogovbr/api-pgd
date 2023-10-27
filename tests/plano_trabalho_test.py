@@ -349,6 +349,45 @@ def test_create_huge_plano_trabalho(
 
     assert response.status_code == status.HTTP_201_CREATED
 
+@pytest.mark.parametrize(
+    "id_plano_trabalho_participante, descricao_contribuicao",
+    [
+        (1, "x" * 301), # ultrapassa o max_length
+        (2, "x" * 300), # limite do max_length
+    ],
+)
+def test_create_pt_exceed_string_max_size(
+    truncate_pe,  # pylint: disable=unused-argument
+    truncate_pt,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
+    input_pt: dict,
+    id_plano_trabalho_participante: int,
+    descricao_contribuicao: str, # 300 caracteres
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
+    str_max_size: int = 300,
+):
+    """Testa a criação de um plano de entregas excedendo o tamanho
+       máximo de cada campo"""
+
+    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
+    input_pt["contribuicoes"][0]["descricao_contribuicao"] = descricao_contribuicao  # 300 caracteres
+
+    response = client.put(
+    f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+    f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+    json=input_pt,
+    headers=header_usr_1,
+    )
+    print (response.text)
+
+    if len(descricao_contribuicao) > str_max_size:
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_message="String should have at most 300 characters"
+        assert response.json().get("detail")[0]["msg"] == detail_message
+    else:
+        assert response.status_code == status.HTTP_201_CREATED
 
 # TODO: Verbo PATCH poderá ser implementado em versão futura.
 #
