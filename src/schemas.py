@@ -51,6 +51,7 @@ class ContribuicaoSchema(BaseModel):
     descricao_contribuicao: Optional[str] = Field(
         default=None,
         title="Descrição da Contribuição",
+        max_length=300,
         description=Contribuicao.descricao_contribuicao.comment,
     )
     id_entrega: Optional[int] = Field(
@@ -216,7 +217,9 @@ class EntregaSchema(BaseModel):
         title="Id da entrega",
     )
     nome_entrega: str = Field(
-        title="Nome da entrega", description=Entrega.nome_entrega.comment
+        title="Nome da entrega",
+        max_length=300,
+        description=Entrega.nome_entrega.comment
     )
     meta_entrega: int = Field(
         title="Meta estipulada na inclusão no plano",
@@ -226,10 +229,12 @@ class EntregaSchema(BaseModel):
     nome_vinculacao_cadeia_valor: Optional[str] = Field(
         default=None,
         title="Nome da vinculação de cadeia de valor",
+        max_length=300,
         description=Entrega.nome_vinculacao_cadeia_valor.comment,
     )
     nome_vinculacao_planejamento: Optional[str] = Field(
         default=None,
+        max_length=300,
         title="Nome da vinculação do planejamento",
         description=Entrega.nome_vinculacao_planejamento.comment,
     )
@@ -249,11 +254,13 @@ class EntregaSchema(BaseModel):
     nome_demandante: Optional[str] = Field(
         default=None,
         title="Nome do demandante",
+        max_length=300,
         description=Entrega.nome_demandante.comment,
     )
     nome_destinatario: Optional[str] = Field(
         default=None,
         title="Nome do destinatário",
+        max_length=300,
         description=Entrega.nome_destinatario.comment,
     )
 
