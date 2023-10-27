@@ -335,6 +335,8 @@ def test_create_plano_entregas_overlapping_date_interval(
     input_pe2["id_plano_entrega_unidade"] = 2
     input_pe2["data_inicio_plano_entregas"] = "2023-07-01"
     input_pe2["data_termino_plano_entregas"] = "2023-12-31"
+    for entrega in input_pe2["entregas"]:
+        entrega["data_entrega"] = "2023-12-31"
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_entregas/{input_pe2['id_plano_entrega_unidade']}",
@@ -348,6 +350,8 @@ def test_create_plano_entregas_overlapping_date_interval(
     input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
     input_pe["data_termino_plano_entregas"] = data_termino_plano_entregas
     input_pe["cancelado"] = cancelado
+    for entrega in input_pe["entregas"]:
+        entrega["data_entrega"] = data_termino_plano_entregas
     del input_pe["avaliacao_plano_entregas"]
     del input_pe["data_avaliacao_plano_entregas"]
     response = client.put(
@@ -561,12 +565,12 @@ def test_create_pe_invalid_period(
     ],
 )
 def test_create_data_entrega_out_of_bounds(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     id_plano_entrega_unidade: int,
     data_inicio_plano_entregas: str,
     data_termino_plano_entregas: str,
     data_entrega: str,
-    truncate_pe,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
@@ -575,7 +579,8 @@ def test_create_data_entrega_out_of_bounds(
     input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
     input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
     input_pe["data_termino_plano_entregas"] = data_termino_plano_entregas
-    input_pe["entregas"][0]["data_entrega"] = data_entrega
+    for entrega in input_pe["entregas"]:
+        entrega["data_entrega"] = data_entrega
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
@@ -583,11 +588,12 @@ def test_create_data_entrega_out_of_bounds(
         json=input_pe,
         headers=header_usr_1,
     )
-    if (
-        data_entrega < data_inicio_plano_entregas
-        or data_entrega > data_termino_plano_entregas
+    if date.fromisoformat(data_entrega) < date.fromisoformat(
+        data_inicio_plano_entregas
+    ) or date.fromisoformat(data_entrega) > date.fromisoformat(
+        data_termino_plano_entregas
     ):
-        assert response.status_code == 422
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
             "Data de entrega precisa estar dentro do intervalo entre início "
             "e término do Plano de Entregas."

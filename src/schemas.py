@@ -375,6 +375,19 @@ class PlanoEntregasSchema(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def must_be_in_period(self) -> "PlanoEntregasSchema":
+        if any(
+            entrega.data_entrega < self.data_inicio_plano_entregas
+            or entrega.data_entrega > self.data_termino_plano_entregas
+            for entrega in self.entregas
+        ):
+            raise ValueError(
+                "Data de entrega precisa estar dentro do intervalo entre "
+                "início e término do Plano de Entregas."
+            )
+        return self
+
 
 class StatusParticipanteSchema(BaseModel):
     __doc__ = StatusParticipante.__doc__
