@@ -203,6 +203,11 @@ class PlanoTrabalhoSchema(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def consolidacao_must_not_overlap(self):
+        # TODO: verify overlap
+        return self
+
 
 class EntregaSchema(BaseModel):
     __doc__ = Entrega.__doc__
