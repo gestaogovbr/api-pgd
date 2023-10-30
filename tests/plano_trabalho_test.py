@@ -326,19 +326,27 @@ def test_create_huge_plano_trabalho(
 ):
     """Testa a criação de um plano de trabalho com grande volume de dados."""
 
+    quantidade_planos = 200
+    data_inicio_plano = date.fromisoformat(input_pt["data_inicio_plano"])
+    data_termino_plano = data_inicio_plano + timedelta(days=quantidade_planos)
+
     def create_huge_contribuicao():
         contribuicao = input_pt["contribuicoes"][0].copy()
         contribuicao["descricao_contribuicao"] = "x" * 300  # 300 caracteres
         return contribuicao
 
-    def create_huge_consolidacao():
+    def create_huge_consolidacao(day: int):
         consolidacao = input_pt["consolidacoes"][0].copy()
         consolidacao["descricao_consolidacao"] = "x" * 300  # 300 caracteres
+        data = (data_inicio_plano + timedelta(days=day)).isoformat()
+        consolidacao["data_inicio_registro"] = consolidacao["data_fim_registro"] = data
         return consolidacao
 
-    for _ in range(200):
+    # prepara a data fim para caber todas as contribuições
+    input_pt["data_termino_plano"] = data_termino_plano.isoformat()
+    for day in range(quantidade_planos):
         input_pt["contribuicoes"].append(create_huge_contribuicao())
-        input_pt["consolidacoes"].append(create_huge_consolidacao())
+        input_pt["consolidacoes"].append(create_huge_consolidacao(day=day))
 
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
