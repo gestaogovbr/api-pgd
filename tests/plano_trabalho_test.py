@@ -584,11 +584,11 @@ def test_create_plano_trabalho_overlapping_date_interval(
         if any(
             (
                 date.fromisoformat(input_pt["data_inicio_plano"])
-                < date.fromisoformat(existing_pt["data_termino_plano"])
+                <= date.fromisoformat(existing_pt["data_termino_plano"])
             )
             and (
                 date.fromisoformat(input_pt["data_termino_plano"])
-                > date.fromisoformat(existing_pt["data_inicio_plano"])
+                >= date.fromisoformat(existing_pt["data_inicio_plano"])
             )
             for existing_pt in (original_pt, input_pt2)
         ):
