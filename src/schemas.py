@@ -206,7 +206,22 @@ class PlanoTrabalhoSchema(BaseModel):
 
     @model_validator(mode="after")
     def consolidacao_must_not_overlap(self):
-        # TODO: verify overlap
+        if self.consolidacoes is None:
+            return self
+        consolidacoes = sorted(
+            self.consolidacoes,
+            key=lambda consolidacao: consolidacao.data_inicio_registro,
+        )
+        # parear de 2 a 2
+        for consolidacao1, consolidacao2 in zip(consolidacoes[:-1], consolidacoes[1:]):
+            if (
+                consolidacao1.data_inicio_registro < consolidacao2.data_fim_registro
+                and consolidacao1.data_fim_registro > consolidacao2.data_inicio_registro
+            ):
+                raise ValueError(
+                    "Uma ou mais consolidações possuem "
+                    "data_inicio_registro e data_fim_registro sobrepostas."
+                )
         return self
 
 
