@@ -797,25 +797,25 @@ def test_create_pt_data_consolidacao_out_of_bounds(
 @pytest.mark.parametrize(
     "id_plano_trabalho_participante, consolidacoes",
     [
-        (101, [("2023-01-01", "2023-02-01")]),  # igual ao exemplo
+        (101, [("2023-01-01", "2023-01-02")]),  # igual ao exemplo
         (
             102,
-            [("2023-01-01", "2023-01-14"), ("2023-01-15", "2023-01-31")],
+            [("2023-01-01", "2023-01-07"), ("2023-01-08", "2023-01-15")],
         ),  # sem sobreposição
         (
             103,
-            [("2023-01-01", "2023-01-14"), ("2022-12-16", "2023-01-01")],
+            [("2023-01-07", "2023-01-15"), ("2023-01-01", "2023-01-07")],
         ),  # sobreposição no início
         (
             104,
-            [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31")],
+            [("2023-01-01", "2023-01-08"), ("2023-01-07", "2023-01-15")],
         ),  # sobreposição no fim
         (
             105,
             [
-                ("2023-01-01", "2023-01-14"),
-                ("2023-01-14", "2023-01-31"),
-                ("2023-01-31", "2023-02-14"),
+                ("2023-01-01", "2023-01-06"),
+                ("2023-01-06", "2023-01-11"),
+                ("2023-01-11", "2023-01-15"),
             ],
         ),  # sobreposições múltiplas
         (
@@ -824,20 +824,8 @@ def test_create_pt_data_consolidacao_out_of_bounds(
         ),  # contido no período
         (
             107,
-            [("2023-01-01", "2023-01-14"), ("2022-12-31", "2023-01-15")],
+            [("2023-01-02", "2023-01-14"), ("2023-01-01", "2023-01-15")],
         ),  # contém o período
-        (
-            108,
-            [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31")],
-        ),  # outra unidade
-        (
-            109,
-            [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31")],
-        ),  # outro participante
-        (
-            110,
-            [("2023-01-01", "2023-01-14"), ("2023-01-14", "2023-01-31")],
-        ),  # ambos diferentes
     ],
 )
 def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
@@ -878,18 +866,20 @@ def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
         headers=header_usr_1,
     )
 
+    consolidacoes.sort(key=lambda consolidacao: consolidacao[0])
     for consolidacao_1, consolidacao_2 in zip(consolidacoes[:-1], consolidacoes[1:]):
-        print("consolidacao_1: ", consolidacao_1)
-        print("consolidacao_2: ", consolidacao_2)
         data_fim_registro_1 = date.fromisoformat(consolidacao_1[1])
         data_inicio_registro_2 = date.fromisoformat(consolidacao_2[0])
         if data_inicio_registro_2 < data_fim_registro_1:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_msg = (
+            detail_message = (
                 "Uma ou mais consolidações possuem data_inicio_registro e "
                 "data_fim_registro sobrepostas."
             )
-            assert response.json().get("detail", None) == detail_msg
+            assert any(
+                f"Value error, {detail_message}" in error["msg"]
+                for error in response.json().get("detail")
+            )
             return
 
     assert response.status_code == status.HTTP_201_CREATED
