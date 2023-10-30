@@ -219,7 +219,7 @@ class EntregaSchema(BaseModel):
     nome_entrega: str = Field(
         title="Nome da entrega",
         max_length=300,
-        description=Entrega.nome_entrega.comment
+        description=Entrega.nome_entrega.comment,
     )
     meta_entrega: int = Field(
         title="Meta estipulada na inclusão no plano",
