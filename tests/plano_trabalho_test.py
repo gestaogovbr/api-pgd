@@ -474,18 +474,39 @@ def test_create_pt_exceed_string_max_size(
     "data_inicio_plano, data_termino_plano, "
     "cancelado",
     [
-        (101, 99, 64635210600, "2023-01-01", "2023-01-15", False),  # igual ao exemplo
-        (102, 99, 64635210600, "2023-02-01", "2023-02-15", False),  # sem sobreposição
+        (101, 99, "64635210600", "2023-01-01", "2023-01-15", False),  # igual ao exemplo
+        (102, 99, "64635210600", "2023-02-01", "2023-02-15", False),  # sem sobreposição
         # sobreposição no início
-        (103, 99, 64635210600, "2022-12-01", "2023-01-08", False),
+        (103, 99, "64635210600", "2022-12-01", "2023-01-08", False),
         # sobreposição no fim
-        (104, 99, 64635210600, "2023-01-30", "2023-02-15", False),
-        (105, 99, 64635210600, "2023-01-02", "2023-01-08", False),  # contido no período
-        (106, 99, 64635210600, "2022-12-31", "2023-01-16", False),  # contém o período
-        (107, 99, 64635210600, "2022-12-01", "2023-01-08", True),  # cancelado
-        (108, 100, 64635210600, "2023-01-01", "2023-01-15", False),  # outra unidade
-        (109, 99, 82893311776, "2023-01-01", "2023-01-15", False),  # outro participante
-        (110, 100, 82893311776, "2023-01-01", "2023-01-15", False),  # ambos diferentes
+        (104, 99, "64635210600", "2023-01-30", "2023-02-15", False),
+        (
+            105,
+            99,
+            "64635210600",
+            "2023-01-02",
+            "2023-01-08",
+            False,
+        ),  # contido no período
+        (106, 99, "64635210600", "2022-12-31", "2023-01-16", False),  # contém o período
+        (107, 99, "64635210600", "2022-12-01", "2023-01-08", True),  # cancelado
+        (108, 100, "64635210600", "2023-01-01", "2023-01-15", False),  # outra unidade
+        (
+            109,
+            99,
+            "82893311776",
+            "2023-01-01",
+            "2023-01-15",
+            False,
+        ),  # outro participante
+        (
+            110,
+            100,
+            "82893311776",
+            "2023-01-01",
+            "2023-01-15",
+            False,
+        ),  # ambos diferentes
     ],
 )
 def test_create_plano_trabalho_overlapping_date_interval(
@@ -496,7 +517,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
     input_pt: dict,
     id_plano_trabalho_participante: int,
     cod_SIAPE_unidade_exercicio: int,
-    cpf_participante: int,
+    cpf_participante: str,
     data_inicio_plano: str,
     data_termino_plano: str,
     cancelado: bool,
