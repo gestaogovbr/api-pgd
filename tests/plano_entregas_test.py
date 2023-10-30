@@ -231,8 +231,8 @@ def test_create_huge_plano_entregas(
         new_entrega = input_pe["entregas"][0].copy()
         new_entrega["id_entrega"] = 3 + id_entrega
         new_entrega["nome_entrega"] = "x" * 300  # 300 caracteres
-        new_entrega["nome_demandante"] = "x" * 300  # 300 de caracteres
-        new_entrega["nome_destinatario"] = "x" * 300  # 300 de caracteres
+        new_entrega["nome_demandante"] = "x" * 300  # 300 caracteres
+        new_entrega["nome_destinatario"] = "x" * 300  # 300 caracteres
 
         return new_entrega
 
@@ -274,8 +274,8 @@ def test_create_pe_exceed_string_max_size(
     input_pe: dict,
     id_plano_entrega_unidade: int,
     nome_entrega: str, # 300 caracteres
-    nome_demandante: str, # 300 de caracteres
-    nome_destinatario: str,  # 300 de caracteres
+    nome_demandante: str, # 300 caracteres
+    nome_destinatario: str,  # 300 caracteres
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pe,
@@ -287,8 +287,8 @@ def test_create_pe_exceed_string_max_size(
 
     input_pe['id_plano_entrega_unidade'] = id_plano_entrega_unidade
     input_pe["entregas"][0]["nome_entrega"] = nome_entrega  # 300 caracteres
-    input_pe["entregas"][0]["nome_demandante"] = nome_demandante  # 300 de caracteres
-    input_pe["entregas"][0]["nome_destinatario"] = nome_destinatario  # 300 de caracteres
+    input_pe["entregas"][0]["nome_demandante"] = nome_demandante  # 300 caracteres
+    input_pe["entregas"][0]["nome_destinatario"] = nome_destinatario  # 300 caracteres
 
     response = client.put(
     f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
