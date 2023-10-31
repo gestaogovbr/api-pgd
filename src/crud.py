@@ -73,14 +73,8 @@ async def check_planos_trabalho_per_period(
                         models.PlanoTrabalho.id_plano_trabalho_participante
                         != id_plano_trabalho_participante
                     ),
-                    (
-                        models.PlanoTrabalho.data_inicio_plano
-                        <= data_termino_plano
-                    ),
-                    (
-                        models.PlanoTrabalho.data_termino_plano
-                        >= data_inicio_plano
-                    ),
+                    (models.PlanoTrabalho.data_inicio_plano <= data_termino_plano),
+                    (models.PlanoTrabalho.data_termino_plano >= data_inicio_plano),
                 )
             )
         )
