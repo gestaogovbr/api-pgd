@@ -350,8 +350,21 @@ async def get_status_participante(
     db_session: DbContextManager,
     cod_SIAPE_instituidora: int,
     cpf_participante: str,
-) -> schemas.ListaStatusParticipanteSchema:
-    "Traz os status do participante a partir do banco de dados."
+) -> Optional[schemas.ListaStatusParticipanteSchema]:
+    """Traz os status do participante a partir do banco de dados, consultando
+    a partir dos parâmetros informados.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão async
+            do SQL Alchemy.
+        cod_SIAPE_instituidora (int): Código SIAPE da unidade instituidora.
+        cpf_participante (str): CPF do participante.
+
+    Returns:
+        Optional[schemas.ListaStatusParticipanteSchema]: Lista de Status
+            de Participante, cada item contendo um esquema Pydantic
+            representando um Status de participante. Ou None se não houver.
+    """
     async with db_session as session:
         result = await session.execute(
             select(models.StatusParticipante)
@@ -372,10 +385,19 @@ async def get_status_participante(
 async def create_status_participante(
     db_session: DbContextManager,
     status_participante: schemas.StatusParticipanteSchema,
-):
+) -> schemas.StatusParticipanteSchema:
     """Cria um status de participante definido pelos dados do schema Pydantic
     status_participante.
-    TODO: Possibilitar inserir mais de um registro
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão async
+            do SQL Alchemy.
+        status_participante (schemas.StatusParticipanteSchema): Esquema
+            do Pydantic de um Status de Participante.
+
+    Returns:
+        schemas.StatusParticipanteSchema: Esquema do Pydantic de um Status
+        de Participante dos dados inseridos.
     """
 
     db_status_participante = models.StatusParticipante(
