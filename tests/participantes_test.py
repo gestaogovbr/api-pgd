@@ -58,7 +58,7 @@ def test_put_participante_unidade_nao_permitida(
     (user não é superuser)
     """
     response = client.put(
-        f"/organizacao/2" f"/participante/{input_part['cpf_participante']}",
+        f"/organizacao/2/participante/{input_part['cpf_participante']}",
         json={"lista_status": [input_part]},
         headers=header_usr_1,
     )
@@ -232,6 +232,27 @@ def test_get_participante_inexistente(
     assert (
         response.json().get("detail", None) == "Status de Participante não encontrado"
     )
+
+
+def test_get_participante_unidade_nao_permitida(
+    truncate_participantes,  # pylint: disable=unused-argument
+    input_part: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
+):
+    """
+    Testa ler um participante em outra unidade instituidora
+    (user não é superuser)
+    """
+    response = client.get(
+        f"/organizacao/2/participante/{input_part['cpf_participante']}",
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    detail_msg = "Usuário não tem permissão na cod_SIAPE_instituidora informada"
+    assert response.json().get("detail", None) == detail_msg
 
 
 @pytest.mark.parametrize(

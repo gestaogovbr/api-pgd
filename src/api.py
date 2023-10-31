@@ -327,6 +327,19 @@ async def get_status_participante(
     user: FiefUserInfo = Depends(auth_backend.current_user()),
 ) -> schemas.ListaStatusParticipanteSchema:
     "Consulta o status do participante a partir da matricula SIAPE."
+
+     # Validações de permissão
+    if (
+        cod_SIAPE_instituidora
+        != user["fields"]["cod_SIAPE_instituidora"]
+        # TODO: Dar acesso ao superusuário em todas as unidades.
+        # and "all:write" not in access_token_info["permissions"]
+    ):
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+        )
+
     lista_status_participante = await crud.get_status_participante(
         db_session=db,
         cod_SIAPE_instituidora=user["fields"]["cod_SIAPE_instituidora"],
