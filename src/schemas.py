@@ -459,6 +459,8 @@ class StatusParticipanteSchema(BaseModel):
     @field_validator("matricula_siape")
     @staticmethod
     def siape_validate(matricula_siape: str) -> str:
+        if matricula_siape is None:
+            return matricula_siape
         if len(matricula_siape) != 7:
             raise ValueError("Matrícula SIAPE deve ter 7 dígitos.")
         if len(set(matricula_siape)) < 2:
