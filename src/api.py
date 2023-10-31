@@ -395,13 +395,21 @@ async def create_status_participante(
             status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
         ) from exception
 
-    for status_participante in nova_lista_status_participante.lista_status:
-        await crud.create_status_participante(
-            db_session=db,
-            status_participante=status_participante,
-        )
+    # Gravar no banco de dados e retornar os dados gravados como Pydantic
+    lista_gravada = schemas.ListaStatusParticipanteSchema.model_validate(
+        {
+            "lista_status": [
+                await crud.create_status_participante(
+                    db_session=db,
+                    status_participante=status_participante,
+                )
+                for status_participante in nova_lista_status_participante.lista_status
+            ]
+        }
+    )
+
     response.status_code = status.HTTP_201_CREATED
-    return nova_lista_status_participante
+    return lista_gravada
 
 
 # @app.patch(

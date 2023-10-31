@@ -407,6 +407,8 @@ async def create_status_participante(
     async with db_session as session:
         session.add(db_status_participante)
         await session.commit()
+        await session.refresh(db_status_participante)
+    return schemas.StatusParticipanteSchema.model_validate(db_status_participante)
 
 
 # The following methods are only for test in CI/CD environment
