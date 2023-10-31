@@ -15,7 +15,7 @@ async def get_plano_trabalho(
     db_session: DbContextManager,
     cod_SIAPE_instituidora: int,
     id_plano_trabalho_participante: str,
-) -> Optional[models.PlanoTrabalho]:
+) -> Optional[schemas.PlanoTrabalhoSchema]:
     """Traz um plano de trabalho a partir do banco de dados, consultando
     a partir dos parâmetros informados.
 
@@ -27,7 +27,7 @@ async def get_plano_trabalho(
             participante.
 
     Returns:
-        Optional[models.PlanoTrabalho]: O Plano de Trabalho encontrado
+        Optional[schemas.PlanoTrabalhoSchema]: O Plano de Trabalho encontrado
             ou None.
     """
     async with db_session as session:
@@ -38,7 +38,7 @@ async def get_plano_trabalho(
         )
         db_plano_trabalho = result.unique().scalar_one_or_none()
     if db_plano_trabalho:
-        return db_plano_trabalho
+        return schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho)
     return None
 
 
