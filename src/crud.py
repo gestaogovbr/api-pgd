@@ -1,6 +1,7 @@
 """Funções para ler, gravar, atualizar ou apagar dados no banco de dados.
 """
 from datetime import datetime, date
+from typing import Optional
 
 from sqlalchemy import select, and_, or_, func
 from sqlalchemy.sql import text
@@ -14,8 +15,21 @@ async def get_plano_trabalho(
     db_session: DbContextManager,
     cod_SIAPE_instituidora: int,
     id_plano_trabalho_participante: str,
-):
-    "Traz um plano de trabalho a partir do banco de dados."
+) -> Optional[models.PlanoTrabalho]:
+    """Traz um plano de trabalho a partir do banco de dados, consultando
+    a partir dos parâmetros informados.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão async
+            do SQL Alchemy.
+        cod_SIAPE_instituidora (int): Código SIAPE da unidade instituidora.
+        id_plano_trabalho_participante (str): id do Plano de Trabalho do
+            participante.
+
+    Returns:
+        Optional[models.PlanoTrabalho]: O Plano de Trabalho encontrado
+            ou None.
+    """
     async with db_session as session:
         result = await session.execute(
             select(models.PlanoTrabalho)
@@ -43,8 +57,8 @@ async def check_planos_trabalho_per_period(
     planos de trabalho.
 
     Args:
-        db_session (DbContextManager): Context manager para a sessão
-            async do SQL Alchemy.
+        db_session (DbContextManager): Context manager para a sessão async
+            do SQL Alchemy.
         cod_SIAPE_instituidora (int): Código SIAPE da unidade instituidora.
         cod_SIAPE_unidade_exercicio (int): Código SIAPE da unidade de
             exercício do participante.
