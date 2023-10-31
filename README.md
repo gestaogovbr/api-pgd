@@ -4,6 +4,7 @@ Repositório com o código-fonte da API do Programa de Gestão (PGD).
 
 [![Docker Image Build & CI Tests](https://github.com/gestaogovbr/api-pgd/actions/workflows/ci_tests.yml/badge.svg)](https://github.com/gestaogovbr/api-pgd/actions/workflows/ci_tests.yml)
 
+
 ## Contextualização
 
 O
@@ -26,6 +27,7 @@ O objetivo desta API integradora é receber os dados enviados por diversos
 que operacionalizam o PGD no âmbito de sua organização, de modo a
 possibilitar a sua consolidação em uma base de dados.
 
+
 ## Instalando a API em ambiente de desenvolvimento
 
 1. Instalar Docker CE (as [instruções](https://docs.docker.com/get-docker/)
@@ -37,15 +39,7 @@ possibilitar a sua consolidação em uma base de dados.
     git clone git@github.com:gestaogovbr/api-pgd.git
     ```
 
-3. Dentro da pasta clonada crie o diretório com permissão correta para
-   persistência do PgAdmin:
-
-    ```bash
-    cd api-pgd
-    sudo mkdir -p pgadmin_data && sudo chown -R 5050:5050 ./pgadmin_data/
-    ```
-
-4. **Variáveis de ambiente do Fief**
+3. **Variáveis de ambiente do Fief**
 
    A gestão de usuários é realizada por uma aplicação chamada Fief. Para
    obter as suas configurações iniciais, as quais serão preenchidas no
@@ -66,7 +60,7 @@ possibilitar a sua consolidação em uma base de dados.
    make init-env
    ```
 
-5. Na gestão de usuários e controle de acesso da API é usada a aplicação
+4. Na gestão de usuários e controle de acesso da API é usada a aplicação
    [Fief](https://www.fief.dev/). Para o seu correto funcionamento pela
    interface Swagger UI, é necessário que ela seja alcançável pelo mesmo
    host, tanto no navegador quanto dentro do container. Para isso, em
@@ -78,24 +72,23 @@ possibilitar a sua consolidação em uma base de dados.
    127.0.1.1	fief
    ```
 
-6. Para iniciar a API, suba os containers:
+5. Para iniciar a API, suba os containers:
 
    ```bash
    make up
    ```
 
-   > ⚠️ Caso apareçam erros de permissão em "database" ou "pgadmin", pare
-   > os containers (`ctrl` + `C`) e digite:
+   > ⚠️ Caso apareçam erros de permissão em "database", pare os containers
+   > (`ctrl` + `C`) e digite:
    >
    > ```bash
    > sudo chown -R 999 ./database/
-   > sudo chown -R 5050:5050 ./pgadmin_data/
    > ```
    >
-   > Para ajustar as permissões das pastas `database` e `pgadmin_data` e
-   > todas as suas subpastas
+   > Para ajustar as permissões das pastas `database` e todas as suas
+   > subpastas
 
-7. Por fim, é necessário configurar o Fief para incluir dados necessários
+6. Por fim, é necessário configurar o Fief para incluir dados necessários
    ao funcionamento da API PGD (URI de autenticação, campos personalizados
    de usuários). Use:
 
@@ -107,11 +100,8 @@ possibilitar a sua consolidação em uma base de dados.
 
    * http://localhost:5057 -- A API e sua interface Swagger UI em
      http://localhost:5057/docs para interagir e testar suas funcionalidades
-   * http://localhost:5050 -- A interface do PGAdmin, para caso queira
-     verificar os dados armazenados em ambiente de desenvolvimento
    * http://fief:8000/admin/ -- interface do Fief para cadastro de
      usuários da API e outras configurações
-
 
 
 ### Usuário administrador e cadastro de usuários
@@ -122,7 +112,8 @@ novos usuários.
 
 O usuário e senha desse usuário administrador ficam configurados nas
 variáveis de ambiente `FIEF_MAIN_USER_EMAIL` e `FIEF_MAIN_USER_PASSWORD`
-(vide passos 5 e 6 da configuração do ambiente).
+(vide passos 4 e 5 da configuração do ambiente).
+
 
 ### Ajustando os containers
 
@@ -146,24 +137,20 @@ imagem docker.
     O comando `rebuild` usa o parâmetro `--rm` do comando `docker` para
     remover a imagem criada anteriormente.
 
-    > ⚠️ Obs.: Caso apareça uma mensagem de erro "can't stat" seguido de
-    > uma pasta do Pgadmin, use o comando
-    > `sudo chown -R usuario:usuario ./pgadmin_data/` para devolver a
-    > propriedade da pasta ao seu usuário antes do build do container.
-
 3. Agora a aplicação já pode ser subida novamente:
-
-    ```bash
-    docker-compose up -d
-    ```
-
-    Alternativamente você pode subir a aplicação sem o parâmetro _detached_
-    `-d` possibilitando visualizar o log em tempo real, muito útil durante o
-    desenvolvimento.
 
     ```bash
     make up
     ```
+
+    Alternativamente você pode subir a aplicação sem o parâmetro _detached_
+    `-d` possibilitando visualizar o log em tempo real, muito útil durante o
+    desenvolvimento. Para isso use o comando abaixo:
+
+    ```bash
+    docker compose up
+    ```
+
 
 ## Arquitetura da solução
 
@@ -174,18 +161,14 @@ compõem a solução. Atualmente são utilizados 4 containers:
 * outro rodando a **API**,
 * outro rodando o sistema de gestão de usuários e controle de acesso
   **Fief**, e
-* somente em ambiente de desenvolvimento, há outro contêiner rodando o
-  **PgAdmin** para acessar o Postgres e realizar consultas ou qualquer
-  manipulação no BD. O PgAdmin é útil durante o desenvolvimento e testes
-  para ver o comportamento da API e os dados gerados. Não é necessário ou
-  aconselhável utilizá-lo em ambiente de produção. Quando utilizado o
-  PgAdmin, ele estará rodando em http://localhost:5050.
 
 
 ## Dicas
 
-* Consulte o `docker-compose.yml` para descobrir o login e senha do
-  PgAdmin.
+* Para depuração, caso necessite ver como está o banco de dados no ambiente
+  local, altere a porta do Postgres no `docker-compose.yml` de `"5432"`
+  para `"5432:5432"` e o banco ficará exposto no host. Depois, basta usar
+  uma ferramenta como o DBeaver para acessar o banco.
 * O login e senha do Fief são definidos no item 5 do
   passo a passo em
   "[Instalando a API em ambiente de desenvolvimento](#instalando-a-api-em-ambiente-de-desenvolvimento)".
@@ -197,45 +180,21 @@ compõem a solução. Atualmente são utilizados 4 containers:
   desenvolvimento é criando-se um arquivo `.env`, conforme o item 6 do
   passo a passo em
   "[Instalando a API em ambiente de desenvolvimento](#instalando-a-api-em-ambiente-de-desenvolvimento)".
-* No PgAdmin utilize `'db-api-pgd'` como valor para o endereço do
-  Postgres. Isso é necessário porquê os contêineres utilizam uma rede
-  interna do Docker para se comunicarem.
-* Caso a modelagem ORM seja alterada, pode ser mais simples remover
-  (dropar) o BD e recriá-lo novamente apenas subindo a solução. Para
-  remover o BD utilize o PgAdmin.
 * Para fazer *deploy* usando algum outro banco de dados externo, basta
   redefinir a variável de ambiente `SQLALCHEMY_DATABASE_URL` no
   contêiner da aplicação.
 
+
 ## Rodando testes
-É necessário entrar no container para rodar os testes:
+Para executar os testes:
 
 ```bash
-docker exec -it api-pgd_web_1 /bin/bash
-```
-
-Para rodar os testes execute:
-
-```bash
-pytest tests/
-```
-
-Para rodar no modo verboso útil para debugar:
-
-```bash
-pytest tests/ -vv
+make tests
 ```
 
 Para rodar uma bateria de testes específica, especifique o arquivo que
 contém os testes desejados. Por exemplo, os testes sobre atividades:
 
 ```bash
-pytest tests/atividade_test.py
-```
-
-Para rodar um teste específico utilize o parâmetro `-k`. Este exemplo
-roda apenas o teste `test_create_pt_invalid_cpf`:
-
-```bash
-pytest tests/ -k test_create_pt_invalid_cpf -vv
+make test TEST_FILTER=test_create_huge_plano_trabalho
 ```
