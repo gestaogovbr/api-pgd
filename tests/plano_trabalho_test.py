@@ -2,7 +2,6 @@
 Testes relacionados ao plano de trabalho do participante.
 """
 from datetime import date, timedelta
-import calendar
 
 from httpx import Client
 from fastapi import status

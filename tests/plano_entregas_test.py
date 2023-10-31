@@ -1,7 +1,7 @@
 """
 Testes relacionados ao Plano de Entregas da Unidade
 """
-from datetime import date, timedelta
+from datetime import date
 
 from httpx import Client
 from fastapi import status
@@ -74,11 +74,19 @@ def assert_equal_plano_entregas(plano_entregas_1: dict, plano_entregas_2: dict):
     )
 
 
+# Os testes usam muitas fixtures, então necessariamente precisam de
+# muitos argumentos. Além disso, algumas fixtures não retornam um valor
+# para ser usado no teste, mas mesmo assim são executadas quando estão
+# presentes como um argumento da função.
+# A linha abaixo desabilita os warnings do Pylint sobre isso.
+# pylint: disable=too-many-arguments
+
+
 def test_create_plano_entregas_completo(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
 ):
     """Tenta criar um novo plano de entregas"""
@@ -95,9 +103,9 @@ def test_create_plano_entregas_completo(
 
 
 def test_create_plano_entregas_unidade_nao_permitida(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
 ):
     """Tenta criar um novo Plano de Entregas em uma organização na qual
@@ -119,8 +127,8 @@ def test_create_plano_entregas_unidade_nao_permitida(
 
 def test_update_plano_entregas(
     truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    example_pe,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
@@ -157,11 +165,11 @@ def test_update_plano_entregas(
 
 @pytest.mark.parametrize("omitted_fields", enumerate(fields_entrega["optional"]))
 def test_create_plano_entregas_entrega_omit_optional_fields(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     omitted_fields: list,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
 ):
     """Tenta criar um novo plano de entregas omitindo campos opcionais"""
@@ -187,11 +195,11 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
     "missing_fields", enumerate(fields_plano_entregas["mandatory"])
 )
 def test_create_plano_entregas_missing_mandatory_fields(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     missing_fields: list,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
 ):
     """Tenta criar um plano de entregas, faltando campos obrigatórios.
@@ -219,10 +227,10 @@ def test_create_plano_entregas_missing_mandatory_fields(
 
 
 def test_create_huge_plano_entregas(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
 ):
     """Testa a criação de um plano de entregas com grande volume de dados."""
@@ -261,6 +269,8 @@ def test_create_huge_plano_entregas(
         for attribute in attributes
         for id_entrega, entrega in input_by_entrega.items()
     )
+
+
 @pytest.mark.parametrize(
     "id_plano_entrega_unidade, nome_entrega, nome_demandante, nome_destinatario",
     [
@@ -271,30 +281,30 @@ def test_create_huge_plano_entregas(
     ],
 )
 def test_create_pe_exceed_string_max_size(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     id_plano_entrega_unidade: int,
-    nome_entrega: str, # 300 caracteres
-    nome_demandante: str, # 300 caracteres
+    nome_entrega: str,  # 300 caracteres
+    nome_demandante: str,  # 300 caracteres
     nome_destinatario: str,  # 300 caracteres
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
     str_max_size: int = 300,
 ):
     """Testa a criação de um plano de entregas excedendo o tamanho
-       máximo de cada campo"""
+    máximo de cada campo"""
 
-    input_pe['id_plano_entrega_unidade'] = id_plano_entrega_unidade
+    input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
     input_pe["entregas"][0]["nome_entrega"] = nome_entrega  # 300 caracteres
     input_pe["entregas"][0]["nome_demandante"] = nome_demandante  # 300 caracteres
     input_pe["entregas"][0]["nome_destinatario"] = nome_destinatario  # 300 caracteres
 
     response = client.put(
-    f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-    f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
-    json=input_pe,
-    headers=header_usr_1,
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_usr_1,
     )
 
     if any(
@@ -302,13 +312,13 @@ def test_create_pe_exceed_string_max_size(
         for campo in (nome_entrega, nome_demandante, nome_destinatario)
     ):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message="String should have at most 300 characters"
+        detail_message = "String should have at most 300 characters"
         assert response.json().get("detail")[0]["msg"] == detail_message
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
 
-# TODO: verbo PATCH poderá ser implementado em versão futura.abs
+# TODO: verbo PATCH poderá ser implementado em versão futura.
 #
 # @pytest.mark.parametrize("missing_fields", fields_plano_entregas["mandatory"])
 # def test_patch_plano_entregas_inexistente(
@@ -449,7 +459,7 @@ def test_create_plano_entregas_overlapping_date_interval(
     ],
 )
 def test_create_plano_entregas_date_interval_over_a_year(
-    truncate_pe,
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     data_inicio_plano_entregas: str,
     data_termino_plano_entregas: str,
@@ -487,10 +497,10 @@ def test_create_plano_entregas_date_interval_over_a_year(
 
 
 def test_create_pe_cod_plano_inconsistent(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
 ):
     """Tenta criar um plano de entrega com código de plano divergente"""
@@ -508,10 +518,9 @@ def test_create_pe_cod_plano_inconsistent(
 
 
 def test_create_pe_cod_unidade_inconsistent(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
 ):
     """Tenta criar um plano de entrega com código de unidade divergente"""
@@ -529,11 +538,11 @@ def test_create_pe_cod_unidade_inconsistent(
 
 
 def test_get_plano_entrega(
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     input_pe,
-    example_pe,
     client: Client,
 ):
     """Tenta buscar um plano de entrega existente"""
@@ -568,12 +577,12 @@ def test_get_pe_inexistente(
     ],
 )
 def test_create_pe_invalid_period(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     data_inicio: str,
     data_fim: str,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
 ):
     """Tenta criar um plano de entrega com datas trocadas"""
@@ -660,13 +669,13 @@ def test_create_data_entrega_out_of_bounds(
     ],
 )
 def test_create_pe_invalid_data_avaliacao(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     data_inicio_plano_entregas: str,
     data_avaliacao_plano_entregas: str,
     id_plano_entrega_unidade: int,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
 ):
     """Tenta criar um plano de entrega com datas de avaliação inferior a data de inicio do Plano"""
@@ -706,13 +715,13 @@ def test_create_pe_invalid_data_avaliacao(
     ],
 )
 def test_create_pe_duplicate_entrega(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     id_plano_entrega_unidade: int,
     id_ent_1: str,
     id_ent_2: str,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
 ):
     """Tenta criar um plano de entrega com entregas com id_entrega duplicados"""
@@ -771,12 +780,12 @@ def test_create_pe_duplicate_id_plano(
 
 
 def test_create_pe_same_id_plano_different_instituidora(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     user1_credentials: dict,
     user2_credentials: dict,
     header_usr_1: dict,
     header_usr_2: dict,
-    truncate_pe,
     client: Client,
 ):
     """Tenta criar um plano de entregas duplicado. O envio do mesmo
@@ -803,7 +812,7 @@ def test_create_pe_same_id_plano_different_instituidora(
 
 @pytest.mark.parametrize("cod_SIAPE_unidade_plano", [99, 0, -1])
 def test_create_invalid_cod_siape_unidade(
-    truncate_pe,
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     cod_SIAPE_unidade_plano: int,
     user1_credentials: dict,
@@ -845,7 +854,7 @@ def test_create_invalid_cod_siape_unidade(
     ],
 )
 def test_create_entrega_invalid_percent(
-    truncate_pe,
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     id_plano_entrega_unidade: int,
     meta_entrega: int,
@@ -892,10 +901,10 @@ def test_create_entrega_invalid_percent(
 
 @pytest.mark.parametrize("tipo_meta", [0, 1, 2, 3, 10])
 def test_create_entrega_invalid_tipo_meta(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     tipo_meta: int,
     client: Client,
 ):
@@ -922,11 +931,11 @@ def test_create_entrega_invalid_tipo_meta(
 
 @pytest.mark.parametrize("avaliacao_plano_entregas", [-1, 0, 1, 6])
 def test_create_pe_invalid_avaliacao(
+    truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     avaliacao_plano_entregas: int,
     user1_credentials: dict,
     header_usr_1: dict,
-    truncate_pe,
     client: Client,
 ):
     """Tenta criar um Plano de Entrega com nota de avaliação inválida"""
