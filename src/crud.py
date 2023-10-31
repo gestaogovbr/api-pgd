@@ -37,7 +37,26 @@ async def check_planos_trabalho_per_period(
     data_inicio_plano: date,
     data_termino_plano: date,
 ) -> bool:
-    """Verifica se há outros Planos de Trabalho no período informado."""
+    """Verifica se há outros Planos de Trabalho no período informado,
+    para a mesma unidade instituidora, mesma unidade de exercício e mesmo
+    participante, gerando um conflito de sobreposição de datas entre os
+    planos de trabalho.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão
+            async do SQL Alchemy.
+        cod_SIAPE_instituidora (int): Código SIAPE da unidade instituidora.
+        cod_SIAPE_unidade_exercicio (int): Código SIAPE da unidade de
+            exercício do participante.
+        cpf_participante (str): CPF do participante.
+        id_plano_trabalho_participante (int): id do Plano de Trabalho do
+            participante.
+        data_inicio_plano (date): Data de início do Plano de Trabalho.
+        data_termino_plano (date): Data de término do Plano de Trabalho.
+
+    Returns:
+        bool: True se há conflito; False caso contrário.
+    """
     async with db_session as session:
         query = (
             select(func.count())
@@ -49,6 +68,8 @@ async def check_planos_trabalho_per_period(
             .where(
                 and_(
                     (
+                        # exclui o próprio plano de trabalho da verificação para
+                        # não conflitar com ele mesmo
                         models.PlanoTrabalho.id_plano_trabalho_participante
                         != id_plano_trabalho_participante
                     ),
