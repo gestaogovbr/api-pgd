@@ -18,6 +18,21 @@ from util import over_a_year
 
 # Função para validar CPF
 def cpf_validate(input_cpf: str) -> str:
+    """Verifica se um número de CPF em forma de string tem o formato
+    esperado e também os dígitos verificadores.
+
+    Args:
+        input_cpf (str): O número CPF a ser verificado.
+
+    Raises:
+        ValueError: CPF deve conter apenas dígitos.
+        ValueError: CPF precisa ter 11 dígitos.
+        ValueError: CPF com o mesmo número repetido.
+        ValueError: CPF com dígitos verificadores inválidos.
+
+    Returns:
+        str: O mesmo que a entrada, se for validado.
+    """
     if not input_cpf.isdigit():
         raise ValueError("CPF deve conter apenas dígitos.")
 
@@ -38,8 +53,7 @@ def cpf_validate(input_cpf: str) -> str:
         if digit != cpf[i]:
             raise ValueError("Dígitos verificadores do CPF inválidos.")
 
-    str_cpf = "".join([str(i) for i in input_cpf])
-    return str_cpf
+    return input_cpf
 
 
 class ContribuicaoSchema(BaseModel):
