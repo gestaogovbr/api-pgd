@@ -169,22 +169,23 @@ async def create_or_update_plano_trabalho(
 
     try:
         if not db_plano_trabalho:  # create
-            await crud.create_plano_trabalho(
+            novo_plano_trabalho = await crud.create_plano_trabalho(
                 db_session=db,
                 plano_trabalho=novo_plano_trabalho,
             )
             response.status_code = status.HTTP_201_CREATED
         else:  # update
-            await crud.update_plano_trabalho(
+            novo_plano_trabalho = await crud.update_plano_trabalho(
                 db_session=db,
                 plano_trabalho=novo_plano_trabalho,
             )
-        return novo_plano_trabalho
     except IntegrityError as exception:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"IntegrityError: {str(exception)}",
         ) from exception
+
+    return novo_plano_trabalho
 
 
 @app.get(

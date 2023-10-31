@@ -150,9 +150,8 @@ async def create_plano_trabalho(
             raise HTTPException(
                 status_code=422, detail="Referência a tabela entrega não encontrada"
             ) from e
-
-        # db_session.refresh(db_plano_trabalho)
-    # return schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho)
+        await session.refresh(db_plano_trabalho)
+    return schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho)
 
 
 async def update_plano_trabalho(

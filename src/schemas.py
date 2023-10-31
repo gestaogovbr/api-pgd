@@ -111,7 +111,10 @@ class ConsolidacaoSchema(BaseModel):
     @field_validator("avaliacao_plano_trabalho")
     @staticmethod
     def must_be_between(avaliacao_plano_trabalho: int) -> int:
-        if avaliacao_plano_trabalho not in range(1, 6):
+        if (
+            avaliacao_plano_trabalho is not None
+            and avaliacao_plano_trabalho not in range(1, 6)
+        ):
             raise ValueError(
                 "Avaliação de plano de trabalho inválida; permitido: 1 a 5"
             )
