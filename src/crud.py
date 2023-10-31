@@ -192,8 +192,20 @@ async def get_plano_entregas(
     db_session: DbContextManager,
     cod_SIAPE_instituidora: int,
     id_plano_entrega_unidade: int,
-):
-    "Traz um plano de entregas a partir do banco de dados."
+) -> Optional[schemas.PlanoEntregasSchema]:
+    """Traz um plano de entregas a partir do banco de dados, consultando
+    a partir dos parâmetros informados.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão async
+            do SQL Alchemy.
+        cod_SIAPE_instituidora (int): Código SIAPE da unidade instituidora.
+        id_plano_entrega_unidade (int): id do Plano de Entregas da Unidade.
+
+    Returns:
+        Optional[schemas.PlanoEntregasSchema]: O Plano de Entregas
+            encontrado ou None.
+    """
     async with db_session as session:
         result = await session.execute(
             select(models.PlanoEntregas)
