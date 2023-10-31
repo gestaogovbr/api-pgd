@@ -27,8 +27,8 @@ async def get_plano_trabalho(
             participante.
 
     Returns:
-        Optional[schemas.PlanoTrabalhoSchema]: O Plano de Trabalho encontrado
-            ou None.
+        Optional[schemas.PlanoTrabalhoSchema]: Esquema Pydantic do Plano
+            de Trabalho encontrado ou None.
     """
     async with db_session as session:
         result = await session.execute(
@@ -226,7 +226,25 @@ async def check_planos_entregas_unidade_per_period(
     data_inicio_plano_entregas: date,
     data_termino_plano_entregas: date,
 ) -> bool:
-    """Verifica se há outros Planos de Entrega no período informado."""
+    """Verifica se há outros Planos de Entrega no período informado,
+    para a mesma unidade instituidora e mesma unidade do plano, gerando
+    um conflito de sobreposição de datas entre os planos de entregas.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão async
+            do SQL Alchemy.
+        cod_SIAPE_instituidora (int): Código SIAPE da unidade instituidora.
+        cod_SIAPE_unidade_plano (int): Código SIAPE da unidade do Plano
+            de Entregas.
+        id_plano_entrega_unidade (int): id do Plano de Entregas da unidade.
+        data_inicio_plano_entregas (date): Data de início do Plano de
+            Entregas.
+        data_termino_plano_entregas (date): Data de término do Plano de
+            Entregas.
+
+    Returns:
+        bool: True se há conflito; False caso contrário.
+    """
     async with db_session as session:
         query = (
             select(func.count())
@@ -237,6 +255,8 @@ async def check_planos_entregas_unidade_per_period(
             .where(
                 and_(
                     (
+                        # exclui o próprio plano de entregas da verificação
+                        # para não conflitar com ele mesmo
                         models.PlanoEntregas.id_plano_entrega_unidade
                         != id_plano_entrega_unidade
                     ),
