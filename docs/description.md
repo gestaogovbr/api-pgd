@@ -24,16 +24,10 @@ Atividades e os Planos de Trabalho.
 -------
 ## Gestão de Usuários
 
-O cadastro de usuários é feito pela aplicação Fief. Para cadastrar um
-novo usuário, faça o login como administrador do Fief.
+O cadastro de usuários é feito pela aplicação Fief. 
 
-Na coluna da esquerda, selecione a opção "Users". Clique o botão
-vermelho "add new user". Digite o e-mail e a senha do usuário, bem como
-o código SIAPE da unidade instituidora do PGD, para a qual será realizada
-a carga dos dados.
-
-(detalhar mais, possivelmente mover para página separada colocando link
-aqui, incluir imagens de tela)
+Para um passo a passo de como fazer a gestão de usuários, consulte a
+[documentação](https://github.com/gestaogovbr/api-pgd/blob/main/docs/gestao-de-usuários.md).
 
 -------
 ## Endpoints
