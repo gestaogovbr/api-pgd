@@ -21,7 +21,7 @@ with open("../docs/description.md", "r", encoding="utf-8") as f:
 app = FastAPI(
     title="Plataforma de recebimento de dados do Programa de Gestão - PGD",
     description=description,
-    version="0.2.0",
+    version="2.0.0",
     swagger_ui_init_oauth={
         "clientId": os.environ["FIEF_CLIENT_ID"],
         "clientSecret": os.environ["FIEF_CLIENT_SECRET"],
