@@ -1,7 +1,9 @@
 FROM python:3.11.4-slim-bullseye
-RUN useradd -ms /bin/bash -d /home/api-pgd api-pgd
-WORKDIR /home/api-pgd
+
+WORKDIR /api-pgd
+
 COPY requirements.txt requirements.txt
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
     python3 -m pip install --upgrade pip && \
@@ -16,6 +18,8 @@ RUN apt-get update && \
         /usr/share/man \
         /usr/share/doc \
         /usr/share/doc-base
-RUN chown -R api-pgd:api-pgd ./
-COPY ./ /home/api-pgd
-USER api-pgd
+
+COPY src/ .
+COPY run_after_db.py run_after_db.py
+COPY init/configure_fief.py configure_fief.py
+RUN chmod +x configure_fief.py
