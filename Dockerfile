@@ -19,7 +19,4 @@ RUN apt-get update && \
         /usr/share/doc \
         /usr/share/doc-base
 
-COPY src/ .
-COPY run_after_db.py run_after_db.py
-COPY init/configure_fief.py configure_fief.py
-RUN chmod +x configure_fief.py
+COPY ./ .
