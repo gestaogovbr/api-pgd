@@ -18,12 +18,6 @@ if scheme not in ["http", "https"]:
     raise ValueError(
         "'WEB_URI_SCHEME' environment variable must be either 'http' or 'https'."
     )
-remove_http = False
-if scheme == "https":
-    # Fief automatically adds an http redirect URI, but then refuses to
-    # PATCH the client through the API if it is left there. So it needs
-    # to be manually removed.
-    remove_http = True
 hostname = os.environ.get("WEB_HOST_NAME")
 if not hostname:
     raise ValueError("'WEB_HOST_NAME' environment variable must be set.")
@@ -45,7 +39,10 @@ print(f"Adding redirect URI: {uri}...")
 response = fief_admin.client_add_redirect_uri(
     # uri=f"{scheme}://{hostname}:{port}/docs/oauth2-redirect"
     uri=uri,
-    remove_http=remove_http,
+    # Fief automatically adds an http redirect URI, but then refuses to
+    # PATCH the client through the API if it is left there. So it needs
+    # to be manually removed.
+    remove_http=(scheme == "https"),
 )
 print(f"Status: {response.status_code}")
 response.raise_for_status()
