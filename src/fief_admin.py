@@ -7,6 +7,8 @@ import secrets
 
 import httpx
 
+REQUEST_TIMEOUT = 5.0
+
 
 class FiefAdminHelper:
     """
@@ -27,12 +29,15 @@ class FiefAdminHelper:
             Registers a new user in Fief.
     """
 
-    def __init__(self, api_token: str, base_url: str):
+    def __init__(
+        self, api_token: str, base_url: str, request_timeout: str = REQUEST_TIMEOUT
+    ):
         """
         Initialize the Fief_Admin_Helper class.
         """
         self.api_token = api_token
         self.base_url = base_url
+        self.request_timeout = request_timeout
 
     def fief_admin_call(
         self,
@@ -67,6 +72,7 @@ class FiefAdminHelper:
                 url=url,
                 headers=headers,
                 json=data,
+                timeout=self.request_timeout,
             )
         if method == "POST":
             headers["Content-Type"] = "application/json"
@@ -74,11 +80,13 @@ class FiefAdminHelper:
                 url=url,
                 headers=headers,
                 json=data,
+                timeout=self.request_timeout,
             )
         return httpx.request(
             method=method,
             url=url,
             headers=headers,
+            timeout=self.request_timeout,
         )
 
     @cached_property

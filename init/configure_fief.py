@@ -10,6 +10,7 @@ from fief_admin import FiefAdminHelper
 fief_admin = FiefAdminHelper(
     api_token=os.environ.get("FIEF_MAIN_ADMIN_API_KEY"),
     base_url=os.environ.get("FIEF_BASE_TENANT_URL"),
+    request_timeout=10.0,
 )
 
 # Add a redirect URI for API PGD
