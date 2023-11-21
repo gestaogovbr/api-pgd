@@ -19,4 +19,7 @@ RUN apt-get update && \
         /usr/share/doc \
         /usr/share/doc-base
 
-COPY ./ .
+COPY src/ ./src
+COPY init/ ./init
+COPY docs/ ./docs
+COPY run_after_db.py .
