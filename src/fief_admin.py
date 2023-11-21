@@ -152,7 +152,6 @@ class FiefAdminHelper:
             data=data,
         )
 
-
     def get_user_by_email(self, email: str) -> dict:
         """Get the User's id by their email.
 
@@ -167,7 +166,6 @@ class FiefAdminHelper:
             raise ValueError(f"Nenhum usuário com o e-mail {email} foi encontrado.")
         user = user_search["results"][0]
         return user
-
 
     def patch_user(self, email: str, data: dict) -> httpx.Response:
         """Changes one or more properties of a given user.
@@ -224,15 +222,22 @@ class FiefAdminHelper:
         ).json()
 
     def client_add_redirect_uri(
-        self, uri: str, client_id: Optional[str] = None
+        self,
+        uri: str,
+        client_id: Optional[str] = None,
+        remove_http: bool = False,
     ) -> httpx.Response:
         """Adds a Redirect URI to a Fief client.
 
         Args:
             uri (str): the redirect URI to be added.
             client_id (str, optional): the client's internal id. If None
-            or omitted, will use the first client found in the API.
-            Defaults to None.
+                or omitted, will use the first client found in the API.
+                Defaults to None.
+            remove_http (bool, optional): if True, will first remove
+                http URIs before submitting the Fief Admin API call
+                (Fief will refuse the API call otherwise, unless
+                CLIENT_REDIRECT_URI_SSL_REQUIRED is set to False).
 
         Returns:
             httpx.Response: the Response object obtained from the API
@@ -241,7 +246,11 @@ class FiefAdminHelper:
         if not client_id:
             client_id = self.first_client["id"]
         client = self.get_client(client_id)
-        redirect_uris = client["redirect_uris"]
+        redirect_uris = [
+            existing_uri
+            for existing_uri in client["redirect_uris"]
+            if urllib.parse.urlparse(existing_uri).scheme == "https" or not remove_http
+        ]
 
         redirect_uris.append(uri)
         data = {
@@ -388,8 +397,9 @@ class FiefAdminHelper:
             raise ValueError(f"Nenhuma Role com o nome {name} foi encontrada.")
         return role
 
-
-    def create_role(self, name: str, permissions: list[str], granted_by_default: bool = False) -> httpx.Response:
+    def create_role(
+        self, name: str, permissions: list[str], granted_by_default: bool = False
+    ) -> httpx.Response:
         """Create a Role in the Fief environment.
 
         Args:
@@ -426,8 +436,6 @@ class FiefAdminHelper:
         response = self.fief_admin_call(
             method="POST",
             local_url=f"users/{user['id']}/roles",
-            data={
-                "id": role["id"]
-            },
+            data={"id": role["id"]},
         )
         return response
