@@ -2,7 +2,7 @@
 
 O cadastro de usuários é feito pela aplicação Fief. 
 
-## Acesso à gestão de usuários
+## Acesso à ferramenta de gestão de usuários
 
 Para cadastrar um novo usuário, acesse pelo navegador o endereço da
 aplicação Fief. 
@@ -54,3 +54,7 @@ Confira se o usuário apareceu na lista de usuários. Então envie as
 credenciais à pessoa. A senha cadastrada pode ser trocada pelo próprio
 usuário, bastando para isso abrir o mesmo endereço da ferramenta Fief que
 foi utilizada para o cadastro, porém, com as suas próprias credenciais.
+
+Por fim, comunique ao usuário que o seu cadastro foi realizado e
+encaminhe o link para o
+[guia de autenticação na API](autenticacao-na-api.md).
