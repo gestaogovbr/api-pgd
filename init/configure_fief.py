@@ -2,86 +2,109 @@
 """
 import os
 import sys
+import argparse
 
 sys.path.insert(0, "../src")
 from fief_admin import FiefAdminHelper
 
-# Fief admin helper object
-fief_admin = FiefAdminHelper(
-    api_token=os.environ.get("FIEF_MAIN_ADMIN_API_KEY"),
-    base_url=os.environ.get("FIEF_BASE_TENANT_URL"),
-    request_timeout=10.0,
-)
 
-# Add a redirect URI for API PGD
-scheme = os.environ.get("WEB_URI_SCHEME")
-if scheme not in ["http", "https"]:
-    raise ValueError(
-        "'WEB_URI_SCHEME' environment variable must be either 'http' or 'https'."
+def assert_not_null(env_variable: str):
+    assert (
+        env_variable is not None
+    ), f"'{env_variable}' environment variable must be set."
+
+# XXX can improve `get_env_vars()`?
+def get_env_vars():
+    fief_base_url = os.environ.get("FIEF_BASE_TENANT_URL")
+    assert_not_null(fief_base_url)
+
+    api_token = os.environ.get("FIEF_MAIN_ADMIN_API_KEY")
+    assert_not_null(api_token)
+
+    scheme = os.environ.get("WEB_URI_SCHEME")
+    assert scheme in [
+        "http",
+        "https",
+    ], "'WEB_URI_SCHEME' environment variable must be either 'http' or 'https'."
+
+    hostname = os.environ.get("WEB_HOST_NAME")
+    assert_not_null(hostname)
+
+    port = os.environ.get("WEB_PORT")
+    assert_not_null(port)
+
+    user_email = os.environ.get("FIEF_MAIN_USER_EMAIL")
+    assert_not_null(user_email)
+
+    return fief_base_url, api_token, scheme, hostname, port, user_email
+
+
+def main(is_dev: bool):
+    fief_base_url, api_token, scheme, hostname, port, user_email = get_env_vars()
+    # Fief admin helper object
+    fief_admin = FiefAdminHelper(
+        api_token=api_token,
+        base_url=fief_base_url,
+        request_timeout=10.0,
     )
-hostname = os.environ.get("WEB_HOST_NAME")
-if not hostname:
-    raise ValueError("'WEB_HOST_NAME' environment variable must be set.")
-port = os.environ.get("WEB_PORT")
 
-# Add localhost redirect URI
-# uri = f"{scheme}://localhost:{port}/docs/oauth2-redirect"
-# print(f"Adding redirect URI: {uri}...")
-# response = fief_admin.client_add_redirect_uri(
-#     # uri=f"{scheme}://{hostname}:{port}/docs/oauth2-redirect"
-#     uri=uri
-# )
-# print(f"Status: {response.status_code}")
-# response.raise_for_status()
+    # ## Add clients uri
+    if is_dev:
+        # Add localhost swagger uri
+        fief_admin.client_add_redirect_uri(
+            uri=f"http://localhost:{port}/docs/oauth2-redirect",
+        )
 
-# Add redirect URI
-uri = f"{scheme}://{hostname}/docs/oauth2-redirect"
-print(f"Adding redirect URI: {uri}...")
-response = fief_admin.client_add_redirect_uri(
-    # uri=f"{scheme}://{hostname}:{port}/docs/oauth2-redirect"
-    uri=uri,
-    # Fief automatically adds an http redirect URI, but then refuses to
-    # PATCH the client through the API if it is left there. So it needs
-    # to be manually removed.
-    remove_http=(scheme == "https"),
-)
-print(f"Status: {response.status_code}")
-response.raise_for_status()
+        # Add fief swagger uri
+        fief_admin.client_add_redirect_uri(
+            uri=f"{fief_base_url}/docs/oauth2-redirect",
+        )
 
-# Add custom user fields
-print("Creating user field: cod_SIAPE_instituidora...")
-response = fief_admin.create_user_field(
-    name="Código SIAPE da unidade instituidora",
-    slug="cod_SIAPE_instituidora",
-    field_type="INTEGER",
-    default_value=0,
-)
-print(f"Status: {response.status_code}")
-response.raise_for_status()
+    # Add api-pgd container redirect uri
+    fief_admin.client_add_redirect_uri(
+        uri=f"{scheme}://{hostname}:{port}/docs/oauth2-redirect",
+        # Fief automatically adds an http redirect URI, but then refuses to
+        # PATCH the client through the API if it is left there. So it needs
+        # to be manually removed.
+        remove_http=(scheme == "https"),
+    )
 
-# Create and Set superuser role for the admin user
-permissions = []
-print(f"Creating Permission: read_all...")
-response = fief_admin.create_permission("read_all", codename="all:read")
-print(f"Status: {response.status_code}")
-response.raise_for_status()
-permissions.append(response.json()["id"])
+    # ## Add custom user fields
+    fief_admin.create_user_field(
+        name="Código SIAPE da unidade instituidora",
+        slug="cod_SIAPE_instituidora",
+        field_type="INTEGER",
+        default_value=0,
+    )
 
-print(f"Creating Permission: write_all...")
-response = fief_admin.create_permission("write_all", codename="all:write")
-print(f"Status: {response.status_code}")
-response.raise_for_status()
-permissions.append(response.json()["id"])
+    # ## Create and Set superuser role for the admin user
+    permissions = []
+    r_read_all = fief_admin.create_permission("read_all", codename="all:read")
+    permissions.append(r_read_all.json()["id"])
 
-print(f"Creating Role: superuser...")
-response = fief_admin.create_role(
-    "superuser", permissions=permissions, granted_by_default=False
-)
-print(f"Status: {response.status_code}")
-response.raise_for_status()
+    r_write_all = fief_admin.create_permission("write_all", codename="all:write")
+    permissions.append(r_write_all.json()["id"])
 
-admin_user = os.environ.get("FIEF_MAIN_USER_EMAIL")
-print(f"Setting superuser flag for user: {admin_user}...")
-response = fief_admin.user_grant_role(user_email=admin_user, role_name="superuser")
-print(f"Status: {response.status_code}")
-response.raise_for_status()
+    fief_admin.create_role(
+        "superuser", permissions=permissions, granted_by_default=False
+    )
+
+    fief_admin.user_grant_role(user_email=user_email, role_name="superuser")
+
+
+if __name__ == "__main__":
+    # Get script parameter
+    parser = argparse.ArgumentParser(
+        description="Script with optional add localhost uris for development"
+    )
+    parser.add_argument(
+        "-dev",
+        "--develop",
+        action="store_true",
+        help="Add localhost uris for development",
+    )
+    args = parser.parse_args()
+
+    is_dev = True if args.develop else False
+
+    main(is_dev)

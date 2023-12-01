@@ -1,3 +1,0 @@
-FROM ghcr.io/fief-dev/fief:0.27
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl

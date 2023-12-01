@@ -1,12 +1,13 @@
 version: '3'
 
 services:
-  db-api-pgd:
+  db:
     image: postgres:15
+    container_name: db
     ports:
       - "5432"
     volumes:
-        - ./database:/var/lib/postgresql/data
+        - ./mnt/pgdata:/var/lib/postgresql/data
         - ./init/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       POSTGRES_USER: postgres
@@ -17,21 +18,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-  web:
-    build: ./
-    # image: api-pgd:latest
+
+  api-pgd:
+    image: ghcr.io/gestaogovbr/api-pgd:latest-dev
+    container_name: api-pgd
     depends_on:
-      db-api-pgd:
+      db:
         condition: service_healthy
     ports:
       - "5057:5057"
     volumes:
-        - ./:/home/api-pgd
+        - ./:/api-pgd
     environment:
       WEB_URI_SCHEME: http
-      WEB_HOST_NAME: web
+      WEB_HOST_NAME: api-pgd
       WEB_PORT: 5057
-      SQLALCHEMY_DATABASE_URL: postgresql+psycopg://postgres:postgres@db-api-pgd:5432/api_pgd
+      # SQLALCHEMY_DATABASE_URL based on values set at services.db.environment
+      # as postgresql+psycopg://<POSTGRES_USER>:<POSTGRES_PASSWORD>@db:5432/<POSTGRES_DB>
+      SQLALCHEMY_DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/api_pgd
       MAIL_USERNAME: api-pgd@email-provider.gov.br
       MAIL_FROM: api-pgd@email-provider.gov.br
       MAIL_PORT: "25"
@@ -43,20 +47,21 @@ services:
       FIEF_CLIENT_SECRET: ${FIEF_CLIENT_SECRET}
       FIEF_MAIN_ADMIN_API_KEY: ${FIEF_MAIN_ADMIN_API_KEY}
       FIEF_MAIN_USER_EMAIL: ${FIEF_MAIN_USER_EMAIL}
+    # XXX can improve the `command:` below?
     command:
-      ./run_after_db.py "cd src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
+      ./api-pgd/run_after_db.py "cd /api-pgd/src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:5057"]
       interval: 10s
       timeout: 5s
       retries: 3
+
   fief:
-    build:
-      context: ./
-      dockerfile: Dockerfile.fief
-    # image: ghcr.io/fief-dev/fief:latest
+    image: ghcr.io/fief-dev/fief:0.27
+    container_name: fief
+    command: /bin/sh -c "date && apt-get update && apt-get install -y --no-install-recommends curl && supervisord -c /etc/supervisord.conf"
     depends_on:
-      db-api-pgd:
+      db:
         condition: service_healthy
     ports:
       - "8000:8000"
@@ -81,7 +86,7 @@ services:
       SESSION_COOKIE_SECURE: False
       FIEF_ADMIN_SESSION_COOKIE_SECURE: False
       DATABASE_TYPE: POSTGRESQL
-      DATABASE_HOST: db-api-pgd
+      DATABASE_HOST: db
       DATABASE_PORT: "5432"
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres

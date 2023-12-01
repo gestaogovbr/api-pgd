@@ -229,6 +229,10 @@ class FiefAdminHelper:
             local_url=f"clients/{client_id}",
         ).json()
 
+    def check_status_code(self, response):
+        print(f"Status: {response.status_code}")
+        response.raise_for_status()
+
     def client_add_redirect_uri(
         self,
         uri: str,
@@ -264,11 +268,15 @@ class FiefAdminHelper:
         data = {
             "redirect_uris": redirect_uris,
         }
-        return self.fief_admin_call(
+        print(f"Adding redirect URI: {uri}")
+        response = self.fief_admin_call(
             method="PATCH",
             local_url=f"clients/{client_id}",
             data=data,
         )
+        self.check_status_code(response)
+
+        return response
 
     def create_user_field(
         self,
@@ -316,11 +324,15 @@ class FiefAdminHelper:
                 "required": required,
             },
         }
-        return self.fief_admin_call(
+        print(f"Creating user field: {name}")
+        response = self.fief_admin_call(
             method="POST",
             local_url="user-fields/",
             data=data,
         )
+        self.check_status_code(response)
+
+        return response
 
     def get_access_token_for_user(
         self,
@@ -370,6 +382,7 @@ class FiefAdminHelper:
             httpx.Response: the Response object obtained from the API
                 call.
         """
+        print(f"Creating Permission: {codename}")
         response = self.fief_admin_call(
             method="POST",
             local_url="permissions/",
@@ -378,6 +391,8 @@ class FiefAdminHelper:
                 "codename": codename,
             },
         )
+        self.check_status_code(response)
+
         return response
 
     def get_role_by_name(self, name: str) -> dict:
@@ -421,6 +436,7 @@ class FiefAdminHelper:
             httpx.Response: the Response object obtained from the API
                 call.
         """
+        print(f"Creating Role: {name}")
         response = self.fief_admin_call(
             method="POST",
             local_url="roles/",
@@ -430,6 +446,8 @@ class FiefAdminHelper:
                 "permissions": permissions,
             },
         )
+        self.check_status_code(response)
+
         return response
 
     def user_grant_role(self, user_email: str, role_name: str) -> httpx.Response:
@@ -441,9 +459,12 @@ class FiefAdminHelper:
         """
         user = self.get_user_by_email(user_email)
         role = self.get_role_by_name(role_name)
+        print(f"Setting superuser flag for user: {user}")
         response = self.fief_admin_call(
             method="POST",
             local_url=f"users/{user['id']}/roles",
             data={"id": role["id"]},
         )
+        self.check_status_code(response)
+
         return response
