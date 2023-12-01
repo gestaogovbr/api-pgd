@@ -1,24 +1,21 @@
-name: Docker Image Build & CI Tests
+name: cicd tests
 
 on:
   push:
     branches:
       - main
+      - dockerfile-k8
     tags: [ tmp-rerun ]
   pull_request:
     branches: [ main ]
 
 jobs:
-
   build:
-
     name: build and test
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
     - name: Set up environment variables for testing
+      uses: actions/checkout@v2
       run: make init-env
     - name: Run all service containers
       run: make up
