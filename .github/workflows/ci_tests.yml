@@ -14,8 +14,8 @@ jobs:
     name: build and test
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
     - name: Set up environment variables for testing
-      uses: actions/checkout@v2
       run: make init-env
     - name: Run all service containers
       run: make up
