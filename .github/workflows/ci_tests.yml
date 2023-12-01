@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-      - dockerfile-k8
-    tags: [ tmp-rerun ]
+    # tags: [ tmp-rerun ]
   pull_request:
     branches: [ main ]
 
