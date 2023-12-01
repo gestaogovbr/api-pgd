@@ -19,10 +19,12 @@ make fief-config ARGS="-dev"
 
 ## Índice
 
+(para começar a desenvolver)
 * [1. Contextualização](#1-contextualização)
 * [2. Init, up and down dos serviços em dev](#2-init-up-and-down-dos-serviços-em-dev)
 * [3. Rodando testes](#3-rodando-testes)
 ---
+(informações extras)
 * [4. Informações e Configurações adicionais](#4-informações-e-configurações-adicionais)
 * [5. Arquitetura da solução](#5-arquitetura-da-solução)
 * [6. Dicas](#6-dicas)
