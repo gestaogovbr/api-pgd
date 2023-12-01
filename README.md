@@ -152,7 +152,7 @@ make fief-config ARGS="-dev"
   * [`http://localhost:5057`](http://localhost:5057): endpoint da api-pgd
   * [`http://localhost:5057/docs`](http://localhost:5057/docs): swagger ui da api-pgd
   * [`http://fief:8000/admin/`](http://fief:8000/admin/): ui de administração do fief
-  * [`http://fief:8000/docs/`](http://fief:8000/docs): swagger ui da api do fief
+  * [`http://fief:8000/docs`](http://fief:8000/docs): swagger ui da api do fief
 
 ### 2.8. Desligar serviços
 
@@ -192,7 +192,7 @@ novos usuários.
 
 O usuário e senha desse usuário administrador ficam configurados nas
 variáveis de ambiente `FIEF_MAIN_USER_EMAIL` e `FIEF_MAIN_USER_PASSWORD`
-conforme passo [2.3. Variáveis de ambiente](#23-variáveis-de-ambiente)
+conforme item [2.3. Variáveis de ambiente](#23-variáveis-de-ambiente)
 
 ### 4.2. Atualizando imagem do api-pgd
 
@@ -229,7 +229,7 @@ dos contêineres que compõem a solução. Atualmente são utilizados `3 contain
 ## 6. Dicas
 
 * Para depuração, caso necessite ver como está o banco de dados no ambiente
-  local, altere a porta do Postgres no [`docker-compose.yml`](docker-compose.yml#L8)
+  local, altere a porta do Postgres no [docker-compose.yml](docker-compose.yml#L8)
   de `"5432"` para `"5432:5432"` e o banco ficará exposto no host via `localhost`.
   Depois, basta usar uma ferramenta como o [dbeaver](https://dbeaver.io/)
   para acessar o banco.
