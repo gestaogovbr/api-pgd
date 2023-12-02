@@ -1,5 +1,3 @@
-markdown: kramdown
-
 [![Docker Image Build & CI Tests](https://github.com/gestaogovbr/api-pgd/actions/workflows/ci_tests.yml/badge.svg)](https://github.com/gestaogovbr/api-pgd/actions/workflows/ci_tests.yml)
 
 ## TL;DR (too long; didn't read)
