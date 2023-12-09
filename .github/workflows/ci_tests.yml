@@ -14,5 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Run all service containers
+      run: make up
     - name: Run tests
       run: make tests
