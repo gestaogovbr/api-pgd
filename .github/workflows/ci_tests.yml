@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-    # tags: [ tmp-rerun ]
   pull_request:
     branches: [ main ]
 
@@ -14,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Run all service containers
+    - name: Up services
       run: make up
     - name: Run tests
       run: make tests
