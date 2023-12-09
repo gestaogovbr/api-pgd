@@ -44,4 +44,4 @@ services:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:5057/docs"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
