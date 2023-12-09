@@ -30,8 +30,6 @@ services:
         - ./:/api-pgd
     environment:
       ALGORITHM: HS256
-      TAG_NAME: dev
-      # change from here as your environment
       API_PGD_ADMIN_USER: johndoe@oi.com
       API_PGD_ADMIN_PASSWORD: secret
       # SQLALCHEMY_DATABASE_URL based on values set at services.db.environment

@@ -11,7 +11,7 @@ cd api-pgd && \
 make up
 ```
 
-> Exemplos de uso da api em [exmaples/](exmaples/)
+> Exemplos de uso da api em [examples/](examples/)
 
 ---
 
@@ -150,7 +150,7 @@ make up
 
 ## 5. Arquitetura da solução
 
-O arquivo [`docker-compose.yml`](docker-compose.yml) descreve a `receita`
+O arquivo [docker-compose.yml](docker-compose.yml) descreve a `receita`
 dos contêineres que compõem a solução. Atualmente são utilizados `2 containers`:
 
 * [db](docker-compose.yml#L4); [postgres:15](https://hub.docker.com/_/postgres)
@@ -166,6 +166,6 @@ dos contêineres que compõem a solução. Atualmente são utilizados `2 contain
   para acessar o banco.
 * Para subir o ambiente usando algum outro banco de dados externo, basta
   redefinir a variável de ambiente `SQLALCHEMY_DATABASE_URL` no
-  [docker-compose.yml](docker-compose.yml#L34).
+  [docker-compose.yml](docker-compose.yml#L37).
 
 

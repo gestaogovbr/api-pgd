@@ -1,5 +1,7 @@
 FROM python:3.11.4-slim-bullseye
 
+ENV TAG_NAME="dev"
+
 COPY requirements.txt requirements.txt
 
 RUN apt-get update && \
