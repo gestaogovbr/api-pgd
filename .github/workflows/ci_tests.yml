@@ -14,11 +14,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up environment variables for testing
-      run: make init-env
-    - name: Run all service containers
-      run: make up
-    - name: Configure Fief at runtime
-      run: make fief-config
     - name: Run tests
       run: make tests

@@ -1,5 +1,8 @@
 FROM python:3.11.4-slim-bullseye
 
+ARG TAG_NAME
+ENV TAG_NAME=$TAG_NAME
+
 WORKDIR /api-pgd
 
 COPY requirements.txt requirements.txt
@@ -19,7 +22,6 @@ RUN apt-get update && \
         /usr/share/doc \
         /usr/share/doc-base
 
-COPY src/ ./src
-COPY init/ ./init
-COPY docs/ ./docs
-COPY run_after_db.py .
+COPY src/ ./
+
+ENTRYPOINT ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "5057"]

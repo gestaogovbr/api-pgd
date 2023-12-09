@@ -1,23 +1,22 @@
 """Definições dos modelos de dados da API que serão persistidos no
 banco pelo mapeamento objeto-relacional (ORM) do SQLAlchemy.
 """
+
+from datetime import datetime
 import enum
 from sqlalchemy import (
     Boolean,
     Column,
-    ForeignKey,
     Integer,
-    BigInteger,
     String,
-    Float,
     Date,
     DateTime,
     Enum,
     UniqueConstraint,
     ForeignKeyConstraint,
 )
-from sqlalchemy import event, DDL
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.functions import now
 
 from db_config import Base
 
@@ -517,24 +516,47 @@ class StatusParticipante(Base):
     data_insercao = Column(DateTime, nullable=False)
 
 
-# trigger = DDL("""
-#     CREATE TRIGGER inseredata_trigger
-#     BEFORE INSERT OR UPDATE ON public.plano_trabalho
-#     FOR EACH ROW EXECUTE PROCEDURE insere_data_registro();
-# """
-# )Integer
-#     trigger.execute_if(dialect='postgresql')
-# )
-
-# trigger = DDL("""
-#     CREATE TRIGGER inseredata_trigger
-#     BEFORE INSERT OR UPDATE ON public.atividade
-#     FOR EACH ROW EXECUTE PROCEDURE insere_data_registro();
-# """
-# )
-
-# event.listen(
-#     Atividade.__table__,
-#     'after_create',
-#     trigger.execute_if(dialect='postgresql')
-# )
+class Users(Base):
+    "Usuário da api-pgd"
+    __tablename__ = "users"
+    id = Column(
+        Integer, primary_key=True, index=True, autoincrement=True, nullable=False
+    )
+    email = Column(
+        String,
+        nullable=False,
+        unique=True,
+        comment="Email para login no formato eu@foo.org",
+    )
+    password = Column(
+        String,
+        nullable=False,
+        comment="Password",
+    )
+    is_admin = Column(
+        Boolean,
+        nullable=False,
+        default=False,
+        comment="Se pode `crud` de usuários na api-pgd",
+    )
+    disabled = Column(
+        Boolean,
+        nullable=False,
+        default=False,
+        comment="Se usuário está ativo",
+    )
+    cod_SIAPE_instituidora = Column(
+        Integer,
+        nullable=False,
+        # default=False,
+        comment="Para qual instituidora o usuário pertence",
+    )
+    data_atualizacao = Column(
+        DateTime,
+        onupdate=now(),
+    )
+    data_insercao = Column(
+        DateTime,
+        nullable=False,
+        default=now(),
+    )

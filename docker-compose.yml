@@ -8,16 +8,15 @@ services:
       - "5432"
     volumes:
         - ./mnt/pgdata:/var/lib/postgresql/data
-        - ./init/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: api_pgd
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d api_pgd"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 3
+      retries: 5
 
   api-pgd:
     image: ghcr.io/gestaogovbr/api-pgd:latest-dev
@@ -30,70 +29,21 @@ services:
     volumes:
         - ./:/api-pgd
     environment:
-      WEB_URI_SCHEME: http
-      WEB_HOST_NAME: api-pgd
-      WEB_PORT: 5057
+      ALGORITHM: HS256
+      TAG_NAME: dev
+      # change from here as your environment
+      API_PGD_ADMIN_USER: johndoe@oi.com
+      API_PGD_ADMIN_PASSWORD: secret
       # SQLALCHEMY_DATABASE_URL based on values set at services.db.environment
       # as postgresql+psycopg://<POSTGRES_USER>:<POSTGRES_PASSWORD>@db:5432/<POSTGRES_DB>
       SQLALCHEMY_DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/api_pgd
-      MAIL_USERNAME: api-pgd@email-provider.gov.br
-      MAIL_FROM: api-pgd@email-provider.gov.br
-      MAIL_PORT: "25"
-      MAIL_SERVER: smtp.email-provider.gov.br
-      MAIL_FROM_NAME: API PGD
-      MAIL_PASSWORD: ""
-      FIEF_BASE_TENANT_URL: http://fief:8000
-      FIEF_CLIENT_ID: ${FIEF_CLIENT_ID}
-      FIEF_CLIENT_SECRET: ${FIEF_CLIENT_SECRET}
-      FIEF_MAIN_ADMIN_API_KEY: ${FIEF_MAIN_ADMIN_API_KEY}
-      FIEF_MAIN_USER_EMAIL: ${FIEF_MAIN_USER_EMAIL}
-    # XXX can improve the `command:` below?
+      # to new `SECRET` run openssl rand -hex 32
+      SECRET: b8a3054ba3457614e95a88cc0807384430c1b338a54e95e4245f41e060da68bc
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
     command:
-      ./api-pgd/run_after_db.py "cd /api-pgd/src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
+      bash -c "cd /api-pgd/src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://0.0.0.0:5057"]
-      interval: 10s
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:5057/docs"]
+      interval: 5s
       timeout: 5s
-      retries: 3
-
-  fief:
-    image: ghcr.io/fief-dev/fief:0.27
-    container_name: fief
-    command: /bin/sh -c "date && apt-get update && apt-get install -y --no-install-recommends curl && supervisord -c /etc/supervisord.conf"
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - "8000:8000"
-    environment:
-      CLIENT_REDIRECT_URI_SSL_REQUIRED: False
-      SECRET: ${SECRET}
-      FIEF_CLIENT_ID: ${FIEF_CLIENT_ID}
-      FIEF_CLIENT_SECRET: ${FIEF_CLIENT_SECRET}
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      FIEF_MAIN_ADMIN_API_KEY: ${FIEF_MAIN_ADMIN_API_KEY}
-      PORT: "8000"
-      ROOT_DOMAIN: fief:8000
-      FIEF_DOMAIN: fief:8000
-      FIEF_MAIN_USER_EMAIL: ${FIEF_MAIN_USER_EMAIL}
-      FIEF_MAIN_USER_PASSWORD: ${FIEF_MAIN_USER_PASSWORD}
-      CSRF_COOKIE_SECURE: False
-      SESSION_DATA_COOKIE_SECURE: False
-      USER_LOCALE_COOKIE_SECURE: False
-      LOGIN_HINT_COOKIE_SECURE: False
-      LOGIN_SESSION_COOKIE_SECURE: False
-      REGISTRATION_SESSION_COOKIE_SECURE: False
-      SESSION_COOKIE_SECURE: False
-      FIEF_ADMIN_SESSION_COOKIE_SECURE: False
-      DATABASE_TYPE: POSTGRESQL
-      DATABASE_HOST: db
-      DATABASE_PORT: "5432"
-      DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: postgres
-      DATABASE_NAME: fief
-      TELEMETRY_ENABLED: False
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://fief:8000/login"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      retries: 10

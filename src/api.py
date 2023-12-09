@@ -1,46 +1,47 @@
 """Definição das rotas, endpoints e seu comportamento na API.
 """
 
+from datetime import timedelta
+from typing import Annotated
 import os
-from typing import Union, Optional
+from typing import Union
 import json
 
 from fastapi import Depends, FastAPI, HTTPException, status, Header, Response
-from fastapi.openapi.utils import get_openapi
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
-from fief_client import FiefUserInfo, FiefAccessTokenInfo
 from sqlalchemy.exc import IntegrityError
+
 import schemas
 import crud
 from db_config import DbContextManager, create_db_and_tables
-from users import auth_backend
+import crud_auth
+from create_admin_user import init_user_admin
 
-with open("../docs/description.md", "r", encoding="utf-8") as f:
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
+
+
+# ## INIT --------------------------------------------------
+
+
+with open(
+    os.path.join(os.path.dirname(__file__), "docs", "description.md"),
+    "r",
+    encoding="utf-8",
+) as f:
     description = f.read()
 
 app = FastAPI(
     title="Plataforma de recebimento de dados do Programa de Gestão - PGD",
     description=description,
-    version="2.0.0",
-    swagger_ui_init_oauth={
-        "clientId": os.environ["FIEF_CLIENT_ID"],
-        "clientSecret": os.environ["FIEF_CLIENT_SECRET"],
-        "scopes": "openid",
-    },
+    version=os.environ["TAG_NAME"],
 )
-
-
-@app.get("/user", summary="Consulta usuário da API", tags=["api"])
-async def get_user(
-    user: FiefUserInfo = Depends(auth_backend.current_user()),
-):
-    """Informações sobre o usuário autenticado na API."""
-    return user
 
 
 @app.on_event("startup")
 async def on_startup():
     await create_db_and_tables()
+    await init_user_admin()
 
 
 @app.get("/", include_in_schema=False)
@@ -48,15 +49,307 @@ async def docs_redirect(accept: Union[str, None] = Header(default="text/html")):
     """
     Redireciona para a documentação da API.
     """
+
     if accept == "application/json":
         location = "/openapi.json"
     else:
         location = "/docs"
+
     return RedirectResponse(
         url=location, status_code=status.HTTP_307_TEMPORARY_REDIRECT
     )
 
 
+# ## AUTH --------------------------------------------------
+
+
+@app.post(
+    "/token",
+    summary="Autentica na api-pgd",
+    response_model=schemas.Token,
+    tags=["Auth"],
+)
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: DbContextManager = Depends(DbContextManager),
+):
+    try:
+        schemas.UsersInputSchema(email=form_data.username)
+    except Exception as exception:
+        message = getattr(exception, "message", str(exception))
+        if getattr(exception, "json", None):
+            message = exception.json()
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
+        ) from exception
+
+    user = await crud_auth.authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Username ou password incorretos",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = crud_auth.create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.get(
+    "/users",
+    summary="Consulta usuários da api-pgd",
+    tags=["Auth"],
+)
+async def get_users(
+    user_logged: Annotated[
+        schemas.UsersSchema,
+        Depends(crud_auth.get_current_admin_user),
+    ],
+    db: DbContextManager = Depends(DbContextManager),
+) -> list[schemas.UsersGetSchema]:
+
+    return await crud_auth.get_all_users(db)
+
+
+@app.put(
+    "/user/{email}",
+    summary="Cria ou edita usuário na api-pgd",
+    tags=["Auth"],
+)
+async def create_or_update_user(
+    user_logged: Annotated[
+        schemas.UsersSchema,
+        Depends(crud_auth.get_current_admin_user)
+    ],
+    user: schemas.UsersSchema,
+    email: str,
+    db: DbContextManager = Depends(DbContextManager),
+) -> dict:
+    # Validações
+
+    # ## url
+    if email != user.email:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="email deve ser igual na url e no json",
+        )
+
+    # ## schema
+    try:
+        schemas.UsersSchema.model_validate(user)
+    except Exception as exception:
+        message = getattr(exception, "message", str(exception))
+        if getattr(exception, "json", None):
+            message = json.loads(getattr(exception, "json"))
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
+        ) from exception
+
+    # Call
+    try:
+        # update
+        if await crud_auth.get_user(db, user.email):
+            await crud_auth.update_user(db, user)
+        # create
+        else:
+            await crud_auth.create_user(db, user)
+    except IntegrityError as exception:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"IntegrityError: {str(exception)}",
+        ) from exception
+
+    return user.dict(exclude=["password"])
+
+
+@app.get(
+    "/user/{email}",
+    summary="Consulta usuários da api-pgd",
+    tags=["Auth"],
+)
+async def get_user(
+    user_logged: Annotated[
+        schemas.UsersSchema,
+        Depends(crud_auth.get_current_admin_user),
+    ],
+    email: str,
+    db: DbContextManager = Depends(DbContextManager),
+) -> schemas.UsersGetSchema:
+    user = await crud_auth.get_user(db, email)
+
+    if user:
+        return user.dict(exclude=["password"])
+    else:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=f"Usuário `{email}` não existe"
+        )
+
+
+@app.delete(
+    "/user/{email}",
+    summary="Deleta usuário na api-pgd",
+    tags=["Auth"],
+)
+async def delete_user(
+    user_logged: Annotated[
+        schemas.UsersInputSchema, Depends(crud_auth.get_current_admin_user)
+    ],
+    email: str,
+    db: DbContextManager = Depends(DbContextManager),
+):
+    # Validações
+    if user_logged.email == email:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário não pode se auto deletar",
+        )
+
+    # Call
+    try:
+        return await crud_auth.delete_user(db, email)
+
+    except IntegrityError as exception:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"IntegrityError: {str(exception)}",
+        ) from exception
+
+
+# ## DATA --------------------------------------------------
+
+
+# ### Entregas & Plano Entregas ----------------------------
+@app.get(
+    "/organizacao/{cod_SIAPE_instituidora}/plano_entregas/{id_plano_entrega_unidade}",
+    summary="Consulta plano de entregas",
+    response_model=schemas.PlanoEntregasSchema,
+    tags=["plano de entregas"],
+)
+async def get_plano_entrega(
+    user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
+    id_plano_entrega_unidade: int,
+    db: DbContextManager = Depends(DbContextManager),
+):
+    "Consulta o plano de entregas com o código especificado."
+    db_plano_entrega = await crud.get_plano_entregas(
+        db_session=db,
+        cod_SIAPE_instituidora=user.cod_SIAPE_instituidora,
+        id_plano_entrega_unidade=id_plano_entrega_unidade,
+    )
+    if not db_plano_entrega:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail="Plano de entregas não encontrado"
+        )
+    # plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho.__dict__)
+    return db_plano_entrega.__dict__
+
+
+@app.put(
+    "/organizacao/{cod_SIAPE_instituidora}/plano_entregas/{id_plano_entrega_unidade}",
+    summary="Cria ou substitui plano de entregas",
+    response_model=schemas.PlanoEntregasSchema,
+    tags=["plano de entregas"],
+)
+async def create_or_update_plano_entregas(
+    user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
+    cod_SIAPE_instituidora: int,
+    id_plano_entrega_unidade: int,
+    plano_entregas: schemas.PlanoEntregasSchema,
+    response: Response,
+    db: DbContextManager = Depends(DbContextManager),
+    # TODO: Obter meios de verificar permissão opcional. O código abaixo
+    #       bloqueia o acesso, mesmo informando que é opcional.
+    # access_token_info: Optional[FiefAccessTokenInfo] = Depends(
+    #     auth_backend.authenticated(permissions=["all:read"], optional=True)
+    # ),
+):
+    """Cria um novo plano de entregas ou, se existente, substitui um
+    plano de entregas por um novo com os dados informados."""
+
+    # Validações de permissão
+    if (
+        cod_SIAPE_instituidora
+        != user.cod_SIAPE_instituidora
+        # TODO: Dar acesso ao superusuário em todas as unidades.
+        # and "all:write" not in access_token_info["permissions"]
+    ):
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+        )
+
+    # Validações de conteúdo JSON e URL
+    if cod_SIAPE_instituidora != plano_entregas.cod_SIAPE_instituidora:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais",
+        )
+    if id_plano_entrega_unidade != plano_entregas.id_plano_entrega_unidade:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais",
+        )
+
+    # Validações do esquema
+    try:
+        novo_plano_entregas = schemas.PlanoEntregasSchema.model_validate(plano_entregas)
+    except Exception as exception:
+        message = getattr(exception, "message", str(exception))
+        if getattr(exception, "json", None):
+            message = json.loads(getattr(exception, "json"))
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
+        ) from exception
+
+    # Verifica se há sobreposição da data de inicio e fim do plano
+    # com planos já existentes
+    conflicting_period = await crud.check_planos_entregas_unidade_per_period(
+        db_session=db,
+        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+        cod_SIAPE_unidade_plano=plano_entregas.cod_SIAPE_unidade_plano,
+        id_plano_entrega_unidade=plano_entregas.id_plano_entrega_unidade,
+        data_inicio_plano_entregas=plano_entregas.data_inicio_plano_entregas,
+        data_termino_plano_entregas=plano_entregas.data_termino_plano_entregas,
+    )
+
+    if conflicting_period and not plano_entregas.cancelado:
+        detail_msg = (
+            "Já existe um plano de entregas para este "
+            "cod_SIAPE_unidade_plano no período informado."
+        )
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
+
+    # Verifica se já existe
+    db_plano_entregas = await crud.get_plano_entregas(
+        db_session=db,
+        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+        id_plano_entrega_unidade=id_plano_entrega_unidade,
+    )
+
+    try:
+        if not db_plano_entregas:  # create
+            novo_plano_entregas = await crud.create_plano_entregas(
+                db_session=db,
+                plano_entregas=novo_plano_entregas,
+            )
+            response.status_code = status.HTTP_201_CREATED
+        else:  # update
+            novo_plano_entregas = await crud.update_plano_entregas(
+                db_session=db,
+                plano_entregas=novo_plano_entregas,
+            )
+        return novo_plano_entregas
+    except IntegrityError as exception:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"IntegrityError: {str(exception)}",
+        ) from exception
+
+
+# ### Plano Trabalho ---------------------------------------
 @app.get(
     "/organizacao/{cod_SIAPE_instituidora}/plano_trabalho/{id_plano_trabalho_participante}",
     summary="Consulta plano de trabalho",
@@ -64,14 +357,14 @@ async def docs_redirect(accept: Union[str, None] = Header(default="text/html")):
     tags=["plano de trabalho"],
 )
 async def get_plano_trabalho(
+    user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     id_plano_trabalho_participante: int,
     db: DbContextManager = Depends(DbContextManager),
-    user: FiefUserInfo = Depends(auth_backend.current_user()),
 ):
     "Consulta o plano de trabalho com o código especificado."
     db_plano_trabalho = await crud.get_plano_trabalho(
         db_session=db,
-        cod_SIAPE_instituidora=user["fields"]["cod_SIAPE_instituidora"],
+        cod_SIAPE_instituidora=user.cod_SIAPE_instituidora,
         id_plano_trabalho_participante=id_plano_trabalho_participante,
     )
     if not db_plano_trabalho:
@@ -89,12 +382,12 @@ async def get_plano_trabalho(
     tags=["plano de trabalho"],
 )
 async def create_or_update_plano_trabalho(
+    user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     cod_SIAPE_instituidora: int,
     id_plano_trabalho_participante: int,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
-    user: FiefUserInfo = Depends(auth_backend.current_user()),
     # TODO: Obter meios de verificar permissão opcional. O código abaixo
     #       bloqueia o acesso, mesmo informando que é opcional.
     # access_token_info: Optional[FiefAccessTokenInfo] = Depends(
@@ -107,7 +400,7 @@ async def create_or_update_plano_trabalho(
     # Validações de permissão
     if (
         cod_SIAPE_instituidora
-        != user["fields"]["cod_SIAPE_instituidora"]
+        != user.cod_SIAPE_instituidora
         # TODO: Dar acesso ao superusuário em todas as unidades.
         # and "all:write" not in access_token_info["permissions"]
     ):
@@ -187,133 +480,7 @@ async def create_or_update_plano_trabalho(
     return novo_plano_trabalho
 
 
-@app.get(
-    "/organizacao/{cod_SIAPE_instituidora}/plano_entregas/{id_plano_entrega_unidade}",
-    summary="Consulta plano de entregas",
-    response_model=schemas.PlanoEntregasSchema,
-    tags=["plano de entregas"],
-)
-async def get_plano_entrega(
-    id_plano_entrega_unidade: int,
-    db: DbContextManager = Depends(DbContextManager),
-    user: FiefUserInfo = Depends(auth_backend.current_user()),
-):
-    "Consulta o plano de entregas com o código especificado."
-    db_plano_entrega = await crud.get_plano_entregas(
-        db_session=db,
-        cod_SIAPE_instituidora=user["fields"]["cod_SIAPE_instituidora"],
-        id_plano_entrega_unidade=id_plano_entrega_unidade,
-    )
-    if not db_plano_entrega:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND, detail="Plano de entregas não encontrado"
-        )
-    # plano_trabalho = schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho.__dict__)
-    return db_plano_entrega.__dict__
-
-
-@app.put(
-    "/organizacao/{cod_SIAPE_instituidora}/plano_entregas/{id_plano_entrega_unidade}",
-    summary="Cria ou substitui plano de entregas",
-    response_model=schemas.PlanoEntregasSchema,
-    tags=["plano de entregas"],
-)
-async def create_or_update_plano_entregas(
-    cod_SIAPE_instituidora: int,
-    id_plano_entrega_unidade: int,
-    plano_entregas: schemas.PlanoEntregasSchema,
-    response: Response,
-    db: DbContextManager = Depends(DbContextManager),
-    user: FiefUserInfo = Depends(auth_backend.current_user()),
-    # TODO: Obter meios de verificar permissão opcional. O código abaixo
-    #       bloqueia o acesso, mesmo informando que é opcional.
-    # access_token_info: Optional[FiefAccessTokenInfo] = Depends(
-    #     auth_backend.authenticated(permissions=["all:read"], optional=True)
-    # ),
-):
-    """Cria um novo plano de entregas ou, se existente, substitui um
-    plano de entregas por um novo com os dados informados."""
-
-    # Validações de permissão
-    if (
-        cod_SIAPE_instituidora
-        != user["fields"]["cod_SIAPE_instituidora"]
-        # TODO: Dar acesso ao superusuário em todas as unidades.
-        # and "all:write" not in access_token_info["permissions"]
-    ):
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
-        )
-
-    # Validações de conteúdo JSON e URL
-    if cod_SIAPE_instituidora != plano_entregas.cod_SIAPE_instituidora:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais",
-        )
-    if id_plano_entrega_unidade != plano_entregas.id_plano_entrega_unidade:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais",
-        )
-
-    # Validações do esquema
-    try:
-        novo_plano_entregas = schemas.PlanoEntregasSchema.model_validate(plano_entregas)
-    except Exception as exception:
-        message = getattr(exception, "message", str(exception))
-        if getattr(exception, "json", None):
-            message = json.loads(getattr(exception, "json"))
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
-        ) from exception
-
-    # Verifica se há sobreposição da data de inicio e fim do plano
-    # com planos já existentes
-    conflicting_period = await crud.check_planos_entregas_unidade_per_period(
-        db_session=db,
-        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
-        cod_SIAPE_unidade_plano=plano_entregas.cod_SIAPE_unidade_plano,
-        id_plano_entrega_unidade=plano_entregas.id_plano_entrega_unidade,
-        data_inicio_plano_entregas=plano_entregas.data_inicio_plano_entregas,
-        data_termino_plano_entregas=plano_entregas.data_termino_plano_entregas,
-    )
-
-    if conflicting_period and not plano_entregas.cancelado:
-        detail_msg = (
-            "Já existe um plano de entregas para este "
-            "cod_SIAPE_unidade_plano no período informado."
-        )
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
-
-    # Verifica se já existe
-    db_plano_entregas = await crud.get_plano_entregas(
-        db_session=db,
-        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
-        id_plano_entrega_unidade=id_plano_entrega_unidade,
-    )
-
-    try:
-        if not db_plano_entregas:  # create
-            novo_plano_entregas = await crud.create_plano_entregas(
-                db_session=db,
-                plano_entregas=novo_plano_entregas,
-            )
-            response.status_code = status.HTTP_201_CREATED
-        else:  # update
-            novo_plano_entregas = await crud.update_plano_entregas(
-                db_session=db,
-                plano_entregas=novo_plano_entregas,
-            )
-        return novo_plano_entregas
-    except IntegrityError as exception:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"IntegrityError: {str(exception)}",
-        ) from exception
-
-
+# ### Participante ---------------------------------------
 @app.get(
     "/organizacao/{cod_SIAPE_instituidora}/participante/{cpf_participante}",
     summary="Consulta Status do Participante",
@@ -321,17 +488,17 @@ async def create_or_update_plano_entregas(
     tags=["status participante"],
 )
 async def get_status_participante(
+    user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     cod_SIAPE_instituidora: int,
     cpf_participante: str,
     db: DbContextManager = Depends(DbContextManager),
-    user: FiefUserInfo = Depends(auth_backend.current_user()),
 ) -> schemas.ListaStatusParticipanteSchema:
     "Consulta o status do participante a partir da matricula SIAPE."
 
-     # Validações de permissão
+    #  Validações de permissão
     if (
         cod_SIAPE_instituidora
-        != user["fields"]["cod_SIAPE_instituidora"]
+        != user.cod_SIAPE_instituidora
         # TODO: Dar acesso ao superusuário em todas as unidades.
         # and "all:write" not in access_token_info["permissions"]
     ):
@@ -342,7 +509,7 @@ async def get_status_participante(
 
     lista_status_participante = await crud.get_status_participante(
         db_session=db,
-        cod_SIAPE_instituidora=user["fields"]["cod_SIAPE_instituidora"],
+        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
         cpf_participante=cpf_participante,
     )
     if not lista_status_participante:
@@ -360,19 +527,19 @@ async def get_status_participante(
     tags=["status participante"],
 )
 async def create_status_participante(
+    user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     cod_SIAPE_instituidora: int,
     cpf_participante: str,
     lista_status_participante: schemas.ListaStatusParticipanteSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
-    user: FiefUserInfo = Depends(auth_backend.current_user()),
 ) -> schemas.ListaStatusParticipanteSchema:
     """Envia um ou mais status de Programa de Gestão de um participante."""
 
     # Validações de permissão
     if (
         cod_SIAPE_instituidora
-        != user["fields"]["cod_SIAPE_instituidora"]
+        != user.cod_SIAPE_instituidora
         # TODO: Dar acesso ao superusuário em todas as unidades.
         # and "all:write" not in access_token_info["permissions"]
     ):
@@ -422,99 +589,3 @@ async def create_status_participante(
 
     response.status_code = status.HTTP_201_CREATED
     return lista_gravada
-
-
-# @app.patch(
-#     "/plano_trabalho/{cod_plano}",
-#     summary="Atualiza plano de trabalho",
-#     response_model=schemas.PlanoTrabalhoSchema,
-# )
-# async def patch_plano_trabalho(
-#     cod_plano: str,
-#     plano_trabalho: schemas.PlanoTrabalhoUpdateSchema,
-#     db: Session = Depends(get_db),
-#     user: User = Depends(auth_backend.authenticated(scope=["openid", "required_scope"])),
-# ):
-#     "Atualiza um plano de trabalho existente nos campos informados."
-#     # Validações da entrada conforme regras de negócio
-#     if cod_plano != plano_trabalho.cod_plano:
-#         raise HTTPException(
-#             status.HTTP_422_UNPROCESSABLE_ENTITY,
-#             detail="Parâmetro cod_plano diferente do conteúdo do JSON",
-#         )
-
-#     db_plano_trabalho = crud.get_plano_trabalho(db, user.cod_unidade, cod_plano)
-#     if db_plano_trabalho is None:
-#         raise HTTPException(
-#             status.HTTP_404_NOT_FOUND,
-#             detail="Só é possível aplicar PATCH em um recurso" + " existente.",
-#         )
-#     if db_plano_trabalho.cod_unidade != user.cod_unidade:
-#         raise HTTPException(
-#             status.HTTP_403_FORBIDDEN,
-#             detail="Usuário não pode alterar Plano de Trabalho" + " de outra unidade.",
-#         )
-
-#     # atualiza os atributos, exceto atividades
-#     merged_plano_trabalho = util.sa_obj_to_dict(db_plano_trabalho)
-#     plano_trabalho_patch = plano_trabalho.dict(exclude_unset=True)
-#     if plano_trabalho_patch.get("atividades", None):
-#         del plano_trabalho_patch["atividades"]
-#     merged_plano_trabalho.update(plano_trabalho_patch)
-
-#     # atualiza as atividades
-
-#     # traz a lista de atividades que está no banco
-#     db_atividades = util.list_to_dict(
-#         [
-#             util.sa_obj_to_dict(atividade)
-#             for atividade in getattr(db_plano_trabalho, "atividades", list())
-#         ],
-#         "id_atividade",
-#     )
-
-#     # cada atividade a ser modificada
-#     patch_atividades = util.list_to_dict(
-#         plano_trabalho.dict(exclude_unset=True).get("atividades", list()),
-#         "id_atividade",
-#     )
-
-#     merged_atividades = util.merge_dicts(db_atividades, patch_atividades)
-#     merged_plano_trabalho["atividades"] = util.dict_to_list(
-#         merged_atividades, "id_atividade"
-#     )
-
-#     # tenta validar o esquema
-
-#     # para validar o esquema, é necessário ter o atributo atividades,
-#     # mesmo que seja uma lista vazia
-#     if merged_plano_trabalho.get("atividades", None) is None:
-#         merged_plano_trabalho["atividades"] = []
-#     # valida o esquema do plano de trabalho atualizado
-#     try:
-#         merged_schema = schemas.PlanoTrabalhoSchema(**merged_plano_trabalho)
-#     except ValidationError as e:
-#         raise HTTPException(
-#             status.HTTP_422_UNPROCESSABLE_ENTITY, detail=json.loads(e.json())
-#         ) from e
-
-#     crud.update_plano_trabalho(db, merged_schema, user.cod_unidade)
-#     return merged_plano_trabalho
-
-
-# Esconde alguns métodos da interface OpenAPI
-def public_facing_openapi():
-    "Cria o esquema da OpenAPI disponível ao público externo."
-    if app.openapi_schema:
-        return app.openapi_schema
-    openapi_schema = get_openapi(
-        title=app.title,
-        description=app.description,
-        version=app.version,
-        routes=app.routes,
-    )
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
-
-
-app.openapi = public_facing_openapi

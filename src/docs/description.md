@@ -22,14 +22,7 @@ para descobrir mais detalhes e quais campos são obrigatórios para as
 Atividades e os Planos de Trabalho.
 
 -------
-## Gestão de Usuários
 
-O cadastro de usuários é feito pela aplicação Fief. 
-
-Para um passo a passo de como fazer a gestão de usuários, consulte a
-[documentação](https://github.com/gestaogovbr/api-pgd/blob/main/docs/gestao-de-usuários.md).
-
--------
 ## Endpoints
 
 A API consiste em três endpoints principais.
@@ -38,11 +31,38 @@ Como algumas entidades fazem referência a outras, as que são referenciadas
 precisam ser enviadas primeiro. Por isso, os dados devem ser enviados
 na seguinte ordem:
 
-1. Participantes
-2. Planos de Entrega
-3. Planos de Trabalho
+1. Auth
+2. Participantes
+3. Planos de Entrega
+4. Planos de Trabalho
 
-### Planos de Entregas
+### 1. Auth
+
+Os **Usuários** podem criar, editar e deletar novos usuários ou apenas
+consultar dados de Participantes, Planos de Entrega e Planos de Trabalho
+conforme a unidade organizacional que pertence.
+
+Campos utilizados:
+
+* `username/email`: Em formato foo@oi.com;
+* `password`;
+* `is_admin`: Se pode criar, editar e deletar usuários;
+* `disabled`: Se está ativo. Se pode consultar dados na api;
+* `cod_SIAPE_instituidora`: Unidade que pertence.
+
+### 2. Participantes
+
+* O `cpf_participante` deve possuir exatamente 11 dígitos e sem máscaras.
+* A `matricula_siape` deve possuir 7 dígitos.
+* `jornada_trabalho_semanal` deve ser maior que 0.
+* Valores permitidos para a `modalidade_execucao`:
+  * `1`: Presencial;
+  * `2`: Teletrabalho Parcial;
+  * `3`: Teletrabalho Integral;
+  * `4`: Teletrabalho com Residência no Exterior.
+
+
+### 3. Planos de Entregas
 
 Os **Planos de Entregas** representam as entregas previstas para aquela
 unidade no âmbito do Programa de Gestão. Eles devem seguir as seguintes
@@ -55,13 +75,13 @@ regras:
 **Atenção:** os Planos de Entrega devem ser enviados antes dos Planos de
 Trabalho.
 
-#### Entrega
+#### 3.1. Entrega
 
 * Para o campo `tipo_meta` são permitidos os seguintes valores:
   * `1`: absoluto
   * `2`: percentual
 
-### Planos de Trabalho
+### 3.2. Planos de Trabalho
 
 Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
 * O `id_plano_entrega_unidade` deve ser único para cada Plano de Trabalho.
@@ -76,7 +96,7 @@ Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
   `data_termino_plano`) entre diferentes Planos de Entrega na mesma
   unidade (`cod_SIAPE_unidade_plano`) e mesmo participante.
 
-#### Contribuição
+#### 3.2.1. Contribuição
 
 * Valores permitidos para a `tipo_contribuicao`:
   * `1`: Contribuição para entrega da própria unidade de execução do
@@ -89,22 +109,11 @@ Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
     inclusive de outros órgãos e entidades.
 
 
-#### Consolidação
+#### 3.2.2. Consolidação
 
 * A `data_inicio_registro` da consolidação deve ser maior ou igual que a
   `data_inicio_plano` do Plano de Trabalho.
 
-
-### Participante
-
-* O `cpf_participante` deve possuir exatamente 11 dígitos e sem máscaras.
-* A `matricula_siape` deve possuir 7 dígitos.
-* `jornada_trabalho_semanal` deve ser maior que 0.
-* Valores permitidos para a `modalidade_execucao`:
-  * `1`: Presencial;
-  * `2`: Teletrabalho Parcial;
-  * `3`: Teletrabalho Integral;
-  * `4`: Teletrabalho com Residência no Exterior.
 
 -------
 

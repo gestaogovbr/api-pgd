@@ -9,3 +9,4 @@ mnt/
 .env
 .pyenv
 .pytest_cache
+.DS_Store

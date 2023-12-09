@@ -1,19 +1,18 @@
 """
 Funções auxiliares e fixtures dos testes.
 """
+
 import os
 import sys
 import json
 from typing import Generator, Optional
 
 import httpx
-
 from fastapi.testclient import TestClient
-from httpx import Client
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-from fief_admin import FiefAdminHelper
+
 from crud import (
     truncate_plano_entregas,
     truncate_plano_trabalho,
@@ -21,33 +20,125 @@ from crud import (
 )
 from api import app
 
-# Fief admin helper object
-fief_admin = FiefAdminHelper(
-    api_token=os.environ.get("FIEF_MAIN_ADMIN_API_KEY"),
-    base_url=os.environ.get("FIEF_BASE_TENANT_URL"),
-)
-
 USERS_CREDENTIALS = [
     {
         "username": "test1@api.com",
+        "email": "test1@api.com",
+        "password": "secret1",
+        "is_admin": True,
+        "disabled": False,
         "cod_SIAPE_instituidora": 1,
     },
     {
         "username": "test2@api.com",
+        "email": "test2@api.com",
+        "password": "secret2",
+        # "is_admin": False, # defaults set to False
+        # "disabled": False, # defaults set to False
         "cod_SIAPE_instituidora": 2,
     },
 ]
 
+API_PGD_ADMIN_USER = os.environ.get("API_PGD_ADMIN_USER")
+API_PGD_ADMIN_PASSWORD = os.environ.get("API_PGD_ADMIN_PASSWORD")
 
-def prepare_header(username: Optional[str]) -> dict:
+API_BASE_URL = "http://localhost:5057"
+
+
+def get_bearer_token(username: str, password: str) -> str:
+    """Login on api-pgd and returns token to nexts authenticaded calls.
+
+    Args:
+        username (str): username as email (foo@oi.com)
+        password (str): user password
+
+    Returns:
+        str: Bearer token of authenticated user
+    """
+
+    headers = {
+        "accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    data = {
+        "username": username,
+        "password": password,
+    }
+
+    with httpx.Client() as client:
+        response = client.post(f"{API_BASE_URL}/token", headers=headers, data=data)
+        response.raise_for_status()
+
+        return response.json()["access_token"]
+
+
+def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
     """Prepara o cabeçalho para ser utilizado em requisições."""
     headers = {"accept": "application/json", "Content-Type": "application/json"}
 
-    if username:
-        user_token = fief_admin.get_access_token_for_user(email=username)
+    if username and password:
+        user_token = get_bearer_token(username, password)
         headers["Authorization"] = f"Bearer {user_token}"
 
     return headers
+
+
+def get_all_users(username: str, password: str) -> list[str]:
+    """Get all usersnames (emails) registered on api-pgd database.
+
+    Args:
+        username (str): username as email (foo@oi.com)
+        password (str): user password
+
+    Returns:
+        list[str]: list of usernames (emails) registered on api-pgd
+            database
+    """
+
+    headers = prepare_header(username, password)
+    response = httpx.get(f"{API_BASE_URL}/users", headers=headers)
+    response.raise_for_status()
+    users_email = [user["email"] for user in response.json()]
+
+    return users_email
+
+
+def delete_user(username: str, password: str, del_user_email: str) -> httpx.Response:
+    """Delete user from api-pgd database.
+
+    Args:
+        username (str): username as email (foo@oi.com)
+        password (str): user password
+        del_user_email (str): email (username) of the user to be deleted
+
+    Returns:
+        httpx.Response: httpx.Response
+    """
+
+    headers = prepare_header(username, password)
+    response = httpx.delete(f"{API_BASE_URL}/user/{del_user_email}", headers=headers)
+    response.raise_for_status()
+
+    return response
+
+def create_user(username: str, password: str, new_user: dict) -> httpx.Response:
+    """_summary_
+
+    Args:
+        username (str): username as email (foo@oi.com)
+        password (str): user password
+        new_user (dict): data of the user to be created
+
+    Returns:
+        httpx.Response: httpx.Response
+    """
+
+    headers = prepare_header(username, password)
+    new_user_pop = {key: value for key, value in new_user.items() if key != "username"}
+    response = httpx.put(f"{API_BASE_URL}/user/{new_user['email']}", headers=headers, json=new_user_pop)
+    response.raise_for_status()
+
+    return response
 
 
 # Fixtures
@@ -92,7 +183,7 @@ def fixture_input_part() -> dict:
 
 
 @pytest.fixture(scope="module", name="client")
-def fixture_client() -> Generator[Client, None, None]:
+def fixture_client() -> Generator[httpx.Client, None, None]:
     with TestClient(app) as c:
         yield c
 
@@ -100,8 +191,8 @@ def fixture_client() -> Generator[Client, None, None]:
 @pytest.fixture(scope="module", name="admin_credentials")
 def fixture_admin_credentials() -> dict:
     return {
-        "username": "admin@api.com",
-        "cod_SIAPE_instituidora": 1,
+        "username": API_PGD_ADMIN_USER,
+        "password": API_PGD_ADMIN_PASSWORD,
     }
 
 
@@ -117,7 +208,7 @@ def fixture_user2_credentials() -> dict:
 
 @pytest.fixture()
 def example_pe(
-    client: Client,
+    client: httpx.Client,
     input_pe: dict,
     user1_credentials: dict,
     header_usr_1: dict,
@@ -133,7 +224,7 @@ def example_pe(
 
 @pytest.fixture()
 def example_pt(
-    client: Client, input_pt: dict, user1_credentials: dict, header_usr_1: dict
+    client: httpx.Client, input_pt: dict, user1_credentials: dict, header_usr_1: dict
 ):
     """Cria um Plano de Trabalho do Participante como exemplo."""
     client.put(
@@ -146,7 +237,7 @@ def example_pt(
 
 @pytest.fixture()
 def example_part(
-    client: Client, input_part: dict, user1_credentials: dict, header_usr_1: dict
+    client: httpx.Client, input_part: dict, user1_credentials: dict, header_usr_1: dict
 ):
     client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
@@ -173,36 +264,25 @@ def truncate_participantes():
 
 @pytest.fixture(scope="module", name="truncate_users")
 def fixture_truncate_users(admin_credentials: dict):
-    for user in USERS_CREDENTIALS + [admin_credentials]:
-        user_search = fief_admin.search_user(email=user["username"]).json()
-        if user_search["count"] > 0:
-            response = fief_admin.delete_user(email=user["username"])
+    for del_user_email in get_all_users(
+        admin_credentials["username"], admin_credentials["password"]
+    ):
+        if del_user_email != admin_credentials["username"]:
+            response = delete_user(
+                admin_credentials["username"], admin_credentials["password"], del_user_email
+            )
             response.raise_for_status()
-
-
-@pytest.fixture(scope="module", name="register_admin")
-def fixture_register_admin(
-    truncate_users,  # pylint: disable=unused-argument
-    admin_credentials: dict,
-) -> httpx.Response:
-    response = fief_admin.register_user(
-        email=admin_credentials["username"],
-        cod_SIAPE_instituidora=admin_credentials["cod_SIAPE_instituidora"],
-    )
-    response.raise_for_status()
-    return response
 
 
 @pytest.fixture(scope="module", name="register_user_1")
 def fixture_register_user_1(
     truncate_users,  # pylint: disable=unused-argument
     user1_credentials: dict,
+    admin_credentials: dict,
 ) -> httpx.Response:
-    response = fief_admin.register_user(
-        email=user1_credentials["username"],
-        cod_SIAPE_instituidora=user1_credentials["cod_SIAPE_instituidora"],
-    )
+    response = create_user(admin_credentials["username"], admin_credentials["password"], user1_credentials)
     response.raise_for_status()
+
     return response
 
 
@@ -210,18 +290,16 @@ def fixture_register_user_1(
 def fixture_register_user_2(
     truncate_users,  # pylint: disable=unused-argument
     user2_credentials: dict,
+    admin_credentials: dict,
 ) -> httpx.Response:
-    response = fief_admin.register_user(
-        email=user2_credentials["username"],
-        cod_SIAPE_instituidora=user2_credentials["cod_SIAPE_instituidora"],
-    )
+    response = create_user(admin_credentials["username"], admin_credentials["password"], user2_credentials)
     response.raise_for_status()
-    return response
 
+    return response
 
 @pytest.fixture(scope="module")
 def header_not_logged_in() -> dict:
-    return prepare_header(username=None)
+    return prepare_header(username=None, password=None)
 
 
 @pytest.fixture(scope="module", name="header_admin")
@@ -230,7 +308,9 @@ def fixture_header_admin(
 ) -> dict:
     """Authenticate in the API as an admin and return a dict with bearer
     header parameter to be passed to API's requests."""
-    return prepare_header(username=admin_credentials["username"])
+    return prepare_header(
+        username=admin_credentials["username"], password=admin_credentials["password"]
+    )
 
 
 @pytest.fixture(scope="module", name="header_usr_1")
@@ -239,7 +319,9 @@ def fixture_header_usr_1(
 ) -> dict:
     """Authenticate in the API as user1 and return a dict with bearer
     header parameter to be passed to API's requests."""
-    return prepare_header(username=user1_credentials["username"])
+    return prepare_header(
+        username=user1_credentials["email"], password=user1_credentials["password"]
+    )
 
 
 @pytest.fixture(scope="module", name="header_usr_2")
@@ -248,4 +330,6 @@ def fixture_header_usr_2(
 ) -> dict:
     """Authenticate in the API as user2 and return a dict with bearer
     header parameter to be passed to API's requests."""
-    return prepare_header(username=user2_credentials["username"])
+    return prepare_header(
+        username=user2_credentials["email"], password=user2_credentials["password"]
+    )

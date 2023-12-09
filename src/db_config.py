@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-SQLALCHEMY_DATABASE_URL = os.environ["SQLALCHEMY_DATABASE_URL"]
+SQLALCHEMY_DATABASE_URL = os.environ.get("SQLALCHEMY_DATABASE_URL")
 
 engine = create_async_engine(SQLALCHEMY_DATABASE_URL)
 sync_engine = create_engine(SQLALCHEMY_DATABASE_URL)
@@ -24,7 +24,6 @@ class Base(DeclarativeBase):
 
 async def create_db_and_tables():
     async with engine.begin() as conn:
-        # await conn.run_sync(Base.metadata.drop_all)  # remover depois
         await conn.run_sync(Base.metadata.create_all)
 
 
@@ -39,6 +38,7 @@ async def get_db():
         yield db
     finally:
         db.aclose()
+
 
 class DbContextManager:
     def __init__(self):

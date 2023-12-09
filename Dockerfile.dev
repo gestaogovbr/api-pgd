@@ -16,3 +16,4 @@ RUN apt-get update && \
         /usr/share/man \
         /usr/share/doc \
         /usr/share/doc-base
+

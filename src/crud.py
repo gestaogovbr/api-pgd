@@ -3,12 +3,13 @@
 from datetime import datetime, date
 from typing import Optional
 
-from sqlalchemy import select, and_, or_, func
+from sqlalchemy import select, and_, func
 from sqlalchemy.sql import text
 from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException
+
 import models, schemas
 from db_config import DbContextManager, SyncSession
-from fastapi import HTTPException
 
 
 async def get_plano_trabalho(
