@@ -3,7 +3,7 @@ name: Build and Deploy v0.1.x Docker Image
 on:
   push:
     tags:
-      - v0.1.*
+      - '*'
 
 env:
   REGISTRY: ghcr.io
@@ -43,6 +43,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
+          build-args: TAG_NAME=${{ env.TAG_NAME  }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Push Docker image Tag
