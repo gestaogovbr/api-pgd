@@ -15,7 +15,5 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build api-pgd
       run: make build
-    # - name: Up services
-    #   run: make up
     - name: Run tests
       run: make tests
