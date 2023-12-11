@@ -9,13 +9,13 @@ on:
 
 jobs:
   build:
-    name: build, up and test
+    name: build and test
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Build api-pgd
       run: make build
-    - name: Up services
-      run: make up
+    # - name: Up services
+    #   run: make up
     - name: Run tests
       run: make tests

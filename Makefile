@@ -18,6 +18,4 @@ test:
 
 .PHONY: build
 build:
-	docker compose down ; docker rmi ghcr.io/gestaogovbr/api-pgd:latest-dev --force ; docker build --rm -t ghcr.io/gestaogovbr/api-pgd:latest-dev -f Dockerfile.dev .
-
-
+	docker compose down ; docker rmi ghcr.io/gestaogovbr/api-pgd:latest --force ; docker build --rm -t ghcr.io/gestaogovbr/api-pgd:latest .

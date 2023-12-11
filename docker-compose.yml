@@ -19,7 +19,7 @@ services:
       retries: 5
 
   api-pgd:
-    image: ghcr.io/gestaogovbr/api-pgd:latest-dev
+    image: ghcr.io/gestaogovbr/api-pgd:latest
     container_name: api-pgd
     depends_on:
       db:
@@ -29,6 +29,7 @@ services:
     volumes:
         - ./:/api-pgd
     environment:
+      TAG_NAME: dev
       ALGORITHM: HS256
       API_PGD_ADMIN_USER: johndoe@oi.com
       API_PGD_ADMIN_PASSWORD: secret
@@ -38,8 +39,6 @@ services:
       # to new `SECRET` run openssl rand -hex 32
       SECRET: b8a3054ba3457614e95a88cc0807384430c1b338a54e95e4245f41e060da68bc
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
-    command:
-      bash -c "cd /api-pgd/src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:5057/docs"]
       interval: 5s

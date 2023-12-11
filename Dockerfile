@@ -22,6 +22,9 @@ RUN apt-get update && \
         /usr/share/doc \
         /usr/share/doc-base
 
-COPY src/ ./
+COPY src/ src/
 
-ENTRYPOINT ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "5057"]
+EXPOSE 5057
+
+ENTRYPOINT ["sh", "-c", "cd /api-pgd/src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"]
+
