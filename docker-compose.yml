@@ -20,6 +20,7 @@ services:
 
   api-pgd:
     image: ghcr.io/gestaogovbr/api-pgd:latest
+    pull_policy: always
     container_name: api-pgd
     depends_on:
       db:
