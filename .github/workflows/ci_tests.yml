@@ -12,6 +12,7 @@ jobs:
     name: build and test
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v4
     - name: Build api-pgd
       run: make build
     - name: Run tests
