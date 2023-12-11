@@ -1,7 +1,12 @@
 FROM python:3.11.4-slim-bullseye
-RUN useradd -ms /bin/bash -d /home/api-pgd api-pgd
-WORKDIR /home/api-pgd
+
+ARG TAG_NAME
+ENV TAG_NAME=$TAG_NAME
+
+WORKDIR /api-pgd
+
 COPY requirements.txt requirements.txt
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
     python3 -m pip install --upgrade pip && \
@@ -16,6 +21,10 @@ RUN apt-get update && \
         /usr/share/man \
         /usr/share/doc \
         /usr/share/doc-base
-RUN chown -R api-pgd:api-pgd ./
-COPY ./ /home/api-pgd
-USER api-pgd
+
+COPY src/ src/
+
+EXPOSE 5057
+
+ENTRYPOINT ["sh", "-c", "cd /api-pgd/src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"]
+

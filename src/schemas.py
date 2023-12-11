@@ -6,13 +6,14 @@ Pydantic: https://docs.pydantic.dev/2.0/
 """
 
 from typing import List, Optional
-from datetime import date
+from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from pydantic import model_validator, field_validator
 
 from models import PlanoEntregas, PlanoTrabalho, Entrega
 from models import Consolidacao, Contribuicao, StatusParticipante
+from models import Users
 from util import over_a_year
 
 
@@ -520,3 +521,49 @@ class ListaStatusParticipanteSchema(BaseModel):
         title="Contribuições",
         description="Lista de Contribuições planejadas para o Plano de Trabalho.",
     )
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
+
+class UsersInputSchema(BaseModel):
+    __doc__ = Users.__doc__
+    model_config = ConfigDict(from_attributes=True)
+    email: EmailStr = Field(
+        title="e-mail do usuário",
+        description=Users.email.comment,
+    )
+
+class UsersGetSchema(UsersInputSchema):
+    __doc__ = Users.__doc__
+    model_config = ConfigDict(from_attributes=True)
+    is_admin: bool = Field(
+        title="se o usuário será administrador da api-pgd",
+        default=False,
+        description=Users.is_admin.comment,
+    )
+    disabled: bool = Field(
+        title="se o usuário está ativo",
+        default=False,
+        description=Users.disabled.comment,
+    )
+    cod_SIAPE_instituidora: int = Field(
+        title="Código SIAPE da organização que instituiu o PGD",
+        description=Users.cod_SIAPE_instituidora.comment,
+    )
+
+class UsersSchema(UsersGetSchema):
+    password: str = Field(
+        title="password encriptado",
+        description=Users.password.comment,
+    )
+
+    @field_validator("cod_SIAPE_instituidora")
+    @staticmethod
+    def must_be_positive(cod_unidade: int) -> int:
+        if cod_unidade < 1:
+            raise ValueError("cod_SIAPE inválido")
+        return cod_unidade

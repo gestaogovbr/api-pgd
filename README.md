@@ -1,19 +1,42 @@
-# API do Programa de Gestão (PGD)
-
-Repositório com o código-fonte da API do Programa de Gestão (PGD).
-
 [![Docker Image Build & CI Tests](https://github.com/gestaogovbr/api-pgd/actions/workflows/ci_tests.yml/badge.svg)](https://github.com/gestaogovbr/api-pgd/actions/workflows/ci_tests.yml)
 
+## TL;DR (too long; didn't read)
 
-## Contextualização
+Para iniciar e configurar os serviços com configurações default e já começar
+a desenvolver:
 
-O
-[Programa de Gestão](https://www.gov.br/servidor/pt-br/assuntos/programa-de-gestao),
+```bash
+git clone git@github.com:gestaogovbr/api-pgd.git && \
+cd api-pgd && \
+make up
+```
+
+> Exemplos de uso da api em [examples/](examples/)
+
+---
+
+## Índice
+
+(para começar a desenvolver)
+* [1. Contextualização](#1-contextualização)
+* [2. Init, up and down dos serviços em dev](#2-init-up-and-down-dos-serviços-em-dev)
+* [3. Rodando testes](#3-rodando-testes)
+---
+(informações extras)
+* [4. Informações e Configurações adicionais](#4-informações-e-configurações-adicionais)
+* [5. Arquitetura da solução](#5-arquitetura-da-solução)
+* [6. Dicas](#6-dicas)
+
+---
+
+## 1. Contextualização
+
+O [Programa de Gestão](https://www.gov.br/servidor/pt-br/assuntos/programa-de-gestao),
 segundo a
 [Instrução Normativa Conjunta SEGES-SGPRT n.º 24, de 28 de julho de 2023](https://www.in.gov.br/en/web/dou/-/instrucao-normativa-conjunta-seges-sgprt-/mgi-n-24-de-28-de-julho-de-2023-499593248),
 da Secretaria de Gestão e Inovação (SEGES e da Secretaria de Gestão de
-Pessoas e de Relações de Trabalho (SGPRT) do Ministério da Gestão e da
-Inovação em Serviços Públicos (MGI), é um:
+Pessoas e de Relações de Trabalho (SGPRT) do
+[Ministério da Gestão e da Inovação em Serviços Públicos (MGI)](https://www.gov.br/gestao/pt-br), é um:
 
 > programa indutor de melhoria de desempenho institucional no serviço
 > público, com foco na vinculação entre o trabalho dos participantes, as
@@ -27,170 +50,67 @@ O objetivo desta API integradora é receber os dados enviados por diversos
 que operacionalizam o PGD no âmbito de sua organização, de modo a
 possibilitar a sua consolidação em uma base de dados.
 
+## 2. Init, up and down dos serviços em dev
 
-## Instalando a API em ambiente de desenvolvimento
+### 2.1. Instalar Docker CE
 
-1. Instalar Docker CE (as [instruções](https://docs.docker.com/get-docker/)
-   variam conforme o sistema operacional).
+Instruções em [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/)
+variam conforme o sistema operacional.
 
-2. Clonar o repositório:
+### 2.2. Clonar o repositório
 
-    ```bash
-    git clone git@github.com:gestaogovbr/api-pgd.git
-    ```
+```bash
+git clone git@github.com:gestaogovbr/api-pgd.git
+```
 
-3. **Variáveis de ambiente do Fief**
+### 2.3. Variáveis de ambiente
 
-   A gestão de usuários é realizada por uma aplicação chamada Fief. Para
-   obter as suas configurações iniciais, as quais serão preenchidas no
-   passo seguinte, 
+São definidas no [docker-compose.yml](docker-compose.yml):
+  * [db](docker-compose.yml#L11):
+    - `POSTGRES_USER`
+    - `POSTGRES_PASSWORD`
+    - `POSTGRES_DB`
+  * [api-pgd](docker-compose.yml#L31):
+    - `SQLALCHEMY_DATABASE_URL`
+    - `SECRET`
+    - `ACCESS_TOKEN_EXPIRE_MINUTES`
+    - `API_PGD_ADMIN_USER`
+    - `API_PGD_ADMIN_PASSWORD`
 
-   Será pedido um endereço de e-mail e uma nova senha para o usuário
-   administrador do Fief.
+### 2.4. Iniciando os serviços (`banco` e `api-pgd`)
 
-   O script irá criar o arquivo .env as configurações necessárias referentes a:
-   
-   * o servidor smtp para envio de e-mails,
-   * o banco de dados (Postgres), e
-   * a ferramenta de gestão de usuários (Fief), gerados no passo anterior.
+```bash
+make up
+```
 
-   Utilize o comando:
+> ⚠️  Caso apareçam erros de permissão em `./mnt/pgdata`, pare os containers
+> (`ctrl` + `C`) e digite:
+>
+> ```bash
+> sudo chown -R 999 ./mnt/pgdata/
+> ```
+>
+> Para ajustar as permissões das pastas `./mnt/pgdata/` e todas as suas
+> subpastas
 
-   ```bash
-   make init-env
-   ```
+### 2.5. Conferir Acessos
 
-4. Na gestão de usuários e controle de acesso da API é usada a aplicação
-   [Fief](https://www.fief.dev/). Para o seu correto funcionamento pela
-   interface Swagger UI, é necessário que ela seja alcançável pelo mesmo
-   host, tanto no navegador quanto dentro do container. Para isso, em
-   ambiente de desenvolvimento, será necessário estabelecer um alias
-   `fief` para o host `localhost` no arquivo `/etc/hosts`. Abra-o e
-   acrescente a seguinte linha:
+  * [`http://localhost:5057/docs`](http://localhost:5057/docs): swagger ui da api-pgd
+  * [`http://localhost:5057`](http://localhost:5057): endpoint da api-pgd
 
-   ```
-   127.0.1.1	fief
-   ```
+### 2.6. Desligar serviços
 
-5. Para iniciar a API, suba os containers:
+  ```bash
+  make down
+  ```
+## 3. Rodando testes
 
-   ```bash
-   make up
-   ```
-
-   > ⚠️ Caso apareçam erros de permissão em "database", pare os containers
-   > (`ctrl` + `C`) e digite:
-   >
-   > ```bash
-   > sudo chown -R 999 ./database/
-   > ```
-   >
-   > Para ajustar as permissões das pastas `database` e todas as suas
-   > subpastas
-
-6. Por fim, é necessário configurar o Fief para incluir dados necessários
-   ao funcionamento da API PGD (URI de autenticação, campos personalizados
-   de usuários). Use:
-
-   ```bash
-   make fief-configure-instance
-   ```
-
-   Estarão disponíveis os seguintes serviços:
-
-   * http://localhost:5057 -- A API e sua interface Swagger UI em
-     http://localhost:5057/docs para interagir e testar suas funcionalidades
-   * http://fief:8000/admin/ -- interface do Fief para cadastro de
-     usuários da API e outras configurações
-
-
-### Usuário administrador e cadastro de usuários
-
-Ao realizar a configuração inicial do Fief já é criado um usuário
-administrador, o qual pode alterar algumas configurações e cadastrar
-novos usuários.
-
-O usuário e senha desse usuário administrador ficam configurados nas
-variáveis de ambiente `FIEF_MAIN_USER_EMAIL` e `FIEF_MAIN_USER_PASSWORD`
-(vide passos 4 e 5 da configuração do ambiente).
-
-
-### Ajustando os containers
-
-Durante o desenvolvimento é comum a necessidade de inclusão de novas
-bibliotecas python ou a instalação de novos pacotes Linux. Para que as
-mudanças surtam efeitos é necessário apagar os containers e refazer a
-imagem docker.
-
-1. Desligando e removendo os contêineres:
-
-    ```bash
-    make down
-    ```
-
-2. Construindo novamente o Dockerfile para gerar uma nova imagem:
-
-    ```bash
-    make rebuild
-    ```
-
-    O comando `rebuild` usa o parâmetro `--rm` do comando `docker` para
-    remover a imagem criada anteriormente.
-
-3. Agora a aplicação já pode ser subida novamente:
-
-    ```bash
-    make up
-    ```
-
-    Alternativamente você pode subir a aplicação sem o parâmetro _detached_
-    `-d` possibilitando visualizar o log em tempo real, muito útil durante o
-    desenvolvimento. Para isso use o comando abaixo:
-
-    ```bash
-    docker compose up
-    ```
-
-
-## Arquitetura da solução
-
-O arquivo `docker-compose.yml` descreve a receita dos contêineres que
-compõem a solução. Atualmente são utilizados 4 containers:
-
-* um rodando o sistema gerenciador de banco de dados **Postgres 11**,
-* outro rodando a **API**,
-* outro rodando o sistema de gestão de usuários e controle de acesso
-  **Fief**, e
-
-
-## Dicas
-
-* Para depuração, caso necessite ver como está o banco de dados no ambiente
-  local, altere a porta do Postgres no `docker-compose.yml` de `"5432"`
-  para `"5432:5432"` e o banco ficará exposto no host. Depois, basta usar
-  uma ferramenta como o DBeaver para acessar o banco.
-* O login e senha do Fief são definidos no item 5 do
-  passo a passo em
-  "[Instalando a API em ambiente de desenvolvimento](#instalando-a-api-em-ambiente-de-desenvolvimento)".
-  Depois disso eles ficam no arquivo `.env`, bem como o `client_id` e
-  o `client_secret` usados na autenticação da API (variáveis
-  `FIEF_CLIENT_ID` e `FIEF_CLIENT_SECRET`, respectivamente).
-* O login, senha e nome do banco do Postgres estão em variáveis de
-  ambiente. A forma mais prática de fazer isto em ambiente de
-  desenvolvimento é criando-se um arquivo `.env`, conforme o item 6 do
-  passo a passo em
-  "[Instalando a API em ambiente de desenvolvimento](#instalando-a-api-em-ambiente-de-desenvolvimento)".
-* Para fazer *deploy* usando algum outro banco de dados externo, basta
-  redefinir a variável de ambiente `SQLALCHEMY_DATABASE_URL` no
-  contêiner da aplicação.
-
-
-## Rodando testes
-Para executar os testes:
-
+### 3.1. Todos
 ```bash
 make tests
 ```
+
+### 3.2. Selecionado
 
 Para rodar uma bateria de testes específica, especifique o arquivo que
 contém os testes desejados. Por exemplo, os testes sobre atividades:
@@ -198,3 +118,54 @@ contém os testes desejados. Por exemplo, os testes sobre atividades:
 ```bash
 make test TEST_FILTER=test_create_huge_plano_trabalho
 ```
+
+---
+---
+
+## 4. Informações e Configurações adicionais
+
+>  **[ATENÇÃO]:** Se você chegou até aqui seu ambiente está funcionando e pronto
+> para desenvolvimento.
+>  As sessões a seguir são instruções para edição de algumas configurações do ambiente.
+
+### 4.1. Atualizando imagem do api-pgd
+
+Durante o desenvolvimento é comum a necessidade de inclusão de novas
+bibliotecas `python` ou a instalação de novos pacotes `Linux`. Para que
+as mudanças surtam efeitos é necessário apagar os containers e refazer a
+imagem docker.
+
+```bash
+make build
+```
+
+Para subir os serviços novamente:
+
+```bash
+make up
+```
+
+> Caso deseje subir os serviços com os logs na mesma sessão do terminal:
+> usar o comando `$ docker compose up --wait` em vez de `$ make up`
+
+## 5. Arquitetura da solução
+
+O arquivo [docker-compose.yml](docker-compose.yml) descreve a `receita`
+dos contêineres que compõem a solução. Atualmente são utilizados `2 containers`:
+
+* [db](docker-compose.yml#L4); [postgres:15](https://hub.docker.com/_/postgres)
+* [api-pgd](docker-compose.yml#L21); [ghcr.io/gestaogovbr/api-pgd:latest](Dockerfile)
+
+## 6. Dicas
+
+* Exemplos de uso da api em [examples/](examples/)
+* Para depuração, caso necessite ver como está o banco de dados no ambiente
+  local, altere a porta do Postgres no [docker-compose.yml](docker-compose.yml#L8)
+  de `"5432"` para `"5432:5432"` e o banco ficará exposto no host via `localhost`.
+  Depois, basta usar uma ferramenta como o [dbeaver](https://dbeaver.io/)
+  para acessar o banco.
+* Para subir o ambiente usando algum outro banco de dados externo, basta
+  redefinir a variável de ambiente `SQLALCHEMY_DATABASE_URL` no
+  [docker-compose.yml](docker-compose.yml#L37).
+
+

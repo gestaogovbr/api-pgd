@@ -1,28 +1,19 @@
-name: Docker Image Build & CI Tests
+name: cicd tests
 
 on:
   push:
     branches:
       - main
-    tags: [ tmp-rerun ]
   pull_request:
     branches: [ main ]
 
 jobs:
-
   build:
-
     name: build and test
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up environment variables for testing
-      run: make init-env-tests
-    - name: Run all service containers
-      run: make up
-    - name: Configure Fief at runtime
-      run: make fief-config
+    - uses: actions/checkout@v4
+    - name: Build api-pgd
+      run: make build
     - name: Run tests
       run: make tests

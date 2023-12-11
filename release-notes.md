@@ -1,5 +1,16 @@
 # Release notes
 
+## 2.1.0
+
+* Change auth from `fief` to bare on `fastapi` (b-encrypted end to end)
+* Change python packages:
+  - `fastapi==0.103.0` to `fastapi==0.104.1`
+  - `pydantic>=2` to `pydantic[email]>=2`
+  - `fief-client[fastapi]==0.17.0` to `None`
+  - `None` to `python-jose[cryptography]==3.3.0`
+  - `None` to passlib[bcrypt]==1.7.4
+  - `None` to python-multipart==0.0.6
+
 ## 2.0.0
 
 * Update environment to `python` 3.11.4

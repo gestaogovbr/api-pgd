@@ -1,5 +1,5 @@
 __pycache__
-database/
+mnt/
 .cache
 .local
 .ipython
@@ -9,4 +9,4 @@ database/
 .env
 .pyenv
 .pytest_cache
-pgadmin_data/
+.DS_Store
