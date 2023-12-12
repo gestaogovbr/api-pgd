@@ -139,6 +139,11 @@ imagem docker.
 make build
 ```
 
+> O [docker-compose](docker-compose.yml) está configurado para sempre fazer
+> pull da imagem no `ghcr`. Caso você edite o `Dockerfile`, para conferir
+> as alterações no ambiente local, comente a linha
+> [pull_policy: always](docker-compose.yml#L23).
+
 Para subir os serviços novamente:
 
 ```bash
