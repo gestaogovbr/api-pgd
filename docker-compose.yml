@@ -20,7 +20,6 @@ services:
 
   api-pgd:
     image: ghcr.io/gestaogovbr/api-pgd:latest
-    pull_policy: always
     container_name: api-pgd
     depends_on:
       db:
@@ -40,8 +39,24 @@ services:
       # to new `SECRET` run openssl rand -hex 32
       SECRET: b8a3054ba3457614e95a88cc0807384430c1b338a54e95e4245f41e060da68bc
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
+      MAIL_USERNAME: ''
+      MAIL_FROM: admin@api-pgd.gov.br
+      MAIL_PORT: 25
+      MAIL_SERVER: smtp4dev
+      MAIL_FROM_NAME: admin@api-pgd.gov.br
+      MAIL_PASSWORD: ''  
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:5057/docs"]
       interval: 5s
       timeout: 5s
       retries: 20
+
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    restart: always
+    ports:
+      - '5000:80'
+      - '25:25' # Change the number before : to the port the SMTP server should be accessible on
+      - '143:143' # Change the number before : to the port the IMAP server should be accessible on
+    environment:
+      - ServerOptions__HostName=smtp4dev
