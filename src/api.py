@@ -11,12 +11,16 @@ from fastapi import Depends, FastAPI, HTTPException, status, Header, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 from sqlalchemy.exc import IntegrityError
+from fastapi_mail import FastMail, MessageSchema, MessageType
+
 
 import schemas
 import crud
+import logging
 from db_config import DbContextManager, create_db_and_tables
 import crud_auth
 from create_admin_user import init_user_admin
+import email_config
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
@@ -36,7 +40,6 @@ app = FastAPI(
     description=description,
     version=os.environ["TAG_NAME"],
 )
-
 
 @app.on_event("startup")
 async def on_startup():
@@ -217,6 +220,62 @@ async def delete_user(
             detail=f"IntegrityError: {str(exception)}",
         ) from exception
 
+@app.post(
+    "/user/forgot_password/{email}",
+    summary="Recuperação de Acesso",
+    tags=["Auth"],
+)
+async def forgot_password(
+    email: str,
+    db: DbContextManager = Depends(DbContextManager),
+    ) -> schemas.UsersGetSchema:
+
+    user = await crud_auth.get_user(db, email)
+
+    if user:
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = crud_auth.create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
+        
+        return await email_config.send_reset_password_mail(email, access_token)
+            
+    else:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=f"Usuário `{email}` não existe"
+        )
+
+@app.post(
+    "/user/reset_password/{email}",
+    summary="Criar nova senha",
+    tags=["Auth"],
+)
+async def reset_password(
+    token: str,
+    password: str,
+    user: Annotated[
+        schemas.UsersSchema,
+        Depends(crud_auth.get_current_user),
+    ],  
+    db: DbContextManager = Depends(DbContextManager),
+    ) -> schemas.UsersGetSchema:
+
+    """
+    Resets password for a user.
+    """
+    try:
+        await crud_auth.user_reset_password(db, user.email, password)
+        return {"Senha alterada"}
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400, detail=f"{e}")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"{e}")                
+            
+    else:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=f"Usuário `{email}` não existe"
+        )    
 
 # ## DATA --------------------------------------------------
 
