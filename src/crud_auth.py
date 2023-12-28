@@ -234,3 +234,17 @@ async def delete_user(
         await session.commit()
 
     return f"Usuário `{email}` deletado"
+
+async def user_reset_password(db_session: DbContextManager, 
+                              user: schemas.UsersSchema,
+                              email: str, 
+                              new_password: str):
+    
+    user.password = get_password_hash(new_password)
+    async with db_session as session:
+        await session.execute(
+            update(models.Users).filter_by(email=email).values(**user.model_dump())
+        )
+        await session.commit()
+
+    return schemas.UsersSchema.model_validate(user)
