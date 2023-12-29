@@ -228,7 +228,7 @@ async def delete_user(
 async def forgot_password(
     email: str,
     db: DbContextManager = Depends(DbContextManager),
-    ) -> schemas.UsersGetSchema:
+    ) -> schemas.UsersInputSchema:
 
     user = await crud_auth.get_user(db, email)
 
@@ -243,39 +243,28 @@ async def forgot_password(
             status.HTTP_404_NOT_FOUND, detail=f"Usuário `{email}` não existe"
         )
 
-@app.post(
-    "/user/reset_password/{email}",
-    summary="Criar nova senha",
+@app.get(
+    "/user/reset_password/",
+    summary="Criar nova senha a partir do token de acesso",
     tags=["Auth"],
 )
 async def reset_password(
-    token: str,
+    access_token: str,
     password: str,
-    user: Annotated[
-        schemas.UsersSchema,
-        Depends(crud_auth.get_current_user),
-    ],  
     db: DbContextManager = Depends(DbContextManager),
-    ) -> schemas.UsersGetSchema:
+    ):
 
     """
-    Resets password for a user.
+    Gera uma nova senha através do token fornecido por email.
     """
     try:
-        await crud_auth.user_reset_password(db, user.email, password)
-        return {"Senha alterada"}
+        return await crud_auth.user_reset_password(db, access_token, password)
 
     except ValueError as e:
         raise HTTPException(
             status_code=400, detail=f"{e}")
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"{e}")                
-            
-    else:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND, detail=f"Usuário `{email}` não existe"
-        )    
+       
+  
 
 # ## DATA --------------------------------------------------
 
