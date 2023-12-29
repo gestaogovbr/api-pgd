@@ -224,3 +224,12 @@ def test_delete_yourself(client: Client, user1_credentials: dict, header_usr_1: 
     response = client.delete(
         f"/user/{user1_credentials['email']}", headers=header_usr_1)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+# forgot/reset password
+
+def test_forgot_password(client: Client, 
+                         user1_credentials: dict, 
+                         header_usr_1: dict):
+    response = client.post(
+        f"/user/forgot_password/{user1_credentials['email']}", headers=header_usr_1)
+    assert response.status_code == status.HTTP_200_OK
