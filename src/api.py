@@ -106,10 +106,10 @@ async def login_for_access_token(
     tags=["Auth"],
 )
 async def get_users(
-    user_logged: Annotated[
+    user_logged: Annotated[ # pylint: disable=unused-argument
         schemas.UsersSchema,
         Depends(crud_auth.get_current_admin_user),
-    ],  # pylint: disable=unused-argument
+    ],
     db: DbContextManager = Depends(DbContextManager),
 ) -> list[schemas.UsersGetSchema]:
     return await crud_auth.get_all_users(db)
@@ -121,9 +121,9 @@ async def get_users(
     tags=["Auth"],
 )
 async def create_or_update_user(
-    user_logged: Annotated[
+    user_logged: Annotated[  # pylint: disable=unused-argument
         schemas.UsersSchema, Depends(crud_auth.get_current_admin_user)
-    ],  # pylint: disable=unused-argument
+    ],
     user: schemas.UsersSchema,
     email: str,
     db: DbContextManager = Depends(DbContextManager),
@@ -171,10 +171,10 @@ async def create_or_update_user(
     tags=["Auth"],
 )
 async def get_user(
-    user_logged: Annotated[
+    user_logged: Annotated[  # pylint: disable=unused-argument
         schemas.UsersSchema,
         Depends(crud_auth.get_current_admin_user),
-    ],  # pylint: disable=unused-argument
+    ],
     email: str,
     db: DbContextManager = Depends(DbContextManager),
 ) -> schemas.UsersGetSchema:
