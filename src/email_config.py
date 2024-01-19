@@ -1,8 +1,8 @@
 import os
 import logging
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
+from fastapi_mail.errors import DBProvaiderError, ConnectionErrors, ApiError
 from starlette.responses import JSONResponse
-from typing import List
 
 conf = ConnectionConfig(
     MAIL_USERNAME=os.environ["MAIL_USERNAME"],
@@ -41,6 +41,7 @@ async def send_reset_password_mail(email: str,
         fm = FastMail(conf)
         await fm.send_message(message)
         return JSONResponse(status_code=200, content={"message": "Email enviado!"})
-    except Exception as e:
+    except (DBProvaiderError, ConnectionErrors, ApiError) as e:
         logging.error("Erro ao enviar o email %e", e)
-        
+    finally:
+        raise e
