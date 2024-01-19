@@ -66,5 +66,4 @@ async def send_reset_password_mail(email: str,
         return JSONResponse(status_code=200, content={"message": "Email enviado!"})
     except (DBProvaiderError, ConnectionErrors, ApiError) as e:
         logging.error("Erro ao enviar o email %e", e)
-    finally:
         raise e
