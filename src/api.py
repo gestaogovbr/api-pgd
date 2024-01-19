@@ -11,12 +11,10 @@ from fastapi import Depends, FastAPI, HTTPException, status, Header, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 from sqlalchemy.exc import IntegrityError
-from fastapi_mail import FastMail, MessageSchema, MessageType
 
 
 import schemas
 import crud
-import logging
 from db_config import DbContextManager, create_db_and_tables
 import crud_auth
 from create_admin_user import init_user_admin
@@ -111,7 +109,7 @@ async def get_users(
     user_logged: Annotated[
         schemas.UsersSchema,
         Depends(crud_auth.get_current_admin_user),
-    ],
+    ],  # pylint: disable=unused-argument
     db: DbContextManager = Depends(DbContextManager),
 ) -> list[schemas.UsersGetSchema]:
     return await crud_auth.get_all_users(db)
@@ -125,7 +123,7 @@ async def get_users(
 async def create_or_update_user(
     user_logged: Annotated[
         schemas.UsersSchema, Depends(crud_auth.get_current_admin_user)
-    ],
+    ],  # pylint: disable=unused-argument
     user: schemas.UsersSchema,
     email: str,
     db: DbContextManager = Depends(DbContextManager),
@@ -176,7 +174,7 @@ async def get_user(
     user_logged: Annotated[
         schemas.UsersSchema,
         Depends(crud_auth.get_current_admin_user),
-    ],
+    ],  # pylint: disable=unused-argument
     email: str,
     db: DbContextManager = Depends(DbContextManager),
 ) -> schemas.UsersGetSchema:
@@ -239,10 +237,9 @@ async def forgot_password(
 
         return await email_config.send_reset_password_mail(email, access_token)
 
-    else:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND, detail=f"Usuário `{email}` não existe"
-        )
+    raise HTTPException(
+        status.HTTP_404_NOT_FOUND, detail=f"Usuário `{email}` não existe"
+    )
 
 
 @app.get(
@@ -262,7 +259,7 @@ async def reset_password(
         return await crud_auth.user_reset_password(db, access_token, password)
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"{e}")
+        raise HTTPException(status_code=400, detail=f"{e}") from e
 
 
 # ## DATA --------------------------------------------------
