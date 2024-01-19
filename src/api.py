@@ -41,6 +41,7 @@ app = FastAPI(
     version=os.environ["TAG_NAME"],
 )
 
+
 @app.on_event("startup")
 async def on_startup():
     await create_db_and_tables()
@@ -113,7 +114,6 @@ async def get_users(
     ],
     db: DbContextManager = Depends(DbContextManager),
 ) -> list[schemas.UsersGetSchema]:
-
     return await crud_auth.get_all_users(db)
 
 
@@ -124,8 +124,7 @@ async def get_users(
 )
 async def create_or_update_user(
     user_logged: Annotated[
-        schemas.UsersSchema,
-        Depends(crud_auth.get_current_admin_user)
+        schemas.UsersSchema, Depends(crud_auth.get_current_admin_user)
     ],
     user: schemas.UsersSchema,
     email: str,
@@ -220,6 +219,7 @@ async def delete_user(
             detail=f"IntegrityError: {str(exception)}",
         ) from exception
 
+
 @app.post(
     "/user/forgot_password/{email}",
     summary="Recuperação de Acesso",
@@ -228,20 +228,22 @@ async def delete_user(
 async def forgot_password(
     email: str,
     db: DbContextManager = Depends(DbContextManager),
-    ) -> schemas.UsersInputSchema:
-
+) -> schemas.UsersInputSchema:
     user = await crud_auth.get_user(db, email)
 
     if user:
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = crud_auth.create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
-        
+        access_token = crud_auth.create_access_token(
+            data={"sub": user.email}, expires_delta=access_token_expires
+        )
+
         return await email_config.send_reset_password_mail(email, access_token)
-            
+
     else:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail=f"Usuário `{email}` não existe"
         )
+
 
 @app.get(
     "/user/reset_password/",
@@ -252,8 +254,7 @@ async def reset_password(
     access_token: str,
     password: str,
     db: DbContextManager = Depends(DbContextManager),
-    ):
-
+):
     """
     Gera uma nova senha através do token fornecido por email.
     """
@@ -261,10 +262,8 @@ async def reset_password(
         return await crud_auth.user_reset_password(db, access_token, password)
 
     except ValueError as e:
-        raise HTTPException(
-            status_code=400, detail=f"{e}")
-       
-  
+        raise HTTPException(status_code=400, detail=f"{e}")
+
 
 # ## DATA --------------------------------------------------
 
