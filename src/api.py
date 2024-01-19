@@ -304,11 +304,6 @@ async def create_or_update_plano_entregas(
     plano_entregas: schemas.PlanoEntregasSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
-    # TODO: Obter meios de verificar permissão opcional. O código abaixo
-    #       bloqueia o acesso, mesmo informando que é opcional.
-    # access_token_info: Optional[FiefAccessTokenInfo] = Depends(
-    #     auth_backend.authenticated(permissions=["all:read"], optional=True)
-    # ),
 ):
     """Cria um novo plano de entregas ou, se existente, substitui um
     plano de entregas por um novo com os dados informados."""
@@ -432,11 +427,6 @@ async def create_or_update_plano_trabalho(
     plano_trabalho: schemas.PlanoTrabalhoSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
-    # TODO: Obter meios de verificar permissão opcional. O código abaixo
-    #       bloqueia o acesso, mesmo informando que é opcional.
-    # access_token_info: Optional[FiefAccessTokenInfo] = Depends(
-    #     auth_backend.authenticated(permissions=["all:read"], optional=True)
-    # ),
 ):
     """Cria um novo plano de trabalho ou, se existente, substitui um
     plano de trabalho por um novo com os dados informados."""
