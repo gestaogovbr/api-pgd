@@ -65,6 +65,7 @@ def test_get_all_users_logged_in_admin(client: Client, header_usr_1: dict):
     response = client.get("/users", headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
 
+
 # get /user
 def test_get_user_not_logged_in(client: Client, header_not_logged_in: dict):
     response = client.get("/user/foo@oi.com", headers=header_not_logged_in)
@@ -72,32 +73,26 @@ def test_get_user_not_logged_in(client: Client, header_not_logged_in: dict):
 
 
 def test_get_user_logged_in_not_admin(
-    client: Client, user2_credentials: dict, header_usr_2: dict # user is_admin=False
+    client: Client, user2_credentials: dict, header_usr_2: dict  # user is_admin=False
 ):
     response = client.get(f"/user/{user2_credentials['email']}", headers=header_usr_2)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 def test_get_user_as_admin(
-    client: Client,
-    user1_credentials: dict,
-    header_usr_1: dict # user is_admin=True
+    client: Client, user1_credentials: dict, header_usr_1: dict  # user is_admin=True
 ):
     response = client.get(f"/user/{user1_credentials['email']}", headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
 
 
-def test_get_user_not_exists(
-    client: Client, header_usr_1: dict # user is_admin=True
-):
+def test_get_user_not_exists(client: Client, header_usr_1: dict):  # user is_admin=True
     response = client.get(f"/user/{USERS_TEST[1]['email']}", headers=header_usr_1)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_get_user_self_logged_in(
-    client: Client,
-    user1_credentials: dict,
-    header_usr_1: dict # user is_admin=True
+    client: Client, user1_credentials: dict, header_usr_1: dict  # user is_admin=True
 ):
     response = client.get(f"/user/{user1_credentials['email']}", headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
@@ -116,15 +111,16 @@ def test_get_user_self_logged_in(
 # create /user
 def test_create_user_not_logged_in(client: Client, header_not_logged_in: dict):
     response = client.put(
-        f"/user/{USERS_TEST[0]['email']}", headers=header_not_logged_in, json=USERS_TEST[0]
+        f"/user/{USERS_TEST[0]['email']}",
+        headers=header_not_logged_in,
+        json=USERS_TEST[0],
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 def test_create_user_logged_in_not_admin(
-        client: Client,
-        header_usr_2: dict # user is_admin=False
-    ):
+    client: Client, header_usr_2: dict  # user is_admin=False
+):
     response = client.put(
         f"/user/{USERS_TEST[0]['email']}", headers=header_usr_2, json=USERS_TEST[0]
     )
@@ -132,9 +128,8 @@ def test_create_user_logged_in_not_admin(
 
 
 def test_create_user_logged_in_admin(
-        client: Client,
-        header_usr_1: dict # user is_admin=True
-    ):
+    client: Client, header_usr_1: dict  # user is_admin=True
+):
     response = client.put(
         f"/user/{USERS_TEST[0]['email']}", headers=header_usr_1, json=USERS_TEST[0]
     )
@@ -142,9 +137,8 @@ def test_create_user_logged_in_admin(
 
 
 def test_create_user_without_required_fields(
-        client: Client,
-        header_usr_1: dict # user is_admin=True
-    ):
+    client: Client, header_usr_1: dict  # user is_admin=True
+):
     response = client.put(
         f"/user/{USERS_TEST[2]['email']}", headers=header_usr_1, json=USERS_TEST[2]
     )
@@ -152,8 +146,7 @@ def test_create_user_without_required_fields(
 
 
 def test_create_user_bad_email_format(
-    client: Client,
-    header_usr_1: dict # user is_admin=True
+    client: Client, header_usr_1: dict  # user is_admin=True
 ):
     response = client.put(
         f"/user/{USERS_TEST[3]['email']}", headers=header_usr_1, json=USERS_TEST[3]
@@ -162,10 +155,7 @@ def test_create_user_bad_email_format(
 
 
 # update /user
-def test_update_user(
-        client: Client,
-        header_usr_1: dict # user is_admin=True
-    ):
+def test_update_user(client: Client, header_usr_1: dict):  # user is_admin=True
     # get
     r_1 = client.get(f"/user/{USERS_TEST[0]['email']}", headers=header_usr_1)
     data_before = r_1.json()
@@ -183,53 +173,52 @@ def test_update_user(
     r_3 = client.get(f"/user/{USERS_TEST[0]['email']}", headers=header_usr_1)
     data_after = r_3.json()
 
-    assert data_before.get("cod_SIAPE_instituidora", None) == data_after.get("cod_SIAPE_instituidora", None)
+    assert data_before.get("cod_SIAPE_instituidora", None) == data_after.get(
+        "cod_SIAPE_instituidora", None
+    )
 
 
 # delete /user
 def test_delete_user_not_logged_in(client: Client, header_not_logged_in: dict):
     response = client.delete(
-        f"/user/{USERS_TEST[0]['email']}", headers=header_not_logged_in)
+        f"/user/{USERS_TEST[0]['email']}", headers=header_not_logged_in
+    )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 def test_delete_user_logged_in_not_admin(
-        client: Client,
-        header_usr_2: dict # user is_admin=False
-    ):
-    response = client.delete(
-        f"/user/{USERS_TEST[0]['email']}", headers=header_usr_2)
+    client: Client, header_usr_2: dict  # user is_admin=False
+):
+    response = client.delete(f"/user/{USERS_TEST[0]['email']}", headers=header_usr_2)
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 def test_delete_user_logged_in_admin(
-        client: Client,
-        header_usr_1: dict # user is_admin=True
-    ):
-    response = client.delete(
-        f"/user/{USERS_TEST[0]['email']}", headers=header_usr_1)
+    client: Client, header_usr_1: dict  # user is_admin=True
+):
+    response = client.delete(f"/user/{USERS_TEST[0]['email']}", headers=header_usr_1)
     assert response.status_code == status.HTTP_200_OK
 
 
 def test_delete_user_not_exists_logged_in_admin(
-        client: Client,
-        header_usr_1: dict # user is_admin=True
-    ):
-    response = client.delete(
-        f"/user/{USERS_TEST[1]['email']}", headers=header_usr_1)
+    client: Client, header_usr_1: dict  # user is_admin=True
+):
+    response = client.delete(f"/user/{USERS_TEST[1]['email']}", headers=header_usr_1)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_delete_yourself(client: Client, user1_credentials: dict, header_usr_1: dict):
     response = client.delete(
-        f"/user/{user1_credentials['email']}", headers=header_usr_1)
+        f"/user/{user1_credentials['email']}", headers=header_usr_1
+    )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
 
 # forgot/reset password
 
-def test_forgot_password(client: Client, 
-                         user1_credentials: dict, 
-                         header_usr_1: dict):
+
+def test_forgot_password(client: Client, user1_credentials: dict, header_usr_1: dict):
     response = client.post(
-        f"/user/forgot_password/{user1_credentials['email']}", headers=header_usr_1)
+        f"/user/forgot_password/{user1_credentials['email']}", headers=header_usr_1
+    )
     assert response.status_code == status.HTTP_200_OK
