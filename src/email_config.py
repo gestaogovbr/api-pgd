@@ -20,6 +20,19 @@ conf = ConnectionConfig(
 async def send_reset_password_mail(email: str, 
                                    token: str, 
                                    ) -> JSONResponse:
+    """Envia o e-mail contendo token para redefinir a senha.
+
+    Args:
+        email (str): o email do usuário.
+        token (str): o token para redefinir a senha.
+
+    Raises:
+        e: exceção gerada pelo FastAPI Mail.
+
+    Returns:
+        JSONResponse: resposta retornada para o endpoint.
+    """
+    token_expiration_minutes = os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"]
     body = f"""
             <html>
             <body>
