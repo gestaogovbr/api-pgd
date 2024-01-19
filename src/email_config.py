@@ -34,16 +34,26 @@ async def send_reset_password_mail(email: str,
     """
     token_expiration_minutes = os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"]
     body = f"""
-            <html>
-            <body>
+        <html>
+          <body>
             <h3>Recuperação de acesso</h3>
             <p>Olá, {email}.</p>
-            <p>Você esqueceu sua senha da API PGD.
-            Segue o token para geração de nova senha: <br/> {token}
-            </p>
-            </body>
-            </html>
-            """
+            <p>Foi solicitada a recuperação de sua senha da API PGD.
+            Caso essa solicitação não tenha sido feita por você, por
+            favor ignore esta mensagem.</p>
+            <p>Foi gerado o seguinte token para geração de uma nova
+            senha.</p>
+            <dl>
+              <dt>Token</dt>
+              <dd><code>{token}</code></dd>
+              <dt>Prazo de validade</dt>
+              <dd>{token_expiration_minutes} minutos</dd>
+            </dl>
+            <p>Utilize o endpoint <code>/user/reset_password</code> com
+            este token para redefinir a senha.</p>
+          </body>
+        </html>
+    """
     try:
         message = MessageSchema(
             subject="Recuperação de acesso",
