@@ -353,7 +353,7 @@ def test_forgot_password(client: Client, user1_credentials: dict, header_usr_1: 
     )
     assert response.status_code == status.HTTP_200_OK
 
-    access_token = get_token_from_email()
+    access_token = get_token_from_email(host="smtp4dev")
     new_password = "new_password_for_test"
     response = client.get(
         "/user/reset_password/",
