@@ -228,7 +228,7 @@ def get_all_mailbox_messages(
     host: str = "localhost",
     user: str = "smtp4dev",
     password: str = "",
-) -> Generator[email.message.Message]:
+) -> Generator[email.message.Message, None, None]:
     """Get messages from the mailbox.
 
     Args:
