@@ -5,6 +5,11 @@ Disclaimer:
     * header_usr_1: dict is_admin=True
     * header_usr_2: dict is_admin=True
 """
+from datetime import datetime
+from imaplib import IMAP4
+import email
+import re
+from typing import Generator
 
 from httpx import Client
 from fastapi import status
@@ -42,6 +47,8 @@ USERS_TEST = [
         "cod_SIAPE_instituidora": 1,
     },
 ]
+
+TOKEN_IN_MESSAGE = re.compile(r"<code>([^<]+)</code>")
 
 
 # post /token
@@ -217,8 +224,143 @@ def test_delete_yourself(client: Client, user1_credentials: dict, header_usr_1: 
 # forgot/reset password
 
 
+def get_all_mailbox_messages(
+    host: str = "localhost",
+    user: str = "smtp4dev",
+    password: str = "",
+) -> Generator[email.message.Message]:
+    """Get messages from the mailbox.
+
+    Args:
+        host (str, optional): IMAP connection host. Defaults to "localhost".
+        user (str, optional): IMAP connection user name. Defaults to "smtp4dev".
+        password (str, optional): IMAP connection password. Defaults to "".
+
+    Raises:
+        ValueError: if the mailbox can't be accessed.
+
+    Yields:
+        Iterator[email.message.Message]: each message found in the mailbox.
+    """
+    with IMAP4(host=host, port=143) as connection:
+        connection.login(user, password)
+        connection.enable("UTF8=ACCEPT")
+        query_status, inbox = connection.select(readonly=True)
+        if query_status != "OK":
+            raise ValueError("Access to email inbox failed.")
+        message_count = int(inbox[0])
+        for message_index in range(message_count + 1):
+            query_status, response = connection.fetch(str(message_index), "(RFC822)")
+            for item in response:
+                if isinstance(item, tuple):
+                    yield email.message_from_bytes(item[1])
+
+
+def get_latest_message_uid(messages: dict[int, email.message.Message]) -> str:
+    """Get the latest message uid from the mailbox.
+
+    Args:
+        messages (dict[int,email.message.Message]): a dict containing
+            the message uids for keys and the message object for values,
+            representing all messages in the mailbox.
+
+    Returns:
+        str: the latest message's uid.
+    """
+    return max(
+        (
+            (datetime.strptime(message["date"], "%a, %d %b %Y %H:%M:%S %z"), index)
+            for index, message in messages.items()
+        )
+    )[1]
+
+
+def get_message_body(
+    uid: int,
+    host: str = "localhost",
+    user: str = "smtp4dev",
+    password: str = "",
+) -> str:
+    """Given an uid, get the message's body from the IMAP server.
+
+    Args:
+        uid (int): the uid of the message.
+        host (str, optional): IMAP connection host. Defaults to "localhost".
+        user (str, optional): IMAP connection user name. Defaults to "smtp4dev".
+        password (str, optional): IMAP connection password. Defaults to "".
+
+    Raises:
+        ValueError: _description_
+
+    Returns:
+        str: _description_
+    """
+    with IMAP4(host=host, port=143) as connection:
+        connection.login(user, password)
+        connection.enable("UTF8=ACCEPT")
+        query_status, _ = connection.select(readonly=True)
+        if query_status != "OK":
+            raise ValueError("Access to email inbox failed.")
+        query_status, response = connection.fetch(str(uid), "(RFC822)")
+        message = email.message_from_bytes(response[0][1])
+        content = [
+            part for part in message.walk() if part.get_content_type() == "text/html"
+        ][0].get_payload(decode=True)
+        return content.decode("utf-8")
+
+
+def get_token_from_content(content: str) -> str:
+    """Get the token from the email content.
+
+    Args:
+        content (str): content of email.
+
+    Raises:
+        ValueError: if no token is found in the email.
+
+    Returns:
+        str: the access token.
+    """
+    match = TOKEN_IN_MESSAGE.search(content)
+    if match:
+        return match.group(1)
+    raise ValueError("Message contains no token.")
+
+
+def get_token_from_email(
+    host: str = "localhost",
+    user: str = "smtp4dev",
+    password: str = "",
+) -> str:
+    """Access the mailbox and get the token from the email.
+
+    Args:
+        host (str, optional): IMAP connection host. Defaults to "localhost".
+        user (str, optional): IMAP connection user name. Defaults to "smtp4dev".
+        password (str, optional): IMAP connection password. Defaults to "".
+
+    Returns:
+        str: the access token.
+    """
+    messages = dict(enumerate(get_all_mailbox_messages(host, user, password), start=1))
+    latest_message = get_latest_message_uid(messages)
+    return get_token_from_content(get_message_body(latest_message))
+
+
 def test_forgot_password(client: Client, user1_credentials: dict, header_usr_1: dict):
     response = client.post(
         f"/user/forgot_password/{user1_credentials['email']}", headers=header_usr_1
     )
     assert response.status_code == status.HTTP_200_OK
+
+    access_token = get_token_from_email()
+    new_password = "new_password_for_test"
+    response = client.get(
+        "/user/reset_password/",
+        params={"access_token": access_token, "password": new_password},
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    # TODO: test if the new credentials work as expected
+    # TODO: truncate and register user so as not to interfere in other
+    #       tests
