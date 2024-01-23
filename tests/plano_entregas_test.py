@@ -193,6 +193,35 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
     assert_equal_plano_entregas(response.json(), input_pe)
 
 
+@pytest.mark.parametrize("nulled_fields", enumerate(fields_entrega["optional"]))
+def test_create_plano_entregas_entrega_null_optional_fields(
+    truncate_pe,  # pylint: disable=unused-argument
+    input_pe: dict,
+    nulled_fields: list,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
+):
+    """Tenta criar um novo plano de entregas com o valor null nos campos opcionais"""
+
+    offset, field_list = nulled_fields
+    for field in field_list:
+        for entrega in input_pe["entregas"]:
+            if field in entrega:
+                entrega[field] = None
+
+    input_pe["id_plano_entrega_unidade"] = 557 + offset
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+    print(response.json())
+    assert response.status_code == status.HTTP_201_CREATED
+    assert_equal_plano_entregas(response.json(), input_pe)
+
+
 @pytest.mark.parametrize(
     "missing_fields", enumerate(fields_plano_entregas["mandatory"])
 )
