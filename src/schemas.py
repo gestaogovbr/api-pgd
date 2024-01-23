@@ -281,16 +281,16 @@ class EntregaSchema(BaseModel):
         title="Percentual de progresso realizado",
         description=Entrega.percentual_progresso_realizado.comment,
     )
-    data_entrega: Optional[date] = Field(
+    data_entrega: date = Field(
         default=None, title="Data da entrega", description=Entrega.data_entrega.comment
     )
-    nome_demandante: Optional[str] = Field(
+    nome_demandante: str = Field(
         default=None,
         title="Nome do demandante",
         max_length=300,
         description=Entrega.nome_demandante.comment,
     )
-    nome_destinatario: Optional[str] = Field(
+    nome_destinatario: str = Field(
         default=None,
         title="Nome do destinatário",
         max_length=300,
