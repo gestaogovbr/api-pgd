@@ -347,13 +347,23 @@ def get_token_from_email(
     return get_token_from_content(get_message_body(uid=latest_message, host=host))
 
 
-def test_forgot_password(client: Client, user1_credentials: dict, header_usr_1: dict):
+def test_forgot_password(
+    register_user_1,  # pylint: disable=unused-argument
+    client: Client,
+    user1_credentials: dict,
+    header_usr_1: dict,
+):
+    """Tests the forgot and reset password functonality."""
+    # use the forgot_password endpoint to send an email
     response = client.post(
         f"/user/forgot_password/{user1_credentials['email']}", headers=header_usr_1
     )
     assert response.status_code == status.HTTP_200_OK
 
+    # get the token from the email
     access_token = get_token_from_email(host="smtp4dev")
+
+    # reset the password to a new password using the received token
     new_password = "new_password_for_test"
     response = client.get(
         "/user/reset_password/",
@@ -361,6 +371,22 @@ def test_forgot_password(client: Client, user1_credentials: dict, header_usr_1: 
     )
     assert response.status_code == status.HTTP_200_OK
 
-    # TODO: test if the new credentials work as expected
-    # TODO: truncate and register user so as not to interfere in other
-    #       tests
+    # test if the old credentials no longer work
+    response = client.post(
+        "/token",
+        data={
+            "username": user1_credentials["email"],
+            "password": user1_credentials["password"],
+        },
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    # test if the new credentials work
+    response = client.post(
+        "/token",
+        data={
+            "username": user1_credentials["email"],
+            "password": new_password,
+        },
+    )
+    assert response.status_code == status.HTTP_200_OK
