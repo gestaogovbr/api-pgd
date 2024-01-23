@@ -14,12 +14,14 @@ conf = ConnectionConfig(
     MAIL_SSL_TLS=False,
     MAIL_PASSWORD=os.environ["MAIL_PASSWORD"],
     USE_CREDENTIALS=False,
-    VALIDATE_CERTS=False
+    VALIDATE_CERTS=False,
 )
 
-async def send_reset_password_mail(email: str, 
-                                   token: str, 
-                                   ) -> JSONResponse:
+
+async def send_reset_password_mail(
+    email: str,
+    token: str,
+) -> JSONResponse:
     """Envia o e-mail contendo token para redefinir a senha.
 
     Args:
@@ -59,7 +61,7 @@ async def send_reset_password_mail(email: str,
             subject="Recuperação de acesso",
             recipients=[email],
             body=body,
-            subtype=MessageType.html
+            subtype=MessageType.html,
         )
         fm = FastMail(conf)
         await fm.send_message(message)

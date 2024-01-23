@@ -27,6 +27,10 @@ fields_plano_trabalho = {
 }
 
 fields_contribuicao = {
+    "optional": (
+        ["descricao_contribuicao"],
+        # ["id_entrega"], # obrigatório quando tipo_contribuicao==1
+    ),
     "mandatory": (
         ["id_plano_trabalho_participante"],
         ["tipo_contribuicao"],
@@ -251,6 +255,64 @@ def test_create_plano_trabalho_id_entrega_check(
         assert response.status_code == status.HTTP_201_CREATED
 
 
+@pytest.mark.parametrize("omitted_fields", enumerate(fields_contribuicao["optional"]))
+def test_create_plano_trabalho_contribuicao_omit_optional_fields(
+    # fixture example_pe é necessária para cumprir IntegrityConstraint (FK)
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
+    input_pt: dict,
+    omitted_fields: list,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
+):
+    """Tenta criar um novo plano de trabalho omitindo campos opcionais"""
+    partial_input_pt = input_pt.copy()
+    offset, field_list = omitted_fields
+    for field in field_list:
+        for contribuicao in partial_input_pt["contribuicoes"]:
+            if field in contribuicao:
+                del contribuicao[field]
+
+    partial_input_pt["id_plano_trabalho_participante"] = 557 + offset
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{partial_input_pt['id_plano_trabalho_participante']}",
+        json=partial_input_pt,
+        headers=header_usr_1,
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.parametrize("nulled_fields", enumerate(fields_contribuicao["optional"]))
+def test_create_plano_trabalho_contribuicao_null_optional_fields(
+    # fixture example_pe é necessária para cumprir IntegrityConstraint (FK)
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
+    input_pt: dict,
+    nulled_fields: list,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
+):
+    """Tenta criar um novo plano de trabalho enviando null nos campos opcionais"""
+    partial_input_pt = input_pt.copy()
+    offset, field_list = nulled_fields
+    for field in field_list:
+        for contribuicao in partial_input_pt["contribuicoes"]:
+            if field in contribuicao:
+                contribuicao[field] = None
+
+    partial_input_pt["id_plano_trabalho_participante"] = 557 + offset
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{partial_input_pt['id_plano_trabalho_participante']}",
+        json=partial_input_pt,
+        headers=header_usr_1,
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+
+
 @pytest.mark.parametrize("omitted_fields", enumerate(fields_consolidacao["optional"]))
 def test_create_plano_trabalho_consolidacao_omit_optional_fields(
     # fixture example_pe é necessária para cumprir IntegrityConstraint (FK)
@@ -269,6 +331,35 @@ def test_create_plano_trabalho_consolidacao_omit_optional_fields(
         for consolidacao in partial_input_pt["consolidacoes"]:
             if field in consolidacao:
                 del consolidacao[field]
+
+    partial_input_pt["id_plano_trabalho_participante"] = 557 + offset
+    response = client.put(
+        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{partial_input_pt['id_plano_trabalho_participante']}",
+        json=partial_input_pt,
+        headers=header_usr_1,
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.parametrize("nulled_fields", enumerate(fields_consolidacao["optional"]))
+def test_create_plano_trabalho_consolidacao_null_optional_fields(
+    # fixture example_pe é necessária para cumprir IntegrityConstraint (FK)
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
+    input_pt: dict,
+    nulled_fields: list,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
+):
+    """Tenta criar um novo plano de trabalho enviando null nos campos opcionais"""
+    partial_input_pt = input_pt.copy()
+    offset, field_list = nulled_fields
+    for field in field_list:
+        for consolidacao in partial_input_pt["consolidacoes"]:
+            if field in consolidacao:
+                consolidacao[field] = None
 
     partial_input_pt["id_plano_trabalho_participante"] = 557 + offset
     response = client.put(

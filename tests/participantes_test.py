@@ -169,7 +169,8 @@ def test_put_participante_omit_optional_fields(
             response_part[attribute] == partial_input_part[attribute]
             for attributes in fields_participantes["mandatory"]
             for attribute in attributes
-        ) for response_part in response.json()["lista_status"]
+        )
+        for response_part in response.json()["lista_status"]
     )
 
 

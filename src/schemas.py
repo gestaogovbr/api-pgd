@@ -6,7 +6,7 @@ Pydantic: https://docs.pydantic.dev/2.0/
 """
 
 from typing import List, Optional
-from datetime import date, datetime
+from datetime import date
 
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from pydantic import model_validator, field_validator
@@ -281,16 +281,16 @@ class EntregaSchema(BaseModel):
         title="Percentual de progresso realizado",
         description=Entrega.percentual_progresso_realizado.comment,
     )
-    data_entrega: Optional[date] = Field(
+    data_entrega: date = Field(
         default=None, title="Data da entrega", description=Entrega.data_entrega.comment
     )
-    nome_demandante: Optional[str] = Field(
+    nome_demandante: str = Field(
         default=None,
         title="Nome do demandante",
         max_length=300,
         description=Entrega.nome_demandante.comment,
     )
-    nome_destinatario: Optional[str] = Field(
+    nome_destinatario: str = Field(
         default=None,
         title="Nome do destinatário",
         max_length=300,
@@ -425,6 +425,7 @@ class PlanoEntregasSchema(BaseModel):
             entrega.data_entrega < self.data_inicio_plano_entregas
             or entrega.data_entrega > self.data_termino_plano_entregas
             for entrega in self.entregas
+            if entrega.data_entrega is not None
         ):
             raise ValueError(
                 "Data de entrega precisa estar dentro do intervalo entre "
@@ -522,12 +523,15 @@ class ListaStatusParticipanteSchema(BaseModel):
         description="Lista de Contribuições planejadas para o Plano de Trabalho.",
     )
 
+
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     username: str | None = None
+
 
 class UsersInputSchema(BaseModel):
     __doc__ = Users.__doc__
@@ -536,6 +540,7 @@ class UsersInputSchema(BaseModel):
         title="e-mail do usuário",
         description=Users.email.comment,
     )
+
 
 class UsersGetSchema(UsersInputSchema):
     __doc__ = Users.__doc__
@@ -554,6 +559,7 @@ class UsersGetSchema(UsersInputSchema):
         title="Código SIAPE da organização que instituiu o PGD",
         description=Users.cod_SIAPE_instituidora.comment,
     )
+
 
 class UsersSchema(UsersGetSchema):
     password: str = Field(
