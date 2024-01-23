@@ -121,6 +121,7 @@ def delete_user(username: str, password: str, del_user_email: str) -> httpx.Resp
 
     return response
 
+
 def create_user(username: str, password: str, new_user: dict) -> httpx.Response:
     """_summary_
 
@@ -135,7 +136,9 @@ def create_user(username: str, password: str, new_user: dict) -> httpx.Response:
 
     headers = prepare_header(username, password)
     new_user_pop = {key: value for key, value in new_user.items() if key != "username"}
-    response = httpx.put(f"{API_BASE_URL}/user/{new_user['email']}", headers=headers, json=new_user_pop)
+    response = httpx.put(
+        f"{API_BASE_URL}/user/{new_user['email']}", headers=headers, json=new_user_pop
+    )
     response.raise_for_status()
 
     return response
@@ -269,7 +272,9 @@ def fixture_truncate_users(admin_credentials: dict):
     ):
         if del_user_email != admin_credentials["username"]:
             response = delete_user(
-                admin_credentials["username"], admin_credentials["password"], del_user_email
+                admin_credentials["username"],
+                admin_credentials["password"],
+                del_user_email,
             )
             response.raise_for_status()
 
@@ -280,7 +285,9 @@ def fixture_register_user_1(
     user1_credentials: dict,
     admin_credentials: dict,
 ) -> httpx.Response:
-    response = create_user(admin_credentials["username"], admin_credentials["password"], user1_credentials)
+    response = create_user(
+        admin_credentials["username"], admin_credentials["password"], user1_credentials
+    )
     response.raise_for_status()
 
     return response
@@ -292,10 +299,13 @@ def fixture_register_user_2(
     user2_credentials: dict,
     admin_credentials: dict,
 ) -> httpx.Response:
-    response = create_user(admin_credentials["username"], admin_credentials["password"], user2_credentials)
+    response = create_user(
+        admin_credentials["username"], admin_credentials["password"], user2_credentials
+    )
     response.raise_for_status()
 
     return response
+
 
 @pytest.fixture(scope="module")
 def header_not_logged_in() -> dict:
