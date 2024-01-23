@@ -424,7 +424,7 @@ class PlanoEntregasSchema(BaseModel):
         if any(
             entrega.data_entrega < self.data_inicio_plano_entregas
             or entrega.data_entrega > self.data_termino_plano_entregas
-            for entrega in self.entregas
+            for entrega in self.entregas if entrega.data_entrega is not None
         ):
             raise ValueError(
                 "Data de entrega precisa estar dentro do intervalo entre "
