@@ -225,7 +225,7 @@ def test_delete_yourself(client: Client, user1_credentials: dict, header_usr_1: 
 
 
 def get_all_mailbox_messages(
-    host: str = "localhost",
+    host: str = "smtp4dev",
     user: str = "smtp4dev",
     password: str = "",
 ) -> Generator[email.message.Message, None, None]:
@@ -277,7 +277,7 @@ def get_latest_message_uid(messages: dict[int, email.message.Message]) -> str:
 
 def get_message_body(
     uid: int,
-    host: str = "localhost",
+    host: str = "smtp4dev",
     user: str = "smtp4dev",
     password: str = "",
 ) -> str:
@@ -328,7 +328,7 @@ def get_token_from_content(content: str) -> str:
 
 
 def get_token_from_email(
-    host: str = "localhost",
+    host: str = "smtp4dev",
     user: str = "smtp4dev",
     password: str = "",
 ) -> str:
@@ -344,7 +344,7 @@ def get_token_from_email(
     """
     messages = dict(enumerate(get_all_mailbox_messages(host, user, password), start=1))
     latest_message = get_latest_message_uid(messages)
-    return get_token_from_content(get_message_body(latest_message))
+    return get_token_from_content(get_message_body(uid=latest_message, host=host))
 
 
 def test_forgot_password(client: Client, user1_credentials: dict, header_usr_1: dict):
