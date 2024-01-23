@@ -11,7 +11,7 @@ cd api-pgd && \
 make up
 ```
 
-> Exemplos de uso da api em [examples/](examples/)
+> Exemplos de uso da api em [docs/examples/](docs/examples/)
 
 ---
 
@@ -163,7 +163,7 @@ dos contêineres que compõem a solução. Atualmente são utilizados `2 contain
 
 ## 6. Dicas
 
-* Exemplos de uso da api em [examples/](examples/)
+* Exemplos de uso da api em [docs/examples/](docs/examples/)
 * Para depuração, caso necessite ver como está o banco de dados no ambiente
   local, altere a porta do Postgres no [docker-compose.yml](docker-compose.yml#L8)
   de `"5432"` para `"5432:5432"` e o banco ficará exposto no host via `localhost`.
