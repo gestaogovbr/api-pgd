@@ -14,7 +14,9 @@ from util import over_a_year
 
 fields_plano_entregas = {
     "optional": (
-        ["cancelado", "avaliacao_plano_entregas", "data_avaliacao_plano_entregas"],
+        ["cancelado"],
+        ["avaliacao_plano_entregas"],
+        ["data_avaliacao_plano_entregas"],
     ),
     "mandatory": (
         ["id_plano_entrega_unidade"],
