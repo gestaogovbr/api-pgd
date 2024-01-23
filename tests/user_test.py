@@ -353,7 +353,7 @@ def test_forgot_password(
     user1_credentials: dict,
     header_usr_1: dict,
 ):
-    """Tests the forgot and reset password functonality."""
+    """Tests the forgot and reset password functionality."""
     # use the forgot_password endpoint to send an email
     response = client.post(
         f"/user/forgot_password/{user1_credentials['email']}", headers=header_usr_1
