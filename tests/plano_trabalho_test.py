@@ -27,6 +27,10 @@ fields_plano_trabalho = {
 }
 
 fields_contribuicao = {
+    "optional": (
+        ["descricao_contribuicao"],
+        # ["id_entrega"], # obrigatório quando tipo_contribuicao==1
+    ),
     "mandatory": (
         ["id_plano_trabalho_participante"],
         ["tipo_contribuicao"],
