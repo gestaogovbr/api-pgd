@@ -39,4 +39,4 @@ interface do Swagger e preencher os formulários.
 
 ## Acesso automatizado de modo autenticado
 
-Siga exemplos em [../examples/](../examples/).
+Siga exemplos em [./examples/](./examples/).
