@@ -93,11 +93,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
     return encoded_jwt
 
-
-async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
-    db: DbContextManager = Depends(DbContextManager),
-):
+async def verify_token(token: str, db: DbContextManager):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Credenciais não podem ser validadas",
@@ -119,6 +115,18 @@ async def get_current_user(
         raise credentials_exception
 
     return user
+
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: DbContextManager = Depends(DbContextManager),
+):
+    return await verify_token(token, db)
+
+async def get_user_by_token(
+    token: str,
+    db: DbContextManager = Depends(DbContextManager),
+):
+    return await verify_token(token, db)
 
 
 async def get_current_active_user(
@@ -234,3 +242,30 @@ async def delete_user(
         await session.commit()
 
     return f"Usuário `{email}` deletado"
+
+async def user_reset_password(db_session: DbContextManager, 
+                              token: str,
+                              new_password: str) -> str:
+    """Reset password of a user by passing a access token.
+
+    Args:
+        db_session (DbContextManager): Session with api database
+        token (str): access token sended by email
+        new_password (str): the new password for encryption
+
+    Returns:
+        str: Message about updated password
+    """    
+    
+
+    user = await get_user_by_token(token, db_session)
+
+    user.password = get_password_hash(new_password)
+
+    async with db_session as session:
+        await session.execute(
+            update(models.Users).filter_by(email=user.email).values(**user.model_dump())
+        )
+        await session.commit()
+
+    return f"Senha do Usuário {user.email} atualizada"

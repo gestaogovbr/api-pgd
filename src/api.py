@@ -12,11 +12,13 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 from sqlalchemy.exc import IntegrityError
 
+
 import schemas
 import crud
 from db_config import DbContextManager, create_db_and_tables
 import crud_auth
 from create_admin_user import init_user_admin
+import email_config
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
@@ -104,13 +106,12 @@ async def login_for_access_token(
     tags=["Auth"],
 )
 async def get_users(
-    user_logged: Annotated[
+    user_logged: Annotated[ # pylint: disable=unused-argument
         schemas.UsersSchema,
         Depends(crud_auth.get_current_admin_user),
     ],
     db: DbContextManager = Depends(DbContextManager),
 ) -> list[schemas.UsersGetSchema]:
-
     return await crud_auth.get_all_users(db)
 
 
@@ -120,9 +121,8 @@ async def get_users(
     tags=["Auth"],
 )
 async def create_or_update_user(
-    user_logged: Annotated[
-        schemas.UsersSchema,
-        Depends(crud_auth.get_current_admin_user)
+    user_logged: Annotated[  # pylint: disable=unused-argument
+        schemas.UsersSchema, Depends(crud_auth.get_current_admin_user)
     ],
     user: schemas.UsersSchema,
     email: str,
@@ -171,7 +171,7 @@ async def create_or_update_user(
     tags=["Auth"],
 )
 async def get_user(
-    user_logged: Annotated[
+    user_logged: Annotated[  # pylint: disable=unused-argument
         schemas.UsersSchema,
         Depends(crud_auth.get_current_admin_user),
     ],
@@ -218,6 +218,50 @@ async def delete_user(
         ) from exception
 
 
+@app.post(
+    "/user/forgot_password/{email}",
+    summary="Recuperação de Acesso",
+    tags=["Auth"],
+)
+async def forgot_password(
+    email: str,
+    db: DbContextManager = Depends(DbContextManager),
+) -> schemas.UsersInputSchema:
+    user = await crud_auth.get_user(db, email)
+
+    if user:
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = crud_auth.create_access_token(
+            data={"sub": user.email}, expires_delta=access_token_expires
+        )
+
+        return await email_config.send_reset_password_mail(email, access_token)
+
+    raise HTTPException(
+        status.HTTP_404_NOT_FOUND, detail=f"Usuário `{email}` não existe"
+    )
+
+
+@app.get(
+    "/user/reset_password/",
+    summary="Criar nova senha a partir do token de acesso",
+    tags=["Auth"],
+)
+async def reset_password(
+    access_token: str,
+    password: str,
+    db: DbContextManager = Depends(DbContextManager),
+):
+    """
+    Gera uma nova senha através do token fornecido por email.
+    """
+    try:
+        return await crud_auth.user_reset_password(db, access_token, password)
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"{e}") from e
+
+
 # ## DATA --------------------------------------------------
 
 
@@ -260,11 +304,6 @@ async def create_or_update_plano_entregas(
     plano_entregas: schemas.PlanoEntregasSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
-    # TODO: Obter meios de verificar permissão opcional. O código abaixo
-    #       bloqueia o acesso, mesmo informando que é opcional.
-    # access_token_info: Optional[FiefAccessTokenInfo] = Depends(
-    #     auth_backend.authenticated(permissions=["all:read"], optional=True)
-    # ),
 ):
     """Cria um novo plano de entregas ou, se existente, substitui um
     plano de entregas por um novo com os dados informados."""
@@ -388,11 +427,6 @@ async def create_or_update_plano_trabalho(
     plano_trabalho: schemas.PlanoTrabalhoSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
-    # TODO: Obter meios de verificar permissão opcional. O código abaixo
-    #       bloqueia o acesso, mesmo informando que é opcional.
-    # access_token_info: Optional[FiefAccessTokenInfo] = Depends(
-    #     auth_backend.authenticated(permissions=["all:read"], optional=True)
-    # ),
 ):
     """Cria um novo plano de trabalho ou, se existente, substitui um
     plano de trabalho por um novo com os dados informados."""
