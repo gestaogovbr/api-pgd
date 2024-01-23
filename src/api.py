@@ -106,7 +106,7 @@ async def login_for_access_token(
     tags=["Auth"],
 )
 async def get_users(
-    user_logged: Annotated[ # pylint: disable=unused-argument
+    user_logged: Annotated[  # pylint: disable=unused-argument
         schemas.UsersSchema,
         Depends(crud_auth.get_current_admin_user),
     ],

@@ -7,6 +7,7 @@ from models import Users
 API_PGD_ADMIN_USER = os.environ.get("API_PGD_ADMIN_USER")
 API_PGD_ADMIN_PASSWORD = os.environ.get("API_PGD_ADMIN_PASSWORD")
 
+
 async def init_user_admin():
     db_session = async_session_maker()
 
@@ -16,7 +17,7 @@ async def init_user_admin():
             # b-crypt
             password=get_password_hash(API_PGD_ADMIN_PASSWORD),
             is_admin=True,
-            cod_SIAPE_instituidora=1
+            cod_SIAPE_instituidora=1,
         )
 
         async with db_session as session:

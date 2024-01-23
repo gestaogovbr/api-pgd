@@ -424,7 +424,8 @@ class PlanoEntregasSchema(BaseModel):
         if any(
             entrega.data_entrega < self.data_inicio_plano_entregas
             or entrega.data_entrega > self.data_termino_plano_entregas
-            for entrega in self.entregas if entrega.data_entrega is not None
+            for entrega in self.entregas
+            if entrega.data_entrega is not None
         ):
             raise ValueError(
                 "Data de entrega precisa estar dentro do intervalo entre "
@@ -522,12 +523,15 @@ class ListaStatusParticipanteSchema(BaseModel):
         description="Lista de Contribuições planejadas para o Plano de Trabalho.",
     )
 
+
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     username: str | None = None
+
 
 class UsersInputSchema(BaseModel):
     __doc__ = Users.__doc__
@@ -536,6 +540,7 @@ class UsersInputSchema(BaseModel):
         title="e-mail do usuário",
         description=Users.email.comment,
     )
+
 
 class UsersGetSchema(UsersInputSchema):
     __doc__ = Users.__doc__
@@ -554,6 +559,7 @@ class UsersGetSchema(UsersInputSchema):
         title="Código SIAPE da organização que instituiu o PGD",
         description=Users.cod_SIAPE_instituidora.comment,
     )
+
 
 class UsersSchema(UsersGetSchema):
     password: str = Field(

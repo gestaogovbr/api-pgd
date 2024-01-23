@@ -93,6 +93,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
     return encoded_jwt
 
+
 async def verify_token(token: str, db: DbContextManager):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -116,11 +117,13 @@ async def verify_token(token: str, db: DbContextManager):
 
     return user
 
+
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     db: DbContextManager = Depends(DbContextManager),
 ):
     return await verify_token(token, db)
+
 
 async def get_user_by_token(
     token: str,
@@ -243,9 +246,10 @@ async def delete_user(
 
     return f"Usuário `{email}` deletado"
 
-async def user_reset_password(db_session: DbContextManager, 
-                              token: str,
-                              new_password: str) -> str:
+
+async def user_reset_password(
+    db_session: DbContextManager, token: str, new_password: str
+) -> str:
     """Reset password of a user by passing a access token.
 
     Args:
@@ -255,8 +259,7 @@ async def user_reset_password(db_session: DbContextManager,
 
     Returns:
         str: Message about updated password
-    """    
-    
+    """
 
     user = await get_user_by_token(token, db_session)
 

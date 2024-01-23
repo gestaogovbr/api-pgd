@@ -1,8 +1,6 @@
 """Definições dos modelos de dados da API que serão persistidos no
 banco pelo mapeamento objeto-relacional (ORM) do SQLAlchemy.
 """
-
-from datetime import datetime
 import enum
 from sqlalchemy import (
     Boolean,
