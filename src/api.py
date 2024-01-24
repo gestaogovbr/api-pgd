@@ -188,36 +188,6 @@ async def get_user(
         )
 
 
-@app.delete(
-    "/user/{email}",
-    summary="Deleta usuário na api-pgd",
-    tags=["Auth"],
-)
-async def delete_user(
-    user_logged: Annotated[
-        schemas.UsersInputSchema, Depends(crud_auth.get_current_admin_user)
-    ],
-    email: str,
-    db: DbContextManager = Depends(DbContextManager),
-):
-    # Validações
-    if user_logged.email == email:
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não pode se auto deletar",
-        )
-
-    # Call
-    try:
-        return await crud_auth.delete_user(db, email)
-
-    except IntegrityError as exception:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"IntegrityError: {str(exception)}",
-        ) from exception
-
-
 @app.post(
     "/user/forgot_password/{email}",
     summary="Recuperação de Acesso",

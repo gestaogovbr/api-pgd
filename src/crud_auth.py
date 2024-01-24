@@ -217,36 +217,6 @@ async def update_user(
     return schemas.UsersSchema.model_validate(user)
 
 
-async def delete_user(
-    db_session: DbContextManager,
-    email: str,
-) -> str:
-    """Delete user on api database.
-
-    Args:
-        db_session (DbContextManager): Session with api database
-        email (str): email of the user to be deleted
-
-    Raises:
-        HTTPException: User does not exist
-
-    Returns:
-        str: Message about deletion true or false
-    """
-
-    async with db_session as session:
-        result = await session.execute(select(models.Users).filter_by(email=email))
-        user_to_del = result.unique().scalar_one_or_none()
-
-        if not user_to_del:
-            raise HTTPException(status_code=404, detail=f"Usuário `{email}` não existe")
-
-        await session.delete(user_to_del)
-        await session.commit()
-
-    return f"Usuário `{email}` deletado"
-
-
 async def user_reset_password(
     db_session: DbContextManager, token: str, new_password: str
 ) -> str:
