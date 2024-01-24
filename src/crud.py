@@ -440,3 +440,11 @@ def truncate_status_participante():
     with SyncSession.begin() as session:
         result = session.execute(text("TRUNCATE status_participante CASCADE;"))
     return result
+
+def truncate_user():
+    """Apaga a tabela users.
+    Usado no ambiente de testes de integração contínua.
+    """
+    with SyncSession.begin() as session:
+        result = session.execute(text("TRUNCATE users CASCADE;"))
+    return result
