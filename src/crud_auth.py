@@ -9,11 +9,13 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 import models, schemas
-from db_config import DbContextManager
+from db_config import DbContextManager, async_session_maker
 
 
 SECRET_KEY = str(os.environ.get("SECRET_KEY"))
 ALGORITHM = str(os.environ.get("ALGORITHM"))
+API_PGD_ADMIN_USER = os.environ.get("API_PGD_ADMIN_USER")
+API_PGD_ADMIN_PASSWORD = os.environ.get("API_PGD_ADMIN_PASSWORD")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -145,6 +147,26 @@ async def get_current_active_user(
         raise HTTPException(status_code=400, detail="Usuário inativo")
 
     return current_user
+
+
+async def init_user_admin():
+    db_session = async_session_maker()
+
+    if not await get_user(db_session=db_session, email=API_PGD_ADMIN_USER):
+        new_user = models.Users(
+            email=API_PGD_ADMIN_USER,
+            # b-crypt
+            password=get_password_hash(API_PGD_ADMIN_PASSWORD),
+            is_admin=True,
+            cod_SIAPE_instituidora=1,
+        )
+
+        async with db_session as session:
+            session.add(new_user)
+            await session.commit()
+        print(f"API_PGD_ADMIN:  Usuário administrador `{API_PGD_ADMIN_USER}` criado")
+    else:
+        print(f"API_PGD_ADMIN:  Usuário administrador `{API_PGD_ADMIN_USER}` já existe")
 
 
 async def get_current_admin_user(

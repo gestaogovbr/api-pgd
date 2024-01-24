@@ -17,7 +17,6 @@ import schemas
 import crud
 from db_config import DbContextManager, create_db_and_tables
 import crud_auth
-from create_admin_user import init_user_admin
 import email_config
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
@@ -43,7 +42,7 @@ app = FastAPI(
 @app.on_event("startup")
 async def on_startup():
     await create_db_and_tables()
-    await init_user_admin()
+    await crud_auth.init_user_admin()
 
 
 @app.get("/", include_in_schema=False)

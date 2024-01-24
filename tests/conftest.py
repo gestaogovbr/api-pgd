@@ -6,6 +6,7 @@ import os
 import sys
 import json
 from typing import Generator, Optional
+import asyncio
 
 import httpx
 from fastapi.testclient import TestClient
@@ -17,7 +18,9 @@ from crud import (
     truncate_plano_entregas,
     truncate_plano_trabalho,
     truncate_status_participante,
+    truncate_user,
 )
+from crud_auth import init_user_admin
 from api import app
 
 USERS_CREDENTIALS = [
@@ -267,16 +270,8 @@ def truncate_participantes():
 
 @pytest.fixture(scope="module", name="truncate_users")
 def fixture_truncate_users(admin_credentials: dict):
-    for del_user_email in get_all_users(
-        admin_credentials["username"], admin_credentials["password"]
-    ):
-        if del_user_email != admin_credentials["username"]:
-            response = delete_user(
-                admin_credentials["username"],
-                admin_credentials["password"],
-                del_user_email,
-            )
-            response.raise_for_status()
+    truncate_user()
+    asyncio.get_event_loop().run_until_complete(init_user_admin())
 
 
 @pytest.fixture(scope="module", name="register_user_1")
