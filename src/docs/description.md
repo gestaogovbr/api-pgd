@@ -1,9 +1,13 @@
-Esta API possibilita que órgãos federais enviem os Planos de Trabalhos da
-sua força de trabalho para a SEGES/MGI. Para solicitar credenciais para
-submissão de dados, entre em contato com
+Esta API possibilita que órgãos federais enviem  para a SEGES/MGI os
+Planos de Entregas e os Planos de Trabalho da sua força de trabalho que
+participa do
+[Programa de Gestão](https://www.gov.br/servidor/pt-br/assuntos/programa-de-gestao).
+Para solicitar credenciais para submissão de dados, entre em contato com
 [pgd@economia.gov.br](mailto:pgd@economia.gov.br)
 
-> ### Instrução Normativa Conjunta SEGES-SGPRT n.º 24, de 28 de julho de 2023
+### Fundamentação legal
+
+> #### Instrução Normativa Conjunta SEGES-SGPRT n.º 24, de 28 de julho de 2023
 >
 > Estabelece orientações a serem observadas pelos órgãos e entidades
 > integrantes do Sistema de Pessoal Civil da Administração Federal -
@@ -16,6 +20,8 @@ submissão de dados, entre em contato com
 > do PGD, observadas a documentação técnica e a periodicidade a serem
 > definidas pelo Comitê de que trata o art. 31 desta Instrução Normativa
 > Conjunta.
+
+### Esquemas de dados
 
 Explore a seção **Schemas** abaixo nesta documentação para descobrir mais
 detalhes e quais campos são obrigatórios para as Atividades e os Planos
@@ -84,7 +90,7 @@ Trabalho.
 
 ### 3.2. Planos de Trabalho
 
-Os **Planos de Trabalhos** submetidos devem seguir as seguintes regras:
+Os **Planos de Trabalho** submetidos devem seguir as seguintes regras:
 * O `id_plano_entrega_unidade` deve ser único para cada Plano de Trabalho.
 * Ao utilizar o método PUT do Plano de Trabalho, o
   `id_plano_entrega_unidade` que compõe a URL deve ser igual ao fornecido
