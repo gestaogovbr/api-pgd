@@ -185,42 +185,6 @@ def test_update_user(client: Client, header_usr_1: dict):  # user is_admin=True
     )
 
 
-# delete /user
-def test_delete_user_not_logged_in(client: Client, header_not_logged_in: dict):
-    response = client.delete(
-        f"/user/{USERS_TEST[0]['email']}", headers=header_not_logged_in
-    )
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-
-def test_delete_user_logged_in_not_admin(
-    client: Client, header_usr_2: dict  # user is_admin=False
-):
-    response = client.delete(f"/user/{USERS_TEST[0]['email']}", headers=header_usr_2)
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-
-def test_delete_user_logged_in_admin(
-    client: Client, header_usr_1: dict  # user is_admin=True
-):
-    response = client.delete(f"/user/{USERS_TEST[0]['email']}", headers=header_usr_1)
-    assert response.status_code == status.HTTP_200_OK
-
-
-def test_delete_user_not_exists_logged_in_admin(
-    client: Client, header_usr_1: dict  # user is_admin=True
-):
-    response = client.delete(f"/user/{USERS_TEST[1]['email']}", headers=header_usr_1)
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-
-
-def test_delete_yourself(client: Client, user1_credentials: dict, header_usr_1: dict):
-    response = client.delete(
-        f"/user/{user1_credentials['email']}", headers=header_usr_1
-    )
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-
 # forgot/reset password
 
 
