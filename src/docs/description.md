@@ -1,4 +1,4 @@
-Esta API permite que órgãos federais submetam os Planos de Trabalhos da
+Esta API possibilita que órgãos federais enviem os Planos de Trabalhos da
 sua força de trabalho para a SEGES/MGI. Para solicitar credenciais para
 submissão de dados, entre em contato com
 [pgd@economia.gov.br](mailto:pgd@economia.gov.br)
@@ -17,15 +17,16 @@ submissão de dados, entre em contato com
 > definidas pelo Comitê de que trata o art. 31 desta Instrução Normativa
 > Conjunta.
 
-Explore a seção [**Schemas**](#model-AtividadeSchema) nesta documentação
-para descobrir mais detalhes e quais campos são obrigatórios para as
-Atividades e os Planos de Trabalho.
+Explore a seção **Schemas** abaixo nesta documentação para descobrir mais
+detalhes e quais campos são obrigatórios para as Atividades e os Planos
+de Trabalho.
 
 -------
 
 ## Endpoints
 
-A API consiste em três endpoints principais.
+A API consiste em um endpoint de autenticação do usuário da API e três
+endpoints de domínio.
 
 Como algumas entidades fazem referência a outras, as que são referenciadas
 precisam ser enviadas primeiro. Por isso, os dados devem ser enviados
