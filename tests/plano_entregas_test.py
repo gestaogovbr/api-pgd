@@ -144,11 +144,14 @@ def test_create_plano_entregas_outra_unidade_admin(
         headers=header_admin,
     )
 
+    # Verifica se o usuário é admin e se está em outra unidade
     assert response.status_code == status.HTTP_200_OK
+    admin_data = response.json()
     assert (
-        response.json().get("cod_SIAPE_instituidora", None)
+        admin_data.get("cod_SIAPE_instituidora", None)
         != input_pe["cod_SIAPE_instituidora"]
     )
+    assert admin_data.get("is_admin", None) == True
 
     response = client.put(
         f"/organizacao/{input_pe['cod_SIAPE_instituidora']}"
