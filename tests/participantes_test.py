@@ -94,7 +94,7 @@ def test_put_participante_outra_unidade_admin(
     assert admin_data.get("is_admin", None) is True
 
     response = client.put(
-        f"/organizacao/2/participante/{input_part['cpf_participante']}",
+        f"/organizacao/3/participante/{input_part['cpf_participante']}",
         json={"lista_status": [input_part]},
         headers=header_admin,
     )

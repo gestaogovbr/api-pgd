@@ -190,7 +190,7 @@ def test_create_plano_trabalho_outra_unidade_admin(
     assert admin_data.get("is_admin", None) is True
 
     response = client.put(
-        "/organizacao/2"  # organização diferente da do admin
+        "/organizacao/3"  # organização diferente da do admin
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_admin,
