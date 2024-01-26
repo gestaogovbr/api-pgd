@@ -67,6 +67,43 @@ def test_put_participante_unidade_nao_permitida(
     assert response.json().get("detail", None) == detail_msg
 
 
+def test_put_participante_outra_unidade_admin(
+    truncate_participantes,  # pylint: disable=unused-argument
+    input_part: dict,
+    header_admin: dict,
+    admin_credentials: dict,
+    client: Client,
+):
+    """Testa, usando usuário admin, a submissão de um participante em outra
+    unidade instituidora
+    """
+    input_part["cod_SIAPE_instituidora"] = 2 # unidade diferente
+
+    response = client.get(
+        f"/user/{admin_credentials['username']}",
+        headers=header_admin,
+    )
+
+    # Verifica se o usuário é admin e se está em outra unidade
+    assert response.status_code == status.HTTP_200_OK
+    admin_data = response.json()
+    assert (
+        admin_data.get("cod_SIAPE_instituidora", None)
+        != input_part["cod_SIAPE_instituidora"]
+    )
+    assert admin_data.get("is_admin", None) == True
+
+    response = client.put(
+        f"/organizacao/2/participante/{input_part['cpf_participante']}",
+        json={"lista_status": [input_part]},
+        headers=header_admin,
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json().get("detail", None) == None
+    assert response.json() == {"lista_status": [input_part]}
+
+
 @pytest.mark.parametrize(
     "codigos_SIAPE_instituidora",
     [
