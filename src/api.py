@@ -278,12 +278,7 @@ async def create_or_update_plano_entregas(
     plano de entregas por um novo com os dados informados."""
 
     # Validações de permissão
-    if (
-        cod_SIAPE_instituidora
-        != user.cod_SIAPE_instituidora
-        # TODO: Dar acesso ao superusuário em todas as unidades.
-        # and "all:write" not in access_token_info["permissions"]
-    ):
+    if (cod_SIAPE_instituidora != user.cod_SIAPE_instituidora) and not user.is_admin:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
@@ -401,12 +396,7 @@ async def create_or_update_plano_trabalho(
     plano de trabalho por um novo com os dados informados."""
 
     # Validações de permissão
-    if (
-        cod_SIAPE_instituidora
-        != user.cod_SIAPE_instituidora
-        # TODO: Dar acesso ao superusuário em todas as unidades.
-        # and "all:write" not in access_token_info["permissions"]
-    ):
+    if (cod_SIAPE_instituidora != user.cod_SIAPE_instituidora) and not user.is_admin:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
@@ -540,12 +530,7 @@ async def create_status_participante(
     """Envia um ou mais status de Programa de Gestão de um participante."""
 
     # Validações de permissão
-    if (
-        cod_SIAPE_instituidora
-        != user.cod_SIAPE_instituidora
-        # TODO: Dar acesso ao superusuário em todas as unidades.
-        # and "all:write" not in access_token_info["permissions"]
-    ):
+    if (cod_SIAPE_instituidora != user.cod_SIAPE_instituidora) and not user.is_admin:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
