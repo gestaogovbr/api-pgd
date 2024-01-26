@@ -1,5 +1,15 @@
 # Release notes
 
+
+## 2.2.0
+
+* Remove `DELETE` method from the `/user/{email}` endpoint.
+* Add feature to enable users to reset their own passwords though email.
+* Documentation:
+  - add page on managing users
+  - improve instructions on Swagger API description
+
+
 ## 2.1.0
 
 * Change auth from `fief` to bare on `fastapi` (b-encrypted end to end)
@@ -10,6 +20,7 @@
   - `None` to `python-jose[cryptography]==3.3.0`
   - `None` to passlib[bcrypt]==1.7.4
   - `None` to python-multipart==0.0.6
+
 
 ## 2.0.0
 
