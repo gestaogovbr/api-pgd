@@ -144,7 +144,7 @@ def test_create_plano_trabalho_completo(
 
 def test_create_plano_trabalho_unidade_nao_permitida(
     input_pt: dict,
-    header_usr_1: dict,
+    header_usr_2: dict,
     truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
@@ -152,10 +152,10 @@ def test_create_plano_trabalho_unidade_nao_permitida(
     organização na qual ele não está autorizado.
     """
     response = client.put(
-        "/organizacao/2"  # só está autorizado na organização 1
+        "/organizacao/3"  # só está autorizado na organização 1
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
-        headers=header_usr_1,
+        headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -173,7 +173,7 @@ def test_create_plano_trabalho_outra_unidade_admin(
     """Tenta, como administrador, criar um novo Plano de Trabalho do
     Participante em uma organização diferente da sua própria organização.
     """
-    input_pt["cod_SIAPE_instituidora"] = 2 # unidade diferente
+    input_pt["cod_SIAPE_instituidora"] = 3 # unidade diferente
 
     response = client.get(
         f"/user/{admin_credentials['username']}",

@@ -107,17 +107,17 @@ def test_create_plano_entregas_completo(
 def test_create_plano_entregas_unidade_nao_permitida(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    header_usr_1: dict,
+    header_usr_2: dict,
     client: Client,
 ):
     """Tenta criar um novo Plano de Entregas em uma organização na qual
     ele não está autorizado.
     """
     response = client.put(
-        "/organizacao/2"  # só está autorizado na organização 1
+        "/organizacao/3"  # só está autorizado na organização 2
         f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
-        headers=header_usr_1,
+        headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -137,7 +137,7 @@ def test_create_plano_entregas_outra_unidade_admin(
     """Tenta, como administrador, criar um novo Plano de Entregas em uma
     organização diferente da sua própria organização.
     """
-    input_pe["cod_SIAPE_instituidora"] = 2 # unidade diferente
+    input_pe["cod_SIAPE_instituidora"] = 3 # unidade diferente
 
     response = client.get(
         f"/user/{admin_credentials['username']}",

@@ -49,7 +49,7 @@ def test_put_participante(
 def test_put_participante_unidade_nao_permitida(
     truncate_participantes,  # pylint: disable=unused-argument
     input_part: dict,
-    header_usr_1: dict,
+    header_usr_2: dict,
     client: Client,
 ):
     """
@@ -57,9 +57,9 @@ def test_put_participante_unidade_nao_permitida(
     (user não é superuser)
     """
     response = client.put(
-        f"/organizacao/2/participante/{input_part['cpf_participante']}",
+        f"/organizacao/3/participante/{input_part['cpf_participante']}",
         json={"lista_status": [input_part]},
-        headers=header_usr_1,
+        headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -77,7 +77,7 @@ def test_put_participante_outra_unidade_admin(
     """Testa, usando usuário admin, a submissão de um participante em outra
     unidade instituidora
     """
-    input_part["cod_SIAPE_instituidora"] = 2 # unidade diferente
+    input_part["cod_SIAPE_instituidora"] = 3 # unidade diferente
 
     response = client.get(
         f"/user/{admin_credentials['username']}",
