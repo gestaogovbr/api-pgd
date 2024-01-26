@@ -114,7 +114,7 @@ def test_create_plano_entregas_unidade_nao_permitida(
     ele não está autorizado.
     """
     response = client.put(
-        f"/organizacao/2"  # só está autorizado na organização 1
+        "/organizacao/2"  # só está autorizado na organização 1
         f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
         headers=header_usr_1,
@@ -125,6 +125,41 @@ def test_create_plano_entregas_unidade_nao_permitida(
         response.json().get("detail", None)
         == "Usuário não tem permissão na cod_SIAPE_instituidora informada"
     )
+
+
+def test_create_plano_entregas_outra_unidade_admin(
+    truncate_pe,  # pylint: disable=unused-argument
+    input_pe: dict,
+    header_admin: dict,
+    admin_credentials: dict,
+    client: Client,
+):
+    """Tenta, como administrador, criar um novo Plano de Entregas em uma
+    organização diferente da sua própria organização.
+    """
+    input_pe["cod_SIAPE_instituidora"] = 2 # unidade diferente
+
+    response = client.get(
+        f"/user/{admin_credentials['username']}",
+        headers=header_admin,
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert (
+        response.json().get("cod_SIAPE_instituidora", None)
+        != input_pe["cod_SIAPE_instituidora"]
+    )
+
+    response = client.put(
+        f"/organizacao/{input_pe['cod_SIAPE_instituidora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_admin,
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json().get("detail", None) is None
+    assert_equal_plano_entregas(response.json(), input_pe)
 
 
 def test_update_plano_entregas(

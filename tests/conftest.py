@@ -309,7 +309,7 @@ def header_not_logged_in() -> dict:
 
 @pytest.fixture(scope="module", name="header_admin")
 def fixture_header_admin(
-    register_admin, admin_credentials: dict  # pylint: disable=unused-argument
+    admin_credentials: dict  # pylint: disable=unused-argument
 ) -> dict:
     """Authenticate in the API as an admin and return a dict with bearer
     header parameter to be passed to API's requests."""
