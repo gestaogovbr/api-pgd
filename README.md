@@ -30,9 +30,11 @@ make up
 (informações extras)
 * [4. Informações e Configurações adicionais](#4-informações-e-configurações-adicionais)
 * [5. Arquitetura da solução](#5-arquitetura-da-solução)
-* [6. Dicas](#6-dicas)
+* [6. Preparando um novo release](#6-preparando-um-novo-release)
+* [7. Dicas](#7-dicas)
 
 ---
+
 
 ## 1. Contextualização
 
@@ -55,12 +57,15 @@ O objetivo desta API integradora é receber os dados enviados por diversos
 que operacionalizam o PGD no âmbito de sua organização, de modo a
 possibilitar a sua consolidação em uma base de dados.
 
+
 ## 2. Init, up and down dos serviços em dev
+
 
 ### 2.1. Instalar Docker CE
 
 Instruções em [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/)
 variam conforme o sistema operacional.
+
 
 ### 2.2. Clonar o repositório
 
@@ -82,6 +87,7 @@ São definidas no [docker-compose.yml](docker-compose.yml):
     - `API_PGD_ADMIN_USER`
     - `API_PGD_ADMIN_PASSWORD`
 
+
 ### 2.4. Iniciando os serviços (`banco` e `api-pgd`)
 
 ```bash
@@ -98,17 +104,22 @@ make up
 > Para ajustar as permissões das pastas `./mnt/pgdata/` e todas as suas
 > subpastas
 
+
 ### 2.5. Conferir Acessos
 
   * [`http://localhost:5057/docs`](http://localhost:5057/docs): swagger ui da api-pgd
   * [`http://localhost:5057`](http://localhost:5057): endpoint da api-pgd
+
 
 ### 2.6. Desligar serviços
 
   ```bash
   make down
   ```
+
+
 ## 3. Rodando testes
+
 
 ### 3.1. Todos
 ```bash
@@ -127,11 +138,13 @@ make test TEST_FILTER=test_create_huge_plano_trabalho
 ---
 ---
 
+
 ## 4. Informações e Configurações adicionais
 
 >  **[ATENÇÃO]:** Se você chegou até aqui seu ambiente está funcionando e pronto
 > para desenvolvimento.
 >  As sessões a seguir são instruções para edição de algumas configurações do ambiente.
+
 
 ### 4.1. Atualizando imagem do api-pgd
 
@@ -158,6 +171,7 @@ make up
 > Caso deseje subir os serviços com os logs na mesma sessão do terminal:
 > usar o comando `$ docker compose up --wait` em vez de `$ make up`
 
+
 ## 5. Arquitetura da solução
 
 O arquivo [docker-compose.yml](docker-compose.yml) descreve a `receita`
@@ -166,7 +180,36 @@ dos contêineres que compõem a solução. Atualmente são utilizados `2 contain
 * [db](docker-compose.yml#L4); [postgres:15](https://hub.docker.com/_/postgres)
 * [api-pgd](docker-compose.yml#L21); [ghcr.io/gestaogovbr/api-pgd:latest](Dockerfile)
 
-## 6. Dicas
+
+## 6. Preparando um novo *release*
+
+Para preparar um novo *release*, primeiro atualize o arquivo
+[release-notes.md](release-notes.md) com todas as modificações feitas
+desde o último *release*. Para saber o que mudou, veja lista de *pull
+requests* que foram mesclados e os commits realizados no período.
+
+Determine qual será o número da versão, utilizando a lógica da *semantic
+versioning* ({major}.{minor}.{release}):
+
+* para correções de bugs, mudanças na documentação e outras modificações
+  que não alterem a interface da API (isto é, clientes programados para a
+  versões anteriores continuarão a funcionar), incremente o
+  ***release***;
+* para alterações que modifiquem a interface da API e que podem
+  necessitar de adaptações nos clientes existentes, incremente o
+  ***minor***;
+* para grandes alterações que modifiquem fundalmentalmente o modelo de
+  dados, baseados em uma base legal diferente ou um modelo de gestão
+  diferente, incremente o ***major***.
+
+Certifique-se de que todos os testes estão passando.
+
+Para realizar deploy em ambiente de homologação, simplesmente crie uma
+tag no git com o número da versão, separado por pontos, sem "v" ou
+nenhuma outra informação adicional (ex.: `2.0.0`).
+
+
+## 7. Dicas
 
 * Exemplos de uso da api em [docs/examples/](docs/examples/)
 * Para depuração, caso necessite ver como está o banco de dados no ambiente
@@ -177,5 +220,3 @@ dos contêineres que compõem a solução. Atualmente são utilizados `2 contain
 * Para subir o ambiente usando algum outro banco de dados externo, basta
   redefinir a variável de ambiente `SQLALCHEMY_DATABASE_URL` no
   [docker-compose.yml](docker-compose.yml#L37).
-
-
