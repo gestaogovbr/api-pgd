@@ -42,7 +42,7 @@ def test_put_participante(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json().get("detail", None) == None
+    assert response.json().get("detail", None) is None
     assert response.json() == {"lista_status": [input_part]}
 
 
@@ -91,7 +91,7 @@ def test_put_participante_outra_unidade_admin(
         admin_data.get("cod_SIAPE_instituidora", None)
         != input_part["cod_SIAPE_instituidora"]
     )
-    assert admin_data.get("is_admin", None) == True
+    assert admin_data.get("is_admin", None) is True
 
     response = client.put(
         f"/organizacao/2/participante/{input_part['cpf_participante']}",
@@ -100,7 +100,7 @@ def test_put_participante_outra_unidade_admin(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json().get("detail", None) == None
+    assert response.json().get("detail", None) is None
     assert response.json() == {"lista_status": [input_part]}
 
 

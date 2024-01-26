@@ -151,7 +151,7 @@ def test_create_plano_entregas_outra_unidade_admin(
         admin_data.get("cod_SIAPE_instituidora", None)
         != input_pe["cod_SIAPE_instituidora"]
     )
-    assert admin_data.get("is_admin", None) == True
+    assert admin_data.get("is_admin", None) is True
 
     response = client.put(
         f"/organizacao/{input_pe['cod_SIAPE_instituidora']}"
