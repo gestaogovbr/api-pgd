@@ -269,7 +269,7 @@ def truncate_participantes():
 
 
 @pytest.fixture(scope="module", name="truncate_users")
-def fixture_truncate_users(admin_credentials: dict):
+def fixture_truncate_users(admin_credentials: dict):  # pylint: disable=unused-argument
     truncate_user()
     asyncio.get_event_loop().run_until_complete(init_user_admin())
 
