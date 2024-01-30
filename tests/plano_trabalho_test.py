@@ -1176,7 +1176,10 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
     if tipo_contribuicao == 1:
         if not id_entrega:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_message = "O campo id_entrega é obrigatório quando tipo_contribuicao tiver o valor 1"
+            detail_message = (
+                "O campo id_entrega é obrigatório quando tipo_contribuicao "
+                "tiver o valor 1"
+            )
             assert any(
                 f"Value error, {detail_message}" in error["msg"]
                 for error in response.json().get("detail")
