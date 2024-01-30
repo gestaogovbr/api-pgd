@@ -853,6 +853,48 @@ def test_get_pt_inexistente(
     assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
 
 
+def test_get_pt_different_unit(
+    input_pt: dict,
+    header_usr_1: dict,
+    truncate_pt,  # pylint: disable=unused-argument
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe_unidade_3,  # pylint: disable=unused-argument
+    example_pt_unidade_3,  # pylint: disable=unused-argument
+    client: Client,
+):
+    response = client.get(
+        f"/organizacao/3"  # Sem autorização nesta unidade
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_get_pt_different_unit_admin(
+    input_pt: dict,
+    header_admin: dict,
+    truncate_pt,  # pylint: disable=unused-argument
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe_unidade_3,  # pylint: disable=unused-argument
+    example_pt_unidade_3,  # pylint: disable=unused-argument
+    client: Client,
+):
+    response = client.get(
+        f"/organizacao/3"  # Unidade diferente
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        headers=header_admin,
+    )
+
+    # Inclui os campos de resposta do json que não estavam no template
+    input_pt["cancelado"] = False
+    input_pt["contribuicoes"][1]["id_entrega"] = None
+    input_pt["contribuicoes"][1]["descricao_contribuicao"] = None
+
+    assert response.status_code == status.HTTP_200_OK
+    assert_equal_plano_trabalho(response.json(), input_pt)
+
+
 @pytest.mark.parametrize(
     "id_plano_trabalho_participante, data_inicio_plano, data_termino_plano",
     [
