@@ -855,7 +855,7 @@ def test_get_pt_inexistente(
 
 def test_get_pt_different_unit(
     input_pt: dict,
-    header_usr_1: dict,
+    header_usr_2: dict,
     truncate_pt,  # pylint: disable=unused-argument
     truncate_pe,  # pylint: disable=unused-argument
     example_pe_unidade_3,  # pylint: disable=unused-argument
@@ -865,7 +865,7 @@ def test_get_pt_different_unit(
     response = client.get(
         f"/organizacao/3"  # Sem autorização nesta unidade
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
-        headers=header_usr_1,
+        headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
