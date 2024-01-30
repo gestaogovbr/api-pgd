@@ -259,6 +259,22 @@ def example_pt(
 
 
 @pytest.fixture()
+def example_pt_unidade_3(
+    client: httpx.Client,
+    input_pt: dict,
+    header_admin: dict,
+):
+    """Cria um Plano de Trabalho do Participante como exemplo."""
+    input_pt["cod_SIAPE_instituidora"] = 3
+    client.put(
+        f"/organizacao/{input_pt['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_admin,
+    )
+
+
+@pytest.fixture()
 def example_part(
     client: httpx.Client, input_part: dict, user1_credentials: dict, header_usr_1: dict
 ):
