@@ -917,6 +917,8 @@ def test_create_pt_data_consolidacao_out_of_bounds(
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,  # pylint: disable=unused-argument
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Verifica se o registro (consolidação) está dentro intervalo do
@@ -988,6 +990,8 @@ def test_create_pt_data_consolidacao_out_of_bounds(
 )
 def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
     truncate_pt,  # pylint: disable=unused-argument
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     input_pt: dict,
     id_plano_trabalho_participante: int,
     consolidacoes: list[tuple[str, str]],
@@ -1084,6 +1088,8 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
 )
 def test_create_pt_invalid_tipo_contribuicao(
     input_pt: dict,
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     tipo_contribuicao: int,
     user1_credentials: dict,
     header_usr_1: dict,
