@@ -606,7 +606,7 @@ def test_create_pe_cod_unidade_inconsistent(
     assert response.json().get("detail", None) == detail_msg
 
 
-def test_get_plano_entrega(
+def test_get_plano_entregas(
     truncate_pe,  # pylint: disable=unused-argument
     example_pe,  # pylint: disable=unused-argument
     user1_credentials: dict,
@@ -637,6 +637,42 @@ def test_get_pe_inexistente(
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
     assert response.json().get("detail", None) == "Plano de entregas não encontrado"
+
+
+def test_get_plano_entregas_different_unit(
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe_unidade_3,  # pylint: disable=unused-argument
+    header_usr_2: dict,
+    input_pe,
+    client: Client,
+):
+    """Tenta buscar um plano de entrega existente em uma unidade diferente,
+    à qual o usuário não tem acesso."""
+
+    response = client.get(
+        "/organizacao/3"  # Sem autorização nesta unidade
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        headers=header_usr_2,
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_get_plano_entregas_different_unit_admin(
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe_unidade_3,  # pylint: disable=unused-argument
+    header_admin: dict,
+    input_pe,
+    client: Client,
+):
+    """Tenta buscar um plano de entrega existente em uma unidade diferente, mas
+    com um usuário com permissão de admin."""
+
+    response = client.get(
+        "/organizacao/3"  # Unidade diferente
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        headers=header_admin,
+    )
+    assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.parametrize(
