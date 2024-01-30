@@ -229,6 +229,23 @@ def example_pe(
 
 
 @pytest.fixture()
+def example_pe_unidade_3(
+    client: httpx.Client,
+    input_pe: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+):
+    """Cria um Plano de Entrega como exemplo."""
+    input_pe["cod_SIAPE_instituidora"] = 3
+    client.put(
+        f"/organizacao/{input_pe['cod_SIAPE_instituidora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+
+@pytest.fixture()
 def example_pt(
     client: httpx.Client, input_pt: dict, user1_credentials: dict, header_usr_1: dict
 ):

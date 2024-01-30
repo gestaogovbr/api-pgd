@@ -165,6 +165,8 @@ def test_create_plano_trabalho_unidade_nao_permitida(
 
 def test_create_plano_trabalho_outra_unidade_admin(
     truncate_pt,  # pylint: disable=unused-argument
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe_unidade_3,  # pylint: disable=unused-argument
     input_pt: dict,
     header_admin: dict,
     admin_credentials: dict,
@@ -173,7 +175,7 @@ def test_create_plano_trabalho_outra_unidade_admin(
     """Tenta, como administrador, criar um novo Plano de Trabalho do
     Participante em uma organização diferente da sua própria organização.
     """
-    input_pt["cod_SIAPE_instituidora"] = 3 # unidade diferente
+    input_pt["cod_SIAPE_instituidora"] = 3  # unidade diferente
 
     response = client.get(
         f"/user/{admin_credentials['username']}",
