@@ -243,13 +243,22 @@ async def reset_password(
 )
 async def get_plano_entrega(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
+    cod_SIAPE_instituidora: int,
     id_plano_entrega_unidade: int,
     db: DbContextManager = Depends(DbContextManager),
 ):
     "Consulta o plano de entregas com o código especificado."
+
+    # Validações de permissão
+    if (cod_SIAPE_instituidora != user.cod_SIAPE_instituidora) and not user.is_admin:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+        )
+
     db_plano_entrega = await crud.get_plano_entregas(
         db_session=db,
-        cod_SIAPE_instituidora=user.cod_SIAPE_instituidora,
+        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
         id_plano_entrega_unidade=id_plano_entrega_unidade,
     )
     if not db_plano_entrega:
