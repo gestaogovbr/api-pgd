@@ -825,6 +825,7 @@ def test_get_plano_trabalho(
     example_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
+    """Consulta um plano de trabalho."""
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
@@ -843,6 +844,7 @@ def test_get_plano_trabalho(
 def test_get_pt_inexistente(
     user1_credentials: dict, header_usr_1: dict, client: Client
 ):
+    """Tenta acessar um plano de trabalho inexistente."""
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         "/plano_trabalho/888888888",
@@ -862,8 +864,10 @@ def test_get_pt_different_unit(
     example_pt_unidade_3,  # pylint: disable=unused-argument
     client: Client,
 ):
+    """Tenta acessar um plano de trabalho de uma unidade diferente, à
+    qual o usuário não tem acesso."""
     response = client.get(
-        f"/organizacao/3"  # Sem autorização nesta unidade
+        "/organizacao/3"  # Sem autorização nesta unidade
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         headers=header_usr_2,
     )
@@ -880,6 +884,8 @@ def test_get_pt_different_unit_admin(
     example_pt_unidade_3,  # pylint: disable=unused-argument
     client: Client,
 ):
+    """Tenta acessar um plano de trabalho de uma unidade diferente, mas
+    com um usuário com permissão de admin."""
     response = client.get(
         f"/organizacao/3"  # Unidade diferente
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
