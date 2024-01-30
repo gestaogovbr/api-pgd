@@ -361,13 +361,22 @@ async def create_or_update_plano_entregas(
 )
 async def get_plano_trabalho(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
+    cod_SIAPE_instituidora: int,
     id_plano_trabalho_participante: int,
     db: DbContextManager = Depends(DbContextManager),
 ):
     "Consulta o plano de trabalho com o código especificado."
+
+    # Validações de permissão
+    if (cod_SIAPE_instituidora != user.cod_SIAPE_instituidora) and not user.is_admin:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+        )
+
     db_plano_trabalho = await crud.get_plano_trabalho(
         db_session=db,
-        cod_SIAPE_instituidora=user.cod_SIAPE_instituidora,
+        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
         id_plano_trabalho_participante=id_plano_trabalho_participante,
     )
     if not db_plano_trabalho:
