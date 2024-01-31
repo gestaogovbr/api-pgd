@@ -274,14 +274,13 @@ def test_put_participante_missing_mandatory_fields(
 def test_get_participante(
     truncate_participantes,  # pylint: disable=unused-argument
     example_part,  # pylint: disable=unused-argument
-    user1_credentials: dict,
     header_usr_1: dict,
     input_part: dict,
     client: Client,
 ):
     """Tenta requisitar um participante pela matricula_siape."""
     response = client.get(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
         headers=header_usr_1,
     )
