@@ -306,7 +306,7 @@ def test_get_participante_inexistente(
     )
 
 
-def test_get_participante_unidade_nao_permitida(
+def test_get_participante_different_unit(
     truncate_participantes,  # pylint: disable=unused-argument
     example_part_unidade_3,  # pylint: disable=unused-argument
     input_part: dict,
