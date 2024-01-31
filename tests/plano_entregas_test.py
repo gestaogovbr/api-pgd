@@ -107,17 +107,17 @@ def test_create_plano_entregas_completo(
 def test_create_plano_entregas_unidade_nao_permitida(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    header_usr_1: dict,
+    header_usr_2: dict,
     client: Client,
 ):
     """Tenta criar um novo Plano de Entregas em uma organização na qual
     ele não está autorizado.
     """
     response = client.put(
-        f"/organizacao/2"  # só está autorizado na organização 1
+        "/organizacao/3"  # só está autorizado na organização 2
         f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
         json=input_pe,
-        headers=header_usr_1,
+        headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -125,6 +125,44 @@ def test_create_plano_entregas_unidade_nao_permitida(
         response.json().get("detail", None)
         == "Usuário não tem permissão na cod_SIAPE_instituidora informada"
     )
+
+
+def test_create_plano_entregas_outra_unidade_admin(
+    truncate_pe,  # pylint: disable=unused-argument
+    input_pe: dict,
+    header_admin: dict,
+    admin_credentials: dict,
+    client: Client,
+):
+    """Tenta, como administrador, criar um novo Plano de Entregas em uma
+    organização diferente da sua própria organização.
+    """
+    input_pe["cod_SIAPE_instituidora"] = 3 # unidade diferente
+
+    response = client.get(
+        f"/user/{admin_credentials['username']}",
+        headers=header_admin,
+    )
+
+    # Verifica se o usuário é admin e se está em outra unidade
+    assert response.status_code == status.HTTP_200_OK
+    admin_data = response.json()
+    assert (
+        admin_data.get("cod_SIAPE_instituidora", None)
+        != input_pe["cod_SIAPE_instituidora"]
+    )
+    assert admin_data.get("is_admin", None) is True
+
+    response = client.put(
+        f"/organizacao/{input_pe['cod_SIAPE_instituidora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_admin,
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json().get("detail", None) is None
+    assert_equal_plano_entregas(response.json(), input_pe)
 
 
 def test_update_plano_entregas(
@@ -217,7 +255,6 @@ def test_create_plano_entregas_entrega_null_optional_fields(
         json=input_pe,
         headers=header_usr_1,
     )
-    print(response.json())
     assert response.status_code == status.HTTP_201_CREATED
     assert_equal_plano_entregas(response.json(), input_pe)
 
@@ -568,7 +605,7 @@ def test_create_pe_cod_unidade_inconsistent(
     assert response.json().get("detail", None) == detail_msg
 
 
-def test_get_plano_entrega(
+def test_get_plano_entregas(
     truncate_pe,  # pylint: disable=unused-argument
     example_pe,  # pylint: disable=unused-argument
     user1_credentials: dict,
@@ -584,6 +621,7 @@ def test_get_plano_entrega(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
+    assert_equal_plano_entregas(response.json(), input_pe)
 
 
 def test_get_pe_inexistente(
@@ -599,6 +637,42 @@ def test_get_pe_inexistente(
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
     assert response.json().get("detail", None) == "Plano de entregas não encontrado"
+
+
+def test_get_plano_entregas_different_unit(
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe_unidade_3,  # pylint: disable=unused-argument
+    header_usr_2: dict,
+    input_pe,
+    client: Client,
+):
+    """Tenta buscar um plano de entrega existente em uma unidade diferente,
+    à qual o usuário não tem acesso."""
+
+    response = client.get(
+        "/organizacao/3"  # Sem autorização nesta unidade
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        headers=header_usr_2,
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_get_plano_entregas_different_unit_admin(
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe_unidade_3,  # pylint: disable=unused-argument
+    header_admin: dict,
+    input_pe,
+    client: Client,
+):
+    """Tenta buscar um plano de entrega existente em uma unidade diferente, mas
+    com um usuário com permissão de admin."""
+
+    response = client.get(
+        "/organizacao/3"  # Unidade diferente
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        headers=header_admin,
+    )
+    assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.parametrize(

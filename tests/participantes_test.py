@@ -18,6 +18,41 @@ fields_participantes = {
     ),
 }
 
+
+# Helper functions
+
+
+def remove_null_optional_fields(data: dict) -> dict:
+    """Remove fields that are None from the data."""
+    if not isinstance(data, dict):
+        print(f"data: {data}")
+        print(f"type: {type(data)}")
+        raise ValueError("Data must be a dict")
+    for fields in fields_participantes["optional"]:
+        for field in fields:
+            if field in data and data[field] is None:
+                del data[field]
+    return data
+
+
+def assert_equal_lista_status_participante(
+    status_participante_1: list[dict], status_participante_2: list[dict]
+):
+    """Verifica a igualdade de duas listas de status do participante, considerando
+    apenas os campos obrigatórios.
+    """
+
+    status_participante_1 = sorted([
+        remove_null_optional_fields(status_participante)
+        for status_participante in status_participante_1
+    ])
+    status_participante_2 = sorted([
+        remove_null_optional_fields(status_participante)
+        for status_participante in status_participante_2
+    ])
+    assert status_participante_1 == status_participante_2
+
+
 # Os testes usam muitas fixtures, então necessariamente precisam de
 # muitos argumentos. Além disso, algumas fixtures não retornam um valor
 # para ser usado no teste, mas mesmo assim são executadas quando estão
@@ -42,14 +77,14 @@ def test_put_participante(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json().get("detail", None) == None
+    assert response.json().get("detail", None) is None
     assert response.json() == {"lista_status": [input_part]}
 
 
 def test_put_participante_unidade_nao_permitida(
     truncate_participantes,  # pylint: disable=unused-argument
     input_part: dict,
-    header_usr_1: dict,
+    header_usr_2: dict,
     client: Client,
 ):
     """
@@ -57,14 +92,51 @@ def test_put_participante_unidade_nao_permitida(
     (user não é superuser)
     """
     response = client.put(
-        f"/organizacao/2/participante/{input_part['cpf_participante']}",
+        f"/organizacao/3/participante/{input_part['cpf_participante']}",
         json={"lista_status": [input_part]},
-        headers=header_usr_1,
+        headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     detail_msg = "Usuário não tem permissão na cod_SIAPE_instituidora informada"
     assert response.json().get("detail", None) == detail_msg
+
+
+def test_put_participante_outra_unidade_admin(
+    truncate_participantes,  # pylint: disable=unused-argument
+    input_part: dict,
+    header_admin: dict,
+    admin_credentials: dict,
+    client: Client,
+):
+    """Testa, usando usuário admin, a submissão de um participante em outra
+    unidade instituidora
+    """
+    input_part["cod_SIAPE_instituidora"] = 3  # unidade diferente
+
+    response = client.get(
+        f"/user/{admin_credentials['username']}",
+        headers=header_admin,
+    )
+
+    # Verifica se o usuário é admin e se está em outra unidade
+    assert response.status_code == status.HTTP_200_OK
+    admin_data = response.json()
+    assert (
+        admin_data.get("cod_SIAPE_instituidora", None)
+        != input_part["cod_SIAPE_instituidora"]
+    )
+    assert admin_data.get("is_admin", None) is True
+
+    response = client.put(
+        f"/organizacao/3/participante/{input_part['cpf_participante']}",
+        json={"lista_status": [input_part]},
+        headers=header_admin,
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json().get("detail", None) is None
+    assert response.json() == {"lista_status": [input_part]}
 
 
 @pytest.mark.parametrize(
@@ -161,8 +233,6 @@ def test_put_participante_omit_optional_fields(
         json={"lista_status": [partial_input_part]},
         headers=header_usr_1,
     )
-    print("partial_input_part: ", partial_input_part)
-    print("response.json(): ", response.json())
     assert response.status_code == status.HTTP_201_CREATED
     assert any(
         all(
@@ -204,23 +274,26 @@ def test_put_participante_missing_mandatory_fields(
 def test_get_participante(
     truncate_participantes,  # pylint: disable=unused-argument
     example_part,  # pylint: disable=unused-argument
-    user1_credentials: dict,
     header_usr_1: dict,
     input_part: dict,
     client: Client,
 ):
     """Tenta requisitar um participante pela matricula_siape."""
     response = client.get(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
+    assert_equal_lista_status_participante(
+        response.json()["lista_status"], [input_part]
+    )
 
 
 def test_get_participante_inexistente(
     user1_credentials: dict, header_usr_1: dict, client: Client
 ):
+    """Tenta consultar um participante que não existe na base de dados."""
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         "/participante/82893311776",
@@ -233,24 +306,51 @@ def test_get_participante_inexistente(
     )
 
 
-def test_get_participante_unidade_nao_permitida(
+def test_get_participante_different_unit(
     truncate_participantes,  # pylint: disable=unused-argument
+    example_part_unidade_3,  # pylint: disable=unused-argument
     input_part: dict,
-    header_usr_1: dict,
+    header_usr_2: dict,
     client: Client,
 ):
     """
     Testa ler um participante em outra unidade instituidora
     (user não é superuser)
     """
+
+    input_part["cod_SIAPE_instituidora"] = 3
+
     response = client.get(
-        f"/organizacao/2/participante/{input_part['cpf_participante']}",
-        headers=header_usr_1,
+        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
+        f"/participante/{input_part['cpf_participante']}",
+        headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     detail_msg = "Usuário não tem permissão na cod_SIAPE_instituidora informada"
     assert response.json().get("detail", None) == detail_msg
+
+
+def test_get_participante_different_unit_admin(
+    truncate_participantes,  # pylint: disable=unused-argument
+    example_part_unidade_3,  # pylint: disable=unused-argument
+    header_admin: dict,
+    input_part: dict,
+    client: Client,
+):
+    """Tenta requisitar um participante pela matricula_siape."""
+
+    input_part["cod_SIAPE_instituidora"] = 3
+
+    response = client.get(
+        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
+        f"/participante/{input_part['cpf_participante']}",
+        headers=header_admin,
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert_equal_lista_status_participante(
+        response.json()["lista_status"], [input_part]
+    )
 
 
 @pytest.mark.parametrize(
@@ -286,7 +386,6 @@ def test_put_participante_invalid_matricula_siape(
         "Matricula SIAPE Inválida.",
         "Matrícula SIAPE deve ter 7 dígitos.",
     ]
-    print(response.json())
     assert any(
         f"Value error, {message}" in error["msg"]
         for message in detail_messages

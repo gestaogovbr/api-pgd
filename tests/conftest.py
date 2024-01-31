@@ -229,6 +229,23 @@ def example_pe(
 
 
 @pytest.fixture()
+def example_pe_unidade_3(
+    client: httpx.Client,
+    input_pe: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+):
+    """Cria um Plano de Entrega como exemplo."""
+    input_pe["cod_SIAPE_instituidora"] = 3
+    client.put(
+        f"/organizacao/{input_pe['cod_SIAPE_instituidora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+
+@pytest.fixture()
 def example_pt(
     client: httpx.Client, input_pt: dict, user1_credentials: dict, header_usr_1: dict
 ):
@@ -242,14 +259,45 @@ def example_pt(
 
 
 @pytest.fixture()
-def example_part(
-    client: httpx.Client, input_part: dict, user1_credentials: dict, header_usr_1: dict
+def example_pt_unidade_3(
+    client: httpx.Client,
+    input_pt: dict,
+    header_admin: dict,
 ):
+    """Cria um Plano de Trabalho do Participante como exemplo."""
+    input_pt["cod_SIAPE_instituidora"] = 3
     client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/{input_pt['cod_SIAPE_instituidora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_admin,
+    )
+
+
+@pytest.fixture()
+def example_part(
+    client: httpx.Client, input_part: dict, header_admin: dict
+):
+    """Cria um exemplo de status de participante."""
+    client.put(
+        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
         json={"lista_status": [input_part]},
-        headers=header_usr_1,
+        headers=header_admin,
+    )
+
+
+@pytest.fixture()
+def example_part_unidade_3(
+    client: httpx.Client, input_part: dict, header_admin: dict
+):
+    """Cria um exemplo de status de participante na unidade 3."""
+    input_part["cod_SIAPE_instituidora"] = 3
+    client.put(
+        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
+        f"/participante/{input_part['cpf_participante']}",
+        json={"lista_status": [input_part]},
+        headers=header_admin,
     )
 
 
@@ -269,7 +317,7 @@ def truncate_participantes():
 
 
 @pytest.fixture(scope="module", name="truncate_users")
-def fixture_truncate_users(admin_credentials: dict):
+def fixture_truncate_users(admin_credentials: dict):  # pylint: disable=unused-argument
     truncate_user()
     asyncio.get_event_loop().run_until_complete(init_user_admin())
 
@@ -309,7 +357,7 @@ def header_not_logged_in() -> dict:
 
 @pytest.fixture(scope="module", name="header_admin")
 def fixture_header_admin(
-    register_admin, admin_credentials: dict  # pylint: disable=unused-argument
+    admin_credentials: dict,  # pylint: disable=unused-argument
 ) -> dict:
     """Authenticate in the API as an admin and return a dict with bearer
     header parameter to be passed to API's requests."""

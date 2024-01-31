@@ -144,7 +144,7 @@ def test_create_plano_trabalho_completo(
 
 def test_create_plano_trabalho_unidade_nao_permitida(
     input_pt: dict,
-    header_usr_1: dict,
+    header_usr_2: dict,
     truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
@@ -152,15 +152,54 @@ def test_create_plano_trabalho_unidade_nao_permitida(
     organização na qual ele não está autorizado.
     """
     response = client.put(
-        f"/organizacao/2"  # só está autorizado na organização 1
+        "/organizacao/3"  # só está autorizado na organização 1
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
-        headers=header_usr_1,
+        headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     detail_message = "Usuário não tem permissão na cod_SIAPE_instituidora informada"
     assert detail_message in response.json().get("detail")
+
+
+def test_create_plano_trabalho_outra_unidade_admin(
+    truncate_pt,  # pylint: disable=unused-argument
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe_unidade_3,  # pylint: disable=unused-argument
+    input_pt: dict,
+    header_admin: dict,
+    admin_credentials: dict,
+    client: Client,
+):
+    """Tenta, como administrador, criar um novo Plano de Trabalho do
+    Participante em uma organização diferente da sua própria organização.
+    """
+    input_pt["cod_SIAPE_instituidora"] = 3  # unidade diferente
+
+    response = client.get(
+        f"/user/{admin_credentials['username']}",
+        headers=header_admin,
+    )
+
+    # Verifica se o usuário é admin e se está em outra unidade
+    assert response.status_code == status.HTTP_200_OK
+    admin_data = response.json()
+    assert (
+        admin_data.get("cod_SIAPE_instituidora", None)
+        != input_pt["cod_SIAPE_instituidora"]
+    )
+    assert admin_data.get("is_admin", None) is True
+
+    response = client.put(
+        "/organizacao/3"  # organização diferente da do admin
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        json=input_pt,
+        headers=header_admin,
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 def test_update_plano_trabalho(
@@ -786,6 +825,7 @@ def test_get_plano_trabalho(
     example_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
+    """Consulta um plano de trabalho."""
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
@@ -804,6 +844,7 @@ def test_get_plano_trabalho(
 def test_get_pt_inexistente(
     user1_credentials: dict, header_usr_1: dict, client: Client
 ):
+    """Tenta acessar um plano de trabalho inexistente."""
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         "/plano_trabalho/888888888",
@@ -812,6 +853,52 @@ def test_get_pt_inexistente(
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
     assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
+
+
+def test_get_pt_different_unit(
+    input_pt: dict,
+    header_usr_2: dict,
+    truncate_pt,  # pylint: disable=unused-argument
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe_unidade_3,  # pylint: disable=unused-argument
+    example_pt_unidade_3,  # pylint: disable=unused-argument
+    client: Client,
+):
+    """Tenta acessar um plano de trabalho de uma unidade diferente, à
+    qual o usuário não tem acesso."""
+    response = client.get(
+        "/organizacao/3"  # Sem autorização nesta unidade
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        headers=header_usr_2,
+    )
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_get_pt_different_unit_admin(
+    input_pt: dict,
+    header_admin: dict,
+    truncate_pt,  # pylint: disable=unused-argument
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe_unidade_3,  # pylint: disable=unused-argument
+    example_pt_unidade_3,  # pylint: disable=unused-argument
+    client: Client,
+):
+    """Tenta acessar um plano de trabalho de uma unidade diferente, mas
+    com um usuário com permissão de admin."""
+    response = client.get(
+        f"/organizacao/3"  # Unidade diferente
+        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        headers=header_admin,
+    )
+
+    # Inclui os campos de resposta do json que não estavam no template
+    input_pt["cancelado"] = False
+    input_pt["contribuicoes"][1]["id_entrega"] = None
+    input_pt["contribuicoes"][1]["descricao_contribuicao"] = None
+
+    assert response.status_code == status.HTTP_200_OK
+    assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 @pytest.mark.parametrize(
@@ -878,6 +965,8 @@ def test_create_pt_data_consolidacao_out_of_bounds(
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,  # pylint: disable=unused-argument
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Verifica se o registro (consolidação) está dentro intervalo do
@@ -949,6 +1038,8 @@ def test_create_pt_data_consolidacao_out_of_bounds(
 )
 def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
     truncate_pt,  # pylint: disable=unused-argument
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     input_pt: dict,
     id_plano_trabalho_participante: int,
     consolidacoes: list[tuple[str, str]],
@@ -1045,6 +1136,8 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
 )
 def test_create_pt_invalid_tipo_contribuicao(
     input_pt: dict,
+    truncate_pe,  # pylint: disable=unused-argument
+    example_pe,  # pylint: disable=unused-argument
     tipo_contribuicao: int,
     user1_credentials: dict,
     header_usr_1: dict,
@@ -1139,7 +1232,10 @@ def test_create_pt_contribuicoes_tipo_contribuicao_conditional_id_entrega(
     if tipo_contribuicao == 1:
         if not id_entrega:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_message = "O campo id_entrega é obrigatório quando tipo_contribuicao tiver o valor 1"
+            detail_message = (
+                "O campo id_entrega é obrigatório quando tipo_contribuicao "
+                "tiver o valor 1"
+            )
             assert any(
                 f"Value error, {detail_message}" in error["msg"]
                 for error in response.json().get("detail")
