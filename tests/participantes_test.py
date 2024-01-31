@@ -288,6 +288,9 @@ def test_get_participante(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
+    assert_equal_lista_status_participante(
+        response.json()["lista_status"], [input_part]
+    )
 
 
 def test_get_participante_inexistente(
