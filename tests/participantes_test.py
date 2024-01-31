@@ -273,17 +273,19 @@ def test_get_participante_inexistente(
 
 def test_get_participante_unidade_nao_permitida(
     truncate_participantes,  # pylint: disable=unused-argument
+    example_part,  # pylint: disable=unused-argument
     input_part: dict,
-    header_usr_1: dict,
+    header_usr_2: dict,
     client: Client,
 ):
     """
     Testa ler um participante em outra unidade instituidora
     (user não é superuser)
     """
+
     response = client.get(
         f"/organizacao/2/participante/{input_part['cpf_participante']}",
-        headers=header_usr_1,
+        headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
