@@ -276,13 +276,28 @@ def example_pt_unidade_3(
 
 @pytest.fixture()
 def example_part(
-    client: httpx.Client, input_part: dict, user1_credentials: dict, header_usr_1: dict
+    client: httpx.Client, input_part: dict, header_admin: dict
 ):
+    """Cria um exemplo de status de participante."""
     client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
         json={"lista_status": [input_part]},
-        headers=header_usr_1,
+        headers=header_admin,
+    )
+
+
+@pytest.fixture()
+def example_part_unidade_3(
+    client: httpx.Client, input_part: dict, header_admin: dict
+):
+    """Cria um exemplo de status de participante na unidade 3."""
+    input_part["cod_SIAPE_instituidora"] = 3
+    client.put(
+        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
+        f"/participante/{input_part['cpf_participante']}",
+        json={"lista_status": [input_part]},
+        headers=header_admin,
     )
 
 

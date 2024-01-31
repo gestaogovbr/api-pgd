@@ -309,7 +309,7 @@ def test_get_participante_inexistente(
 
 def test_get_participante_unidade_nao_permitida(
     truncate_participantes,  # pylint: disable=unused-argument
-    example_part,  # pylint: disable=unused-argument
+    example_part_unidade_3,  # pylint: disable=unused-argument
     input_part: dict,
     header_usr_2: dict,
     client: Client,
@@ -319,8 +319,11 @@ def test_get_participante_unidade_nao_permitida(
     (user não é superuser)
     """
 
+    input_part["cod_SIAPE_instituidora"] = 3
+
     response = client.get(
-        f"/organizacao/2/participante/{input_part['cpf_participante']}",
+        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
+        f"/participante/{input_part['cpf_participante']}",
         headers=header_usr_2,
     )
 
