@@ -521,12 +521,7 @@ async def get_status_participante(
     "Consulta o status do participante a partir da matricula SIAPE."
 
     #  Validações de permissão
-    if (
-        cod_SIAPE_instituidora
-        != user.cod_SIAPE_instituidora
-        # TODO: Dar acesso ao superusuário em todas as unidades.
-        # and "all:write" not in access_token_info["permissions"]
-    ):
+    if (cod_SIAPE_instituidora != user.cod_SIAPE_instituidora) and not user.is_admin:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
