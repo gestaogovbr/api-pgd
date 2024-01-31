@@ -24,6 +24,7 @@
 
 ## 2.0.0
 
+* Implement the new data model for PGD 2.
 * Update environment to `python` 3.11.4
 * Update packages: `fastapi` 0.103.0, `pytest` 7.4.0,
   `sqlalchemy` 2.0.19, `pydantic` >=2
