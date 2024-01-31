@@ -18,6 +18,41 @@ fields_participantes = {
     ),
 }
 
+
+# Helper functions
+
+
+def remove_null_optional_fields(data: dict) -> dict:
+    """Remove fields that are None from the data."""
+    if not isinstance(data, dict):
+        print(f"data: {data}")
+        print(f"type: {type(data)}")
+        raise ValueError("Data must be a dict")
+    for fields in fields_participantes["optional"]:
+        for field in fields:
+            if field in data and data[field] is None:
+                del data[field]
+    return data
+
+
+def assert_equal_lista_status_participante(
+    status_participante_1: list[dict], status_participante_2: list[dict]
+):
+    """Verifica a igualdade de duas listas de status do participante, considerando
+    apenas os campos obrigatórios.
+    """
+
+    status_participante_1 = sorted([
+        remove_null_optional_fields(status_participante)
+        for status_participante in status_participante_1
+    ])
+    status_participante_2 = sorted([
+        remove_null_optional_fields(status_participante)
+        for status_participante in status_participante_2
+    ])
+    assert status_participante_1 == status_participante_2
+
+
 # Os testes usam muitas fixtures, então necessariamente precisam de
 # muitos argumentos. Além disso, algumas fixtures não retornam um valor
 # para ser usado no teste, mas mesmo assim são executadas quando estão
