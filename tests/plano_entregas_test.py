@@ -622,6 +622,7 @@ def test_get_plano_entregas(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
+    assert_equal_plano_entregas(response.json(), input_pe)
 
 
 def test_get_pe_inexistente(
