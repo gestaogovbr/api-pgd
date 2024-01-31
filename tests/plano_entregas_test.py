@@ -255,7 +255,6 @@ def test_create_plano_entregas_entrega_null_optional_fields(
         json=input_pe,
         headers=header_usr_1,
     )
-    print(response.json())
     assert response.status_code == status.HTTP_201_CREATED
     assert_equal_plano_entregas(response.json(), input_pe)
 

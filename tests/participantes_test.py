@@ -112,7 +112,7 @@ def test_put_participante_outra_unidade_admin(
     """Testa, usando usuário admin, a submissão de um participante em outra
     unidade instituidora
     """
-    input_part["cod_SIAPE_instituidora"] = 3 # unidade diferente
+    input_part["cod_SIAPE_instituidora"] = 3  # unidade diferente
 
     response = client.get(
         f"/user/{admin_credentials['username']}",
@@ -233,8 +233,6 @@ def test_put_participante_omit_optional_fields(
         json={"lista_status": [partial_input_part]},
         headers=header_usr_1,
     )
-    print("partial_input_part: ", partial_input_part)
-    print("response.json(): ", response.json())
     assert response.status_code == status.HTTP_201_CREATED
     assert any(
         all(
@@ -364,7 +362,6 @@ def test_put_participante_invalid_matricula_siape(
         "Matricula SIAPE Inválida.",
         "Matrícula SIAPE deve ter 7 dígitos.",
     ]
-    print(response.json())
     assert any(
         f"Value error, {message}" in error["msg"]
         for message in detail_messages
