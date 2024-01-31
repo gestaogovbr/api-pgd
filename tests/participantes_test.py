@@ -258,6 +258,7 @@ def test_get_participante(
 def test_get_participante_inexistente(
     user1_credentials: dict, header_usr_1: dict, client: Client
 ):
+    """Tenta consultar um participante que não existe na base de dados."""
     response = client.get(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         "/participante/82893311776",

@@ -41,12 +41,15 @@ app = FastAPI(
 
 @app.on_event("startup")
 async def on_startup():
+    """Executa as rotinas de inicialização da API."""
     await create_db_and_tables()
     await crud_auth.init_user_admin()
 
 
 @app.get("/", include_in_schema=False)
-async def docs_redirect(accept: Union[str, None] = Header(default="text/html")):
+async def docs_redirect(
+    accept: Union[str, None] = Header(default="text/html")
+) -> RedirectResponse:
     """
     Redireciona para a documentação da API.
     """
@@ -66,14 +69,16 @@ async def docs_redirect(accept: Union[str, None] = Header(default="text/html")):
 
 @app.post(
     "/token",
-    summary="Autentica na api-pgd",
+    summary="Autentica na API.",
     response_model=schemas.Token,
     tags=["Auth"],
 )
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: DbContextManager = Depends(DbContextManager),
-):
+) -> dict:
+    """Realiza o login na API usando as credenciais de acesso, obtendo um
+    token de acesso."""
     try:
         schemas.UsersInputSchema(email=form_data.username)
     except Exception as exception:
@@ -101,7 +106,7 @@ async def login_for_access_token(
 
 @app.get(
     "/users",
-    summary="Consulta usuários da api-pgd",
+    summary="Lista usuários da API.",
     tags=["Auth"],
 )
 async def get_users(
@@ -111,12 +116,13 @@ async def get_users(
     ],
     db: DbContextManager = Depends(DbContextManager),
 ) -> list[schemas.UsersGetSchema]:
+    """Obtém a lista de usuários da API."""
     return await crud_auth.get_all_users(db)
 
 
 @app.put(
     "/user/{email}",
-    summary="Cria ou edita usuário na api-pgd",
+    summary="Cria ou altera usuário na API.",
     tags=["Auth"],
 )
 async def create_or_update_user(
@@ -127,6 +133,8 @@ async def create_or_update_user(
     email: str,
     db: DbContextManager = Depends(DbContextManager),
 ) -> dict:
+    """Cria um usuário da API ou atualiza os seus dados cadastrais."""
+
     # Validações
 
     # ## url
@@ -166,7 +174,7 @@ async def create_or_update_user(
 
 @app.get(
     "/user/{email}",
-    summary="Consulta usuários da api-pgd",
+    summary="Consulta um usuário da API.",
     tags=["Auth"],
 )
 async def get_user(
@@ -177,6 +185,9 @@ async def get_user(
     email: str,
     db: DbContextManager = Depends(DbContextManager),
 ) -> schemas.UsersGetSchema:
+    """Retorna os dados cadastrais do usuário da API especificado pelo
+    e-mail informado."""
+
     user = await crud_auth.get_user(db, email)
 
     if user:
@@ -189,13 +200,16 @@ async def get_user(
 
 @app.post(
     "/user/forgot_password/{email}",
-    summary="Recuperação de Acesso",
+    summary="Solicita recuperação de acesso à API.",
     tags=["Auth"],
 )
 async def forgot_password(
     email: str,
     db: DbContextManager = Depends(DbContextManager),
 ) -> schemas.UsersInputSchema:
+    """Dispara o processo de recuperação de senha, enviando um token de
+    redefinição de senha ao e-mail informado no cadastro do usuário."""
+
     user = await crud_auth.get_user(db, email)
 
     if user:
@@ -213,7 +227,7 @@ async def forgot_password(
 
 @app.get(
     "/user/reset_password/",
-    summary="Criar nova senha a partir do token de acesso",
+    summary="Criar nova senha a partir do token de acesso.",
     tags=["Auth"],
 )
 async def reset_password(
