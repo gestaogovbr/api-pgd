@@ -331,6 +331,28 @@ def test_get_participante_different_unit(
     assert response.json().get("detail", None) == detail_msg
 
 
+def test_get_participante_different_unit_admin(
+    truncate_participantes,  # pylint: disable=unused-argument
+    example_part_unidade_3,  # pylint: disable=unused-argument
+    header_admin: dict,
+    input_part: dict,
+    client: Client,
+):
+    """Tenta requisitar um participante pela matricula_siape."""
+
+    input_part["cod_SIAPE_instituidora"] = 3
+
+    response = client.get(
+        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
+        f"/participante/{input_part['cpf_participante']}",
+        headers=header_admin,
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert_equal_lista_status_participante(
+        response.json()["lista_status"], [input_part]
+    )
+
+
 @pytest.mark.parametrize(
     "matricula_siape",
     [
