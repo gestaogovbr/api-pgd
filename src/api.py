@@ -35,7 +35,7 @@ with open(
 app = FastAPI(
     title="Plataforma de recebimento de dados do Programa de Gestão - PGD",
     description=description,
-    version=os.environ["TAG_NAME"],
+    version=os.getenv("TAG_NAME", "dev-build") or "dev-build",
 )
 
 

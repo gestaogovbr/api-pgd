@@ -27,7 +27,8 @@ services:
     volumes:
         - ./:/api-pgd
     environment:
-      TAG_NAME: dev
+      # version number
+      # TAG_NAME: 2.x.x
       ALGORITHM: HS256
       API_PGD_ADMIN_USER: johndoe@oi.com
       API_PGD_ADMIN_PASSWORD: secret
