@@ -448,24 +448,24 @@ def test_put_participante_invalid_cpf(
 def test_put_part_invalid_ativo(
     truncate_participantes,  # pylint: disable=unused-argument
     input_part: dict,
-    participante_ativo_inativo_pgd: int,
+    participante: int,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar um participante com flag participante_ativo_inativo_pgd
+    """Tenta criar um participante com flag participante
     com valor inválido."""
-    input_part["participante_ativo_inativo_pgd"] = participante_ativo_inativo_pgd
+    input_part["participante"] = participante
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
-        json={"lista_status": [input_part]},
+        json=input_part,
         headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_messages = (
-        "Valor do campo 'participante_ativo_inativo_pgd' inválida; permitido: 0, 1"
+        "Valor do campo 'participante' inválida; permitido: 0, 1"
     )
     assert any(
         f"Value error, {message}" in error["msg"]
