@@ -355,16 +355,16 @@ def test_get_participante_different_unit_admin(
     )
 
 
-@pytest.mark.parametrize(
-    "matricula_siape",
-    [
-        ("12345678"),
-        ("0000000"),
-        ("9999999"),
-        ("123456"),
-        (""),
-    ],
-)
+# @pytest.mark.parametrize(
+#     "matricula_siape",
+#     [
+#         ("12345678"),
+#         ("0000000"),
+#         ("9999999"),
+#         ("123456"),
+#         (""),
+#     ],
+# )
 # def test_put_participante_invalid_matricula_siape(
 #     truncate_participantes,  # pylint: disable=unused-argument
 #     input_part: dict,
@@ -439,7 +439,7 @@ def test_put_participante_invalid_cpf(
 
 
 @pytest.mark.parametrize(
-    "participante_ativo_inativo_pgd",
+    "participante",
     [
         (3),
         (-1),
