@@ -474,7 +474,7 @@ def test_put_part_invalid_ativo(
     )
 
 
-@pytest.mark.parametrize("modalidade_execucao", [(0), (-1), (5)])
+@pytest.mark.parametrize("modalidade_execucao", [(0), (-1), (6)])
 def test_put_part_invalid_modalidade_execucao(
     truncate_participantes,  # pylint: disable=unused-argument
     input_part: dict,
@@ -493,7 +493,7 @@ def test_put_part_invalid_modalidade_execucao(
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_messages = "Modalidade de execução inválida; permitido: 1, 2, 3, 4"
+    detail_messages = "Modalidade de execução inválida; permitido: 1, 2, 3, 4, 5"
     assert any(
         f"Value error, {message}" in error["msg"]
         for message in detail_messages
