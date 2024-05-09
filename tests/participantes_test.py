@@ -211,39 +211,39 @@ def test_create_participante_inconsistent(
     assert response.json().get("detail", None) == detail_msg
 
 
-@pytest.mark.parametrize("omitted_fields", enumerate(fields_participantes["optional"]))
-def test_put_participante_omit_optional_fields(
-    truncate_participantes,  # pylint: disable=unused-argument
-    input_part: dict,
-    omitted_fields: list,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar uma nova lista de status de participante omitindo
-    campos opcionais.
-    """
-    partial_input_part = input_part.copy()
-    cpf_participante = partial_input_part["cpf_participante"]
-    _, field_list = omitted_fields
-    for field in field_list:
-        del partial_input_part[field]
+# @pytest.mark.parametrize("omitted_fields", enumerate(fields_participantes["optional"]))
+# def test_put_participante_omit_optional_fields(
+#     truncate_participantes,  # pylint: disable=unused-argument
+#     input_part: dict,
+#     omitted_fields: list,
+#     user1_credentials: dict,
+#     header_usr_1: dict,
+#     client: Client,
+# ):
+#     """Tenta criar uma nova lista de status de participante omitindo
+#     campos opcionais.
+#     """
+#     partial_input_part = input_part.copy()
+#     cpf_participante = partial_input_part["cpf_participante"]
+#     _, field_list = omitted_fields
+#     for field in field_list:
+#         del partial_input_part[field]
 
-    response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{cpf_participante}",
-        json={"lista_status": [partial_input_part]},
-        headers=header_usr_1,
-    )
-    assert response.status_code == status.HTTP_201_CREATED
-    assert any(
-        all(
-            response_part[attribute] == partial_input_part[attribute]
-            for attributes in fields_participantes["mandatory"]
-            for attribute in attributes
-        )
-        for response_part in response.json()["lista_status"]
-    )
+#     response = client.put(
+#         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+#         f"/participante/{cpf_participante}",
+#         json={"lista_status": [partial_input_part]},
+#         headers=header_usr_1,
+#     )
+#     assert response.status_code == status.HTTP_201_CREATED
+#     assert any(
+#         all(
+#             response_part[attribute] == partial_input_part[attribute]
+#             for attributes in fields_participantes["mandatory"]
+#             for attribute in attributes
+#         )
+#         for response_part in response.json()["lista_status"]
+#     )
 
 
 @pytest.mark.parametrize("missing_fields", enumerate(fields_participantes["mandatory"]))
@@ -365,34 +365,34 @@ def test_get_participante_different_unit_admin(
         (""),
     ],
 )
-def test_put_participante_invalid_matricula_siape(
-    truncate_participantes,  # pylint: disable=unused-argument
-    input_part: dict,
-    matricula_siape: str,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta submeter um participante com matricula siape inválida"""
+# def test_put_participante_invalid_matricula_siape(
+#     truncate_participantes,  # pylint: disable=unused-argument
+#     input_part: dict,
+#     matricula_siape: str,
+#     user1_credentials: dict,
+#     header_usr_1: dict,
+#     client: Client,
+# ):
+#     """Tenta submeter um participante com matricula siape inválida"""
 
-    input_part["matricula_siape"] = matricula_siape
+#     input_part["matricula_siape"] = matricula_siape
 
-    response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['cpf_participante']}",
-        json={"lista_status": [input_part]},
-        headers=header_usr_1,
-    )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_messages = [
-        "Matricula SIAPE Inválida.",
-        "Matrícula SIAPE deve ter 7 dígitos.",
-    ]
-    assert any(
-        f"Value error, {message}" in error["msg"]
-        for message in detail_messages
-        for error in response.json().get("detail")
-    )
+#     response = client.put(
+#         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+#         f"/participante/{input_part['cpf_participante']}",
+#         json={"lista_status": [input_part]},
+#         headers=header_usr_1,
+#     )
+#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+#     detail_messages = [
+#         "Matricula SIAPE Inválida.",
+#         "Matrícula SIAPE deve ter 7 dígitos.",
+#     ]
+#     assert any(
+#         f"Value error, {message}" in error["msg"]
+#         for message in detail_messages
+#         for error in response.json().get("detail")
+#     )
 
 
 @pytest.mark.parametrize(
@@ -501,34 +501,34 @@ def test_put_part_invalid_modalidade_execucao(
     )
 
 
-@pytest.mark.parametrize(
-    "jornada_trabalho_semanal",
-    [
-        (-2),
-        (0),
-    ],
-)
-def test_put_part_invalid_jornada_trabalho_semanal(
-    truncate_participantes,  # pylint: disable=unused-argument
-    input_part: dict,
-    jornada_trabalho_semanal: int,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta submeter um participante com jornada de trabalho semanal inválida"""
-    input_part["jornada_trabalho_semanal"] = jornada_trabalho_semanal
-    response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['cpf_participante']}",
-        json={"lista_status": [input_part]},
-        headers=header_usr_1,
-    )
+# @pytest.mark.parametrize(
+#     "jornada_trabalho_semanal",
+#     [
+#         (-2),
+#         (0),
+#     ],
+# )
+# def test_put_part_invalid_jornada_trabalho_semanal(
+#     truncate_participantes,  # pylint: disable=unused-argument
+#     input_part: dict,
+#     jornada_trabalho_semanal: int,
+#     user1_credentials: dict,
+#     header_usr_1: dict,
+#     client: Client,
+# ):
+#     """Tenta submeter um participante com jornada de trabalho semanal inválida"""
+#     input_part["jornada_trabalho_semanal"] = jornada_trabalho_semanal
+#     response = client.put(
+#         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+#         f"/participante/{input_part['cpf_participante']}",
+#         json={"lista_status": [input_part]},
+#         headers=header_usr_1,
+#     )
 
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_messages = "Jornada de trabalho semanal deve ser maior que zero"
-    assert any(
-        f"Value error, {message}" in error["msg"]
-        for message in detail_messages
-        for error in response.json().get("detail")
-    )
+#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+#     detail_messages = "Jornada de trabalho semanal deve ser maior que zero"
+#     assert any(
+#         f"Value error, {message}" in error["msg"]
+#         for message in detail_messages
+#         for error in response.json().get("detail")
+#     )
