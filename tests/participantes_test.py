@@ -95,7 +95,7 @@ def test_put_participante_unidade_nao_permitida(
     """
     response = client.put(
         f"/organizacao/3/participante/{input_part['cpf_participante']}",
-        json={"lista_status": [input_part]},
+        json=input_part,
         headers=header_usr_2,
     )
 
@@ -132,13 +132,13 @@ def test_put_participante_outra_unidade_admin(
 
     response = client.put(
         f"/organizacao/3/participante/{input_part['cpf_participante']}",
-        json={"lista_status": [input_part]},
+        json=input_part,
         headers=header_admin,
     )
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert response.json() == {"lista_status": [input_part]}
+    assert response.json() == input_part
 
 
 @pytest.mark.parametrize(
@@ -172,7 +172,7 @@ def test_put_duplicate_participante(
     )
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert response.json() == {"lista_status": [input_part]}
+    assert response.json() == input_part
 
     if codigos_SIAPE_instituidora[1] == user1_credentials["cod_SIAPE_instituidora"]:
         header_usr = header_usr_1
@@ -182,13 +182,13 @@ def test_put_duplicate_participante(
     response = client.put(
         f"/organizacao/{codigos_SIAPE_instituidora[1]}"
         f"/participante/{input_part['cpf_participante']}",
-        json={"lista_status": [input_part]},
+        json=input_part,
         headers=header_usr,
     )
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert response.json() == {"lista_status": [input_part]}
+    assert response.json() == input_part
 
 
 def test_create_participante_inconsistent(
@@ -203,7 +203,7 @@ def test_create_participante_inconsistent(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{novo_cpf_participante}",
-        json={"lista_status": [input_part]},
+        json=input_part,
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -267,7 +267,7 @@ def test_put_participante_missing_mandatory_fields(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{cpf_participante}",
-        json={"lista_status": [input_part]},
+        json=input_part,
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -288,7 +288,7 @@ def test_get_participante(
     )
     assert response.status_code == status.HTTP_200_OK
     assert_equal_lista_status_participante(
-        response.json()["lista_status"], [input_part]
+        [response.json()], [input_part]
     )
 
 
@@ -351,7 +351,7 @@ def test_get_participante_different_unit_admin(
     )
     assert response.status_code == status.HTTP_200_OK
     assert_equal_lista_status_participante(
-        response.json()["lista_status"], [input_part]
+        [response.json()], [input_part]
     )
 
 
@@ -488,7 +488,7 @@ def test_put_part_invalid_modalidade_execucao(
     response = client.put(
         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
         f"/participante/{input_part['cpf_participante']}",
-        json={"lista_status": [input_part]},
+        json=input_part,
         headers=header_usr_1,
     )
 
