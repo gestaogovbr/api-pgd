@@ -9,12 +9,14 @@ import pytest
 
 # Relação de campos obrigatórios para testar sua ausência:
 fields_participantes = {
-    "optional": (["matricula_siape"],),
+    "optional": tuple(), # nenhum campo é opcional
     "mandatory": (
-        ["participante_ativo_inativo_pgd"],
+        ["cod_SIAPE_instituidora"],
+        ["cod_SIAPE_lotacao"],
         ["cpf_participante"],
+        ["participante"],
         ["modalidade_execucao"],
-        ["jornada_trabalho_semanal"],
+        ["data_assinatura_tcr"],
     ),
 }
 
@@ -70,15 +72,15 @@ def test_put_participante(
 ):
     """Testa a submissão de um participante a partir do template"""
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/{user1_credentials['cod_SIAPE_lotacao']}"
         f"/participante/{input_part['cpf_participante']}",
-        json={"lista_status": [input_part]},
+        json=input_part,
         headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert response.json() == {"lista_status": [input_part]}
+    assert_equal_lista_status_participante(response.json(), input_part)
 
 
 def test_put_participante_unidade_nao_permitida(

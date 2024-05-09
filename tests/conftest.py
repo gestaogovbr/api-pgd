@@ -177,15 +177,7 @@ def fixture_input_part() -> dict:
     Returns:
         dict: template de exemplo
     """
-    return {
-        "cod_SIAPE_instituidora": 1,
-        "participante_ativo_inativo_pgd": 1,
-        "matricula_siape": "1234567",
-        "cpf_participante": "64635210600",
-        "modalidade_execucao": 3,
-        "jornada_trabalho_semanal": 40,
-        "data_envio": "2023-10-19",
-    }
+    return json.load(open("data/participante.json", "r", encoding="utf-8"))
 
 
 @pytest.fixture(scope="module", name="client")
