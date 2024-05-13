@@ -1,33 +1,38 @@
 {
-    "cod_SIAPE_autorizacao": 1,
-    "cod_SIAPE_instituidora": 1,
-    "id_plano_entrega_unidade": "1",
-    "status_plano_entregas": 4,
-    "data_inicio_plano_entregas": "2023-01-01",
-    "data_termino_plano_entregas": "2023-06-30",
-    "avaliacao_plano_entregas": 5,
-    "data_avaliacao_plano_entregas": "2023-08-05",
-    "cod_SIAPE_unidade_execucao": 99,
+    "origem_unidade": "SIAPE",
+    "cod_unidade_autorizadora": 1,
+    "cod_unidade_instituidora": 1,
+    "cod_unidade_executora": 99,
+    "id_plano_entrega": "1",
+    "status": 4,
+    "data_inicio": "2023-01-01",
+    "data_termino": "2023-06-30",
+    "avaliacao": 5,
+    "data_avaliacao": "2023-08-05",
     "entregas": [
         {
             "id_entrega": "1",
+            "entrega_cancelada": false,
             "nome_entrega": "string",
             "meta_entrega": 100,
-            "tipo_meta": 1,
+            "tipo_meta": "unidade",
             "data_entrega": "2023-06-01",
-            "nome_demandante": "string",
-            "nome_destinatario": "string",
-            "entrega_cancelada": false
+            "nome_unidade_demandante": "string",
+            "nome_unidade_destinataria": "string",
+            "avaliacao": null,
+            "data_avaliacao": null
         },
         {
             "id_entrega": "2",
+            "entrega_cancelada": false,
             "nome_entrega": "string",
             "meta_entrega": 100,
-            "tipo_meta": 2,
+            "tipo_meta": "percentual",
             "data_entrega": "2023-06-15",
-            "nome_demandante": "string",
-            "nome_destinatario": "string",
-            "entrega_cancelada": false
+            "nome_unidade_demandante": "string",
+            "nome_unidade_destinataria": "string",
+            "avaliacao": null,
+            "data_avaliacao": null
         }
     ]
 }

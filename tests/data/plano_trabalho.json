@@ -1,29 +1,49 @@
 {
-    "cod_SIAPE_instituidora": 1,
-    "id_plano_trabalho_participante": 555,
-    "id_plano_entrega_unidade": 1,
-    "cod_SIAPE_unidade_exercicio": 99,
+    "origem_unidade": "string",
+    "cod_unidade_autorizadora": 1,
+    "id_plano_trabalho": "555",
+    "status": 3,
+    "cod_unidade_executora": 99,
     "cpf_participante": "64635210600",
-    "data_inicio_plano": "2023-01-01",
-    "data_termino_plano": "2023-01-15",
-    "carga_horaria_total_periodo_plano": 80,
+    "matricula_siape": "1234567",
+    "data_inicio": "2023-01-01",
+    "data_termino": "2023-01-15",
+    "carga_horaria_disponivel": 80,
     "contribuicoes": [
         {
+            "origem_unidade": "string",
+            "id_contribuicao": "string",
+            "cod_unidade_instituidora": 1,
             "tipo_contribuicao": 1,
-            "descricao_contribuicao": "texto",
-            "id_entrega": 1,
-            "horas_vinculadas": 40
+            "cod_unidade_autorizadora_externa": null,
+            "id_plano_entrega": "1",
+            "id_entrega": "1",
+            "percentual_contribuicao": 40,
+            "carga_horaria_disponivel": 40
         },
         {
+            "origem_unidade": "string",
+            "id_contribuicao": "string",
+            "cod_unidade_instituidora": 1,
             "tipo_contribuicao": 2,
-            "horas_vinculadas": 40
+            "cod_unidade_autorizadora_externa": null,
+            "id_plano_entrega": null,
+            "id_entrega": null,
+            "percentual_contribuicao": 40,
+            "carga_horaria_disponivel": 40
         }
     ],
-    "consolidacoes": [
+    "avaliacao_registros_execucao": [
         {
-            "data_inicio_registro": "2023-01-01",
-            "data_fim_registro": "2023-01-02",
-            "avaliacao_plano_trabalho": 5
+            "id_periodo_avaliativo": "string",
+            "data_inicio_periodo_avaliativo": "2023-01-01",
+            "data_fim_periodo_avaliativo": "2023-01-02",
+            "avaliacao_registros_execucao": 5,
+            "data_avaliacao_registros_execucao": "2023-01-03",
+            "cpf_participante": "64635210600",
+            "data_inicio": "2023-01-01",
+            "data_termino": "2023-01-15",
+            "carga_horaria_disponivel": 80
         }
     ]
 }
