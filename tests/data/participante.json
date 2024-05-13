@@ -1,8 +1,11 @@
 {
-    "cod_SIAPE_instituidora": 1,
-    "cod_SIAPE_lotacao": 1,
-    "cpf_participante": "64635210600",
-    "participante": 1,
+    "origem_unidade": "SIAPE",
+    "cod_unidade_autorizadora": 1,
+    "cod_unidade_lotacao": 1,
+    "cpf": "64635210600",
+    "matricula_siape": "1234567",
+    "cod_unidade_instituidora": 1,
+    "situacao": 1,
     "modalidade_execucao": 3,
-    "data_assinatura_tcr": "2021-06-01"
+    "data_assinatura_tcr": "2023-06-01"
 }
