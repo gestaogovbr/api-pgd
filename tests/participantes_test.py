@@ -45,9 +45,9 @@ def assert_equal_participante(participante_1: list[dict], participante_2: list[d
     """Verifica a igualdade de dois participantes, considerando
     apenas os campos obrigatórios.
     """
-    assert remove_null_optional_fields(
-        participante_1
-    ) == remove_null_optional_fields(participante_2)
+    assert remove_null_optional_fields(participante_1) == remove_null_optional_fields(
+        participante_2
+    )
 
 
 # Os testes usam muitas fixtures, então necessariamente precisam de
@@ -137,34 +137,42 @@ def test_put_participante_outra_unidade_admin(
 
 
 @pytest.mark.parametrize(
-    "cod_unidade_autorizadora",
+    "cod_unidade_autorizadora_1",
+    "cod_unidade_autorizadora_2",
+    "matricula_siape_1",
+    "matricula_siape_2",
     [
-        (1, 1),  # mesma unidade
-        (1, 2),  # unidades diferentes
+        (1, 1, "1237654", "1237654"),  # mesma unidade, mesma matrícula SIAPE
+        (1, 2, "1237654", "1237654"),  # unidades diferentes, mesma matrícula SIAPE
+        (1, 1, "1237654", "1230054"),  # mesma unidade, matrículas diferentes
+        (1, 2, "1237654", "1230054"),  # unidades diferentes, matrículas diferentes
     ],
 )
 def test_put_duplicate_participante(
     truncate_participantes,  # pylint: disable=unused-argument
     input_part: dict,
-    codigos_unidade_autorizadora: tuple[int, int],
+    cod_unidade_autorizadora_1: int,
+    cod_unidade_autorizadora_2: int,
+    matricula_siape_1: str,
+    matricula_siape_2: str,
     user1_credentials: dict,
     header_usr_1: dict,
     header_usr_2: dict,
     client: Client,
 ):
     """
-    # TODO: Mudar o comportamento do teste, agora não é mais uma lista.
+    Testa o envio de um mesmo participantes com o mesmo cpf. O
+    comportamento do segundo envio será testado conforme o caso.
 
-    Testa o envio de um mesmo participante mais de uma vez. Podendo
-    ser em unidades diferentes (por exemplo, quando o participante altera
-    a sua lotação) ou na mesma unidade (envio de um novo status para o
-    mesmo participante, na mesma unidade). Em todos os casos tem que se
-    manter o(s) registro(s) anterior(es) concomitantemente.
+    Sendo a mesma matrícula e o mesmo CPF na mesma unidade autorizadora,
+    o registro será atualizado e retornará o código HTTP 200 Ok.
+    Se a unidade e/ou a matrícula forem diferentes, entende-se que será
+    criado um novo registro e será retornado o código HTTP 201 Created.
     """
-    input_part["cod_unidade_autorizadora"] = codigos_unidade_autorizadora[0]
+    input_part["cod_unidade_autorizadora"] = cod_unidade_autorizadora_1
     response = client.put(
-        f"/organizacao/SIAPE/{codigos_unidade_autorizadora[0]}"
-        f"/participante/{input_part['cpf_participante']}",
+        f"/organizacao/SIAPE/{cod_unidade_autorizadora_1}"
+        f"/participante/{input_part['cpf']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -172,19 +180,24 @@ def test_put_duplicate_participante(
     assert response.json().get("detail", None) is None
     assert response.json() == input_part
 
-    if codigos_unidade_autorizadora[1] == user1_credentials["cod_unidade_autorizadora"]:
+    if cod_unidade_autorizadora_2 == user1_credentials["cod_unidade_autorizadora"]:
         header_usr = header_usr_1
     else:
         header_usr = header_usr_2
-    input_part["cod_unidade_autorizadora"] = codigos_unidade_autorizadora[1]
+    input_part["cod_unidade_autorizadora"] = cod_unidade_autorizadora_2
     response = client.put(
-        f"/organizacao/SIAPE/{codigos_unidade_autorizadora[1]}"
+        f"/organizacao/SIAPE/{cod_unidade_autorizadora_2}"
         f"/participante/{input_part['cpf']}",
         json=input_part,
         headers=header_usr,
     )
 
-    assert response.status_code == status.HTTP_201_CREATED
+    if (cod_unidade_autorizadora_1 == cod_unidade_autorizadora_2) and (
+        matricula_siape_1 == matricula_siape_2
+    ):
+        assert response.status_code == status.HTTP_200_OK
+    else:
+        assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
     assert response.json() == input_part
 
@@ -485,7 +498,6 @@ def test_put_part_invalid_modalidade_execucao(
         for message in detail_messages
         for error in response.json().get("detail")
     )
-
 
 
 def test_put_invalid_data_assinatura_tcr():
