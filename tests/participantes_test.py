@@ -280,7 +280,7 @@ def test_get_participante(
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
-    assert_equal_participante(esponse.json() iput_part)
+    assert_equal_participante(response.json(), input_part)
 
 
 def test_get_participante_inexistente(
