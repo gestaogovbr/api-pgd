@@ -1,6 +1,7 @@
 """
 Testes relacionados aos status de participantes.
 """
+from datetime import date, timedelta
 
 from httpx import Client
 
@@ -500,10 +501,29 @@ def test_put_part_invalid_modalidade_execucao(
     )
 
 
-def test_put_invalid_data_assinatura_tcr():
+def test_put_invalid_data_assinatura_tcr(
+    truncate_participantes,  # pylint: disable=unused-argument
+    input_part: dict,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,):
     """Tenta criar um participante com data futura do TCR."""
-    # TODO: implementar
-    pass
+    # data de amanhã
+    input_part["data_assinatura_tcr"] = date.today() + timedelta(days=1)
+    response = client.put(
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/participante/{input_part['cpf']}",
+        json=input_part,
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    detail_messages = "A data_assinatura_tcr não pode ser data futura."
+    assert any(
+        f"Value error, {message}" in error["msg"]
+        for message in detail_messages
+        for error in response.json().get("detail")
+    )
 
 
 def test_put_data_assinatura_tcr_default_value(
