@@ -1,6 +1,7 @@
 """
 Testes relacionados aos status de participantes.
 """
+
 from httpx import Client
 
 from fastapi import status
@@ -9,12 +10,15 @@ import pytest
 
 # Relação de campos obrigatórios para testar sua ausência:
 fields_participantes = {
-    "optional": tuple(), # nenhum campo é opcional
+    "optional": tuple(),  # nenhum campo é opcional
     "mandatory": (
-        ["cod_SIAPE_instituidora"],
-        ["cod_SIAPE_lotacao"],
-        ["cpf_participante"],
-        ["participante"],
+        ["origem_unidade"],
+        ["cod_unidade_autorizadora"],
+        ["cod_unidade_lotacao"],
+        ["cpf"],
+        ["matricula_siape"],
+        ["cod_unidade_instituidora"],
+        ["situacao"],
         ["modalidade_execucao"],
         ["data_assinatura_tcr"],
     ),
@@ -37,22 +41,13 @@ def remove_null_optional_fields(data: dict) -> dict:
     return data
 
 
-def assert_equal_lista_status_participante(
-    status_participante_1: list[dict], status_participante_2: list[dict]
-):
-    """Verifica a igualdade de duas listas de status do participante, considerando
+def assert_equal_participante(participante_1: list[dict], participante_2: list[dict]):
+    """Verifica a igualdade de dois participantes, considerando
     apenas os campos obrigatórios.
     """
-
-    status_participante_1 = sorted([
-        remove_null_optional_fields(status_participante)
-        for status_participante in status_participante_1
-    ])
-    status_participante_2 = sorted([
-        remove_null_optional_fields(status_participante)
-        for status_participante in status_participante_2
-    ])
-    assert status_participante_1 == status_participante_2
+    assert remove_null_optional_fields(
+        participante_1
+    ) == remove_null_optional_fields(participante_2)
 
 
 # Os testes usam muitas fixtures, então necessariamente precisam de
@@ -72,15 +67,15 @@ def test_put_participante(
 ):
     """Testa a submissão de um participante a partir do template"""
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_lotacao']}"
-        f"/participante/{input_part['cpf_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/participante/{input_part['cpf']}",
         json=input_part,
         headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert_equal_lista_status_participante(response.json(), input_part)
+    assert_equal_participante(response.json(), input_part)
 
 
 def test_put_participante_unidade_nao_permitida(
@@ -90,17 +85,17 @@ def test_put_participante_unidade_nao_permitida(
     client: Client,
 ):
     """
-    Testa a submissão de um participante em outra unidade instituidora
-    (user não é superuser)
+    Testa a submissão de um participante em outra unidade autorizadora
+    (user não é admin)
     """
     response = client.put(
-        f"/organizacao/3/participante/{input_part['cpf_participante']}",
+        f"/organizacao/SIAPE/3/participante/{input_part['cpf']}",
         json=input_part,
         headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    detail_msg = "Usuário não tem permissão na cod_SIAPE_instituidora informada"
+    detail_msg = "Usuário não tem permissão na cod_unidade_autorizadora informada"
     assert response.json().get("detail", None) == detail_msg
 
 
@@ -112,9 +107,9 @@ def test_put_participante_outra_unidade_admin(
     client: Client,
 ):
     """Testa, usando usuário admin, a submissão de um participante em outra
-    unidade instituidora
+    unidade autorizadora
     """
-    input_part["cod_SIAPE_instituidora"] = 3  # unidade diferente
+    input_part["cod_unidade_autorizadora"] = 3  # unidade diferente
 
     response = client.get(
         f"/user/{admin_credentials['username']}",
@@ -125,13 +120,13 @@ def test_put_participante_outra_unidade_admin(
     assert response.status_code == status.HTTP_200_OK
     admin_data = response.json()
     assert (
-        admin_data.get("cod_SIAPE_instituidora", None)
-        != input_part["cod_SIAPE_instituidora"]
+        admin_data.get("cod_unidade_autorizadora", None)
+        != input_part["cod_unidade_autorizadora"]
     )
     assert admin_data.get("is_admin", None) is True
 
     response = client.put(
-        f"/organizacao/3/participante/{input_part['cpf_participante']}",
+        f"/organizacao/SIAPE/3/participante/{input_part['cpf']}",
         json=input_part,
         headers=header_admin,
     )
@@ -142,7 +137,7 @@ def test_put_participante_outra_unidade_admin(
 
 
 @pytest.mark.parametrize(
-    "codigos_SIAPE_instituidora",
+    "cod_unidade_autorizadora",
     [
         (1, 1),  # mesma unidade
         (1, 2),  # unidades diferentes
@@ -151,37 +146,40 @@ def test_put_participante_outra_unidade_admin(
 def test_put_duplicate_participante(
     truncate_participantes,  # pylint: disable=unused-argument
     input_part: dict,
-    codigos_SIAPE_instituidora: tuple[int, int],
+    codigos_unidade_autorizadora: tuple[int, int],
     user1_credentials: dict,
     header_usr_1: dict,
     header_usr_2: dict,
     client: Client,
 ):
-    """Testa o envio de um mesmo participante mais de uma vez. Podendo
+    """
+    # TODO: Mudar o comportamento do teste, agora não é mais uma lista.
+
+    Testa o envio de um mesmo participante mais de uma vez. Podendo
     ser em unidades diferentes (por exemplo, quando o participante altera
     a sua lotação) ou na mesma unidade (envio de um novo status para o
     mesmo participante, na mesma unidade). Em todos os casos tem que se
     manter o(s) registro(s) anterior(es) concomitantemente.
     """
-    input_part["cod_SIAPE_instituidora"] = codigos_SIAPE_instituidora[0]
+    input_part["cod_unidade_autorizadora"] = codigos_unidade_autorizadora[0]
     response = client.put(
-        f"/organizacao/{codigos_SIAPE_instituidora[0]}"
+        f"/organizacao/SIAPE/{codigos_unidade_autorizadora[0]}"
         f"/participante/{input_part['cpf_participante']}",
-        json={"lista_status": [input_part]},
+        json=input_part,
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
     assert response.json() == input_part
 
-    if codigos_SIAPE_instituidora[1] == user1_credentials["cod_SIAPE_instituidora"]:
+    if codigos_unidade_autorizadora[1] == user1_credentials["cod_unidade_autorizadora"]:
         header_usr = header_usr_1
     else:
         header_usr = header_usr_2
-    input_part["cod_SIAPE_instituidora"] = codigos_SIAPE_instituidora[1]
+    input_part["cod_unidade_autorizadora"] = codigos_unidade_autorizadora[1]
     response = client.put(
-        f"/organizacao/{codigos_SIAPE_instituidora[1]}"
-        f"/participante/{input_part['cpf_participante']}",
+        f"/organizacao/SIAPE/{codigos_unidade_autorizadora[1]}"
+        f"/participante/{input_part['cpf']}",
         json=input_part,
         headers=header_usr,
     )
@@ -201,7 +199,7 @@ def test_create_participante_inconsistent(
     """Tenta submeter participante inconsistente (URL difere do JSON)"""
     novo_cpf_participante = "82893311776"
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         f"/participante/{novo_cpf_participante}",
         json=input_part,
         headers=header_usr_1,
@@ -220,29 +218,26 @@ def test_create_participante_inconsistent(
 #     header_usr_1: dict,
 #     client: Client,
 # ):
-#     """Tenta criar uma nova lista de status de participante omitindo
-#     campos opcionais.
+#     """Tenta criar um novo participante omitindo campos opcionais.
 #     """
 #     partial_input_part = input_part.copy()
-#     cpf_participante = partial_input_part["cpf_participante"]
+#     cpf_participante = partial_input_part["cpf"]
 #     _, field_list = omitted_fields
 #     for field in field_list:
 #         del partial_input_part[field]
 
 #     response = client.put(
-#         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+#         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
 #         f"/participante/{cpf_participante}",
-#         json={"lista_status": [partial_input_part]},
+#         json=partial_input_part,
 #         headers=header_usr_1,
 #     )
 #     assert response.status_code == status.HTTP_201_CREATED
-#     assert any(
-#         all(
-#             response_part[attribute] == partial_input_part[attribute]
-#             for attributes in fields_participantes["mandatory"]
-#             for attribute in attributes
-#         )
-#         for response_part in response.json()["lista_status"]
+#     response_data = response.json()
+#     assert all(
+#         response_data[attribute] == partial_input_part[attribute]
+#         for attributes in fields_participantes["mandatory"]
+#         for attribute in attributes
 #     )
 
 
@@ -256,16 +251,14 @@ def test_put_participante_missing_mandatory_fields(
     client: Client,
 ):
     """Tenta submeter participantes faltando campos obrigatórios"""
-    cpf_participante = input_part["cpf_participante"]
+    cpf_participante = input_part["cpf"]
     offset, field_list = missing_fields
     for field in field_list:
         del input_part[field]
 
-    input_part[
-        "cpf_participante"
-    ] = f"{1800 + offset}"  # precisa ser um novo participante
+    input_part["cpf"] = f"{1800 + offset}"  # precisa ser um novo participante
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         f"/participante/{cpf_participante}",
         json=input_part,
         headers=header_usr_1,
@@ -280,16 +273,14 @@ def test_get_participante(
     input_part: dict,
     client: Client,
 ):
-    """Tenta requisitar um participante pela matricula_siape."""
+    """Tenta ler os dados de um participante pelo cpf."""
     response = client.get(
-        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['cpf_participante']}",
+        f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
+        f"/participante/{input_part['cpf']}",
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
-    assert_equal_lista_status_participante(
-        [response.json()], [input_part]
-    )
+    assert_equal_participante(esponse.json() iput_part)
 
 
 def test_get_participante_inexistente(
@@ -297,15 +288,13 @@ def test_get_participante_inexistente(
 ):
     """Tenta consultar um participante que não existe na base de dados."""
     response = client.get(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         "/participante/82893311776",
         headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert (
-        response.json().get("detail", None) == "Status de Participante não encontrado"
-    )
+    assert response.json().get("detail", None) == "Participante não encontrado"
 
 
 def test_get_participante_different_unit(
@@ -316,20 +305,20 @@ def test_get_participante_different_unit(
     client: Client,
 ):
     """
-    Testa ler um participante em outra unidade instituidora
-    (user não é superuser)
+    Testa ler um participante em outra unidade autorizadora
+    (user não é admin)
     """
 
-    input_part["cod_SIAPE_instituidora"] = 3
+    input_part["cod_unidade_autorizadora"] = 3
 
     response = client.get(
-        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['cpf_participante']}",
+        f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
+        f"/participante/{input_part['cpf']}",
         headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    detail_msg = "Usuário não tem permissão na cod_SIAPE_instituidora informada"
+    detail_msg = "Usuário não tem permissão na cod_unidade_autorizadora informada"
     assert response.json().get("detail", None) == detail_msg
 
 
@@ -340,59 +329,58 @@ def test_get_participante_different_unit_admin(
     input_part: dict,
     client: Client,
 ):
-    """Tenta requisitar um participante pela matricula_siape."""
+    """Testa ler um participante em outra unidade autorizadora
+    (user é admin)"""
 
-    input_part["cod_SIAPE_instituidora"] = 3
+    input_part["cod_unidade_autorizadora"] = 3
 
     response = client.get(
-        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['cpf_participante']}",
+        f"/organizacao/{input_part['cod_unidade_autorizadora']}"
+        f"/participante/{input_part['cpf']}",
         headers=header_admin,
     )
     assert response.status_code == status.HTTP_200_OK
-    assert_equal_lista_status_participante(
-        [response.json()], [input_part]
+    assert_equal_participante(response.json(), input_part)
+
+
+@pytest.mark.parametrize(
+    "matricula_siape",
+    [
+        ("12345678"),
+        ("0000000"),
+        ("9999999"),
+        ("123456"),
+        (""),
+    ],
+)
+def test_put_participante_invalid_matricula_siape(
+    truncate_participantes,  # pylint: disable=unused-argument
+    input_part: dict,
+    matricula_siape: str,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
+):
+    """Tenta submeter um participante com matricula_siape inválida."""
+
+    input_part["matricula_siape"] = matricula_siape
+
+    response = client.put(
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/participante/{input_part['cpf']}",
+        json=input_part,
+        headers=header_usr_1,
     )
-
-
-# @pytest.mark.parametrize(
-#     "matricula_siape",
-#     [
-#         ("12345678"),
-#         ("0000000"),
-#         ("9999999"),
-#         ("123456"),
-#         (""),
-#     ],
-# )
-# def test_put_participante_invalid_matricula_siape(
-#     truncate_participantes,  # pylint: disable=unused-argument
-#     input_part: dict,
-#     matricula_siape: str,
-#     user1_credentials: dict,
-#     header_usr_1: dict,
-#     client: Client,
-# ):
-#     """Tenta submeter um participante com matricula siape inválida"""
-
-#     input_part["matricula_siape"] = matricula_siape
-
-#     response = client.put(
-#         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-#         f"/participante/{input_part['cpf_participante']}",
-#         json={"lista_status": [input_part]},
-#         headers=header_usr_1,
-#     )
-#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-#     detail_messages = [
-#         "Matricula SIAPE Inválida.",
-#         "Matrícula SIAPE deve ter 7 dígitos.",
-#     ]
-#     assert any(
-#         f"Value error, {message}" in error["msg"]
-#         for message in detail_messages
-#         for error in response.json().get("detail")
-#     )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    detail_messages = [
+        "Matricula SIAPE Inválida.",
+        "Matrícula SIAPE deve ter 7 dígitos.",
+    ]
+    assert any(
+        f"Value error, {message}" in error["msg"]
+        for message in detail_messages
+        for error in response.json().get("detail")
+    )
 
 
 @pytest.mark.parametrize(
@@ -415,13 +403,13 @@ def test_put_participante_invalid_cpf(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta submeter um participante com cpf inválido"""
-    input_part["cpf_participante"] = cpf_participante
+    """Tenta submeter um participante com cpf inválido."""
+    input_part["cpf"] = cpf_participante
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['cpf_participante']}",
-        json={"lista_status": [input_part]},
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/participante/{input_part['cpf']}",
+        json=input_part,
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -439,7 +427,7 @@ def test_put_participante_invalid_cpf(
 
 
 @pytest.mark.parametrize(
-    "participante",
+    "situacao",
     [
         (3),
         (-1),
@@ -448,25 +436,23 @@ def test_put_participante_invalid_cpf(
 def test_put_part_invalid_ativo(
     truncate_participantes,  # pylint: disable=unused-argument
     input_part: dict,
-    participante: int,
+    situacao: int,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
     """Tenta criar um participante com flag participante
     com valor inválido."""
-    input_part["participante"] = participante
+    input_part["situacao"] = situacao
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['cpf_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/participante/{input_part['cpf']}",
         json=input_part,
         headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_messages = (
-        "Valor do campo 'participante' inválida; permitido: 0, 1"
-    )
+    detail_messages = "Valor do campo 'situacao' inválido; permitido: 0, 1"
     assert any(
         f"Value error, {message}" in error["msg"]
         for message in detail_messages
@@ -486,8 +472,8 @@ def test_put_part_invalid_modalidade_execucao(
     """Tenta submeter um participante com modalidade de execução inválida"""
     input_part["modalidade_execucao"] = modalidade_execucao
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['cpf_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/participante/{input_part['cpf']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -501,41 +487,12 @@ def test_put_part_invalid_modalidade_execucao(
     )
 
 
-# @pytest.mark.parametrize(
-#     "jornada_trabalho_semanal",
-#     [
-#         (-2),
-#         (0),
-#     ],
-# )
-# def test_put_part_invalid_jornada_trabalho_semanal(
-#     truncate_participantes,  # pylint: disable=unused-argument
-#     input_part: dict,
-#     jornada_trabalho_semanal: int,
-#     user1_credentials: dict,
-#     header_usr_1: dict,
-#     client: Client,
-# ):
-#     """Tenta submeter um participante com jornada de trabalho semanal inválida"""
-#     input_part["jornada_trabalho_semanal"] = jornada_trabalho_semanal
-#     response = client.put(
-#         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-#         f"/participante/{input_part['cpf_participante']}",
-#         json={"lista_status": [input_part]},
-#         headers=header_usr_1,
-#     )
-
-#     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-#     detail_messages = "Jornada de trabalho semanal deve ser maior que zero"
-#     assert any(
-#         f"Value error, {message}" in error["msg"]
-#         for message in detail_messages
-#         for error in response.json().get("detail")
-#     )
 
 def test_put_invalid_data_assinatura_tcr():
-    """Tenta criar um participante com data inválida do TCR."""
+    """Tenta criar um participante com data futura do TCR."""
+    # TODO: implementar
     pass
+
 
 def test_put_data_assinatura_tcr_default_value(
     truncate_participantes,  # pylint: disable=unused-argument
@@ -548,8 +505,8 @@ def test_put_data_assinatura_tcr_default_value(
     for ausente ou NULL o mesmo é interpretado como FALSE."""
     input_part["data_assinatura_tcr"] = None
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/participante/{input_part['cpf_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/participante/{input_part['cpf']}",
         json=input_part,
         headers=header_usr_1,
     )
