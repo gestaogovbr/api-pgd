@@ -18,9 +18,7 @@
             "tipo_meta": "unidade",
             "data_entrega": "2023-06-01",
             "nome_unidade_demandante": "string",
-            "nome_unidade_destinataria": "string",
-            "avaliacao": null,
-            "data_avaliacao": null
+            "nome_unidade_destinataria": "string"
         },
         {
             "id_entrega": "2",
@@ -30,9 +28,7 @@
             "tipo_meta": "percentual",
             "data_entrega": "2023-06-15",
             "nome_unidade_demandante": "string",
-            "nome_unidade_destinataria": "string",
-            "avaliacao": null,
-            "data_avaliacao": null
+            "nome_unidade_destinataria": "string"
         }
     ]
 }
