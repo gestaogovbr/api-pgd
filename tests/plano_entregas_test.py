@@ -1,6 +1,7 @@
 """
 Testes relacionados ao Plano de Entregas da Unidade
 """
+
 from datetime import date
 
 from httpx import Client
@@ -31,9 +32,7 @@ fields_plano_entregas = {
 }
 
 fields_entrega = {
-    "optional": (
-        ["entrega_cancelada"],
-    ),
+    "optional": (["entrega_cancelada"],),
     "mandatory": (
         ["id_entrega"],
         ["nome_entrega"],
@@ -94,8 +93,8 @@ def test_create_plano_entregas_completo(
 ):
     """Tenta criar um novo plano de entregas"""
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -115,8 +114,8 @@ def test_create_plano_entregas_unidade_nao_permitida(
     ele não está autorizado.
     """
     response = client.put(
-        "/organizacao/3"  # só está autorizado na organização 2
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        "/organizacao/SIAPE/3"  # só está autorizado na organização 2
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_2,
     )
@@ -124,7 +123,7 @@ def test_create_plano_entregas_unidade_nao_permitida(
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert (
         response.json().get("detail", None)
-        == "Usuário não tem permissão na cod_SIAPE_instituidora informada"
+        == "Usuário não tem permissão na cod_unidade_instituidora informada"
     )
 
 
@@ -138,7 +137,7 @@ def test_create_plano_entregas_outra_unidade_admin(
     """Tenta, como administrador, criar um novo Plano de Entregas em uma
     organização diferente da sua própria organização.
     """
-    input_pe["cod_SIAPE_instituidora"] = 3 # unidade diferente
+    input_pe["cod_unidade_autorizadora"] = 3  # unidade diferente
 
     response = client.get(
         f"/user/{admin_credentials['username']}",
@@ -149,14 +148,14 @@ def test_create_plano_entregas_outra_unidade_admin(
     assert response.status_code == status.HTTP_200_OK
     admin_data = response.json()
     assert (
-        admin_data.get("cod_SIAPE_instituidora", None)
-        != input_pe["cod_SIAPE_instituidora"]
+        admin_data.get("cod_unidade_autorizadora", None)
+        != input_pe["cod_unidade_autorizadora"]
     )
     assert admin_data.get("is_admin", None) is True
 
     response = client.put(
-        f"/organizacao/{input_pe['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{input_pe['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_admin,
     )
@@ -179,29 +178,29 @@ def test_update_plano_entregas(
     O teste altera um campo do PE e reenvia pra API (update).
     """
 
-    input_pe["avaliacao_plano_entregas"] = 3
-    input_pe["data_avaliacao_plano_entregas"] = "2023-08-15"
+    input_pe["avaliacao"] = 3
+    input_pe["data_avaliacao"] = "2023-08-15"
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["avaliacao_plano_entregas"] == 3
-    assert response.json()["data_avaliacao_plano_entregas"] == "2023-08-15"
+    assert response.json()["avaliacao"] == 3
+    assert response.json()["data_avaliacao"] == "2023-08-15"
 
     # Consulta API para conferir se a alteração foi persistida
     response = client.get(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["avaliacao_plano_entregas"] == 3
-    assert response.json()["data_avaliacao_plano_entregas"] == "2023-08-15"
+    assert response.json()["avaliacao"] == 3
+    assert response.json()["data_avaliacao"] == "2023-08-15"
 
 
 @pytest.mark.parametrize("omitted_fields", enumerate(fields_entrega["optional"]))
@@ -221,10 +220,10 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
             if field in entrega:
                 del entrega[field]
 
-    input_pe["id_plano_entrega_unidade"] = 557 + offset
+    input_pe["id_plano_entrega"] = 557 + offset
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -249,10 +248,10 @@ def test_create_plano_entregas_entrega_null_optional_fields(
             if field in entrega:
                 entrega[field] = None
 
-    input_pe["id_plano_entrega_unidade"] = 557 + offset
+    input_pe["id_plano_entrega"] = 557 + offset
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -281,14 +280,14 @@ def test_create_plano_entregas_missing_mandatory_fields(
 
     # para usar na URL, necessário existir caso tenha sido removido
     # como campo obrigatório
-    id_plano_entrega_unidade = 1800 + offset
-    if input_pe.get("id_plano_entrega_unidade", None):
-        # Atualiza o id_plano_entrega_unidade somente se existir.
+    id_plano_entrega = 1800 + offset
+    if input_pe.get("id_plano_entrega", None):
+        # Atualiza o id_plano_entrega somente se existir.
         # Se não existir, é porque foi removido como campo obrigatório.
-        input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
+        input_pe["id_plano_entrega"] = id_plano_entrega
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{id_plano_entrega_unidade}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{id_plano_entrega}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -308,8 +307,8 @@ def test_create_huge_plano_entregas(
         new_entrega = input_pe["entregas"][0].copy()
         new_entrega["id_entrega"] = 3 + id_entrega
         new_entrega["nome_entrega"] = "x" * 300  # 300 caracteres
-        new_entrega["nome_demandante"] = "x" * 300  # 300 caracteres
-        new_entrega["nome_destinatario"] = "x" * 300  # 300 caracteres
+        new_entrega["nome_unidade_demandante"] = "x" * 300  # 300 caracteres
+        new_entrega["nome_unidade_destinataria"] = "x" * 300  # 300 caracteres
 
         return new_entrega
 
@@ -317,8 +316,8 @@ def test_create_huge_plano_entregas(
         input_pe["entregas"].append(create_huge_entrega(id_entrega))
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -341,7 +340,7 @@ def test_create_huge_plano_entregas(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega_unidade, nome_entrega, nome_demandante, nome_destinatario",
+    "id_plano_entrega, nome_entrega, nome_unidade_demandante, nome_unidade_destinataria",
     [
         (1, "x" * 301, "string", "string"),
         (2, "string", "x" * 301, "string"),
@@ -352,10 +351,10 @@ def test_create_huge_plano_entregas(
 def test_create_pe_exceed_string_max_size(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    id_plano_entrega_unidade: int,
+    id_plano_entrega: int,
     nome_entrega: str,  # 300 caracteres
-    nome_demandante: str,  # 300 caracteres
-    nome_destinatario: str,  # 300 caracteres
+    nome_unidade_demandante: str,  # 300 caracteres
+    nome_unidade_destinataria: str,  # 300 caracteres
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
@@ -364,21 +363,25 @@ def test_create_pe_exceed_string_max_size(
     """Testa a criação de um plano de entregas excedendo o tamanho
     máximo de cada campo"""
 
-    input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
+    input_pe["id_plano_entrega"] = id_plano_entrega
     input_pe["entregas"][0]["nome_entrega"] = nome_entrega  # 300 caracteres
-    input_pe["entregas"][0]["nome_demandante"] = nome_demandante  # 300 caracteres
-    input_pe["entregas"][0]["nome_destinatario"] = nome_destinatario  # 300 caracteres
+    input_pe["entregas"][0][
+        "nome_unidade_demandante"
+    ] = nome_unidade_demandante  # 300 caracteres
+    input_pe["entregas"][0][
+        "nome_unidade_destinataria"
+    ] = nome_unidade_destinataria  # 300 caracteres
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
 
     if any(
         len(campo) > str_max_size
-        for campo in (nome_entrega, nome_demandante, nome_destinatario)
+        for campo in (nome_entrega, nome_unidade_demandante, nome_unidade_destinataria)
     ):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "String should have at most 300 characters"
