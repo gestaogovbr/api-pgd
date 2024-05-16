@@ -14,17 +14,18 @@ from util import over_a_year
 
 fields_plano_entregas = {
     "optional": (
-        ["avaliacao_plano_entregas"],
-        ["data_avaliacao_plano_entregas"],
+        ["avaliacao"],
+        ["data_avaliacao"],
     ),
     "mandatory": (
-        ["cod_SIAPE_autorizacao"],
-        ["cod_SIAPE_instituidora"],
-        ["id_plano_entrega_unidade"],
-        ["status_plano_entregas"],
-        ["data_inicio_plano_entregas"],
-        ["data_termino_plano_entregas"],
-        ["cod_SIAPE_unidade_execucao"],
+        ["origem_unidade"],
+        ["cod_unidade_autorizadora"],
+        ["cod_unidade_instituidora"],
+        ["cod_unidade_executora"],
+        ["id_plano_entrega"],
+        ["status"],
+        ["data_inicio"],
+        ["data_termino"],
         ["entregas"],
     ),
 }
@@ -35,14 +36,12 @@ fields_entrega = {
     ),
     "mandatory": (
         ["id_entrega"],
-        ["id_plano_entrega_unidade"],
-        ["cod_SIAPE_instituidora"],
         ["nome_entrega"],
         ["meta_entrega"],
         ["tipo_meta"],
         ["data_entrega"],
-        ["nome_demandante"],
-        ["nome_destinatario"],
+        ["nome_unidade_demandante"],
+        ["nome_unidade_destinataria"],
     ),
 }
 
