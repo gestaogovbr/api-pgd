@@ -422,30 +422,30 @@ def test_create_pe_exceed_string_max_size(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega_unidade, cod_SIAPE_unidade_plano, "
-    "data_inicio_plano_entregas, data_termino_plano_entregas, "
-    "cancelado",
+    "id_plano_entrega, cod_unidade_executora, "
+    "data_inicio, data_termino, "
+    "status",
     [
-        (101, 99, "2023-01-01", "2023-06-30", False),  # igual ao exemplo
-        (102, 99, "2024-01-01", "2024-06-30", False),  # sem sobreposição
-        (103, 99, "2022-12-01", "2023-01-31", False),  # sobreposição no início
-        (104, 99, "2023-12-01", "2024-01-31", False),  # sobreposição no fim
-        (105, 99, "2023-02-01", "2023-05-31", False),  # contido no período
-        (106, 99, "2022-12-01", "2024-01-31", False),  # contém o período
-        (107, 100, "2023-02-01", "2023-05-31", False),  # outra unidade
+        ("1", 99, "2023-01-01", "2023-06-30", 4),  # igual ao exemplo
+        ("2", 99, "2024-01-01", "2024-06-30", 4),  # sem sobreposição
+        ("3", 99, "2022-12-01", "2023-01-31", 4),  # sobreposição no início
+        ("4", 99, "2023-12-01", "2024-01-31", 4),  # sobreposição no fim
+        ("5", 99, "2023-02-01", "2023-05-31", 4),  # contido no período
+        ("6", 99, "2022-12-01", "2024-01-31", 4),  # contém o período
+        ("7", 100, "2023-02-01", "2023-05-31", 4),  # outra unidade
         # sobreposição porém um é cancelado
-        (108, 99, "2022-12-01", "2023-01-31", True),
+        ("8", 99, "2022-12-01", "2023-01-31", 1),
     ],
 )
 def test_create_plano_entregas_overlapping_date_interval(
     truncate_pe,  # pylint: disable=unused-argument
     example_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    id_plano_entrega_unidade: int,
-    cod_SIAPE_unidade_plano: int,
-    data_inicio_plano_entregas: str,
-    data_termino_plano_entregas: str,
-    cancelado: bool,
+    id_plano_entrega: str,
+    cod_unidade_executora: int,
+    data_inicio: str,
+    data_termino: str,
+    status: int,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
@@ -459,67 +459,67 @@ def test_create_plano_entregas_overlapping_date_interval(
     """
     original_pe = input_pe.copy()
     input_pe2 = original_pe.copy()
-    input_pe2["id_plano_entrega_unidade"] = 2
-    input_pe2["data_inicio_plano_entregas"] = "2023-07-01"
-    input_pe2["data_termino_plano_entregas"] = "2023-12-31"
+    input_pe2["id_plano_entrega"] = "2"
+    input_pe2["data_inicio"] = "2023-07-01"
+    input_pe2["data_termino"] = "2023-12-31"
     for entrega in input_pe2["entregas"]:
         entrega["data_entrega"] = "2023-12-31"
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe2['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe2['id_plano_entrega']}",
         json=input_pe2,
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_201_CREATED
 
-    input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
-    input_pe["cod_SIAPE_unidade_plano"] = cod_SIAPE_unidade_plano
-    input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
-    input_pe["data_termino_plano_entregas"] = data_termino_plano_entregas
-    input_pe["cancelado"] = cancelado
+    input_pe["id_plano_entrega"] = id_plano_entrega
+    input_pe["cod_unidade_executora"] = cod_unidade_executora
+    input_pe["data_inicio"] = data_inicio
+    input_pe["data_termino"] = data_termino
+    input_pe["status"] = status
     for entrega in input_pe["entregas"]:
-        entrega["data_entrega"] = data_termino_plano_entregas
-    del input_pe["avaliacao_plano_entregas"]
-    del input_pe["data_avaliacao_plano_entregas"]
+        entrega["data_entrega"] = data_termino
+    del input_pe["avaliacao"]
+    del input_pe["data_avaliacao"]
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
     if (
         # se algum dos planos estiver cancelado, não há problema em haver
         # sobreposição
-        not cancelado
+        input_pe["status"] == 1
         # se são unidades diferentes, não há problema em haver sobreposição
-        and input_pe["cod_SIAPE_unidade_plano"]
-        == original_pe["cod_SIAPE_unidade_plano"]
+        or input_pe["cod_unidade_executora"]
+        != original_pe["cod_unidade_executora"]
     ):
+        # um dos planos está cancelado, deve ser criado
+        assert response.status_code == status.HTTP_201_CREATED
+        assert_equal_plano_entregas(response.json(), input_pe)
+    else:
         if any(
             (
-                date.fromisoformat(input_pe["data_inicio_plano_entregas"])
-                < date.fromisoformat(existing_pe["data_termino_plano_entregas"])
+                date.fromisoformat(input_pe["data_inicio"])
+                < date.fromisoformat(existing_pe["data_termino"])
             )
             and (
-                date.fromisoformat(input_pe["data_termino_plano_entregas"])
-                > date.fromisoformat(existing_pe["data_inicio_plano_entregas"])
+                date.fromisoformat(input_pe["data_termino"])
+                > date.fromisoformat(existing_pe["data_inicio"])
             )
             for existing_pe in (original_pe, input_pe2)
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_msg = (
-                "Já existe um plano de entregas para este "
-                "cod_SIAPE_unidade_plano no período informado."
+                "Já existe um plano de entregas para esta "
+                "cod_unidade_executora no período informado."
             )
             assert response.json().get("detail", None) == detail_msg
         else:
             # não há sobreposição de datas
             assert response.status_code == status.HTTP_201_CREATED
             assert_equal_plano_entregas(response.json(), input_pe)
-    else:
-        # um dos planos está cancelado, deve ser criado
-        assert response.status_code == status.HTTP_201_CREATED
-        assert_equal_plano_entregas(response.json(), input_pe)
 
 
 @pytest.mark.parametrize(
