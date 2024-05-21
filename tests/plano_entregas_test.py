@@ -422,9 +422,7 @@ def test_create_pe_exceed_string_max_size(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega, cod_unidade_executora, "
-    "data_inicio, data_termino, "
-    "status",
+    "id_plano_entrega, cod_unidade_executora, " "data_inicio, data_termino, " "status",
     [
         ("1", 99, "2023-01-01", "2023-06-30", 4),  # igual ao exemplo
         ("2", 99, "2024-01-01", "2024-06-30", 4),  # sem sobreposição
@@ -492,8 +490,7 @@ def test_create_plano_entregas_overlapping_date_interval(
         # sobreposição
         input_pe["status"] == 1
         # se são unidades diferentes, não há problema em haver sobreposição
-        or input_pe["cod_unidade_executora"]
-        != original_pe["cod_unidade_executora"]
+        or input_pe["cod_unidade_executora"] != original_pe["cod_unidade_executora"]
     ):
         # um dos planos está cancelado, deve ser criado
         assert response.status_code == status.HTTP_201_CREATED
@@ -577,15 +574,15 @@ def test_create_pe_cod_plano_inconsistent(
 ):
     """Tenta criar um plano de entrega com código de plano divergente"""
 
-    input_pe["id_plano_entrega_unidade"] = 110
+    input_pe["id_plano_entrega"] = "110"
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         f"/plano_entregas/111",  # diferente de 110
         json=input_pe,
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais"
+    detail_msg = "Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_msg
 
 
@@ -597,15 +594,15 @@ def test_create_pe_cod_unidade_inconsistent(
 ):
     """Tenta criar um plano de entrega com código de unidade divergente"""
     original_input_pe = input_pe.copy()
-    input_pe["cod_SIAPE_instituidora"] = 999  # era 1
+    input_pe["cod_unidade_autorizadora"] = 999  # era 1
     response = client.put(
-        f"/organizacao/{original_input_pe['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{original_input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{original_input_pe['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{original_input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais"
+    detail_msg = "Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_msg
 
 
@@ -620,8 +617,8 @@ def test_get_plano_entregas(
     """Tenta buscar um plano de entrega existente"""
 
     response = client.get(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
@@ -634,7 +631,7 @@ def test_get_pe_inexistente(
     """Tenta buscar um plano de entrega inexistente"""
 
     response = client.get(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         "/plano_entregas/888888888",
         headers=header_usr_1,
     )
@@ -654,11 +651,11 @@ def test_get_plano_entregas_different_unit(
     à qual o usuário não tem acesso."""
 
     response = client.get(
-        "/organizacao/3"  # Sem autorização nesta unidade
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/3"  # Sem autorização nesta unidade
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         headers=header_usr_2,
     )
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_get_plano_entregas_different_unit_admin(
@@ -672,15 +669,15 @@ def test_get_plano_entregas_different_unit_admin(
     com um usuário com permissão de admin."""
 
     response = client.get(
-        "/organizacao/3"  # Unidade diferente
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/3"  # Unidade diferente
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         headers=header_admin,
     )
     assert response.status_code == status.HTTP_200_OK
 
 
 @pytest.mark.parametrize(
-    "data_inicio, data_fim",
+    "data_inicio, data_termino",
     [
         ("2020-06-04", "2020-04-01"),
     ],
@@ -689,27 +686,26 @@ def test_create_pe_invalid_period(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     data_inicio: str,
-    data_fim: str,
+    data_termino: str,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
     """Tenta criar um plano de entrega com datas trocadas"""
 
-    input_pe["data_inicio_plano_entregas"] = data_inicio
-    input_pe["data_termino_plano_entregas"] = data_fim
+    input_pe["data_inicio"] = data_inicio
+    input_pe["data_termino"] = data_termino
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
-    if data_inicio > data_fim:
+    if data_inicio > data_termino:
         assert response.status_code == 422
         detail_message = (
-            "data_termino_plano_entregas deve ser maior"
-            " ou igual que data_inicio_plano_entregas."
+            "data_termino deve ser maior ou igual que data_inicio."
         )
         assert any(
             f"Value error, {detail_message}" in error["msg"]
