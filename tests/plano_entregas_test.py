@@ -716,42 +716,41 @@ def test_create_pe_invalid_period(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega_unidade, data_inicio_plano_entregas, "
-    "data_termino_plano_entregas, data_entrega",
+    "id_plano_entrega, data_inicio, data_termino, data_entrega",
     [
-        (91, "2023-08-01", "2023-09-01", "2023-08-08"),
-        (92, "2023-08-01", "2023-09-01", "2023-07-01"),
-        (93, "2023-08-01", "2023-09-01", "2023-10-01"),
+        ("91", "2023-08-01", "2023-09-01", "2023-08-08"),
+        ("92", "2023-08-01", "2023-09-01", "2023-07-01"),
+        ("93", "2023-08-01", "2023-09-01", "2023-10-01"),
     ],
 )
 def test_create_data_entrega_out_of_bounds(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    id_plano_entrega_unidade: int,
-    data_inicio_plano_entregas: str,
-    data_termino_plano_entregas: str,
+    id_plano_entrega: str,
+    data_inicio: str,
+    data_termino: str,
     data_entrega: str,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
     """Tenta criar uma entrega com data de entrega fora do intervalo do plano de entrega"""
-    input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
-    input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
-    input_pe["data_termino_plano_entregas"] = data_termino_plano_entregas
+    input_pe["id_plano_entrega"] = id_plano_entrega
+    input_pe["data_inicio"] = data_inicio
+    input_pe["data_termino"] = data_termino
     for entrega in input_pe["entregas"]:
         entrega["data_entrega"] = data_entrega
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{id_plano_entrega_unidade}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{id_plano_entrega}",
         json=input_pe,
         headers=header_usr_1,
     )
     if date.fromisoformat(data_entrega) < date.fromisoformat(
-        data_inicio_plano_entregas
+        data_inicio
     ) or date.fromisoformat(data_entrega) > date.fromisoformat(
-        data_termino_plano_entregas
+        data_termino
     ):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
@@ -767,36 +766,36 @@ def test_create_data_entrega_out_of_bounds(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega_unidade, data_inicio_plano_entregas, data_avaliacao_plano_entregas",
+    "id_plano_entrega, data_inicio, data_avaliacao",
     [
-        (77, "2020-06-04", "2020-04-01"),
-        (78, "2020-06-04", "2020-06-11"),
+        ("77", "2020-06-04", "2020-04-01"),
+        ("78", "2020-06-04", "2020-06-11"),
     ],
 )
 def test_create_pe_invalid_data_avaliacao(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    data_inicio_plano_entregas: str,
-    data_avaliacao_plano_entregas: str,
-    id_plano_entrega_unidade: int,
+    data_inicio: str,
+    data_avaliacao: str,
+    id_plano_entrega: str,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
     """Tenta criar um plano de entrega com datas de avaliação inferior a data de inicio do Plano"""
 
-    input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
-    input_pe["data_avaliacao_plano_entregas"] = data_avaliacao_plano_entregas
-    input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
+    input_pe["data_inicio"] = data_inicio
+    input_pe["data_avaliacao"] = data_avaliacao
+    input_pe["id_plano_entrega"] = id_plano_entrega
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{id_plano_entrega_unidade}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{id_plano_entrega}",
         json=input_pe,
         headers=header_usr_1,
     )
 
-    if data_avaliacao_plano_entregas < data_inicio_plano_entregas:
+    if data_avaliacao < data_inicio:
         assert response.status_code == 422
         detail_message = (
             "Data de avaliação do Plano de Entrega deve ser maior ou igual"
