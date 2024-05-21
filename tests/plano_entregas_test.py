@@ -523,7 +523,7 @@ def test_create_plano_entregas_overlapping_date_interval(
 
 
 @pytest.mark.parametrize(
-    "data_inicio_plano_entregas, data_termino_plano_entregas",
+    "data_inicio, data_termino",
     [
         ("2023-01-01", "2023-06-30"),  # igual ao exemplo
         ("2023-01-01", "2024-01-01"),  # um ano
@@ -533,27 +533,27 @@ def test_create_plano_entregas_overlapping_date_interval(
 def test_create_plano_entregas_date_interval_over_a_year(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    data_inicio_plano_entregas: str,
-    data_termino_plano_entregas: str,
+    data_inicio: str,
+    data_termino: str,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
     """Plano de Entregas não pode ter vigência superior a um ano."""
-    input_pe["data_inicio_plano_entregas"] = data_inicio_plano_entregas
-    input_pe["data_termino_plano_entregas"] = data_termino_plano_entregas
+    input_pe["data_inicio"] = data_inicio
+    input_pe["data_termino"] = data_termino
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
 
     if (
         over_a_year(
-            date.fromisoformat(data_termino_plano_entregas),
-            date.fromisoformat(data_inicio_plano_entregas),
+            date.fromisoformat(data_termino),
+            date.fromisoformat(data_inicio),
         )
         == 1
     ):
