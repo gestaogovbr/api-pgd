@@ -734,7 +734,11 @@ def test_create_data_entrega_out_of_bounds(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar uma entrega com data de entrega fora do intervalo do plano de entrega"""
+    """Tenta criar uma entrega com data de entrega dentro e fora do
+    intervalo do plano de entrega. Segundo as regras de negócio, essa
+    data pode estar em qualquer ponto no tempo, dentro ou fora do período
+    do plano_entregas.
+    """
     input_pe["id_plano_entrega"] = id_plano_entrega
     input_pe["data_inicio"] = data_inicio
     input_pe["data_termino"] = data_termino
@@ -747,22 +751,8 @@ def test_create_data_entrega_out_of_bounds(
         json=input_pe,
         headers=header_usr_1,
     )
-    if date.fromisoformat(data_entrega) < date.fromisoformat(
-        data_inicio
-    ) or date.fromisoformat(data_entrega) > date.fromisoformat(
-        data_termino
-    ):
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = (
-            "Data de entrega precisa estar dentro do intervalo entre início "
-            "e término do Plano de Entregas."
-        )
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
-    else:
-        assert response.status_code == status.HTTP_201_CREATED
+
+    assert response.status_code == status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(
