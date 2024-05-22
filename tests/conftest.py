@@ -213,8 +213,8 @@ def example_pe(
 ):
     """Cria um Plano de Entrega como exemplo."""
     client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -228,10 +228,10 @@ def example_pe_unidade_3(
     header_usr_1: dict,
 ):
     """Cria um Plano de Entrega como exemplo."""
-    input_pe["cod_SIAPE_instituidora"] = 3
+    input_pe["cod_unidade_autorizadora"] = 3
     client.put(
-        f"/organizacao/{input_pe['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -243,7 +243,7 @@ def example_pt(
 ):
     """Cria um Plano de Trabalho do Participante como exemplo."""
     client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_usr_1,
@@ -257,9 +257,9 @@ def example_pt_unidade_3(
     header_admin: dict,
 ):
     """Cria um Plano de Trabalho do Participante como exemplo."""
-    input_pt["cod_SIAPE_instituidora"] = 3
+    input_pt["cod_unidade_autorizadora"] = 3
     client.put(
-        f"/organizacao/{input_pt['cod_SIAPE_instituidora']}"
+        f"/organizacao/SIAPE/{API_PGD_ADMIN_USER}"
         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
         json=input_pt,
         headers=header_admin,
@@ -272,7 +272,7 @@ def example_part(
 ):
     """Cria um exemplo de status de participante."""
     client.put(
-        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
+        f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
         f"/participante/{input_part['cpf_participante']}",
         json={"lista_status": [input_part]},
         headers=header_admin,
@@ -284,9 +284,9 @@ def example_part_unidade_3(
     client: httpx.Client, input_part: dict, header_admin: dict
 ):
     """Cria um exemplo de status de participante na unidade 3."""
-    input_part["cod_SIAPE_instituidora"] = 3
+    input_part["cod_unidade_autorizadora"] = 3
     client.put(
-        f"/organizacao/{input_part['cod_SIAPE_instituidora']}"
+        f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
         f"/participante/{input_part['cpf_participante']}",
         json={"lista_status": [input_part]},
         headers=header_admin,
