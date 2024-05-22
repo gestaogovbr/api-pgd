@@ -998,56 +998,56 @@ def test_create_entrega_invalid_percent(
         assert response.status_code == status.HTTP_201_CREATED
 
 
-@pytest.mark.parametrize("tipo_meta", [0, 1, 2, 3, 10])
+@pytest.mark.parametrize("tipo_meta", ["unidade", "percentual", "invalid"])
 def test_create_entrega_invalid_tipo_meta(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    tipo_meta: int,
+    tipo_meta: str,
     client: Client,
 ):
     """Tenta criar um Plano de Entrega com tipo de meta inválido"""
     input_pe["entregas"][0]["tipo_meta"] = tipo_meta
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
 
-    if tipo_meta in (1, 2):
+    if tipo_meta in ("unidade", "percentual"):
         assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "Tipo de meta inválido; permitido: 1, 2"
+        detail_message = "Tipo de meta inválido; permitido: 'unidade', 'percentual'"
         assert any(
             f"Value error, {detail_message}" in error["msg"]
             for error in response.json().get("detail")
         )
 
 
-@pytest.mark.parametrize("avaliacao_plano_entregas", [-1, 0, 1, 6])
+@pytest.mark.parametrize("avaliacao", [-1, 0, 1, 6])
 def test_create_pe_invalid_avaliacao(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    avaliacao_plano_entregas: int,
+    avaliacao: int,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
     """Tenta criar um Plano de Entrega com nota de avaliação inválida"""
 
-    input_pe["avaliacao_plano_entregas"] = avaliacao_plano_entregas
+    input_pe["avaliacao"] = avaliacao
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
 
-    if avaliacao_plano_entregas in range(1, 6):
+    if avaliacao in range(1, 6):
         assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
