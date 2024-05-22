@@ -14,7 +14,7 @@
             "id_entrega": "1",
             "entrega_cancelada": false,
             "nome_entrega": "string",
-            "meta_entrega": 100,
+            "meta_entrega": 10,
             "tipo_meta": "unidade",
             "data_entrega": "2023-06-01",
             "nome_unidade_demandante": "string",
