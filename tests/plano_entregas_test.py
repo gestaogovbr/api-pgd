@@ -704,9 +704,7 @@ def test_create_pe_invalid_period(
     )
     if data_inicio > data_termino:
         assert response.status_code == 422
-        detail_message = (
-            "data_termino deve ser maior ou igual que data_inicio."
-        )
+        detail_message = "data_termino deve ser maior ou igual que data_inicio."
         assert any(
             f"Value error, {detail_message}" in error["msg"]
             for error in response.json().get("detail")
@@ -800,37 +798,37 @@ def test_create_pe_invalid_data_avaliacao(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega_unidade, id_ent_1, id_ent_2",
+    "id_plano_entrega, id_entrega_1, id_entrega_2",
     [
-        (90, 401, 402),
-        (91, 403, 403),  # <<<< IGUAIS
-        (92, 404, 404),  # <<<< IGUAIS
-        (93, 405, 406),
+        ("90", "401", "402"),
+        ("91", "403", "403"),  # <<<< IGUAIS
+        ("92", "404", "404"),  # <<<< IGUAIS
+        ("93", "405", "406"),
     ],
 )
 def test_create_pe_duplicate_entrega(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    id_plano_entrega_unidade: int,
-    id_ent_1: str,
-    id_ent_2: str,
+    id_plano_entrega: str,
+    id_entrega_1: str,
+    id_entrega_2: str,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
     """Tenta criar um plano de entrega com entregas com id_entrega duplicados"""
 
-    input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
-    input_pe["entregas"][0]["id_entrega"] = id_ent_1
-    input_pe["entregas"][1]["id_entrega"] = id_ent_2
+    input_pe["id_plano_entrega"] = id_plano_entrega
+    input_pe["entregas"][0]["id_entrega"] = id_entrega_1
+    input_pe["entregas"][1]["id_entrega"] = id_entrega_2
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{id_plano_entrega_unidade}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{id_plano_entrega}",
         json=input_pe,
         headers=header_usr_1,
     )
-    if id_ent_1 == id_ent_2:
+    if id_entrega_1 == id_entrega_2:
         assert response.status_code == 422
         detail_message = "Entregas devem possuir id_entrega diferentes"
         assert any(
@@ -853,8 +851,8 @@ def test_create_pe_duplicate_id_plano(
     """
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -862,8 +860,8 @@ def test_create_pe_duplicate_id_plano(
     assert response.status_code == status.HTTP_201_CREATED
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -887,50 +885,50 @@ def test_create_pe_same_id_plano_different_instituidora(
     """
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_201_CREATED
 
-    input_pe["cod_SIAPE_instituidora"] = user2_credentials["cod_SIAPE_instituidora"]
+    input_pe["cod_unidade_instituidora"] = user2_credentials["cod_unidade_autorizadora"]
     response = client.put(
-        f"/organizacao/{user2_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user2_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_2,
     )
     assert response.status_code == status.HTTP_201_CREATED
 
 
-@pytest.mark.parametrize("cod_SIAPE_unidade_plano", [99, 0, -1])
-def test_create_invalid_cod_siape_unidade(
+@pytest.mark.parametrize("cod_unidade_executora", [99, 0, -1])
+def test_create_invalid_cod_unidade(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    cod_SIAPE_unidade_plano: int,
+    cod_unidade_executora: int,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar uma entrega com código SIAPE inválido.
+    """Tenta criar uma entrega com código de unidade inválido.
     Por ora não será feita validação no sistema, e sim apenas uma
     verificação de sanidade.
     """
-    input_pe["cod_SIAPE_unidade_plano"] = cod_SIAPE_unidade_plano
+    input_pe["cod_unidade_executora"] = cod_unidade_executora
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
 
-    if cod_SIAPE_unidade_plano > 0:
+    if cod_unidade_executora > 0:
         assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "cod_SIAPE inválido"
+        detail_message = "cod_unidade_executora inválido"
         assert any(
             f"Value error, {detail_message}" in error["msg"]
             for error in response.json().get("detail")
@@ -938,59 +936,58 @@ def test_create_invalid_cod_siape_unidade(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega_unidade, meta_entrega, percentual_progresso_esperado, percentual_progresso_realizado",
+    "id_plano_entrega, meta_entrega, tipo_meta",
     [
-        (555, 101, 99, 100),
-        (556, 100, 101, 0),
-        (557, 1, 100, 101),
-        (558, 100, 100, 100),
-        (559, 100, -1, 0),
+        ("555", 10, "unidade"),
+        ("556", 100, "percentual"),
+        ("557", 1, "percentual"),
+        ("558", -10, "unidade"),
+        ("559", 200, "percentual"),
     ],
 )
 def test_create_entrega_invalid_percent(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    id_plano_entrega_unidade: int,
+    id_plano_entrega: str,
     meta_entrega: int,
-    percentual_progresso_esperado: int,
-    percentual_progresso_realizado: int,
+    tipo_meta: str,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
     """Tenta criar um Plano de Entrega com entrega com percentuais inválidos"""
-    input_pe["id_plano_entrega_unidade"] = id_plano_entrega_unidade
+    input_pe["id_plano_entrega"] = id_plano_entrega
     input_pe["entregas"][1]["meta_entrega"] = meta_entrega
-    input_pe["entregas"][1][
-        "percentual_progresso_esperado"
-    ] = percentual_progresso_esperado
-    input_pe["entregas"][1][
-        "percentual_progresso_realizado"
-    ] = percentual_progresso_realizado
+    input_pe["entregas"][1]["tipo_meta"] = tipo_meta
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega_unidade']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entrega']}",
         json=input_pe,
         headers=header_usr_1,
     )
 
-    if all(
-        (0 <= percent <= 100)
-        for percent in (
-            meta_entrega,
-            percentual_progresso_esperado,
-            percentual_progresso_realizado,
-        )
-    ):
-        assert response.status_code == status.HTTP_201_CREATED
-    else:
+    if tipo_meta == "percentual" and (meta_entrega < 0 or meta_entrega > 100):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "Valor percentual inválido."
+        detail_message = (
+            "Valor meta_entrega deve estar entre 0 e 100 "
+            "quando tipo_entrega for percentual."
+        )
         assert any(
             f"Value error, {detail_message}" in error["msg"]
             for error in response.json().get("detail")
         )
+    elif tipo_meta == "unidade" and (meta_entrega < 0):
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_message = (
+            "Valor meta_entrega deve ser positivo quando tipo_entrega for unidade."
+        )
+        assert any(
+            f"Value error, {detail_message}" in error["msg"]
+            for error in response.json().get("detail")
+        )
+    else:
+        assert response.status_code == status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize("tipo_meta", [0, 1, 2, 3, 10])
