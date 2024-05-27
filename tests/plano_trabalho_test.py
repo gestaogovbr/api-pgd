@@ -3,8 +3,9 @@ Testes relacionados ao plano de trabalho do participante.
 """
 
 from datetime import date, timedelta
+from typing import Optional
 
-from httpx import Client
+from httpx import Client, Response
 from fastapi import status
 
 import pytest
@@ -132,6 +133,20 @@ def assert_equal_plano_trabalho(plano_trabalho_1: dict, plano_trabalho_2: dict):
     assert avaliacao_registros_execucao_1 == avaliacao_registros_execucao_2
 
 
+def assert_error_message(response: Response, detail_message: str):
+    """Verifica se a resposta contém uma mensagem de erro específica.
+
+    Args:
+        response (Response): o objeto HTTP de resposta.
+        detail_message (str): a mensagem de erro.
+    """
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert any(
+        f"Value error, {detail_message}" in error["msg"]
+        for error in response.json().get("detail")
+    )
+
+
 # Os testes usam muitas fixtures, então necessariamente precisam de
 # muitos argumentos. Além disso, algumas fixtures não retornam um valor
 # para ser usado no teste, mas mesmo assim são executadas quando estão
@@ -153,8 +168,8 @@ def test_create_plano_trabalho_completo(
     na qual ele está autorizado, contendo todos os dados necessários.
     """
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -164,8 +179,8 @@ def test_create_plano_trabalho_completo(
 
     # Consulta API para conferir se a criação foi persistida
     response = client.get(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         headers=header_usr_1,
     )
 
@@ -183,14 +198,14 @@ def test_create_plano_trabalho_unidade_nao_permitida(
     organização na qual ele não está autorizado.
     """
     response = client.put(
-        "/organizacao/3"  # só está autorizado na organização 1
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        "/organizacao/SIAPE/3"  # só está autorizado na organização 1
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_2,
     )
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    detail_message = "Usuário não tem permissão na cod_SIAPE_instituidora informada"
+    detail_message = "Usuário não tem permissão na cod_unidade_autorizadora informada"
     assert detail_message in response.json().get("detail")
 
 
@@ -206,7 +221,7 @@ def test_create_plano_trabalho_outra_unidade_admin(
     """Tenta, como administrador, criar um novo Plano de Trabalho do
     Participante em uma organização diferente da sua própria organização.
     """
-    input_pt["cod_SIAPE_instituidora"] = 3  # unidade diferente
+    input_pt["cod_unidade_autorizadora"] = 3  # unidade diferente
 
     response = client.get(
         f"/user/{admin_credentials['username']}",
@@ -217,14 +232,14 @@ def test_create_plano_trabalho_outra_unidade_admin(
     assert response.status_code == status.HTTP_200_OK
     admin_data = response.json()
     assert (
-        admin_data.get("cod_SIAPE_instituidora", None)
-        != input_pt["cod_SIAPE_instituidora"]
+        admin_data.get("cod_unidade_autorizadora", None)
+        != input_pt["cod_unidade_autorizadora"]
     )
     assert admin_data.get("is_admin", None) is True
 
     response = client.put(
-        "/organizacao/3"  # organização diferente da do admin
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        "/organizacao/SIAPE/3"  # organização diferente da do admin
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_admin,
     )
@@ -246,10 +261,10 @@ def test_update_plano_trabalho(
     """Atualiza um Plano de Trabalho existente usando o método PUT."""
     # A fixture example_pt cria um novo Plano de Trabalho na API
     # Altera um campo do PT e reenvia pra API (update)
-    input_pt["cod_SIAPE_unidade_exercicio"] = 100  # Valor era 99
+    input_pt["cod_unidade_executora"] = 100  # Valor era 99
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -259,8 +274,8 @@ def test_update_plano_trabalho(
 
     # Consulta API para conferir se a alteração foi persistida
     response = client.get(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         headers=header_usr_1,
     )
 
@@ -269,21 +284,23 @@ def test_update_plano_trabalho(
 
 
 @pytest.mark.parametrize(
-    "tipo_contribuicao, id_entrega",
+    "tipo_contribuicao, cod_unidade_autorizadora_externa, id_plano_entrega, id_entrega",
     [
-        (1, 1),
-        (1, 2),
-        (1, None),
-        (2, 1),
-        (2, None),
-        (3, 1),
-        (3, None),
+        (1, None, "1", "1"),
+        (1, None, "2", "2"),
+        (1, None, None, None),
+        (2, None, "1", None),
+        (2, None, None, None),
+        (3, None, "1", "1"),
+        (3, None, None, None),
     ],
 )
 def test_create_plano_trabalho_id_entrega_check(
     input_pt: dict,
     tipo_contribuicao: int,
-    id_entrega: int,
+    cod_unidade_autorizadora_externa: Optional[int],
+    id_plano_entrega: Optional[str],
+    id_entrega: Optional[str],
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pe,  # pylint: disable=unused-argument
@@ -292,35 +309,51 @@ def test_create_plano_trabalho_id_entrega_check(
     client: Client,
 ):
     """Tenta criar um novo plano de trabalho, sendo que, quando o campo
-    tipo_contribuicao tiver valor 1, o campo id_entrega se tornará
-    obrigatório.
+    tipo_contribuicao tiver valor 1, o campo id_plano_entrega e id_entrega
+    se tornarão obrigatórios.
     """
     input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
+    input_pt["contribuicoes"][0]["id_plano_entrega"] = id_plano_entrega
     input_pt["contribuicoes"][0]["id_entrega"] = id_entrega
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
 
-    if tipo_contribuicao == 1 and id_entrega is None:
+    fields_entrega_externa = (
+        cod_unidade_autorizadora_externa,
+        id_plano_entrega,
+        id_entrega,
+    )
+    error_messages = []
+    if tipo_contribuicao == 1 and (id_plano_entrega is None or id_entrega is None):
+        error_messages.append(
+            "Os campos id_plano_entrega e id_entrega são obrigatórios "
+            "quando tipo_contribuicao tiver o valor 1."
+        )
+    if tipo_contribuicao == 2 and any(fields_entrega_externa):
+        error_messages.append(
+            "Não se deve informar cod_unidade_autorizadora_externa, "
+            "id_plano_entrega ou id_entrega quando tipo_contribuicao == 2"
+        )
+    if tipo_contribuicao == 3 and any(
+        field is None for field in fields_entrega_externa
+    ):
+        error_messages.append(
+            "Os campos cod_unidade_autorizadora_externa, id_plano_entrega e "
+            "id_entrega são obrigatórios quando tipo_contribuicao == 3"
+        )
+    if tipo_contribuicao != 3 and cod_unidade_autorizadora_externa:
+        error_messages.append(
+            "Só se deve usar cod_unidade_autorizadora_externa "
+            "quando tipo_contribuicao == 3"
+        )
+    if error_messages:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = (
-            "O campo id_entrega é obrigatório quando tipo_contribuicao "
-            "tiver o valor 1."
-        )
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
-    elif tipo_contribuicao == 2 and id_entrega:
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "Não se deve informar id_entrega quando tipo_contribuicao == 2"
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
+        for detail_message in error_messages:
+            assert_error_message(response, detail_message)
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
@@ -344,10 +377,10 @@ def test_create_plano_trabalho_contribuicao_omit_optional_fields(
             if field in contribuicao:
                 del contribuicao[field]
 
-    partial_input_pt["id_plano_trabalho_participante"] = 557 + offset
+    partial_input_pt["id_plano_trabalho"] = 557 + offset
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{partial_input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{partial_input_pt['id_plano_trabalho']}",
         json=partial_input_pt,
         headers=header_usr_1,
     )
@@ -373,50 +406,18 @@ def test_create_plano_trabalho_contribuicao_null_optional_fields(
             if field in contribuicao:
                 contribuicao[field] = None
 
-    partial_input_pt["id_plano_trabalho_participante"] = 557 + offset
+    partial_input_pt["id_plano_trabalho"] = 557 + offset
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{partial_input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{partial_input_pt['id_plano_trabalho']}",
         json=partial_input_pt,
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_201_CREATED
 
 
-@pytest.mark.parametrize("omitted_fields", enumerate(fields_consolidacao["optional"]))
-def test_create_plano_trabalho_consolidacao_omit_optional_fields(
-    # fixture example_pe é necessária para cumprir IntegrityConstraint (FK)
-    truncate_pe,  # pylint: disable=unused-argument
-    example_pe,  # pylint: disable=unused-argument
-    input_pt: dict,
-    omitted_fields: list,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um novo plano de trabalho omitindo campos opcionais"""
-    partial_input_pt = input_pt.copy()
-    offset, field_list = omitted_fields
-    for field in field_list:
-        for consolidacao in partial_input_pt["consolidacoes"]:
-            if field in consolidacao:
-                del consolidacao[field]
-
-    partial_input_pt["id_plano_trabalho_participante"] = 557 + offset
-    response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{partial_input_pt['id_plano_trabalho_participante']}",
-        json=partial_input_pt,
-        headers=header_usr_1,
-    )
-    assert response.status_code == status.HTTP_201_CREATED
-
-
-@pytest.mark.parametrize("nulled_fields", enumerate(fields_consolidacao["optional"]))
-def test_create_plano_trabalho_consolidacao_null_optional_fields(
-    # fixture example_pe é necessária para cumprir IntegrityConstraint (FK)
-    truncate_pe,  # pylint: disable=unused-argument
-    example_pe,  # pylint: disable=unused-argument
+@pytest.mark.parametrize("nulled_fields", enumerate(fields_contribuicao["optional"]))
+def test_create_plano_trabalho_contribuicao_null_optional_fields(
     input_pt: dict,
     nulled_fields: list,
     user1_credentials: dict,
@@ -427,14 +428,14 @@ def test_create_plano_trabalho_consolidacao_null_optional_fields(
     partial_input_pt = input_pt.copy()
     offset, field_list = nulled_fields
     for field in field_list:
-        for consolidacao in partial_input_pt["consolidacoes"]:
-            if field in consolidacao:
-                consolidacao[field] = None
+        for contribuicao in partial_input_pt["contribuicoes"]:
+            if field in contribuicao:
+                contribuicao[field] = None
 
-    partial_input_pt["id_plano_trabalho_participante"] = 557 + offset
+    partial_input_pt["id_plano_trabalho"] = f"{557 + offset}"
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{partial_input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{partial_input_pt['id_plano_trabalho']}",
         json=partial_input_pt,
         headers=header_usr_1,
     )
@@ -463,101 +464,107 @@ def test_create_plano_trabalho_missing_mandatory_fields(
     for field in field_list:
         del input_pt[field]
 
-    input_pt["id_plano_trabalho_participante"] = (
-        1800 + offset
-    )  # precisa ser um novo plano
+    input_pt["id_plano_trabalho"] = f"{1800 + offset}"  # precisa ser um novo plano
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{example_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{example_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-def test_create_huge_plano_trabalho(
-    truncate_pe,  # pylint: disable=unused-argument
-    example_pe,  # pylint: disable=unused-argument
-    input_pt: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    truncate_pt,  # pylint: disable=unused-argument
-    client: Client,
-):
-    """Testa a criação de um plano de trabalho com grande volume de dados."""
+# A Contribuição náo contém mais campo de texto livre, portanto suspender
+# os testes seguintes.
+#
+# def test_create_huge_plano_trabalho(
+#     truncate_pe,  # pylint: disable=unused-argument
+#     example_pe,  # pylint: disable=unused-argument
+#     input_pt: dict,
+#     user1_credentials: dict,
+#     header_usr_1: dict,
+#     truncate_pt,  # pylint: disable=unused-argument
+#     client: Client,
+# ):
+#     """Testa a criação de um plano de trabalho com grande volume de dados."""
 
-    quantidade_planos = 200
-    data_inicio_plano = date.fromisoformat(input_pt["data_inicio_plano"])
-    data_termino_plano = data_inicio_plano + timedelta(days=quantidade_planos)
+#     quantidade_planos = 200
+#     data_inicio_plano = date.fromisoformat(input_pt["data_inicio"])
+#     data_termino_plano = data_inicio_plano + timedelta(days=quantidade_planos)
 
-    def create_huge_contribuicao():
-        contribuicao = input_pt["contribuicoes"][0].copy()
-        contribuicao["descricao_contribuicao"] = "x" * 300  # 300 caracteres
-        return contribuicao
+#     def create_huge_contribuicao():
+#         contribuicao = input_pt["contribuicoes"][0].copy()
+#         contribuicao["descricao_contribuicao"] = "x" * 300  # 300 caracteres
+#         return contribuicao
 
-    def create_huge_consolidacao(day: int):
-        consolidacao = input_pt["consolidacoes"][0].copy()
-        consolidacao["descricao_consolidacao"] = "x" * 300  # 300 caracteres
-        data = (data_inicio_plano + timedelta(days=day)).isoformat()
-        consolidacao["data_inicio_registro"] = consolidacao["data_fim_registro"] = data
-        return consolidacao
+#     def create_huge_avaliacao_registros_execucao(day: int):
+#         avaliacao = input_pt["avaliacao_registros_execucao"][0].copy()
+#         avaliacao["data_inicio_periodo_avaliativo"] = (
+#             data_inicio_plano + timedelta(days=day)
+#         ).isoformat()
+#         avaliacao["data_fim_periodo_avaliativo"] = (
+#             data_inicio_plano + timedelta(days=day + 1)
+#         ).isoformat()
+#         return avaliacao
 
-    # prepara a data fim para caber todas as contribuições
-    input_pt["data_termino_plano"] = data_termino_plano.isoformat()
-    for day in range(quantidade_planos):
-        input_pt["contribuicoes"].append(create_huge_contribuicao())
-        input_pt["consolidacoes"].append(create_huge_consolidacao(day=day))
+#     # prepara a data fim para caber todas as contribuições
+#     input_pt["data_termino"] = data_termino_plano.isoformat()
+#     for day in range(quantidade_planos):
+#         input_pt["contribuicoes"].append(create_huge_contribuicao())
+#         input_pt["avaliacao_registros_execucao"].append(
+#             create_huge_avaliacao_registros_execucao(day=day)
+#         )
 
-    response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/555",
-        json=input_pt,
-        headers=header_usr_1,
-    )
+#     response = client.put(
+#         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+#         f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
+#         json=input_pt,
+#         headers=header_usr_1,
+#     )
 
-    assert response.status_code == status.HTTP_201_CREATED
+#     assert response.status_code == status.HTTP_201_CREATED
 
 
-@pytest.mark.parametrize(
-    "id_plano_trabalho_participante, descricao_contribuicao",
-    [
-        (1, "x" * 301),  # ultrapassa o max_length
-        (2, "x" * 300),  # limite do max_length
-    ],
-)
-def test_create_pt_exceed_string_max_size(
-    truncate_pe,  # pylint: disable=unused-argument
-    truncate_pt,  # pylint: disable=unused-argument
-    example_pe,  # pylint: disable=unused-argument
-    input_pt: dict,
-    id_plano_trabalho_participante: int,
-    descricao_contribuicao: str,  # 300 caracteres
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-    str_max_size: int = 300,
-):
-    """Testa a criação de um plano de entregas excedendo o tamanho
-    máximo de cada campo"""
+# @pytest.mark.parametrize(
+#     "id_plano_trabalho_participante, descricao_contribuicao",
+#     [
+#         (1, "x" * 301),  # ultrapassa o max_length
+#         (2, "x" * 300),  # limite do max_length
+#     ],
+# )
+# def test_create_pt_exceed_string_max_size(
+#     truncate_pe,  # pylint: disable=unused-argument
+#     truncate_pt,  # pylint: disable=unused-argument
+#     example_pe,  # pylint: disable=unused-argument
+#     input_pt: dict,
+#     id_plano_trabalho_participante: int,
+#     descricao_contribuicao: str,  # 300 caracteres
+#     user1_credentials: dict,
+#     header_usr_1: dict,
+#     client: Client,
+#     str_max_size: int = 300,
+# ):
+#     """Testa a criação de um plano de entregas excedendo o tamanho
+#     máximo de cada campo"""
 
-    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["contribuicoes"][0][
-        "descricao_contribuicao"
-    ] = descricao_contribuicao  # 300 caracteres
+#     input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
+#     input_pt["contribuicoes"][0][
+#         "descricao_contribuicao"
+#     ] = descricao_contribuicao  # 300 caracteres
 
-    response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
+#     response = client.put(
+#         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+#         f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+#         json=input_pt,
+#         headers=header_usr_1,
+#     )
 
-    if len(descricao_contribuicao) > str_max_size:
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "String should have at most 300 characters"
-        assert response.json().get("detail")[0]["msg"] == detail_message
-    else:
-        assert response.status_code == status.HTTP_201_CREATED
+#     if len(descricao_contribuicao) > str_max_size:
+#         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+#         detail_message = "String should have at most 300 characters"
+#         assert response.json().get("detail")[0]["msg"] == detail_message
+#     else:
+#         assert response.status_code == status.HTTP_201_CREATED
 
 
 # TODO: Verbo PATCH poderá ser implementado em versão futura.
