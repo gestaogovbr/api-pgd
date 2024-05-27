@@ -85,12 +85,12 @@ def assert_equal_plano_trabalho(plano_trabalho_1: dict, plano_trabalho_2: dict):
     apenas os campos obrigatórios.
     """
     # Compara o conteúdo de todos os campos obrigatórios do plano de
-    # trabalho, exceto as listas de contribuições e consolidações
+    # trabalho, exceto as listas de contribuições e avaliacao_registros_execucao
     assert all(
         plano_trabalho_1[attribute] == plano_trabalho_2[attribute]
         for attributes in fields_plano_trabalho["mandatory"]
         for attribute in attributes
-        if attribute not in ("contribuicoes", "consolidacoes")
+        if attribute not in ("contribuicoes", "avaliacao_registros_execucao")
     )
 
     # Compara o conteúdo de cada contribuição, somente campos obrigatórios
@@ -112,24 +112,24 @@ def assert_equal_plano_trabalho(plano_trabalho_1: dict, plano_trabalho_2: dict):
     )
     assert contribuicoes_1 == contribuicoes_2
 
-    # Compara o conteúdo de cada consolidação, somente campos obrigatórios
-    consolidacoes_1 = set(
+    # Compara o conteúdo de cada avaliacao_registros_execucao, somente campos obrigatórios
+    avaliacao_registros_execucao_1 = set(
         {
             field: value
-            for contribuicao in plano_trabalho_1["consolidacoes"]
-            for field, value in contribuicao.items()
-            if field in fields_contribuicao["mandatory"]
+            for avaliacao in plano_trabalho_1["avaliacao_registros_execucao"]
+            for field, value in avaliacao.items()
+            if field in fields_avaliacao_registros_execucao["mandatory"]
         }
     )
-    consolidacoes_2 = set(
+    avaliacao_registros_execucao_2 = set(
         {
             field: value
-            for contribuicao in plano_trabalho_2["consolidacoes"]
-            for field, value in contribuicao.items()
-            if field in fields_contribuicao["mandatory"]
+            for avaliacao in plano_trabalho_2["avaliacao_registros_execucao"]
+            for field, value in avaliacao.items()
+            if field in fields_avaliacao_registros_execucao["mandatory"]
         }
     )
-    assert consolidacoes_1 == consolidacoes_2
+    assert avaliacao_registros_execucao_1 == avaliacao_registros_execucao_2
 
 
 # Os testes usam muitas fixtures, então necessariamente precisam de
