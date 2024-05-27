@@ -2,7 +2,7 @@
 Testes relacionados ao plano de trabalho do participante.
 """
 
-from datetime import date, timedelta
+from datetime import date
 from typing import Optional
 
 from httpx import Client, Response
@@ -415,6 +415,7 @@ def test_create_plano_trabalho_contribuicao_null_optional_fields(
     )
     assert response.status_code == status.HTTP_201_CREATED
 
+
 @pytest.mark.parametrize(
     "missing_fields", enumerate(fields_plano_trabalho["mandatory"])
 )
@@ -617,30 +618,50 @@ def test_create_plano_trabalho_missing_mandatory_fields(
 
 
 @pytest.mark.parametrize(
-    "id_plano_trabalho_participante, cod_SIAPE_unidade_exercicio, "
-    "cpf_participante, "
-    "data_inicio_plano, data_termino_plano, "
+    "id_plano_trabalho, cod_unidade_executora, cpf_participante, "
+    "data_inicio, data_termino, "
     "cancelado",
     [
-        (101, 99, "64635210600", "2023-01-01", "2023-01-15", False),  # igual ao exemplo
-        (102, 99, "64635210600", "2023-02-01", "2023-02-15", False),  # sem sobreposição
-        # sobreposição no início
-        (103, 99, "64635210600", "2022-12-01", "2023-01-08", False),
-        # sobreposição no fim
-        (104, 99, "64635210600", "2023-01-30", "2023-02-15", False),
         (
-            105,
+            "101",
+            99,
+            "64635210600",
+            "2023-01-01",
+            "2023-01-15",
+            False,
+        ),  # igual ao exemplo
+        (
+            "102",
+            99,
+            "64635210600",
+            "2023-02-01",
+            "2023-02-15",
+            False,
+        ),  # sem sobreposição
+        # sobreposição no início
+        ("103", 99, "64635210600", "2022-12-01", "2023-01-08", False),
+        # sobreposição no fim
+        ("104", 99, "64635210600", "2023-01-30", "2023-02-15", False),
+        (
+            "105",
             99,
             "64635210600",
             "2023-01-02",
             "2023-01-08",
             False,
         ),  # contido no período
-        (106, 99, "64635210600", "2022-12-31", "2023-01-16", False),  # contém o período
-        (107, 99, "64635210600", "2022-12-01", "2023-01-08", True),  # cancelado
-        (108, 100, "64635210600", "2023-01-01", "2023-01-15", False),  # outra unidade
         (
-            109,
+            "106",
+            99,
+            "64635210600",
+            "2022-12-31",
+            "2023-01-16",
+            False,
+        ),  # contém o período
+        ("107", 99, "64635210600", "2022-12-01", "2023-01-08", True),  # cancelado
+        ("108", 100, "64635210600", "2023-01-01", "2023-01-15", False),  # outra unidade
+        (
+            "109",
             99,
             "82893311776",
             "2023-01-01",
@@ -648,7 +669,7 @@ def test_create_plano_trabalho_missing_mandatory_fields(
             False,
         ),  # outro participante
         (
-            110,
+            "110",
             100,
             "82893311776",
             "2023-01-01",
@@ -663,11 +684,11 @@ def test_create_plano_trabalho_overlapping_date_interval(
     example_pe,  # pylint: disable=unused-argument
     example_pt,  # pylint: disable=unused-argument
     input_pt: dict,
-    id_plano_trabalho_participante: int,
-    cod_SIAPE_unidade_exercicio: int,
+    id_plano_trabalho: str,
+    cod_unidade_executora: int,
     cpf_participante: str,
-    data_inicio_plano: str,
-    data_termino_plano: str,
+    data_inicio: str,
+    data_termino: str,
     cancelado: bool,
     user1_credentials: dict,
     header_usr_1: dict,
@@ -683,35 +704,41 @@ def test_create_plano_trabalho_overlapping_date_interval(
     """
     original_pt = input_pt.copy()
     input_pt2 = original_pt.copy()
-    input_pt2["id_plano_trabalho_participante"] = 556
-    input_pt2["data_inicio_plano"] = "2023-01-16"
-    input_pt2["data_termino_plano"] = "2023-01-31"
-    input_pt2["consolidacoes"] = [
+    input_pt2["id_plano_trabalho"] = "556"
+    input_pt2["data_inicio"] = "2023-01-16"
+    input_pt2["data_termino"] = "2023-01-31"
+    input_pt2["avaliacao_registros_execucao"] = [
         {
-            "data_inicio_registro": "2023-01-16",
-            "data_fim_registro": "2023-01-23",
-            "avaliacao_plano_trabalho": 5,
+            "id_periodo_avaliativo": "string",
+            "data_inicio_periodo_avaliativo": "2023-01-16",
+            "data_fim_periodo_avaliativo": "2023-01-23",
+            "avaliacao_registros_execucao": 5,
+            "data_avaliacao_registros_execucao": "2023-01-03",
+            "cpf_participante": "64635210600",
+            "data_inicio": "2023-01-16",
+            "data_termino": "2023-01-31",
+            "carga_horaria_disponivel": 80,
         }
     ]
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt2['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt2['id_plano_trabalho']}",
         json=input_pt2,
         headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_201_CREATED
 
-    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["cod_SIAPE_unidade_exercicio"] = cod_SIAPE_unidade_exercicio
+    input_pt["id_plano_trabalho"] = id_plano_trabalho
+    input_pt["cod_unidade_executora"] = cod_unidade_executora
     input_pt["cpf_participante"] = cpf_participante
-    input_pt["data_inicio_plano"] = data_inicio_plano
-    input_pt["data_termino_plano"] = data_termino_plano
+    input_pt["data_inicio"] = data_inicio
+    input_pt["data_termino"] = data_termino
     input_pt["cancelado"] = cancelado
-    input_pt["consolidacoes"] = []
+    input_pt["avaliacao_registros_execucao"] = []
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -721,29 +748,26 @@ def test_create_plano_trabalho_overlapping_date_interval(
         # sobreposição
         not cancelado
         # se são unidades diferentes, não há problema em haver sobreposição
-        and (
-            input_pt["cod_SIAPE_unidade_exercicio"]
-            == original_pt["cod_SIAPE_unidade_exercicio"]
-        )
+        and (input_pt["cod_unidade_executora"] == original_pt["cod_unidade_executora"])
         # se são participantes diferentes, não há problema em haver
         # sobreposição
         and (input_pt["cpf_participante"] == original_pt["cpf_participante"])
     ):
         if any(
             (
-                date.fromisoformat(input_pt["data_inicio_plano"])
-                <= date.fromisoformat(existing_pt["data_termino_plano"])
+                date.fromisoformat(input_pt["data_inicio"])
+                <= date.fromisoformat(existing_pt["data_termino"])
             )
             and (
-                date.fromisoformat(input_pt["data_termino_plano"])
-                >= date.fromisoformat(existing_pt["data_inicio_plano"])
+                date.fromisoformat(input_pt["data_termino"])
+                >= date.fromisoformat(existing_pt["data_inicio"])
             )
             for existing_pt in (original_pt, input_pt2)
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_msg = (
-                "Já existe um plano de trabalho para este "
-                "cod_SIAPE_unidade_exercicio para este cpf_participante "
+                "Já existe um plano de trabalho para esta "
+                "cod_unidade_executora para este cpf_participante "
                 "no período informado."
             )
             assert response.json().get("detail", None) == detail_msg
@@ -758,7 +782,7 @@ def test_create_plano_trabalho_overlapping_date_interval(
 
 
 @pytest.mark.parametrize(
-    "data_inicio_plano, data_termino_plano",
+    "data_inicio, data_termino",
     [
         ("2023-01-01", "2023-06-30"),  # igual ao exemplo
         ("2023-01-01", "2024-01-01"),  # um ano
@@ -770,36 +794,33 @@ def test_create_plano_trabalho_date_interval_over_a_year(
     truncate_pt,  # pylint: disable=unused-argument
     example_pe,  # pylint: disable=unused-argument
     input_pt: dict,
-    data_inicio_plano: str,
-    data_termino_plano: str,
+    data_inicio: str,
+    data_termino: str,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
     """Plano de Entregas não pode ter vigência superior a um ano."""
-    input_pt["data_inicio_plano"] = data_inicio_plano
-    input_pt["data_termino_plano"] = data_termino_plano
+    input_pt["data_inicio"] = data_inicio
+    input_pt["data_termino"] = data_termino
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
 
     if (
         over_a_year(
-            date.fromisoformat(data_termino_plano),
-            date.fromisoformat(data_inicio_plano),
+            date.fromisoformat(data_termino),
+            date.fromisoformat(data_inicio),
         )
         == 1
     ):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "Plano de trabalho não pode abranger período maior que 1 ano."
-        assert any(
-            f"Value error, {detail_message}" == error["msg"]
-            for error in response.json().get("detail")
-        )
+        assert_error_message(response, detail_message)
     else:
         assert response.status_code == status.HTTP_201_CREATED
         assert_equal_plano_trabalho(response.json(), input_pt)
@@ -814,17 +835,18 @@ def test_create_pt_cod_plano_inconsistent(
     header_usr_1: dict,
     client: Client,
 ):
-    input_pt["id_plano_trabalho_participante"] = 110
+    """Tenta criar um plano de trabalho com um códigos diferentes
+    informados na URL e no campo id_plano_trabalho do JSON.
+    """
+    input_pt["id_plano_trabalho"] = "110"
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         "/plano_trabalho/111",
         json=input_pt,
-        headers=header_usr_1,  # diferente de 110
+        headers=header_usr_1,  # diferente de "110"
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_message = (
-        "Parâmetro id_plano_trabalho_participante na URL e no JSON devem ser iguais"
-    )
+    detail_message = "Parâmetro id_plano_trabalho na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_message
 
 
@@ -838,8 +860,8 @@ def test_get_plano_trabalho(
 ):
     """Consulta um plano de trabalho."""
     response = client.get(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         headers=header_usr_1,
     )
 
@@ -857,7 +879,7 @@ def test_get_pt_inexistente(
 ):
     """Tenta acessar um plano de trabalho inexistente."""
     response = client.get(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         "/plano_trabalho/888888888",
         headers=header_usr_1,
     )
@@ -878,12 +900,12 @@ def test_get_pt_different_unit(
     """Tenta acessar um plano de trabalho de uma unidade diferente, à
     qual o usuário não tem acesso."""
     response = client.get(
-        "/organizacao/3"  # Sem autorização nesta unidade
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        "/organizacao/SIAPE/3"  # Sem autorização nesta unidade
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         headers=header_usr_2,
     )
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_get_pt_different_unit_admin(
@@ -898,22 +920,25 @@ def test_get_pt_different_unit_admin(
     """Tenta acessar um plano de trabalho de uma unidade diferente, mas
     com um usuário com permissão de admin."""
     response = client.get(
-        f"/organizacao/3"  # Unidade diferente
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/3"  # Unidade diferente
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         headers=header_admin,
     )
 
     # Inclui os campos de resposta do json que não estavam no template
-    input_pt["cancelado"] = False
-    input_pt["contribuicoes"][1]["id_entrega"] = None
-    input_pt["contribuicoes"][1]["descricao_contribuicao"] = None
+    input_pt["status"] = 3
+    input_pt["cod_unidade_executora"] = 3
+    input_pt["carga_horaria_disponivel"] = input_pt["carga_horaria_disponivel"]
+    input_pt["avaliacao_registros_execucao"][0][
+        "data_avaliacao_registros_execucao"
+    ] = "2023-01-03"
 
     assert response.status_code == status.HTTP_200_OK
     assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 @pytest.mark.parametrize(
-    "id_plano_trabalho_participante, data_inicio_plano, data_termino_plano",
+    "id_plano_trabalho, data_inicio, data_termino",
     [
         (77, "2020-06-04", "2020-04-01"),
         (78, "2020-06-04", "2020-04-01"),
@@ -922,42 +947,39 @@ def test_get_pt_different_unit_admin(
 )
 def test_create_pt_invalid_dates(
     input_pt: dict,
-    id_plano_trabalho_participante: str,
-    data_inicio_plano: str,
-    data_termino_plano: str,
+    id_plano_trabalho: str,
+    data_inicio: str,
+    data_termino: str,
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Verifica se a data_termino_plano é maior ou igual à data_inicio_plano."""
-    input_pt["data_inicio_plano"] = data_inicio_plano
-    input_pt["data_termino_plano"] = data_termino_plano
-    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
+    input_pt["data_inicio"] = data_inicio
+    input_pt["data_termino"] = data_termino
+    input_pt["id_plano_trabalho"] = id_plano_trabalho
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        "/plano_trabalho",
         json=input_pt,
         headers=header_usr_1,
     )
-    if data_inicio_plano > data_termino_plano:
+    if data_inicio > data_termino:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
             "Data fim do Plano de Trabalho deve ser maior "
             "ou igual que Data de início."
         )
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
+        assert_error_message(response, detail_message)
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(
-    "id_plano_trabalho_participante, data_inicio_plano, data_termino_plano, "
-    "data_inicio_registro, data_fim_registro",
+    "id_plano_trabalho, data_inicio, data_termino, "
+    "data_inicio_periodo_avaliativo, data_fim_periodo_avaliativo",
     [
         (80, "2023-06-04", "2023-06-11", "2023-04-01", "2023-04-02"),
         (81, "2023-06-04", "2023-06-11", "2024-04-01", "2023-04-02"),
@@ -966,13 +988,13 @@ def test_create_pt_invalid_dates(
         (84, "2023-04-01", "2023-04-01", "2023-04-01", "2023-04-01"),
     ],
 )
-def test_create_pt_data_consolidacao_out_of_bounds(
+def test_create_pt_data_avaliacao_out_of_bounds(
     input_pt: dict,
-    id_plano_trabalho_participante: int,
-    data_inicio_plano: str,
-    data_termino_plano: str,
-    data_inicio_registro: str,
-    data_fim_registro: str,
+    id_plano_trabalho: int,
+    data_inicio: str,
+    data_termino: str,
+    data_inicio_periodo_avaliativo: str,
+    data_fim_periodo_avaliativo: str,
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,  # pylint: disable=unused-argument
@@ -980,41 +1002,44 @@ def test_create_pt_data_consolidacao_out_of_bounds(
     example_pe,  # pylint: disable=unused-argument
     client: Client,
 ):
-    """Verifica se o registro (consolidação) está dentro intervalo do
-    Plano de Trabalho.
+    """Verifica se o período de avaliação do registro de execução está
+    dentro do intervalo do Plano de Trabalho.
     """
-    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["data_inicio_plano"] = data_inicio_plano
-    input_pt["data_termino_plano"] = data_termino_plano
-    input_pt["consolidacoes"][0]["data_inicio_registro"] = data_inicio_registro
-    input_pt["consolidacoes"][0]["data_fim_registro"] = data_fim_registro
+    input_pt["id_plano_trabalho"] = id_plano_trabalho
+    input_pt["data_inicio"] = data_inicio
+    input_pt["data_termino"] = data_termino
+    input_pt["avaliacao_registros_execucao"][0][
+        "data_inicio_periodo_avaliativo"
+    ] = data_inicio_periodo_avaliativo
+    input_pt["avaliacao_registros_execucao"][0][
+        "data_fim_periodo_avaliativo"
+    ] = data_fim_periodo_avaliativo
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        "/plano_trabalho",
         json=input_pt,
         headers=header_usr_1,
     )
     if (
-        date.fromisoformat(data_inicio_registro) < date.fromisoformat(data_inicio_plano)
+        date.fromisoformat(data_inicio_periodo_avaliativo)
+        < date.fromisoformat(data_inicio)
     ) or (
-        date.fromisoformat(data_fim_registro) > date.fromisoformat(data_termino_plano)
+        date.fromisoformat(data_fim_periodo_avaliativo)
+        > date.fromisoformat(data_termino)
     ):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
-            "Data de início e de fim de registro devem estar contidos no "
-            "período do Plano de Trabalho."
+            "Data de início e de fim do período de avaliação do registro "
+            "de execução devem estar contidos no período do Plano de Trabalho."
         )
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
+        assert_error_message(response, detail_message)
     else:
         assert response.status_code == status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(
-    "id_plano_trabalho_participante, consolidacoes",
+    "id_plano_trabalho, periodo_avaliativo",
     [
         (101, [("2023-01-01", "2023-01-02")]),  # igual ao exemplo
         (
@@ -1047,68 +1072,65 @@ def test_create_pt_data_consolidacao_out_of_bounds(
         ),  # contém o período
     ],
 )
-def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
+def test_create_plano_trabalho_avaliacao_overlapping_date_interval(
     truncate_pt,  # pylint: disable=unused-argument
     truncate_pe,  # pylint: disable=unused-argument
     example_pe,  # pylint: disable=unused-argument
     input_pt: dict,
-    id_plano_trabalho_participante: int,
-    consolidacoes: list[tuple[str, str]],
+    id_plano_trabalho: int,
+    periodo_avaliativo: list[tuple[str, str]],
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar um plano de trabalho, cujas consolidações tenham
-    sobreposição de intervalo de data na mesma unidade para o mesmo
-    participante.
+    """Tenta criar um plano de trabalho, cujas avaliações de registros de
+    execução tenham sobreposição de intervalo de data na mesma unidade
+    para o mesmo participante.
 
-    O Plano de Trabalho original é alterado para incluir consolidações
-    com diferentes condições de data, conforme o especificado nos
-    parâmetros de teste.
+    O Plano de Trabalho original é alterado para incluir avaliações de
+    registros de execução com diferentes condições de data, conforme o
+    especificado nos parâmetros de teste.
 
-    Planos de Trabalho cujas consolidações possuam sobreposição de data
-    devem ser rejeitadas.
+    Planos de Trabalho cujas avaliações de registros de execução possuam
+    sobreposição de data devem ser rejeitadas.
     """
-    original_consolidacao = input_pt["consolidacoes"][0].copy()
+    original_avaliacao = input_pt["avaliacao_registros_execucao"][0].copy()
 
-    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
+    input_pt["id_plano_trabalho"] = id_plano_trabalho
 
-    input_pt["consolidacoes"] = []
-    for consolidacao in consolidacoes:
-        consolidacao_template = original_consolidacao.copy()
-        consolidacao_template["data_inicio_registro"] = consolidacao[0]
-        consolidacao_template["data_fim_registro"] = consolidacao[1]
-        input_pt["consolidacoes"].append(consolidacao_template)
+    input_pt["avaliacao_registros_execucao"] = []
+    for avaliacao in periodo_avaliativo:
+        avaliacao_template = original_avaliacao.copy()
+        avaliacao_template["data_inicio_periodo_avaliativo"] = avaliacao[0]
+        avaliacao_template["data_fim_periodo_avaliativo"] = avaliacao[1]
+        input_pt["avaliacao_registros_execucao"].append(avaliacao_template)
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
 
-    consolidacoes.sort(key=lambda consolidacao: consolidacao[0])
-    for consolidacao_1, consolidacao_2 in zip(consolidacoes[:-1], consolidacoes[1:]):
-        data_fim_registro_1 = date.fromisoformat(consolidacao_1[1])
-        data_inicio_registro_2 = date.fromisoformat(consolidacao_2[0])
-        if data_inicio_registro_2 < data_fim_registro_1:
-            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_message = (
-                "Uma ou mais consolidações possuem data_inicio_registro e "
-                "data_fim_registro sobrepostas."
-            )
-            assert any(
-                f"Value error, {detail_message}" in error["msg"]
-                for error in response.json().get("detail")
-            )
-            return
+    periodo_avaliativo.sort(key=lambda avaliacao: avaliacao[0])
+    for avaliacao_1, avaliacao_2 in zip(periodo_avaliativo[:-1], periodo_avaliativo[1:]):
+        data_fim_periodo_avaliativo_1 = date.fromisoformat(avaliacao_1[1])
+        data_inicio_periodo_avaliativo_2 = date.fromisoformat(avaliacao_2[0])
+    if data_inicio_periodo_avaliativo_2 < data_fim_periodo_avaliativo_1:
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_message = (
+            "Uma ou mais avaliações de registros de execução possuem "
+            "data_inicio_periodo_avaliativo e data_fim_periodo_avaliativo sobrepostas."
+        )
+        assert_error_message(response, detail_message)
+        return
 
     assert response.status_code == status.HTTP_201_CREATED
     assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 @pytest.mark.parametrize(
-    "tipo_contribuicao, horas_vinculadas",
+    "tipo_contribuicao, percentual_contribuicao",
     [
         (None, 40),
         (1, None),
@@ -1119,22 +1141,25 @@ def test_create_plano_trabalho_consolidacao_overlapping_date_interval(
 def test_create_pt_missing_mandatory_fields_contribuicoes(
     input_pt: dict,
     tipo_contribuicao: int,
-    horas_vinculadas: int,
+    percentual_contribuicao: int,
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
-    id_plano_trabalho_participante = "111222333"
-    input_pt["id_plano_trabalho_participante"] = id_plano_trabalho_participante
-    input_pt["contribuicoes"] = {
-        "tipo_contribuicao": tipo_contribuicao,
-        "horas_vinculadas": horas_vinculadas,
-    }
+    """
+    Verifica se o endpoint de criação de Plano de Trabalho rejeita a
+    requisição quando algum campo obrigatório da contribuição está
+    faltando.
+    """
+    id_plano_trabalho = "111222333"
+    input_pt["id_plano_trabalho"] = id_plano_trabalho
+    input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
+    input_pt["contribuicoes"][0]["percentual_contribuicao"] = percentual_contribuicao
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{id_plano_trabalho_participante}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{id_plano_trabalho}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -1143,7 +1168,7 @@ def test_create_pt_missing_mandatory_fields_contribuicoes(
 
 @pytest.mark.parametrize(
     "tipo_contribuicao",
-    [(-2), (0), (1), (4)],
+    [(-2), (0), (4)],
 )
 def test_create_pt_invalid_tipo_contribuicao(
     input_pt: dict,
@@ -1155,24 +1180,24 @@ def test_create_pt_invalid_tipo_contribuicao(
     truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
-    """Tenta submeter um plano de trabalho com tipo_contribuicao inválido"""
+    """
+    Verifica se o endpoint de criação de Plano de Trabalho rejeita a
+    requisição quando o tipo de contribuição é inválido.
+    """
     input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
 
-    if tipo_contribuicao in range(1, 4):
+    if tipo_contribuicao in [1, 2, 3]:
         assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "Tipo de contribuição inválida; permitido: 1 a 3"
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
+        assert_error_message(response, detail_message)
 
 
 @pytest.mark.parametrize(
