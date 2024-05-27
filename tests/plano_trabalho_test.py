@@ -415,33 +415,6 @@ def test_create_plano_trabalho_contribuicao_null_optional_fields(
     )
     assert response.status_code == status.HTTP_201_CREATED
 
-
-@pytest.mark.parametrize("nulled_fields", enumerate(fields_contribuicao["optional"]))
-def test_create_plano_trabalho_contribuicao_null_optional_fields(
-    input_pt: dict,
-    nulled_fields: list,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um novo plano de trabalho enviando null nos campos opcionais"""
-    partial_input_pt = input_pt.copy()
-    offset, field_list = nulled_fields
-    for field in field_list:
-        for contribuicao in partial_input_pt["contribuicoes"]:
-            if field in contribuicao:
-                contribuicao[field] = None
-
-    partial_input_pt["id_plano_trabalho"] = f"{557 + offset}"
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{partial_input_pt['id_plano_trabalho']}",
-        json=partial_input_pt,
-        headers=header_usr_1,
-    )
-    assert response.status_code == status.HTTP_201_CREATED
-
-
 @pytest.mark.parametrize(
     "missing_fields", enumerate(fields_plano_trabalho["mandatory"])
 )
