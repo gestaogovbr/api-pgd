@@ -422,7 +422,7 @@ def test_create_pe_exceed_string_max_size(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega, cod_unidade_executora, " "data_inicio, data_termino, " "status",
+    "id_plano_entrega, cod_unidade_executora, data_inicio, data_termino, status",
     [
         ("1", 99, "2023-01-01", "2023-06-30", 4),  # igual ao exemplo
         ("2", 99, "2024-01-01", "2024-06-30", 4),  # sem sobreposição
