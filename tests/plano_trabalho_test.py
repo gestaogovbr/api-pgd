@@ -1,6 +1,7 @@
 """
 Testes relacionados ao plano de trabalho do participante.
 """
+
 from datetime import date, timedelta
 
 from httpx import Client
@@ -13,36 +14,66 @@ from util import over_a_year
 # grupos de campos opcionais e obrigatórios a testar
 
 fields_plano_trabalho = {
-    "optional": (["cancelado"],),
+    "optional": tuple(),  # nenhum campo é opcional
     "mandatory": (
-        ["id_plano_entrega_unidade"],
-        ["cod_SIAPE_unidade_exercicio"],
+        ["origem_unidade"],
+        ["cod_unidade_autorizadora"],
+        ["id_plano_trabalho"],
+        ["status"],
+        ["cod_unidade_executora"],
         ["cpf_participante"],
-        ["data_inicio_plano"],
-        ["data_termino_plano"],
-        ["carga_horaria_total_periodo_plano"],
+        ["matricula_siape"],
+        ["data_inicio"],
+        ["data_termino"],
+        ["carga_horaria_disponivel"],
         ["contribuicoes"],
-        ["consolidacoes"],
+        ["avaliacao_registros_execucao"],
     ),
 }
 
 fields_contribuicao = {
     "optional": (
-        ["descricao_contribuicao"],
-        # ["id_entrega"], # obrigatório quando tipo_contribuicao==1
+        ["cod_unidade_autorizadora_externa"],
+        ["id_plano_entrega"],
+        ["id_entrega"],
     ),
     "mandatory": (
-        ["id_plano_trabalho_participante"],
+        ["origem_unidade"],
+        ["id_contribuicao"],
+        ["cod_unidade_instituidora"],
         ["tipo_contribuicao"],
-        ["horas_vinculadas"],
+        ["percentual_contribuicao"],
+        ["carga_horaria_disponivel"],
     ),
 }
 
-fields_consolidacao = {
-    "optional": (["avaliacao_plano_trabalho"],),
+fields_avaliacao_registros_execucao = {
     "mandatory": (
-        ["data_inicio_registro"],
-        ["data_fim_registro"],
+        ["id_periodo_avaliativo"],
+        ["data_inicio_periodo_avaliativo"],
+        ["data_fim_periodo_avaliativo"],
+        ["avaliacao_registros_execucao"],
+        ["data_avaliacao_registros_execucao"],
+        ["cpf_participante"],
+        ["data_inicio"],
+        ["data_termino"],
+        ["carga_horaria_disponivel"],
+    ),
+}
+
+
+fields_avaliacao_registros_execucao = {
+    "optional": tuple(),  # nenhum campo é opcional
+    "mandatory": (
+        ["id_periodo_avaliativo"],
+        ["data_inicio_periodo_avaliativo"],
+        ["data_fim_periodo_avaliativo"],
+        ["avaliacao_registros_execucao"],
+        ["data_avaliacao_registros_execucao"],
+        ["cpf_participante"],
+        ["data_inicio"],
+        ["data_termino"],
+        ["carga_horaria_disponivel"],
     ),
 }
 
