@@ -1132,7 +1132,9 @@ def test_create_plano_trabalho_avaliacao_overlapping_date_interval(
     )
 
     periodo_avaliativo.sort(key=lambda avaliacao: avaliacao[0])
-    for avaliacao_1, avaliacao_2 in zip(periodo_avaliativo[:-1], periodo_avaliativo[1:]):
+    for avaliacao_1, avaliacao_2 in zip(
+        periodo_avaliativo[:-1], periodo_avaliativo[1:]
+    ):
         data_fim_periodo_avaliativo_1 = date.fromisoformat(avaliacao_1[1])
         data_inicio_periodo_avaliativo_2 = date.fromisoformat(avaliacao_2[0])
     if data_inicio_periodo_avaliativo_2 < data_fim_periodo_avaliativo_1:
@@ -1228,9 +1230,19 @@ def test_create_pt_duplicate_id_plano(
     header_usr_1: dict,
     client: Client,
 ):
+    """Testa a criação de um plano de trabalho com um ID de plano de
+    trabalho existente.
+
+    O teste envia duas requisições PUT para a mesma rota, com os mesmos
+    dados de entrada. Na primeira requisição, espera-se que o status da
+    resposta seja 201 Created. Na segunda requisição, espera-se que o
+    status da resposta seja 200 OK, e que a resposta não contenha uma
+    mensagem de erro. Também verifica se os dados do plano de trabalho na
+    resposta são iguais aos dados de entrada.
+    """
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -1238,8 +1250,8 @@ def test_create_pt_duplicate_id_plano(
     assert response.status_code == status.HTTP_201_CREATED
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -1249,59 +1261,76 @@ def test_create_pt_duplicate_id_plano(
     assert_equal_plano_trabalho(response.json(), input_pt)
 
 
-@pytest.mark.parametrize("horas_vinculadas", [-2, -1])
-def test_create_pt_invalid_horas_vinculadas(
+@pytest.mark.parametrize("carga_horaria_disponivel", [-2, -1])
+def test_create_pt_invalid_carga_horaria_disponivel(
     input_pt: dict,
-    horas_vinculadas: int,
+    carga_horaria_disponivel: int,
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
-    input_pt["contribuicoes"][0]["horas_vinculadas"] = horas_vinculadas
+    """Testa a criação de um plano de trabalho com um valor inválido para
+    o campo carga_horaria_disponivel.
+
+    O teste envia uma requisição PUT para a rota
+    "/organizacao/SIAPE/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}"
+    com um valor negativo para o campo carga_horaria_disponivel.
+    Espera-se que a resposta tenha o status HTTP 422 Unprocessable Entity
+    e que a mensagem de erro "Valor de carga_horaria_disponivel deve ser
+    maior ou igual a zero" esteja presente na resposta.
+    """
+    input_pt["carga_horaria_disponivel"] = carga_horaria_disponivel
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_message = "Valor de horas_vinculadas deve ser maior ou igual a zero"
-    assert any(
-        f"Value error, {detail_message}" in error["msg"]
-        for error in response.json().get("detail")
-    )
+    detail_message = "Valor de carga_horaria_disponivel deve ser maior ou igual a zero"
+    assert_error_message(response, detail_message)
 
 
-@pytest.mark.parametrize("avaliacao_plano_trabalho", [0, 1, 2, 5, 6])
-def test_create_pt_consolidacoes_invalid_avaliacao_plano_trabalho(
+@pytest.mark.parametrize("avaliacao_registros_execucao", [0, 1, 2, 5, 6])
+def test_create_pt_invalid_avaliacao_registros_execucao(
     input_pt: dict,
     user1_credentials: dict,
     header_usr_1: dict,
     truncate_pt,  # pylint: disable=unused-argument
-    avaliacao_plano_trabalho: int,
+    avaliacao_registros_execucao: int,
     client: Client,
 ):
-    """Tenta criar uma consolidação com avaliação_plano_trabalho inválido"""
-    input_pt["consolidacoes"][0]["avaliacao_plano_trabalho"] = avaliacao_plano_trabalho
+    """Testa a criação de um plano de trabalho com um valor inválido para
+    o campo avaliacao_registros_execucao.
+
+    O teste envia uma requisição PUT para a rota
+    "/organizacao/SIAPE/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}"
+    com diferentes valores campo avaliacao_registros_execucao.
+    Quando o valor for válido (entre 1 e 5), espera-se que a resposta
+    tenha o status HTTP 201 Created. Quando o valor for inválido,
+    espera-se que a resposta tenha o status HTTP 422 Unprocessable Entity
+    e que a mensagem de erro "Avaliação de registros de execução
+    inválida; permitido: 1 a 5" esteja presente na resposta.
+    """
+    input_pt["avaliacao_registros_execucao"][0][
+        "avaliacao_registros_execucao"
+    ] = avaliacao_registros_execucao
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
 
-    if avaliacao_plano_trabalho in range(1, 6):
+    if avaliacao_registros_execucao in range(1, 6):
         assert response.status_code == status.HTTP_201_CREATED
     else:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "Avaliação de plano de trabalho inválida; permitido: 1 a 5"
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
+        detail_message = "Avaliação de registros de execução inválida; permitido: 1 a 5"
+        assert_error_message(response, detail_message)
 
 
 @pytest.mark.parametrize(
@@ -1331,12 +1360,21 @@ def test_put_plano_trabalho_invalid_cpf(
     truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
-    """Tenta submeter um plano de trabalho com cpf inválido"""
+    """Testa o envio de um plano de trabalho com um CPF inválido.
+
+    O teste envia uma requisição PUT para a rota
+    "/organizacao/SIAPE/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}"
+    com um valor inválido para o campo cpf_participante. Espera-se que a
+    resposta tenha o status HTTP 422 Unprocessable Entity e que uma das
+    seguintes mensagens de erro esteja presente na resposta: - "Dígitos
+    verificadores do CPF inválidos." - "CPF inválido." - "CPF precisa ter
+    11 dígitos." - "CPF deve conter apenas dígitos."
+    """
     input_pt["cpf_participante"] = cpf_participante
 
     response = client.put(
-        f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
