@@ -308,9 +308,28 @@ def test_create_plano_trabalho_id_entrega_check(
     example_pe,  # pylint: disable=unused-argument
     client: Client,
 ):
-    """Tenta criar um novo plano de trabalho, sendo que, quando o campo
-    tipo_contribuicao tiver valor 1, o campo id_plano_entrega e id_entrega
-    se tornarão obrigatórios.
+    """Testa a criação de um novo plano de trabalho, verificando as
+    regras de validação para os campos relacionados à contribuição.
+
+    O teste verifica as seguintes regras:
+
+    1. Quando tipo_contribuicao == 1, os campos id_plano_entrega e
+       id_entrega são obrigatórios.
+    2. Quando tipo_contribuicao == 2, os campos
+       cod_unidade_autorizadora_externa, id_plano_entrega e id_entrega
+       não devem ser informados.
+    3. Quando tipo_contribuicao == 3, os campos
+       cod_unidade_autorizadora_externa, id_plano_entrega e id_entrega
+       são obrigatórios.
+    4. Quando tipo_contribuicao != 3, o campo
+       cod_unidade_autorizadora_externa não deve ser informado.
+
+    O teste envia uma requisição PUT para a rota
+    "/organizacao/SIAPE/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}"
+    com os dados de entrada atualizados de acordo com os parâmetros
+    fornecidos. Verifica se a resposta possui o status HTTP correto (201
+    Created ou 422 Unprocessable Entity) e se as mensagens de erro
+    esperadas estão presentes na resposta.
     """
     input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
     input_pt["contribuicoes"][0]["id_plano_entrega"] = id_plano_entrega
