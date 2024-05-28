@@ -5,7 +5,7 @@ Testes relacionados ao Plano de Entregas da Unidade
 from datetime import date
 
 from httpx import Client
-from fastapi import status
+from fastapi import status as http_status
 
 import pytest
 
@@ -99,7 +99,7 @@ def test_create_plano_entregas_completo(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == http_status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
     assert_equal_plano_entregas(response.json(), input_pe)
 
@@ -120,7 +120,7 @@ def test_create_plano_entregas_unidade_nao_permitida(
         headers=header_usr_2,
     )
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == http_status.HTTP_401_UNAUTHORIZED
     assert (
         response.json().get("detail", None)
         == "Usuário não tem permissão na cod_unidade_instituidora informada"
@@ -145,7 +145,7 @@ def test_create_plano_entregas_outra_unidade_admin(
     )
 
     # Verifica se o usuário é admin e se está em outra unidade
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == http_status.HTTP_200_OK
     admin_data = response.json()
     assert (
         admin_data.get("cod_unidade_autorizadora", None)
@@ -160,7 +160,7 @@ def test_create_plano_entregas_outra_unidade_admin(
         headers=header_admin,
     )
 
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == http_status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
     assert_equal_plano_entregas(response.json(), input_pe)
 
@@ -187,7 +187,7 @@ def test_update_plano_entregas(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == http_status.HTTP_200_OK
     assert response.json()["avaliacao"] == 3
     assert response.json()["data_avaliacao"] == "2023-08-15"
 
@@ -198,7 +198,7 @@ def test_update_plano_entregas(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == http_status.HTTP_200_OK
     assert response.json()["avaliacao"] == 3
     assert response.json()["data_avaliacao"] == "2023-08-15"
 
@@ -227,7 +227,7 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
         json=input_pe,
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == http_status.HTTP_201_CREATED
     assert_equal_plano_entregas(response.json(), input_pe)
 
 
@@ -255,7 +255,7 @@ def test_create_plano_entregas_entrega_null_optional_fields(
         json=input_pe,
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == http_status.HTTP_201_CREATED
     assert_equal_plano_entregas(response.json(), input_pe)
 
 
@@ -291,7 +291,7 @@ def test_create_plano_entregas_missing_mandatory_fields(
         json=input_pe,
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 def test_create_huge_plano_entregas(
@@ -323,7 +323,7 @@ def test_create_huge_plano_entregas(
     )
 
     # Compara o conteúdo do plano de entregas, somente campos obrigatórios
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == http_status.HTTP_201_CREATED
     assert_equal_plano_entregas(response.json(), input_pe)
 
     # Compara o conteúdo de cada entrega, somente campos obrigatórios
@@ -383,11 +383,11 @@ def test_create_pe_exceed_string_max_size(
         len(campo) > str_max_size
         for campo in (nome_entrega, nome_unidade_demandante, nome_unidade_destinataria)
     ):
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "String should have at most 300 characters"
         assert response.json().get("detail")[0]["msg"] == detail_message
     else:
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == http_status.HTTP_201_CREATED
 
 
 # TODO: verbo PATCH poderá ser implementado em versão futura.
@@ -418,7 +418,7 @@ def test_create_pe_exceed_string_max_size(
 #         json=input_pe,
 #         headers=header_usr_1,
 #     )
-#     assert response.status_code == status.HTTP_404_NOT_FOUND
+#     assert response.status_code == http_status.HTTP_404_NOT_FOUND
 
 
 @pytest.mark.parametrize(
@@ -468,7 +468,7 @@ def test_create_plano_entregas_overlapping_date_interval(
         json=input_pe2,
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == http_status.HTTP_201_CREATED
 
     input_pe["id_plano_entrega"] = id_plano_entrega
     input_pe["cod_unidade_executora"] = cod_unidade_executora
@@ -493,7 +493,7 @@ def test_create_plano_entregas_overlapping_date_interval(
         or input_pe["cod_unidade_executora"] != original_pe["cod_unidade_executora"]
     ):
         # um dos planos está cancelado, deve ser criado
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == http_status.HTTP_201_CREATED
         assert_equal_plano_entregas(response.json(), input_pe)
     else:
         if any(
@@ -507,7 +507,7 @@ def test_create_plano_entregas_overlapping_date_interval(
             )
             for existing_pe in (original_pe, input_pe2)
         ):
-            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_msg = (
                 "Já existe um plano de entregas para esta "
                 "cod_unidade_executora no período informado."
@@ -515,7 +515,7 @@ def test_create_plano_entregas_overlapping_date_interval(
             assert response.json().get("detail", None) == detail_msg
         else:
             # não há sobreposição de datas
-            assert response.status_code == status.HTTP_201_CREATED
+            assert response.status_code == http_status.HTTP_201_CREATED
             assert_equal_plano_entregas(response.json(), input_pe)
 
 
@@ -554,14 +554,14 @@ def test_create_plano_entregas_date_interval_over_a_year(
         )
         == 1
     ):
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "Plano de entregas não pode abranger período maior que 1 ano."
         assert any(
             f"Value error, {detail_message}" in error["msg"]
             for error in response.json().get("detail")
         )
     else:
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == http_status.HTTP_201_CREATED
         assert_equal_plano_entregas(response.json(), input_pe)
 
 
@@ -581,7 +581,7 @@ def test_create_pe_cod_plano_inconsistent(
         json=input_pe,
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_msg
 
@@ -601,7 +601,7 @@ def test_create_pe_cod_unidade_inconsistent(
         json=input_pe,
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_msg = "Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_msg
 
@@ -621,7 +621,7 @@ def test_get_plano_entregas(
         f"/plano_entregas/{input_pe['id_plano_entrega']}",
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == http_status.HTTP_200_OK
     assert_equal_plano_entregas(response.json(), input_pe)
 
 
@@ -635,7 +635,7 @@ def test_get_pe_inexistente(
         "/plano_entregas/888888888",
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.status_code == http_status.HTTP_404_NOT_FOUND
 
     assert response.json().get("detail", None) == "Plano de entregas não encontrado"
 
@@ -655,7 +655,7 @@ def test_get_plano_entregas_different_unit(
         f"/plano_entregas/{input_pe['id_plano_entrega']}",
         headers=header_usr_2,
     )
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == http_status.HTTP_403_FORBIDDEN
 
 
 def test_get_plano_entregas_different_unit_admin(
@@ -673,7 +673,7 @@ def test_get_plano_entregas_different_unit_admin(
         f"/plano_entregas/{input_pe['id_plano_entrega']}",
         headers=header_admin,
     )
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == http_status.HTTP_200_OK
 
 
 @pytest.mark.parametrize(
@@ -710,7 +710,7 @@ def test_create_pe_invalid_period(
             for error in response.json().get("detail")
         )
     else:
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == http_status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(
@@ -749,7 +749,7 @@ def test_create_data_entrega_out_of_bounds(
         headers=header_usr_1,
     )
     if date.fromisoformat(data_entrega) < date.fromisoformat(data_inicio):
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
             "A data_entrega precisa ser posterior à data_inicio do Plano de Entregas."
         )
@@ -758,7 +758,7 @@ def test_create_data_entrega_out_of_bounds(
             for error in response.json().get("detail")
         )
     else:
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == http_status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(
@@ -802,7 +802,7 @@ def test_create_pe_invalid_data_avaliacao(
             for error in response.json().get("detail")
         )
     else:
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == http_status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(
@@ -844,7 +844,7 @@ def test_create_pe_duplicate_entrega(
             for error in response.json().get("detail")
         )
     else:
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == http_status.HTTP_201_CREATED
 
 
 def test_create_pe_duplicate_id_plano(
@@ -865,7 +865,7 @@ def test_create_pe_duplicate_id_plano(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == http_status.HTTP_201_CREATED
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
@@ -874,7 +874,7 @@ def test_create_pe_duplicate_id_plano(
         headers=header_usr_1,
     )
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == http_status.HTTP_200_OK
     assert response.json().get("detail", None) is None
     assert_equal_plano_entregas(response.json(), input_pe)
 
@@ -898,7 +898,7 @@ def test_create_pe_same_id_plano_different_instituidora(
         json=input_pe,
         headers=header_usr_1,
     )
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == http_status.HTTP_201_CREATED
 
     input_pe["cod_unidade_instituidora"] = user2_credentials["cod_unidade_autorizadora"]
     response = client.put(
@@ -907,7 +907,7 @@ def test_create_pe_same_id_plano_different_instituidora(
         json=input_pe,
         headers=header_usr_2,
     )
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == http_status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize("cod_unidade_executora", [99, 0, -1])
@@ -933,9 +933,9 @@ def test_create_invalid_cod_unidade(
     )
 
     if cod_unidade_executora > 0:
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == http_status.HTTP_201_CREATED
     else:
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "cod_unidade_executora inválido"
         assert any(
             f"Value error, {detail_message}" in error["msg"]
@@ -976,7 +976,7 @@ def test_create_entrega_invalid_percent(
     )
 
     if tipo_meta == "percentual" and (meta_entrega < 0 or meta_entrega > 100):
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
             "Valor meta_entrega deve estar entre 0 e 100 "
             "quando tipo_entrega for percentual."
@@ -986,7 +986,7 @@ def test_create_entrega_invalid_percent(
             for error in response.json().get("detail")
         )
     elif tipo_meta == "unidade" and (meta_entrega < 0):
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
             "Valor meta_entrega deve ser positivo quando tipo_entrega for unidade."
         )
@@ -995,7 +995,7 @@ def test_create_entrega_invalid_percent(
             for error in response.json().get("detail")
         )
     else:
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == http_status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize("tipo_meta", ["unidade", "percentual", "invalid"])
@@ -1018,9 +1018,9 @@ def test_create_entrega_invalid_tipo_meta(
     )
 
     if tipo_meta in ("unidade", "percentual"):
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == http_status.HTTP_201_CREATED
     else:
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "Tipo de meta inválido; permitido: 'unidade', 'percentual'"
         assert any(
             f"Value error, {detail_message}" in error["msg"]
@@ -1048,9 +1048,9 @@ def test_create_pe_invalid_avaliacao(
     )
 
     if avaliacao in range(1, 6):
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == http_status.HTTP_201_CREATED
     else:
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
         assert any(
             f"Value error, {detail_message}" in error["msg"]
