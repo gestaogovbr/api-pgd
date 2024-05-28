@@ -9,7 +9,7 @@ from fastapi import status as http_status
 
 import pytest
 
-from util import over_a_year
+from util import over_a_year, assert_error_message
 
 # grupos de campos opcionais e obrigatórios a testar
 

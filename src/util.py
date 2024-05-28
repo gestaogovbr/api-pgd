@@ -1,7 +1,11 @@
 """Funções de utilidade comum.
 """
+
 import calendar
 from datetime import date, timedelta
+
+from fastapi import status
+from httpx import Response
 
 
 def over_a_year(start: date, end: date) -> int:
@@ -26,3 +30,17 @@ def over_a_year(start: date, end: date) -> int:
     if end - start > timedelta(days=365 + add_leap):
         return 1
     return -1
+
+
+def assert_error_message(response: Response, detail_message: str):
+    """Verifica se a resposta contém uma mensagem de erro específica.
+
+    Args:
+        response (Response): o objeto HTTP de resposta.
+        detail_message (str): a mensagem de erro.
+    """
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert any(
+        f"Value error, {detail_message}" in error["msg"]
+        for error in response.json().get("detail")
+    )

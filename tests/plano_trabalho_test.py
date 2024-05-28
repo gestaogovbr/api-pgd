@@ -5,12 +5,12 @@ Testes relacionados ao plano de trabalho do participante.
 from datetime import date
 from typing import Optional
 
-from httpx import Client, Response
+from httpx import Client
 from fastapi import status
 
 import pytest
 
-from util import over_a_year
+from util import over_a_year, assert_error_message
 
 # grupos de campos opcionais e obrigatórios a testar
 
@@ -131,20 +131,6 @@ def assert_equal_plano_trabalho(plano_trabalho_1: dict, plano_trabalho_2: dict):
         }
     )
     assert avaliacao_registros_execucao_1 == avaliacao_registros_execucao_2
-
-
-def assert_error_message(response: Response, detail_message: str):
-    """Verifica se a resposta contém uma mensagem de erro específica.
-
-    Args:
-        response (Response): o objeto HTTP de resposta.
-        detail_message (str): a mensagem de erro.
-    """
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    assert any(
-        f"Value error, {detail_message}" in error["msg"]
-        for error in response.json().get("detail")
-    )
 
 
 # Os testes usam muitas fixtures, então necessariamente precisam de
