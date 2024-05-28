@@ -18,8 +18,7 @@
             "cod_unidade_autorizadora_externa": null,
             "id_plano_entrega": "1",
             "id_entrega": "1",
-            "percentual_contribuicao": 40,
-            "carga_horaria_disponivel": 40
+            "percentual_contribuicao": 40
         },
         {
             "origem_unidade": "string",
@@ -29,8 +28,7 @@
             "cod_unidade_autorizadora_externa": null,
             "id_plano_entrega": null,
             "id_entrega": null,
-            "percentual_contribuicao": 40,
-            "carga_horaria_disponivel": 40
+            "percentual_contribuicao": 40
         }
     ],
     "avaliacao_registros_execucao": [
@@ -42,8 +40,7 @@
             "data_avaliacao_registros_execucao": "2023-01-03",
             "cpf_participante": "64635210600",
             "data_inicio": "2023-01-01",
-            "data_termino": "2023-01-15",
-            "carga_horaria_disponivel": 80
+            "data_termino": "2023-01-15"
         }
     ]
 }
