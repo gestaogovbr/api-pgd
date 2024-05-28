@@ -778,7 +778,8 @@ def test_create_pe_invalid_data_avaliacao(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar um plano de entrega com datas de avaliação inferior a data de inicio do Plano"""
+    """Tenta criar um Plano de Entregas com datas de avaliação inferior a
+    data de inicio do plano."""
 
     input_pe["data_inicio"] = data_inicio
     input_pe["data_avaliacao"] = data_avaliacao
@@ -801,6 +802,54 @@ def test_create_pe_invalid_data_avaliacao(
             f"Value error, {detail_message}" in error["msg"]
             for error in response.json().get("detail")
         )
+    else:
+        assert response.status_code == http_status.HTTP_201_CREATED
+
+
+@pytest.mark.parametrize(
+    "id_plano_entrega, status, avaliacao, data_avaliacao",
+    [
+        ("77", 5, 2, "2020-04-01"),
+        ("78", 5, 2, "2020-06-11"),
+    ],
+)
+def test_create_pe_status_avaliado(
+    truncate_pe,  # pylint: disable=unused-argument
+    input_pe: dict,
+    status: int,
+    avaliacao: int,
+    data_avaliacao: str,
+    id_plano_entrega: str,
+    user1_credentials: dict,
+    header_usr_1: dict,
+    client: Client,
+):
+    """Tenta criar um plano de entrega com datas de avaliação omitidas
+    ou preenchidas, a depender do status.
+
+    O status 5 só poderá ser usado se os campos “avaliacao” e “data_avaliacao”
+    estiverem preenchidos.
+    """
+
+    input_pe["status"] = status
+    input_pe["avaliacao"] = avaliacao
+    input_pe["data_avaliacao"] = data_avaliacao
+    input_pe["id_plano_entrega"] = id_plano_entrega
+
+    response = client.put(
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{id_plano_entrega}",
+        json=input_pe,
+        headers=header_usr_1,
+    )
+
+    if status == 5 and (field is None for field in (avaliacao, data_avaliacao)):
+        assert response.status_code == 422
+        detail_message = (
+            "O status 5 só poderá ser usado se os campos avaliacao e "
+            "data_avaliacao estiverem preenchidos."
+        )
+        assert_error_message(response, detail_message)
     else:
         assert response.status_code == http_status.HTTP_201_CREATED
 
