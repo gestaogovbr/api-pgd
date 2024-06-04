@@ -11,9 +11,13 @@ import pytest
 
 from util import over_a_year, assert_error_message
 
+# constantes
+
+STR_MAX_SIZE = 300
+
 # grupos de campos opcionais e obrigatórios a testar
 
-fields_plano_entregas = {
+FIELDS_PLANO_ENTREGAS = {
     "optional": (
         ["avaliacao"],
         ["data_avaliacao"],
@@ -31,7 +35,7 @@ fields_plano_entregas = {
     ),
 }
 
-fields_entrega = {
+FIELDS_ENTREGA = {
     "optional": (["entrega_cancelada"],),
     "mandatory": (
         ["id_entrega"],
@@ -56,7 +60,7 @@ def assert_equal_plano_entregas(plano_entregas_1: dict, plano_entregas_2: dict):
     # entregas, exceto a lista de entregas
     assert all(
         plano_entregas_1[attribute] == plano_entregas_2[attribute]
-        for attributes in fields_plano_entregas["mandatory"]
+        for attributes in FIELDS_PLANO_ENTREGAS["mandatory"]
         for attribute in attributes
         if attribute not in ("entregas")
     )
@@ -70,7 +74,7 @@ def assert_equal_plano_entregas(plano_entregas_1: dict, plano_entregas_2: dict):
     }
     assert all(
         first_plan_by_entrega[id_entrega][attribute] == entrega[attribute]
-        for attributes in fields_entrega["mandatory"]
+        for attributes in FIELDS_ENTREGA["mandatory"]
         for attribute in attributes
         for id_entrega, entrega in second_plan_by_entrega.items()
     )
@@ -203,7 +207,7 @@ def test_update_plano_entregas(
     assert response.json()["data_avaliacao"] == "2023-08-15"
 
 
-@pytest.mark.parametrize("omitted_fields", enumerate(fields_entrega["optional"]))
+@pytest.mark.parametrize("omitted_fields", enumerate(FIELDS_ENTREGA["optional"]))
 def test_create_plano_entregas_entrega_omit_optional_fields(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
@@ -231,7 +235,7 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
     assert_equal_plano_entregas(response.json(), input_pe)
 
 
-@pytest.mark.parametrize("nulled_fields", enumerate(fields_entrega["optional"]))
+@pytest.mark.parametrize("nulled_fields", enumerate(FIELDS_ENTREGA["optional"]))
 def test_create_plano_entregas_entrega_null_optional_fields(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
@@ -260,7 +264,7 @@ def test_create_plano_entregas_entrega_null_optional_fields(
 
 
 @pytest.mark.parametrize(
-    "missing_fields", enumerate(fields_plano_entregas["mandatory"])
+    "missing_fields", enumerate(FIELDS_PLANO_ENTREGAS["mandatory"])
 )
 def test_create_plano_entregas_missing_mandatory_fields(
     truncate_pe,  # pylint: disable=unused-argument
@@ -333,7 +337,7 @@ def test_create_huge_plano_entregas(
     input_by_entrega = {id_entrega: entrega for entrega in input_pe["entregas"]}
     assert all(
         response_by_entrega[id_entrega][attribute] == entrega[attribute]
-        for attributes in fields_entrega["mandatory"]
+        for attributes in FIELDS_ENTREGA["mandatory"]
         for attribute in attributes
         for id_entrega, entrega in input_by_entrega.items()
     )
@@ -358,7 +362,6 @@ def test_create_pe_exceed_string_max_size(
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
-    str_max_size: int = 300,
 ):
     """Testa a criação de um plano de entregas excedendo o tamanho
     máximo de cada campo"""
@@ -380,7 +383,7 @@ def test_create_pe_exceed_string_max_size(
     )
 
     if any(
-        len(campo) > str_max_size
+        len(campo) > STR_MAX_SIZE
         for campo in (nome_entrega, nome_unidade_demandante, nome_unidade_destinataria)
     ):
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
