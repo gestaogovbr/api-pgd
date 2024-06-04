@@ -178,7 +178,7 @@ def test_update_plano_entregas(
     client: Client,
 ):
     """Tenta criar um novo plano de entregas e atualizar alguns campos.
-    A fixture example_pe cria um novo Plano de Entrega na API.
+    A fixture example_pe cria um novo Plano de Entregas na API.
     O teste altera um campo do PE e reenvia pra API (update).
     """
 
@@ -404,7 +404,7 @@ def test_create_pe_exceed_string_max_size(
 #     header_usr_1: dict,
 #     client: Client,
 # ):
-#     """Tenta atualizar um plano de entrega com PATCH, faltando campos
+#     """Tenta atualizar um plano de entregas com PATCH, faltando campos
 #     obrigatórios.
 
 #     Com o verbo PATCH, os campos omitidos são interpretados como sem
@@ -575,7 +575,7 @@ def test_create_pe_cod_plano_inconsistent(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar um plano de entrega com código de plano divergente"""
+    """Tenta criar um plano de entregas com código de plano divergente"""
 
     input_pe["id_plano_entrega"] = "110"
     response = client.put(
@@ -595,7 +595,7 @@ def test_create_pe_cod_unidade_inconsistent(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar um plano de entrega com código de unidade divergente"""
+    """Tenta criar um plano de entregas com código de unidade divergente"""
     original_input_pe = input_pe.copy()
     input_pe["cod_unidade_autorizadora"] = 999  # era 1
     response = client.put(
@@ -617,7 +617,7 @@ def test_get_plano_entregas(
     input_pe,
     client: Client,
 ):
-    """Tenta buscar um plano de entrega existente"""
+    """Tenta buscar um plano de entregas existente"""
 
     response = client.get(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
@@ -631,7 +631,7 @@ def test_get_plano_entregas(
 def test_get_pe_inexistente(
     user1_credentials: dict, header_usr_1: dict, client: Client
 ):
-    """Tenta buscar um plano de entrega inexistente"""
+    """Tenta buscar um plano de entregas inexistente"""
 
     response = client.get(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
@@ -650,7 +650,7 @@ def test_get_plano_entregas_different_unit(
     input_pe,
     client: Client,
 ):
-    """Tenta buscar um plano de entrega existente em uma unidade diferente,
+    """Tenta buscar um plano de entregas existente em uma unidade diferente,
     à qual o usuário não tem acesso."""
 
     response = client.get(
@@ -668,7 +668,7 @@ def test_get_plano_entregas_different_unit_admin(
     input_pe,
     client: Client,
 ):
-    """Tenta buscar um plano de entrega existente em uma unidade diferente, mas
+    """Tenta buscar um plano de entregas existente em uma unidade diferente, mas
     com um usuário com permissão de admin."""
 
     response = client.get(
@@ -694,7 +694,7 @@ def test_create_pe_invalid_period(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar um plano de entrega com datas trocadas"""
+    """Tenta criar um plano de entregas com datas trocadas"""
 
     input_pe["data_inicio"] = data_inicio
     input_pe["data_termino"] = data_termino
@@ -736,7 +736,7 @@ def test_create_data_entrega_out_of_bounds(
     client: Client,
 ):
     """Tenta criar uma entrega com data de entrega dentro e fora do
-    intervalo do plano de entrega. Segundo as regras de negócio, essa
+    intervalo do plano de entregas. Segundo as regras de negócio, essa
     data tem que ser posterior ao início do plano_entregas.
     """
     input_pe["id_plano_entrega"] = id_plano_entrega
@@ -798,8 +798,8 @@ def test_create_pe_invalid_data_avaliacao(
     if data_avaliacao < data_inicio:
         assert response.status_code == 422
         detail_message = (
-            "Data de avaliação do Plano de Entrega deve ser maior ou igual"
-            " que a Data de início do Plano de Entrega."
+            "Data de avaliação do Plano de Entregas deve ser maior ou igual"
+            " que a Data de início do Plano de Entregas."
         )
         assert any(
             f"Value error, {detail_message}" in error["msg"]
@@ -827,7 +827,7 @@ def test_create_pe_status_avaliado(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar um plano de entrega com datas de avaliação omitidas
+    """Tenta criar um plano de entregas com datas de avaliação omitidas
     ou preenchidas, a depender do status.
 
     O status 5 só poderá ser usado se os campos “avaliacao” e “data_avaliacao”
@@ -876,7 +876,7 @@ def test_create_pe_duplicate_entrega(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar um plano de entrega com entregas com id_entrega duplicados"""
+    """Tenta criar um plano de entregas com entregas com id_entrega duplicados"""
 
     input_pe["id_plano_entrega"] = id_plano_entrega
     input_pe["entregas"][0]["id_entrega"] = id_entrega_1
@@ -1015,7 +1015,7 @@ def test_create_entrega_invalid_percent(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar um Plano de Entrega com entrega com percentuais inválidos"""
+    """Tenta criar um Plano de Entregas com entrega com percentuais inválidos"""
     input_pe["id_plano_entrega"] = id_plano_entrega
     input_pe["entregas"][1]["meta_entrega"] = meta_entrega
     input_pe["entregas"][1]["tipo_meta"] = tipo_meta
@@ -1059,7 +1059,7 @@ def test_create_entrega_invalid_tipo_meta(
     tipo_meta: str,
     client: Client,
 ):
-    """Tenta criar um Plano de Entrega com tipo de meta inválido"""
+    """Tenta criar um Plano de Entregas com tipo de meta inválido"""
     input_pe["entregas"][0]["tipo_meta"] = tipo_meta
 
     response = client.put(
@@ -1089,7 +1089,7 @@ def test_create_pe_invalid_avaliacao(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar um Plano de Entrega com nota de avaliação inválida"""
+    """Tenta criar um Plano de Entregas com nota de avaliação inválida"""
 
     input_pe["avaliacao"] = avaliacao
     response = client.put(
