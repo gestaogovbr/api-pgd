@@ -14,7 +14,7 @@ from util import over_a_year, assert_error_message
 
 # grupos de campos opcionais e obrigatórios a testar
 
-fields_plano_trabalho = {
+FIELDS_PLANO_TRABALHO = {
     "optional": tuple(),  # nenhum campo é opcional
     "mandatory": (
         ["origem_unidade"],
@@ -32,7 +32,7 @@ fields_plano_trabalho = {
     ),
 }
 
-fields_contribuicao = {
+FIELDS_CONTRIBUICAO = {
     "optional": (
         ["cod_unidade_autorizadora_externa"],
         ["id_plano_entrega"],
@@ -89,7 +89,7 @@ def assert_equal_plano_trabalho(plano_trabalho_1: dict, plano_trabalho_2: dict):
     # trabalho, exceto as listas de contribuições e avaliacao_registros_execucao
     assert all(
         plano_trabalho_1[attribute] == plano_trabalho_2[attribute]
-        for attributes in fields_plano_trabalho["mandatory"]
+        for attributes in FIELDS_PLANO_TRABALHO["mandatory"]
         for attribute in attributes
         if attribute not in ("contribuicoes", "avaliacao_registros_execucao")
     )
@@ -100,7 +100,7 @@ def assert_equal_plano_trabalho(plano_trabalho_1: dict, plano_trabalho_2: dict):
             field: value
             for contribuicao in plano_trabalho_1["contribuicoes"]
             for field, value in contribuicao.items()
-            if field in fields_contribuicao["mandatory"]
+            if field in FIELDS_CONTRIBUICAO["mandatory"]
         }
     )
     contribuicoes_2 = set(
@@ -108,7 +108,7 @@ def assert_equal_plano_trabalho(plano_trabalho_1: dict, plano_trabalho_2: dict):
             field: value
             for contribuicao in plano_trabalho_2["contribuicoes"]
             for field, value in contribuicao.items()
-            if field in fields_contribuicao["mandatory"]
+            if field in FIELDS_CONTRIBUICAO["mandatory"]
         }
     )
     assert contribuicoes_1 == contribuicoes_2
@@ -363,7 +363,7 @@ def test_create_plano_trabalho_id_entrega_check(
         assert response.status_code == status.HTTP_201_CREATED
 
 
-@pytest.mark.parametrize("omitted_fields", enumerate(fields_contribuicao["optional"]))
+@pytest.mark.parametrize("omitted_fields", enumerate(FIELDS_CONTRIBUICAO["optional"]))
 def test_create_plano_trabalho_contribuicao_omit_optional_fields(
     # fixture example_pe é necessária para cumprir IntegrityConstraint (FK)
     truncate_pe,  # pylint: disable=unused-argument
@@ -392,7 +392,7 @@ def test_create_plano_trabalho_contribuicao_omit_optional_fields(
     assert response.status_code == status.HTTP_201_CREATED
 
 
-@pytest.mark.parametrize("nulled_fields", enumerate(fields_contribuicao["optional"]))
+@pytest.mark.parametrize("nulled_fields", enumerate(FIELDS_CONTRIBUICAO["optional"]))
 def test_create_plano_trabalho_contribuicao_null_optional_fields(
     # fixture example_pe é necessária para cumprir IntegrityConstraint (FK)
     truncate_pe,  # pylint: disable=unused-argument
@@ -422,7 +422,7 @@ def test_create_plano_trabalho_contribuicao_null_optional_fields(
 
 
 @pytest.mark.parametrize(
-    "missing_fields", enumerate(fields_plano_trabalho["mandatory"])
+    "missing_fields", enumerate(FIELDS_PLANO_TRABALHO["mandatory"])
 )
 def test_create_plano_trabalho_missing_mandatory_fields(
     input_pt: dict,
