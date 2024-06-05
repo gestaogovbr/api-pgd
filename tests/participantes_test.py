@@ -1,6 +1,7 @@
 """
 Testes relacionados aos status de participantes.
 """
+
 from datetime import date, timedelta
 
 from httpx import Client
@@ -474,7 +475,8 @@ def test_put_invalid_data_assinatura_tcr(
     input_part: dict,
     user1_credentials: dict,
     header_usr_1: dict,
-    client: Client,):
+    client: Client,
+):
     """Tenta criar um participante com data futura do TCR."""
     # data de amanhã
     input_part["data_assinatura_tcr"] = date.today() + timedelta(days=1)
