@@ -223,38 +223,6 @@ def test_create_participante_inconsistent(
     assert response.json().get("detail", None) == detail_msg
 
 
-# @pytest.mark.parametrize("omitted_fields", enumerate(fields_participantes["optional"]))
-# def test_put_participante_omit_optional_fields(
-#     truncate_participantes,  # pylint: disable=unused-argument
-#     input_part: dict,
-#     omitted_fields: list,
-#     user1_credentials: dict,
-#     header_usr_1: dict,
-#     client: Client,
-# ):
-#     """Tenta criar um novo participante omitindo campos opcionais.
-#     """
-#     partial_input_part = input_part.copy()
-#     cpf_participante = partial_input_part["cpf"]
-#     _, field_list = omitted_fields
-#     for field in field_list:
-#         del partial_input_part[field]
-
-#     response = client.put(
-#         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-#         f"/participante/{cpf_participante}",
-#         json=partial_input_part,
-#         headers=header_usr_1,
-#     )
-#     assert response.status_code == status.HTTP_201_CREATED
-#     response_data = response.json()
-#     assert all(
-#         response_data[attribute] == partial_input_part[attribute]
-#         for attributes in fields_participantes["mandatory"]
-#         for attribute in attributes
-#     )
-
-
 @pytest.mark.parametrize("missing_fields", enumerate(fields_participantes["mandatory"]))
 def test_put_participante_missing_mandatory_fields(
     truncate_participantes,  # pylint: disable=unused-argument
