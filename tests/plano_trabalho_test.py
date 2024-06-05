@@ -48,22 +48,7 @@ FIELDS_CONTRIBUICAO = {
     ),
 }
 
-fields_avaliacao_registros_execucao = {
-    "mandatory": (
-        ["id_periodo_avaliativo"],
-        ["data_inicio_periodo_avaliativo"],
-        ["data_fim_periodo_avaliativo"],
-        ["avaliacao_registros_execucao"],
-        ["data_avaliacao_registros_execucao"],
-        ["cpf_participante"],
-        ["data_inicio"],
-        ["data_termino"],
-        ["carga_horaria_disponivel"],
-    ),
-}
-
-
-fields_avaliacao_registros_execucao = {
+FIELDS_AVALIACAO_REGISTROS_EXECUCAO = {
     "optional": tuple(),  # nenhum campo é opcional
     "mandatory": (
         ["id_periodo_avaliativo"],
@@ -119,7 +104,7 @@ def assert_equal_plano_trabalho(plano_trabalho_1: dict, plano_trabalho_2: dict):
             field: value
             for avaliacao in plano_trabalho_1["avaliacao_registros_execucao"]
             for field, value in avaliacao.items()
-            if field in fields_avaliacao_registros_execucao["mandatory"]
+            if field in FIELDS_AVALIACAO_REGISTROS_EXECUCAO["mandatory"]
         }
     )
     avaliacao_registros_execucao_2 = set(
@@ -127,7 +112,7 @@ def assert_equal_plano_trabalho(plano_trabalho_1: dict, plano_trabalho_2: dict):
             field: value
             for avaliacao in plano_trabalho_2["avaliacao_registros_execucao"]
             for field, value in avaliacao.items()
-            if field in fields_avaliacao_registros_execucao["mandatory"]
+            if field in FIELDS_AVALIACAO_REGISTROS_EXECUCAO["mandatory"]
         }
     )
     assert avaliacao_registros_execucao_1 == avaliacao_registros_execucao_2
