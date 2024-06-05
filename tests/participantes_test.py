@@ -139,10 +139,10 @@ def test_put_participante_outra_unidade_admin(
 
 
 @pytest.mark.parametrize(
-    "cod_unidade_autorizadora_1",
-    "cod_unidade_autorizadora_2",
-    "matricula_siape_1",
-    "matricula_siape_2",
+    (
+        "cod_unidade_autorizadora_1, cod_unidade_autorizadora_2, "
+        "matricula_siape_1, matricula_siape_2"
+    ),
     [
         (1, 1, "1237654", "1237654"),  # mesma unidade, mesma matrícula SIAPE
         (1, 2, "1237654", "1237654"),  # unidades diferentes, mesma matrícula SIAPE
