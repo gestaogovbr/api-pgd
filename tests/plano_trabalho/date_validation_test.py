@@ -17,28 +17,42 @@ from .core_test import assert_equal_plano_trabalho
 
 
 @pytest.mark.parametrize(
-    "id_plano_trabalho, data_inicio, data_termino",
+    "id_plano_trabalho, data_assinatura_tcr, data_inicio, data_termino",
     [
-        (77, "2020-06-04", "2020-04-01"),
-        (78, "2020-06-04", "2020-04-01"),
-        (79, "2020-06-04", "2020-04-01"),
+        (77, "2023-03-01", "2023-04-01", "2023-06-04"), # OK
+        (78, "2023-03-01", "2023-06-04", "2023-04-01"), # término antes do início
+        (79, "2023-06-01", "2023-04-01", "2023-06-04"), # início antes do TCR
     ],
 )
 def test_create_pt_invalid_dates(
     input_pt: dict,
+    input_part: dict,
     id_plano_trabalho: str,
+    data_assinatura_tcr: str,
     data_inicio: str,
     data_termino: str,
     user1_credentials: dict,
     header_usr_1: dict,
+    truncate_participantes,  # pylint: disable=unused-argument
     truncate_pt,  # pylint: disable=unused-argument
     client: Client,
 ):
     """Verifica se a data_termino_plano é maior ou igual à data_inicio_plano."""
+    input_part["data_assinatura_tcr"] = data_assinatura_tcr
     input_pt["data_inicio"] = data_inicio
     input_pt["data_termino"] = data_termino
     input_pt["id_plano_trabalho"] = id_plano_trabalho
 
+    # cria o participante com a data_assinatura_tcr informada
+    response = client.put(
+        f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
+        f"/participante/{input_part['cpf_participante']}",
+        json=input_part,
+        headers=header_usr_1,
+    )
+    response.raise_for_status()
+
+    # cria o plano_trabalho com a data_inicio informada
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         "/plano_trabalho",
