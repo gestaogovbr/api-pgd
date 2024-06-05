@@ -30,7 +30,7 @@ USERS_CREDENTIALS = [
         "password": "secret1",
         "is_admin": True,
         "disabled": False,
-        "cod_SIAPE_instituidora": 1,
+        "cod_unidade_autorizadora": 1,
     },
     {
         "username": "test2@api.com",
@@ -38,7 +38,7 @@ USERS_CREDENTIALS = [
         "password": "secret2",
         # "is_admin": False, # defaults set to False
         # "disabled": False, # defaults set to False
-        "cod_SIAPE_instituidora": 2,
+        "cod_unidade_autorizadora": 2,
     },
 ]
 
