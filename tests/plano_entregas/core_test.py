@@ -332,37 +332,6 @@ def test_create_pe_exceed_string_max_size(
         assert response.status_code == http_status.HTTP_201_CREATED
 
 
-# TODO: verbo PATCH poderá ser implementado em versão futura.
-#
-# @pytest.mark.parametrize("missing_fields", fields_plano_entregas["mandatory"])
-# def test_patch_plano_entregas_inexistente(
-#     truncate_pe,
-#     input_pe: dict,
-#     missing_fields: list,
-#     user1_credentials: dict,
-#     header_usr_1: dict,
-#     client: Client,
-# ):
-#     """Tenta atualizar um plano de entregas com PATCH, faltando campos
-#     obrigatórios.
-
-#     Com o verbo PATCH, os campos omitidos são interpretados como sem
-#     alteração. Por isso, é permitido omitir os campos obrigatórios.
-#     """
-#     example_pe = input_pe.copy()
-#     for field in missing_fields:
-#         del input_pe[field]
-
-#     input_pe["id_plano_entrega_unidade"] = 999  # precisa ser um plano inexistente
-#     response = client.patch(
-#         f"/organizacao/{user1_credentials['cod_SIAPE_instituidora']}"
-#         f"/plano_entregas/{example_pe['id_plano_entrega_unidade']}",
-#         json=input_pe,
-#         headers=header_usr_1,
-#     )
-#     assert response.status_code == http_status.HTTP_404_NOT_FOUND
-
-
 def test_create_pe_cod_plano_inconsistent(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
