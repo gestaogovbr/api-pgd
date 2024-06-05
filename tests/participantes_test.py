@@ -10,7 +10,7 @@ from fastapi import status
 import pytest
 
 # Relação de campos obrigatórios para testar sua ausência:
-fields_participantes = {
+FIELDS_PARTICIPANTES = {
     "optional": tuple(),  # nenhum campo é opcional
     "mandatory": (
         ["origem_unidade"],
@@ -35,7 +35,7 @@ def remove_null_optional_fields(data: dict) -> dict:
         print(f"data: {data}")
         print(f"type: {type(data)}")
         raise ValueError("Data must be a dict")
-    for fields in fields_participantes["optional"]:
+    for fields in FIELDS_PARTICIPANTES["optional"]:
         for field in fields:
             if field in data and data[field] is None:
                 del data[field]
@@ -223,7 +223,7 @@ def test_create_participante_inconsistent(
     assert response.json().get("detail", None) == detail_msg
 
 
-@pytest.mark.parametrize("missing_fields", enumerate(fields_participantes["mandatory"]))
+@pytest.mark.parametrize("missing_fields", enumerate(FIELDS_PARTICIPANTES["mandatory"]))
 def test_put_participante_missing_mandatory_fields(
     truncate_participantes,  # pylint: disable=unused-argument
     input_part: dict,
