@@ -349,7 +349,7 @@ def test_create_pe_cod_plano_inconsistent(
         headers=header_usr_1,
     )
     assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais"
+    detail_msg = "Parâmetro id_plano_entrega na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_msg
 
 
