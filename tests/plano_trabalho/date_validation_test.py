@@ -10,6 +10,7 @@ from fastapi import status
 import pytest
 
 from util import over_a_year, assert_error_message
+from .core_test import assert_equal_plano_trabalho
 
 
 # Datas básicas
