@@ -65,16 +65,15 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
         assert response.status_code == status.HTTP_200_OK
         self.assert_equal_plano_trabalho(response.json(), input_pt)
 
-def test_create_plano_trabalho_unidade_nao_permitida(self, header_usr_2):
-    """Tenta criar um novo Plano de Trabalho do Participante em uma
-    organização na qual ele não está autorizado.
-    """
-    # Criar o Plano de Trabalho em uma unidade diferente
-    response = self.create_pt(
-        self.input_pt, cod_unidade_autorizadora=3, header_usr=header_usr_2
-    )
+    def test_create_plano_trabalho_unidade_nao_permitida(self, header_usr_2):
+        """Tenta criar um novo Plano de Trabalho do Participante em uma
+        organização na qual ele não está autorizado.
+        """
+        # Criar o Plano de Trabalho em uma unidade diferente
+        response = self.create_pt(
+            self.input_pt, cod_unidade_autorizadora=3, header_usr=header_usr_2
+        )
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    detail_message = "Usuário não tem permissão na cod_unidade_autorizadora informada"
-    assert detail_message in response.json().get("detail")
-
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        detail_message = "Usuário não tem permissão na cod_unidade_autorizadora informada"
+        assert detail_message in response.json().get("detail")
