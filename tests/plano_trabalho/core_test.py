@@ -73,10 +73,10 @@ class BasePTTest:
     @pytest.fixture(autouse=True)
     def setup(
         self,
-        truncate_pe,
-        truncate_pt,
-        example_pe,
-        example_pt,
+        truncate_pe,  # pylint: disable=unused-argument
+        truncate_pt,  # pylint: disable=unused-argument
+        example_pe,  # pylint: disable=unused-argument
+        example_pt,  # pylint: disable=unused-argument
         input_pt: dict,
         user1_credentials: dict,
         header_usr_1: dict,
@@ -95,10 +95,6 @@ class BasePTTest:
             client (Client): Uma instância do cliente HTTPX.
         """
         # pylint: disable=attribute-defined-outside-init
-        self.truncate_pe = truncate_pe
-        self.truncate_pt = truncate_pt
-        self.example_pe = example_pe
-        self.example_pt = example_pt
         self.input_pt = input_pt
         self.user1_credentials = user1_credentials
         self.header_usr_1 = header_usr_1
@@ -197,7 +193,7 @@ def test_create_plano_trabalho_completo(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert_equal_plano_trabalho(response.json(), input_pt)
+    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
 
     # Consulta API para conferir se a criação foi persistida
     response = client.get(
@@ -207,7 +203,7 @@ def test_create_plano_trabalho_completo(
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert_equal_plano_trabalho(response.json(), input_pt)
+    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 def test_create_plano_trabalho_unidade_nao_permitida(
@@ -267,7 +263,7 @@ def test_create_plano_trabalho_outra_unidade_admin(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert_equal_plano_trabalho(response.json(), input_pt)
+    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 def test_update_plano_trabalho(
@@ -292,7 +288,7 @@ def test_update_plano_trabalho(
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert_equal_plano_trabalho(response.json(), input_pt)
+    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
 
     # Consulta API para conferir se a alteração foi persistida
     response = client.get(
@@ -302,7 +298,7 @@ def test_update_plano_trabalho(
     )
 
     assert response.status_code == status.HTTP_200_OK
-    assert_equal_plano_trabalho(response.json(), input_pt)
+    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 @pytest.mark.parametrize(
@@ -534,7 +530,7 @@ def test_get_plano_trabalho(
     input_pt["contribuicoes"][1]["descricao_contribuicao"] = None
 
     assert response.status_code == status.HTTP_200_OK
-    assert_equal_plano_trabalho(response.json(), input_pt)
+    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 def test_get_pt_inexistente(
@@ -588,7 +584,7 @@ def test_create_pt_duplicate_id_plano(
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json().get("detail", None) is None
-    assert_equal_plano_trabalho(response.json(), input_pt)
+    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 @pytest.mark.parametrize("carga_horaria_disponivel", [-2, -1])
