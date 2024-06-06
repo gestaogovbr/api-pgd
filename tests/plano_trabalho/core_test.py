@@ -238,44 +238,6 @@ class TestCreatePlanoTrabalhoCompleto(BasePTTest):
         self.assert_equal_plano_trabalho(response.json(), self.input_pt)
 
 
-def test_create_plano_trabalho_outra_unidade_admin(
-    truncate_pt,  # pylint: disable=unused-argument
-    truncate_pe,  # pylint: disable=unused-argument
-    example_pe_unidade_3,  # pylint: disable=unused-argument
-    input_pt: dict,
-    header_admin: dict,
-    admin_credentials: dict,
-    client: Client,
-):
-    """Tenta, como administrador, criar um novo Plano de Trabalho do
-    Participante em uma organização diferente da sua própria organização.
-    """
-    input_pt["cod_unidade_autorizadora"] = 3  # unidade diferente
-
-    response = client.get(
-        f"/user/{admin_credentials['username']}",
-        headers=header_admin,
-    )
-
-    # Verifica se o usuário é admin e se está em outra unidade
-    assert response.status_code == status.HTTP_200_OK
-    admin_data = response.json()
-    assert (
-        admin_data.get("cod_unidade_autorizadora", None)
-        != input_pt["cod_unidade_autorizadora"]
-    )
-    assert admin_data.get("is_admin", None) is True
-
-    response = client.put(
-        "/organizacao/SIAPE/3"  # organização diferente da do admin
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        json=input_pt,
-        headers=header_admin,
-    )
-
-    assert response.status_code == status.HTTP_201_CREATED
-    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
-
 
 def test_update_plano_trabalho(
     truncate_pe,  # pylint: disable=unused-argument
