@@ -63,67 +63,117 @@ FIELDS_AVALIACAO_REGISTROS_EXECUCAO = {
     ),
 }
 
-# Helper functions
+
+# Classe base de testes
 
 
-def assert_equal_plano_trabalho(plano_trabalho_1: dict, plano_trabalho_2: dict):
-    """Verifica a igualdade de dois planos de trabalho, considerando
-    apenas os campos obrigatórios.
-    """
-    # Compara o conteúdo de todos os campos obrigatórios do plano de
-    # trabalho, exceto as listas de contribuições e avaliacao_registros_execucao
-    assert all(
-        plano_trabalho_1[attribute] == plano_trabalho_2[attribute]
-        for attributes in FIELDS_PLANO_TRABALHO["mandatory"]
-        for attribute in attributes
-        if attribute not in ("contribuicoes", "avaliacao_registros_execucao")
-    )
+class BasePTTest:
+    """Classe base para testes de Plano de Trabalho."""
 
-    # Compara o conteúdo de cada contribuição, somente campos obrigatórios
-    contribuicoes_1 = set(
-        {
-            field: value
-            for contribuicao in plano_trabalho_1["contribuicoes"]
-            for field, value in contribuicao.items()
-            if field in FIELDS_CONTRIBUICAO["mandatory"]
-        }
-    )
-    contribuicoes_2 = set(
-        {
-            field: value
-            for contribuicao in plano_trabalho_2["contribuicoes"]
-            for field, value in contribuicao.items()
-            if field in FIELDS_CONTRIBUICAO["mandatory"]
-        }
-    )
-    assert contribuicoes_1 == contribuicoes_2
+    @pytest.fixture(autouse=True)
+    def setup(
+        self,
+        truncate_pe,
+        truncate_pt,
+        example_pe,
+        example_pt,
+        input_pt: dict,
+        user1_credentials: dict,
+        header_usr_1: dict,
+        client: Client,
+    ):
+        """Configurar o ambiente de teste.
 
-    # Compara o conteúdo de cada avaliacao_registros_execucao, somente campos obrigatórios
-    avaliacao_registros_execucao_1 = set(
-        {
-            field: value
-            for avaliacao in plano_trabalho_1["avaliacao_registros_execucao"]
-            for field, value in avaliacao.items()
-            if field in FIELDS_AVALIACAO_REGISTROS_EXECUCAO["mandatory"]
-        }
-    )
-    avaliacao_registros_execucao_2 = set(
-        {
-            field: value
-            for avaliacao in plano_trabalho_2["avaliacao_registros_execucao"]
-            for field, value in avaliacao.items()
-            if field in FIELDS_AVALIACAO_REGISTROS_EXECUCAO["mandatory"]
-        }
-    )
-    assert avaliacao_registros_execucao_1 == avaliacao_registros_execucao_2
+        Args:
+            truncate_pe (callable): Fixture para truncar a tabela PE.
+            truncate_pt (callable): Fixture para truncar a tabela PT.
+            example_pe (dict): Um dicionário de exemplo de PE.
+            example_pt (dict): Um dicionário de exemplo de PT.
+            user1_credentials (dict): Credenciais do usuário 1.
+            header_usr_1 (dict): Cabeçalhos HTTP para o usuário 1.
+            client (Client): Uma instância do cliente HTTPX.
+        """
+        # pylint: disable=attribute-defined-outside-init
+        self.truncate_pe = truncate_pe
+        self.truncate_pt = truncate_pt
+        self.example_pe = example_pe
+        self.example_pt = example_pt
+        self.input_pt = input_pt
+        self.user1_credentials = user1_credentials
+        self.header_usr_1 = header_usr_1
+        self.client = client
 
+    @staticmethod
+    def assert_equal_plano_trabalho(plano_trabalho_1: dict, plano_trabalho_2: dict):
+        """Verifica a igualdade de dois planos de trabalho, considerando
+        apenas os campos obrigatórios.
+        """
+        # Compara o conteúdo de todos os campos obrigatórios do plano de
+        # trabalho, exceto as listas de contribuições e avaliacao_registros_execucao
+        assert all(
+            plano_trabalho_1[attribute] == plano_trabalho_2[attribute]
+            for attributes in FIELDS_PLANO_TRABALHO["mandatory"]
+            for attribute in attributes
+            if attribute not in ("contribuicoes", "avaliacao_registros_execucao")
+        )
 
-# Os testes usam muitas fixtures, então necessariamente precisam de
-# muitos argumentos. Além disso, algumas fixtures não retornam um valor
-# para ser usado no teste, mas mesmo assim são executadas quando estão
-# presentes como um argumento da função.
-# A linha abaixo desabilita os warnings do Pylint sobre isso.
-# pylint: disable=too-many-arguments
+        # Compara o conteúdo de cada contribuição, somente campos obrigatórios
+        contribuicoes_1 = set(
+            {
+                field: value
+                for contribuicao in plano_trabalho_1["contribuicoes"]
+                for field, value in contribuicao.items()
+                if field in FIELDS_CONTRIBUICAO["mandatory"]
+            }
+        )
+        contribuicoes_2 = set(
+            {
+                field: value
+                for contribuicao in plano_trabalho_2["contribuicoes"]
+                for field, value in contribuicao.items()
+                if field in FIELDS_CONTRIBUICAO["mandatory"]
+            }
+        )
+        assert contribuicoes_1 == contribuicoes_2
+
+        # Compara o conteúdo de cada avaliacao_registros_execucao, somente campos obrigatórios
+        avaliacao_registros_execucao_1 = set(
+            {
+                field: value
+                for avaliacao in plano_trabalho_1["avaliacao_registros_execucao"]
+                for field, value in avaliacao.items()
+                if field in FIELDS_AVALIACAO_REGISTROS_EXECUCAO["mandatory"]
+            }
+        )
+        avaliacao_registros_execucao_2 = set(
+            {
+                field: value
+                for avaliacao in plano_trabalho_2["avaliacao_registros_execucao"]
+                for field, value in avaliacao.items()
+                if field in FIELDS_AVALIACAO_REGISTROS_EXECUCAO["mandatory"]
+            }
+        )
+        assert avaliacao_registros_execucao_1 == avaliacao_registros_execucao_2
+
+    def create_pt(self, input_pt):
+        """Criar um Plano de Trabalho.
+
+        Args:
+            input_pt (dict): O dicionário de entrada do Plano de Trabalho.
+
+        Returns:
+            httpx.Response: A resposta da API.
+        """
+        response = self.client.put(
+            (
+                "/organizacao/SIAPE/"
+                f"{self.user1_credentials['cod_unidade_autorizadora']}/"
+                "plano_trabalho"
+            ),
+            json=input_pt,
+            headers=self.header_usr_1,
+        )
+        return response
 
 
 def test_create_plano_trabalho_completo(
