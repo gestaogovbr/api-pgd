@@ -4,7 +4,6 @@ Trabalho.
 
 from datetime import date
 
-from httpx import Client
 from fastapi import status
 
 import pytest
