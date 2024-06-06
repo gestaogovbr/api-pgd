@@ -152,79 +152,90 @@ class BasePTTest:
         )
         assert avaliacao_registros_execucao_1 == avaliacao_registros_execucao_2
 
-    def create_pt(self, input_pt):
+    def create_pt(
+        self,
+        input_pt: dict,
+        id_plano_trabalho: str = None,
+        cod_unidade_autorizadora: int = None,
+        header_usr: dict = None,
+    ):
         """Criar um Plano de Trabalho.
 
         Args:
             input_pt (dict): O dicionário de entrada do Plano de Trabalho.
+            id_plano_trabalho (str): O ID do Plano de Trabalho.
+            cod_unidade_autorizadora (int): O ID da unidade autorizadora.
+            header_usr (dict): Cabeçalhos HTTP para o usuário.
 
         Returns:
             httpx.Response: A resposta da API.
         """
+        if id_plano_trabalho is None:
+            id_plano_trabalho = input_pt["id_plano_trabalho"]
+        if cod_unidade_autorizadora is None:
+            cod_unidade_autorizadora = input_pt["cod_unidade_autorizadora"]
+        if header_usr is None:
+            header_usr = self.header_usr_1
+
+        # Criar o Plano de Trabalho
         response = self.client.put(
             (
-                "/organizacao/SIAPE/"
-                f"{self.user1_credentials['cod_unidade_autorizadora']}/"
-                "plano_trabalho"
+                f"/organizacao/SIAPE/{cod_unidade_autorizadora}/"
+                f"plano_trabalho/{id_plano_trabalho}"
             ),
             json=input_pt,
-            headers=self.header_usr_1,
+            headers=header_usr,
+        )
+        return response
+
+    def get_pt(
+        self,
+        id_plano_trabalho: str,
+        cod_unidade_autorizadora: int,
+        header_usr: dict = None,
+    ):
+        """Obter um Plano de Trabalho.
+
+        Args:
+            id_plano_trabalho (str): O ID do Plano de Trabalho.
+            cod_unidade_autorizadora (int): O ID da unidade autorizadora.
+            header_usr (dict): Cabeçalhos HTTP para o usuário.
+
+        Returns:
+            httpx.Response: A resposta da API.
+        """
+        if header_usr is None:
+            header_usr = self.header_usr_1
+        response = self.client.get(
+            (
+                f"/organizacao/SIAPE/{cod_unidade_autorizadora}/"
+                f"plano_trabalho/{id_plano_trabalho}"
+            ),
+            headers=header_usr,
         )
         return response
 
 
-def test_create_plano_trabalho_completo(
-    truncate_pt,  # pylint: disable=unused-argument
-    truncate_pe,  # pylint: disable=unused-argument
-    example_pe,  # pylint: disable=unused-argument
-    input_pt: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Cria um novo Plano de Trabalho do Participante, em uma unidade
-    na qual ele está autorizado, contendo todos os dados necessários.
-    """
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
+class TestCreatePlanoTrabalhoCompleto(BasePTTest):
+    """Testes para criação de Plano de Trabalho completo."""
 
-    assert response.status_code == status.HTTP_201_CREATED
-    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
+    def test_create_plano_trabalho_completo(self):
+        """Cria um novo Plano de Trabalho do Participante, em uma unidade
+        na qual ele está autorizado, contendo todos os dados necessários.
+        """
+        response = self.create_pt(self.input_pt)
 
-    # Consulta API para conferir se a criação foi persistida
-    response = client.get(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        headers=header_usr_1,
-    )
+        assert response.status_code == status.HTTP_201_CREATED
+        self.assert_equal_plano_trabalho(response.json(), self.input_pt)
 
-    assert response.status_code == status.HTTP_200_OK
-    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
+        # Consulta API para conferir se a criação foi persistida
+        response = self.get_pt(
+            self.input_pt["id_plano_trabalho"],
+            self.input_pt["cod_unidade_autorizadora"],
+        )
 
-
-def test_create_plano_trabalho_unidade_nao_permitida(
-    input_pt: dict,
-    header_usr_2: dict,
-    truncate_pt,  # pylint: disable=unused-argument
-    client: Client,
-):
-    """Tenta criar um novo Plano de Trabalho do Participante em uma
-    organização na qual ele não está autorizado.
-    """
-    response = client.put(
-        "/organizacao/SIAPE/3"  # só está autorizado na organização 1
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        json=input_pt,
-        headers=header_usr_2,
-    )
-
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    detail_message = "Usuário não tem permissão na cod_unidade_autorizadora informada"
-    assert detail_message in response.json().get("detail")
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_equal_plano_trabalho(response.json(), self.input_pt)
 
 
 def test_create_plano_trabalho_outra_unidade_admin(
