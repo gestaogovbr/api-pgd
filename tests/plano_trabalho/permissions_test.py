@@ -1,5 +1,3 @@
-import pytest
-from httpx import Client
 from fastapi import status
 
 from .core_test import BasePTTest
