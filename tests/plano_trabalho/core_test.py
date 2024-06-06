@@ -87,8 +87,9 @@ class BasePTTest:
         Args:
             truncate_pe (callable): Fixture para truncar a tabela PE.
             truncate_pt (callable): Fixture para truncar a tabela PT.
-            example_pe (dict): Um dicionário de exemplo de PE.
-            example_pt (dict): Um dicionário de exemplo de PT.
+            example_pe (callable): Fixture que cria exemplo de PE.
+            example_pt (callable): Fixture que cria exemplo de PT.
+            input_pt (dict): Dados usados para ciar um PT
             user1_credentials (dict): Credenciais do usuário 1.
             header_usr_1 (dict): Cabeçalhos HTTP para o usuário 1.
             client (Client): Uma instância do cliente HTTPX.
