@@ -238,40 +238,29 @@ class TestCreatePlanoTrabalhoCompleto(BasePTTest):
         self.assert_equal_plano_trabalho(response.json(), self.input_pt)
 
 
+class TestUpdatePlanoDeTrabalhoDiferenteUnidade(BasePTTest):
+    """Testes para atualizar um Plano de Trabalho existente."""
 
-def test_update_plano_trabalho(
-    truncate_pe,  # pylint: disable=unused-argument
-    truncate_pt,  # pylint: disable=unused-argument
-    example_pe,  # pylint: disable=unused-argument
-    example_pt,  # pylint: disable=unused-argument
-    input_pt: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Atualiza um Plano de Trabalho existente usando o método PUT."""
-    # A fixture example_pt cria um novo Plano de Trabalho na API
-    # Altera um campo do PT e reenvia pra API (update)
-    input_pt["cod_unidade_executora"] = 100  # Valor era 99
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
+    def test_update_plano_trabalho(self):
+        """Atualiza um Plano de Trabalho existente usando o método PUT."""
+        # A fixture example_pt cria um novo Plano de Trabalho na API
+        # Altera um campo do PT e reenvia pra API (update)
+        input_pt = self.input_pt.copy()
+        input_pt["cod_unidade_executora"] = 100  # Valor era 99
+        response = self.create_pt(input_pt)
 
-    assert response.status_code == status.HTTP_200_OK
-    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_equal_plano_trabalho(response.json(), input_pt)
 
-    # Consulta API para conferir se a alteração foi persistida
-    response = client.get(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        headers=header_usr_1,
-    )
+        # Consulta API para conferir se a alteração foi persistida
+        response = self.get_pt(
+            input_pt["id_plano_trabalho"],
+            self.user1_credentials["cod_unidade_autorizadora"],
+        )
 
-    assert response.status_code == status.HTTP_200_OK
-    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_equal_plano_trabalho(response.json(), input_pt)
+
 
 
 @pytest.mark.parametrize(
@@ -286,86 +275,82 @@ def test_update_plano_trabalho(
         (3, None, None, None),
     ],
 )
-def test_create_plano_trabalho_id_entrega_check(
-    input_pt: dict,
-    tipo_contribuicao: int,
-    cod_unidade_autorizadora_externa: Optional[int],
-    id_plano_entrega: Optional[str],
-    id_entrega: Optional[str],
-    user1_credentials: dict,
-    header_usr_1: dict,
-    truncate_pe,  # pylint: disable=unused-argument
-    truncate_pt,  # pylint: disable=unused-argument
-    example_pe,  # pylint: disable=unused-argument
-    client: Client,
-):
-    """Testa a criação de um novo plano de trabalho, verificando as
+class TestCreatePlanoDeTrabalhoCamposEntrega(BasePTTest):
+    """Testes para a criação de um novo plano de trabalho, verificando as
     regras de validação para os campos relacionados à contribuição.
-
-    O teste verifica as seguintes regras:
-
-    1. Quando tipo_contribuicao == 1, os campos id_plano_entrega e
-       id_entrega são obrigatórios.
-    2. Quando tipo_contribuicao == 2, os campos
-       cod_unidade_autorizadora_externa, id_plano_entrega e id_entrega
-       não devem ser informados.
-    3. Quando tipo_contribuicao == 3, os campos
-       cod_unidade_autorizadora_externa, id_plano_entrega e id_entrega
-       são obrigatórios.
-    4. Quando tipo_contribuicao != 3, o campo
-       cod_unidade_autorizadora_externa não deve ser informado.
-
-    O teste envia uma requisição PUT para a rota
-    "/organizacao/SIAPE/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}"
-    com os dados de entrada atualizados de acordo com os parâmetros
-    fornecidos. Verifica se a resposta possui o status HTTP correto (201
-    Created ou 422 Unprocessable Entity) e se as mensagens de erro
-    esperadas estão presentes na resposta.
     """
-    input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
-    input_pt["contribuicoes"][0]["id_plano_entrega"] = id_plano_entrega
-    input_pt["contribuicoes"][0]["id_entrega"] = id_entrega
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
 
-    fields_entrega_externa = (
-        cod_unidade_autorizadora_externa,
-        id_plano_entrega,
-        id_entrega,
-    )
-    error_messages = []
-    if tipo_contribuicao == 1 and (id_plano_entrega is None or id_entrega is None):
-        error_messages.append(
-            "Os campos id_plano_entrega e id_entrega são obrigatórios "
-            "quando tipo_contribuicao tiver o valor 1."
-        )
-    if tipo_contribuicao == 2 and any(fields_entrega_externa):
-        error_messages.append(
-            "Não se deve informar cod_unidade_autorizadora_externa, "
-            "id_plano_entrega ou id_entrega quando tipo_contribuicao == 2"
-        )
-    if tipo_contribuicao == 3 and any(
-        field is None for field in fields_entrega_externa
+    def test_create_plano_trabalho_tipo_contribuicao(
+        self,
+        tipo_contribuicao: int,
+        cod_unidade_autorizadora_externa: Optional[int],
+        id_plano_entrega: Optional[str],
+        id_entrega: Optional[str],
     ):
-        error_messages.append(
-            "Os campos cod_unidade_autorizadora_externa, id_plano_entrega e "
-            "id_entrega são obrigatórios quando tipo_contribuicao == 3"
+        """Testa a criação de um novo plano de trabalho, verificando as
+        regras de validação para os campos relacionados à contribuição.
+
+        O teste verifica as seguintes regras:
+
+        1. Quando tipo_contribuicao == 1, os campos id_plano_entrega e
+           id_entrega são obrigatórios.
+        2. Quando tipo_contribuicao == 2, os campos
+           cod_unidade_autorizadora_externa, id_plano_entrega e id_entrega
+           não devem ser informados.
+        3. Quando tipo_contribuicao == 3, os campos
+           cod_unidade_autorizadora_externa, id_plano_entrega e id_entrega
+           são obrigatórios.
+        4. Quando tipo_contribuicao != 3, o campo
+           cod_unidade_autorizadora_externa não deve ser informado.
+
+        O teste envia uma requisição PUT para a rota
+        "/organizacao/SIAPE/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}"
+        com os dados de entrada atualizados de acordo com os parâmetros
+        fornecidos. Verifica se a resposta possui o status HTTP correto (201
+        Created ou 422 Unprocessable Entity) e se as mensagens de erro
+        esperadas estão presentes na resposta.
+        """
+        self.input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
+        self.input_pt["contribuicoes"][0]["id_plano_entrega"] = id_plano_entrega
+        self.input_pt["contribuicoes"][0]["id_entrega"] = id_entrega
+        response = self.create_pt(
+            self.input_pt, header_usr=self.header_usr_1
         )
-    if tipo_contribuicao != 3 and cod_unidade_autorizadora_externa:
-        error_messages.append(
-            "Só se deve usar cod_unidade_autorizadora_externa "
-            "quando tipo_contribuicao == 3"
+
+        fields_entrega_externa = (
+            cod_unidade_autorizadora_externa,
+            id_plano_entrega,
+            id_entrega,
         )
-    if error_messages:
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        for detail_message in error_messages:
-            assert_error_message(response, detail_message)
-    else:
-        assert response.status_code == status.HTTP_201_CREATED
+        error_messages = []
+        if tipo_contribuicao == 1 and (id_plano_entrega is None or id_entrega is None):
+            error_messages.append(
+                "Os campos id_plano_entrega e id_entrega são obrigatórios "
+                "quando tipo_contribuicao tiver o valor 1."
+            )
+        if tipo_contribuicao == 2 and any(fields_entrega_externa):
+            error_messages.append(
+                "Não se deve informar cod_unidade_autorizadora_externa, "
+                "id_plano_entrega ou id_entrega quando tipo_contribuicao == 2"
+            )
+        if tipo_contribuicao == 3 and any(
+            field is None for field in fields_entrega_externa
+        ):
+            error_messages.append(
+                "Os campos cod_unidade_autorizadora_externa, id_plano_entrega e "
+                "id_entrega são obrigatórios quando tipo_contribuicao == 3"
+            )
+        if tipo_contribuicao != 3 and cod_unidade_autorizadora_externa:
+            error_messages.append(
+                "Só se deve usar cod_unidade_autorizadora_externa "
+                "quando tipo_contribuicao == 3"
+            )
+        if error_messages:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            for detail_message in error_messages:
+                assert_error_message(response, detail_message)
+        else:
+            assert response.status_code == status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize("omitted_fields", enumerate(FIELDS_CONTRIBUICAO["optional"]))
