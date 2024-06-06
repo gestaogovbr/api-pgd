@@ -262,7 +262,6 @@ class TestUpdatePlanoDeTrabalhoDiferenteUnidade(BasePTTest):
         self.assert_equal_plano_trabalho(response.json(), input_pt)
 
 
-
 @pytest.mark.parametrize(
     "tipo_contribuicao, cod_unidade_autorizadora_externa, id_plano_entrega, id_entrega",
     [
@@ -313,9 +312,7 @@ class TestCreatePlanoDeTrabalhoCamposEntrega(BasePTTest):
         self.input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
         self.input_pt["contribuicoes"][0]["id_plano_entrega"] = id_plano_entrega
         self.input_pt["contribuicoes"][0]["id_entrega"] = id_entrega
-        response = self.create_pt(
-            self.input_pt, header_usr=self.header_usr_1
-        )
+        response = self.create_pt(self.input_pt, header_usr=self.header_usr_1)
 
         fields_entrega_externa = (
             cod_unidade_autorizadora_externa,
@@ -349,6 +346,46 @@ class TestCreatePlanoDeTrabalhoCamposEntrega(BasePTTest):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             for detail_message in error_messages:
                 assert_error_message(response, detail_message)
+        else:
+            assert response.status_code == status.HTTP_201_CREATED
+
+
+@pytest.mark.parametrize(
+    "data_inicio_pt",
+    [
+        ("2022-12-01",),
+        ("2023-01-15",),
+    ],
+)
+class TestPlanoDeTrabalhoDatasEntrega(BasePTTest):
+    """Testes para verificar a validação da data de início do Plano de Trabalho
+    em relação à data de início do Plano de Entregas.
+    """
+
+    def test_create_plano_trabalho_data_inicio_check(
+        self,
+        input_pe: dict,
+        data_inicio_pt: str,
+    ):
+        """Testa a criação de um Plano de Trabalho com diferentes datas de início.
+
+        Args:
+            input_pe (dict): Dados do PE usado como exemplo.
+            data_inicio_pt (str): Data recebida como parâmetro de teste.
+        """
+        # Atualiza a data de início do Plano de Trabalho
+        input_pt = self.input_pt.copy()
+        input_pt["data_inicio"] = data_inicio_pt
+
+        response = self.create_pt(input_pt, header_usr=self.header_usr_1)
+
+        if data_inicio_pt < input_pe["data_inicio"]:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            assert_error_message(
+                response,
+                "A data de início do Plano de Trabalho não pode ser anterior "
+                "à data de início do Plano de Entregas.",
+            )
         else:
             assert response.status_code == status.HTTP_201_CREATED
 
