@@ -13,6 +13,7 @@ class TestCreatePTMissingMandatoryFieldsContribuicoes(BasePTTest):
     """Testes para verificar a rejeição da criação de Plano de Trabalho
     quando campos obrigatórios da contribuição estão faltando.
     """
+
     @pytest.mark.parametrize(
         "tipo_contribuicao, percentual_contribuicao",
         [
@@ -35,13 +36,20 @@ class TestCreatePTMissingMandatoryFieldsContribuicoes(BasePTTest):
         input_pt = self.input_pt.copy()
         input_pt["id_plano_trabalho"] = "111222333"
         input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
-        input_pt["contribuicoes"][0]["percentual_contribuicao"] = percentual_contribuicao
+        input_pt["contribuicoes"][0][
+            "percentual_contribuicao"
+        ] = percentual_contribuicao
 
         response = self.create_pt(input_pt)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 class TestCreatePTInvalidTipoContribuicao(BasePTTest):
+    """Testes para verificar a rejeição da criação de Plano de Trabalho
+    quando uma de suas contribuições contém um campo tipo_contribuição
+    com valor inválido.
+    """
+
     @pytest.mark.parametrize(
         "tipo_contribuicao",
         [(-2), (0), (4)],
@@ -69,7 +77,8 @@ class TestCreatePTInvalidTipoContribuicao(BasePTTest):
 
 class TestPercentualContribuicao(BasePTTest):
     """Testes para verificar a validação do percentual de contribuição no
-    Plano de Trabalho."""
+    Plano de Trabalho.
+    """
 
     @pytest.mark.parametrize("percentual_contribuicao", [-10, 0, 50, 100, 110])
     def test_create_plano_trabalho_percentual_contribuicao(
@@ -110,7 +119,9 @@ class TestCreatePTOmitOptionalFields(BasePTTest):
     requisição quando campos opcionais da contribuição são omitidos.
     """
 
-    @pytest.mark.parametrize("omitted_fields", enumerate(FIELDS_CONTRIBUICAO["optional"]))
+    @pytest.mark.parametrize(
+        "omitted_fields", enumerate(FIELDS_CONTRIBUICAO["optional"])
+    )
     def test_create_plano_trabalho_contribuicao_omit_optional_fields(
         self,
         omitted_fields: list,
@@ -137,7 +148,9 @@ class TestCreatePTNullOptionalFields(BasePTTest):
     valor null.
     """
 
-    @pytest.mark.parametrize("nulled_fields", enumerate(FIELDS_CONTRIBUICAO["optional"]))
+    @pytest.mark.parametrize(
+        "nulled_fields", enumerate(FIELDS_CONTRIBUICAO["optional"])
+    )
     def test_create_plano_trabalho_contribuicao_null_optional_fields(
         self,
         nulled_fields: list,
