@@ -174,3 +174,42 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucaoDates(BasePTTest):
                 "à data de início do Plano de Trabalho"
             )
             assert_error_message(response, detail_message)
+
+    @pytest.mark.parametrize(
+        "data_inicio_periodo_avaliativo, data_avaliacao_registros_execucao",
+        [
+            ("2023-01-01", "2022-12-31"),
+            ("2023-01-01", "2023-01-01"),
+            ("2023-01-01", "2023-01-02"),
+        ],
+    )
+    def test_create_pt_invalid_avaliacao_registros_execucao_date(
+        self,
+        data_inicio_periodo_avaliativo: str,
+        data_avaliacao_registros_execucao: str,
+    ):
+        """Testa a criação de um plano de trabalho com a data de avaliação
+        de registros de execução anterior à data de início do período
+        avaliativo.
+        """
+        input_pt = self.input_pt.copy()
+        input_pt["avaliacao_registros_execucao"][0][
+            "data_inicio_periodo_avaliativo"
+        ] = data_inicio_periodo_avaliativo
+        input_pt["avaliacao_registros_execucao"][0][
+            "data_avaliacao_registros_execucao"
+        ] = data_avaliacao_registros_execucao
+
+        response = self.create_pt(input_pt)
+
+        if date.fromisoformat(data_avaliacao_registros_execucao) > date.fromisoformat(
+            data_inicio_periodo_avaliativo
+        ):
+            assert response.status_code == status.HTTP_201_CREATED
+        else:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = (
+                "A data de avaliação de registros de execução "
+                "deve ser posterior à data de início do período avaliativo"
+            )
+            assert_error_message(response, detail_message)
