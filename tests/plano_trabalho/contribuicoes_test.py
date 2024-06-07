@@ -1,6 +1,5 @@
 import pytest
 
-from httpx import Client
 from fastapi import status
 
 from util import assert_error_message
