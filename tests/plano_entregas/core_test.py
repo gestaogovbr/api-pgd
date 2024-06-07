@@ -2,8 +2,6 @@
 Testes relacionados ao Plano de Entregas da Unidade
 """
 
-from datetime import date
-
 from httpx import Client
 from fastapi import status as http_status
 
