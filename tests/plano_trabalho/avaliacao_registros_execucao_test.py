@@ -2,6 +2,8 @@
 Plano de Trabalho.
 """
 
+from datetime import date
+
 import pytest
 from httpx import status
 
@@ -124,7 +126,9 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucaoDates(BasePTTest):
 
         response = self.create_pt(input_pt)
 
-        if data_fim_periodo_avaliativo >= data_inicio_periodo_avaliativo:
+        if date.fromisoformat(data_fim_periodo_avaliativo) >= date.fromisoformat(
+            data_inicio_periodo_avaliativo
+        ):
             assert response.status_code == status.HTTP_201_CREATED
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -159,7 +163,9 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucaoDates(BasePTTest):
 
         response = self.create_pt(input_pt)
 
-        if data_inicio_periodo_avaliativo > data_inicio_plano_trabalho:
+        if date.fromisoformat(data_inicio_periodo_avaliativo) > date.fromisoformat(
+            data_inicio_plano_trabalho
+        ):
             assert response.status_code == status.HTTP_201_CREATED
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
