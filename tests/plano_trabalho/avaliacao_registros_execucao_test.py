@@ -5,7 +5,7 @@ Plano de Trabalho.
 from datetime import date
 
 import pytest
-from httpx import status
+from fastapi import status
 
 from util import assert_error_message
 
