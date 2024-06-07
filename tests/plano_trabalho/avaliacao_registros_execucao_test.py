@@ -9,6 +9,35 @@ from util import assert_error_message
 
 from .core_test import FIELDS_AVALIACAO_REGISTROS_EXECUCAO
 
+
+class TestCreatePTMissingMandatoryFieldsAvaliacaoRegistrosExecucao(BasePTTest):
+    """Testes para verificar a rejeição da criação de Plano de Trabalho
+    quando campos obrigatórios da avaliação de registros de execução
+    estão faltando.
+    """
+
+    @pytest.mark.parametrize(
+        "omitted_fields", enumerate(FIELDS_AVALIACAO_REGISTROS_EXECUCAO["mandatory"])
+    )
+    def test_create_pt_missing_mandatory_fields_avaliacao_registros_execucao(
+        self,
+        omitted_fields: list,
+    ):
+        """
+        Verifica se o endpoint de criação de Plano de Trabalho rejeita a
+        requisição quando algum campo obrigatório da avaliação de
+        registros de execução está faltando.
+        """
+        input_pt = self.input_pt.copy()
+        offset, field_list = omitted_fields
+        for field in field_list:
+            input_pt["avaliacao_registros_execucao"][0][field] = None
+
+        input_pt["id_plano_trabalho"] = "111222333"
+        response = self.create_pt(input_pt)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
 @pytest.mark.parametrize("avaliacao_registros_execucao", [0, 1, 2, 5, 6])
 def test_create_pt_invalid_avaliacao_registros_execucao(
     input_pt: dict,
