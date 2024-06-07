@@ -1,3 +1,6 @@
+"""Testes para validar uma Contribuição do Plano de Trabalho.
+"""
+
 import pytest
 
 from fastapi import status
