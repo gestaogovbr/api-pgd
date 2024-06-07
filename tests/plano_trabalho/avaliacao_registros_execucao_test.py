@@ -3,7 +3,7 @@ Plano de Trabalho.
 """
 
 import pytest
-from httpx import Client, status
+from httpx import status
 
 from util import assert_error_message
 
@@ -83,14 +83,15 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucaoDates(BasePTTest):
 
     O teste envia uma requisição PUT para a rota
     "/organizacao/SIAPE/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}"
-    com diferentes combinações de datas para o período avaliativo.
+    com diferentes combinações de datas para o período avaliativo e para
+    o início do Plano de Trabalho.
 
     Quando as datas são válidas (data_fim_periodo_avaliativo >=
-    data_inicio_periodo_avaliativo), espera-se que a resposta tenha o
-    status HTTP 201 Created. Quando as datas são inválidas, espera-se que
-    a resposta tenha o status HTTP 422 Unprocessable Entity e que a
-    mensagem de erro "A data de fim do período avaliativo deve ser igual
-    ou posterior à data de início" esteja presente na resposta.
+    data_inicio_periodo_avaliativo e data_inicio_periodo_avaliativo >
+    data_inicio_plano_trabalho), espera-se que a resposta tenha o status
+    HTTP 201 Created. Quando as datas são inválidas, espera-se que a
+    resposta tenha o status HTTP 422 Unprocessable Entity e que a
+    mensagem de erro apropriada esteja presente na resposta.
     """
 
     @pytest.mark.parametrize(
@@ -130,5 +131,40 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucaoDates(BasePTTest):
             detail_message = (
                 "A data de fim do período avaliativo deve ser igual ou "
                 "posterior à data de início"
+            )
+            assert_error_message(response, detail_message)
+
+    @pytest.mark.parametrize(
+        "data_inicio_plano_trabalho, data_inicio_periodo_avaliativo",
+        [
+            ("2023-01-01", "2022-12-31"),
+            ("2023-01-01", "2023-01-01"),
+            ("2023-01-01", "2023-01-02"),
+        ],
+    )
+    def test_create_pt_invalid_avaliacao_registros_execucao_start_date(
+        self,
+        data_inicio_plano_trabalho: str,
+        data_inicio_periodo_avaliativo: str,
+    ):
+        """Testa a criação de um plano de trabalho com a data de início do
+        período avaliativo anterior, igual ou posterior à data de início do
+        Plano de Trabalho.
+        """
+        input_pt = self.input_pt.copy()
+        input_pt["data_inicio_plano_trabalho"] = data_inicio_plano_trabalho
+        input_pt["avaliacao_registros_execucao"][0][
+            "data_inicio_periodo_avaliativo"
+        ] = data_inicio_periodo_avaliativo
+
+        response = self.create_pt(input_pt)
+
+        if data_inicio_periodo_avaliativo > data_inicio_plano_trabalho:
+            assert response.status_code == status.HTTP_201_CREATED
+        else:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = (
+                "A data de início do período avaliativo deve ser posterior "
+                "à data de início do Plano de Trabalho"
             )
             assert_error_message(response, detail_message)
