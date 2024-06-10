@@ -283,16 +283,16 @@ class TestCreatePlanoTrabalho(BasePTTest):
         """
         # Arrange
         offset, field_list = missing_fields
-        example_pt = self.input_pt.copy()
+        input_pt = self.input_pt.copy()
         for field in field_list:
-            del self.input_pt[field]
+            del input_pt[field]
 
-        self.input_pt["id_plano_trabalho"] = (
+        input_pt["id_plano_trabalho"] = (
             f"{1800 + offset}"  # precisa ser um novo plano
         )
 
         # Act
-        response = self.create_pt(self.input_pt)
+        response = self.create_pt(input_pt)
 
         # Assert
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
