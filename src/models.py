@@ -535,19 +535,22 @@ class Users(Base):
         Boolean,
         nullable=False,
         default=False,
-        comment="Se pode `crud` de usuários na api-pgd",
+        comment=(
+            "Se tem poderes especiais na api-pgd: cadastro de usuários, "
+            "lê grava dados em qualquer unidade, etc."
+        ),
     )
     disabled = Column(
         Boolean,
         nullable=False,
         default=False,
-        comment="Se usuário está ativo",
+        comment="Se usuário está inativado",
     )
-    cod_SIAPE_instituidora = Column(
+    cod_unidade_autorizadora = Column(
         Integer,
         nullable=False,
         # default=False,
-        comment="Para qual instituidora o usuário pertence",
+        comment="Em qual unidade autorizadora o usuário está cadastrado",
     )
     data_atualizacao = Column(
         DateTime,

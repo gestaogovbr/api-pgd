@@ -555,9 +555,9 @@ class UsersGetSchema(UsersInputSchema):
         default=False,
         description=Users.disabled.comment,
     )
-    cod_SIAPE_instituidora: int = Field(
-        title="Código SIAPE da organização que instituiu o PGD",
-        description=Users.cod_SIAPE_instituidora.comment,
+    cod_unidade_autorizadora: int = Field(
+        title="Código SIAPE da organização que autorizou o PGD",
+        description=Users.cod_unidade_autorizadora.comment,
     )
 
 
@@ -567,7 +567,7 @@ class UsersSchema(UsersGetSchema):
         description=Users.password.comment,
     )
 
-    @field_validator("cod_SIAPE_instituidora")
+    @field_validator("cod_unidade_autorizadora")
     @staticmethod
     def must_be_positive(cod_unidade: int) -> int:
         if cod_unidade < 1:
