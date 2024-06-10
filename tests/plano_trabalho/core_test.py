@@ -434,8 +434,9 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
 
 
 class TestGetPT(BasePTTest):
+    """Testes para consultar um Plano de Trabalho."""
     def test_get_plano_trabalho(self):
-        """Consulta um plano de trabalho."""
+        """Consulta um plano de trabalho existente."""
         # Inclui os campos de resposta do json que não estavam no template
         input_pt = self.input_pt.copy()
         input_pt["cancelado"] = False
