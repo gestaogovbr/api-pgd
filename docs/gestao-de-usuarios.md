@@ -20,7 +20,7 @@ Há dois perfis de usuários:
    comum.
 2. **Usuário comum.** Gestor setorial de dados de um sistema no âmbito do
    PGD. Pode ler e escrever dados referentes somente à sua própria
-   organização (`cod_SIAPE_instituidora`).
+   organização (`cod_unidade_autorizadora`).
 
 
 ## Listar os usuários cadastrados
@@ -34,7 +34,7 @@ conta está ou não ativa e o código SIAPE da sua instituição.
 
 Obtenha primeiro o código SIAPE da instituição que irá integrar seus
 dados do PGD por meio da API. Este código será usado no campo
-`cod_SIAPE_instituidora`.
+`cod_unidade_autorizadora`.
 
 Após se autenticar na API com um perfil de administrador, use o endpoint
 `PUT /user/{email}`, substituindo o campo `email` como o e-mail do

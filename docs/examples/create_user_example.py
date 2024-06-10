@@ -25,6 +25,6 @@ if __name__ == "__main__":
         "password": "secret",
         # "is_admin": False, # defaults to False
         # "disabled": False, # defaults to False
-        "cod_SIAPE_instituidora": 667,
+        "cod_unidade_autorizadora": 667,
     }
     print("user:", create_user(admin_user, new_user))

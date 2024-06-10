@@ -55,7 +55,7 @@ Campos utilizados:
 * `password`;
 * `is_admin`: Se pode criar, editar e deletar usuários;
 * `disabled`: Se está ativo. Se pode consultar dados na api;
-* `cod_SIAPE_instituidora`: Unidade que pertence.
+* `cod_unidade_autorizadora`: Unidade que pertence.
 
 ### 2. Participantes
 
