@@ -22,7 +22,7 @@ USERS_TEST = [
         "password": "secret",
         "is_admin": False,
         "disabled": False,
-        "cod_SIAPE_instituidora": 1,
+        "cod_unidade_autorizadora": 1,
     },
     # to get and delete (not created)
     {
@@ -30,13 +30,13 @@ USERS_TEST = [
         "password": "secret",
         "is_admin": False,
         "disabled": False,
-        "cod_SIAPE_instituidora": 1,
+        "cod_unidade_autorizadora": 1,
     },
-    # to get without one of required fields (email, password, cod_SIAPE_instituidora)
+    # to get without one of required fields (email, password, cod_unidade_autorizadora)
     {
         "email": "user_test_2@api.com",
         "password": "secret",
-        # "cod_SIAPE_instituidora": 1,
+        # "cod_unidade_autorizadora": 1,
     },
     # to create with bad email format. mind that is_admin and disabled are optionals
     {
@@ -44,7 +44,7 @@ USERS_TEST = [
         "password": "secret",
         # "is_admin": False, # defaults do False
         # "disabled": False, # defaults do False
-        "cod_SIAPE_instituidora": 1,
+        "cod_unidade_autorizadora": 1,
     },
 ]
 
@@ -108,8 +108,8 @@ def test_get_user_self_logged_in(
     assert data.get("is_admin", None) == user1_credentials["is_admin"]
     assert data.get("disabled", None) == user1_credentials["disabled"]
     assert (
-        data.get("cod_SIAPE_instituidora", None)
-        == user1_credentials["cod_SIAPE_instituidora"]
+        data.get("cod_unidade_autorizadora", None)
+        == user1_credentials["cod_unidade_autorizadora"]
     )
 
 
@@ -167,7 +167,7 @@ def test_update_user(client: Client, header_usr_1: dict):  # user is_admin=True
 
     # update
     new_data = data_before
-    new_data["cod_SIAPE_instituidora"] = 99
+    new_data["cod_unidade_autorizadora"] = 99
     new_data["password"] = "new_secret"
     r_2 = client.put(
         f"/user/{USERS_TEST[0]['email']}", headers=header_usr_1, json=new_data
@@ -178,8 +178,8 @@ def test_update_user(client: Client, header_usr_1: dict):  # user is_admin=True
     r_3 = client.get(f"/user/{USERS_TEST[0]['email']}", headers=header_usr_1)
     data_after = r_3.json()
 
-    assert data_before.get("cod_SIAPE_instituidora", None) == data_after.get(
-        "cod_SIAPE_instituidora", None
+    assert data_before.get("cod_unidade_autorizadora", None) == data_after.get(
+        "cod_unidade_autorizadora", None
     )
 
 
