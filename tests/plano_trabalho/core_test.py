@@ -192,7 +192,7 @@ class BasePTTest:
         self,
         id_plano_trabalho: str,
         cod_unidade_autorizadora: int,
-        header_usr: dict = None,
+        header_usr: Optional[dict] = None,
     ):
         """Obter um Plano de Trabalho.
 
