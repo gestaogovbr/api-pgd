@@ -216,10 +216,10 @@ class BasePTTest:
         return response
 
 
-class TestCreatePlanoTrabalhoCompleto(BasePTTest):
-    """Testes para criação de Plano de Trabalho completo."""
+class TestCreatePlanoTrabalho(BasePTTest):
+    """Testes para criação de Plano de Trabalho."""
 
-    def test_create_plano_trabalho_completo(self):
+    def test_completo(self):
         """Cria um novo Plano de Trabalho do Participante, em uma unidade
         na qual ele está autorizado, contendo todos os dados necessários.
         """
@@ -237,56 +237,19 @@ class TestCreatePlanoTrabalhoCompleto(BasePTTest):
         assert response.status_code == status.HTTP_200_OK
         self.assert_equal_plano_trabalho(response.json(), self.input_pt)
 
-
-class TestUpdatePlanoDeTrabalho(BasePTTest):
-    """Testes para atualizar um Plano de Trabalho existente.
-    
-    A fixture example_pt, chamada no método setup da classe BasePPTTest
-    cria um novo Plano de Trabalho na API. Ao chamar novamente a API
-    com método create_pt, o Plano de Trabalho receberá uma atualização
-    com alguns campos de dados modificados.
-    """
-
-    def test_update_plano_trabalho(self):
-        """Atualiza um Plano de Trabalho existente usando o método PUT."""
-        # 
-        # Altera campos do PT e reenvia pra API (update)
-        input_pt = self.input_pt.copy()
-        input_pt["cod_unidade_executora"] = 100  # Valor era 99
-        input_pt["data_termino"] = "2023-01-31"  # Valor era "2023-01-15"
-        response = self.create_pt(input_pt)
-
-        assert response.status_code == status.HTTP_200_OK
-        self.assert_equal_plano_trabalho(response.json(), input_pt)
-
-        # Consulta API para conferir se a alteração foi persistida
-        response = self.get_pt(
-            input_pt["id_plano_trabalho"],
-            self.user1_credentials["cod_unidade_autorizadora"],
-        )
-
-        assert response.status_code == status.HTTP_200_OK
-        self.assert_equal_plano_trabalho(response.json(), input_pt)
-
-
-@pytest.mark.parametrize(
-    "tipo_contribuicao, cod_unidade_autorizadora_externa, id_plano_entrega, id_entrega",
-    [
-        (1, None, "1", "1"),
-        (1, None, "2", "2"),
-        (1, None, None, None),
-        (2, None, "1", None),
-        (2, None, None, None),
-        (3, None, "1", "1"),
-        (3, None, None, None),
-    ],
-)
-class TestCreatePlanoDeTrabalhoCamposEntrega(BasePTTest):
-    """Testes para a criação de um novo plano de trabalho, verificando as
-    regras de validação para os campos relacionados à contribuição.
-    """
-
-    def test_create_plano_trabalho_tipo_contribuicao(
+    @pytest.mark.parametrize(
+        "tipo_contribuicao, cod_unidade_autorizadora_externa, id_plano_entrega, id_entrega",
+        [
+            (1, None, "1", "1"),
+            (1, None, "2", "2"),
+            (1, None, None, None),
+            (2, None, "1", None),
+            (2, None, None, None),
+            (3, None, "1", "1"),
+            (3, None, None, None),
+        ],
+    )
+    def test_tipo_contribuicao(
         self,
         tipo_contribuicao: int,
         cod_unidade_autorizadora_externa: Optional[int],
@@ -356,20 +319,14 @@ class TestCreatePlanoDeTrabalhoCamposEntrega(BasePTTest):
         else:
             assert response.status_code == status.HTTP_201_CREATED
 
-
-@pytest.mark.parametrize(
-    "data_inicio_pt",
-    [
-        ("2022-12-01",),
-        ("2023-01-15",),
-    ],
-)
-class TestPlanoDeTrabalhoDatasEntrega(BasePTTest):
-    """Testes para verificar a validação da data de início do Plano de Trabalho
-    em relação à data de início do Plano de Entregas.
-    """
-
-    def test_create_plano_trabalho_data_inicio_check(
+    @pytest.mark.parametrize(
+        "data_inicio_pt",
+        [
+            ("2022-12-01",),
+            ("2023-01-15",),
+        ],
+    )
+    def test_data_inicio_check(
         self,
         input_pe: dict,
         data_inicio_pt: str,
@@ -395,6 +352,37 @@ class TestPlanoDeTrabalhoDatasEntrega(BasePTTest):
             )
         else:
             assert response.status_code == status.HTTP_201_CREATED
+
+
+class TestUpdatePlanoDeTrabalho(BasePTTest):
+    """Testes para atualizar um Plano de Trabalho existente.
+
+    A fixture example_pt, chamada no método setup da classe BasePPTTest
+    cria um novo Plano de Trabalho na API. Ao chamar novamente a API com
+    método create_pt da classe (que, por sua vez, usa o método PUT da
+    API), o Plano de Trabalho receberá uma atualização com alguns campos
+    de dados modificados.
+    """
+
+    def test_update_plano_trabalho(self):
+        """Atualiza um Plano de Trabalho existente usando o método PUT."""
+        # Altera campos do PT e reenvia pra API (update)
+        input_pt = self.input_pt.copy()
+        input_pt["cod_unidade_executora"] = 100  # Valor era 99
+        input_pt["data_termino"] = "2023-01-31"  # Valor era "2023-01-15"
+        response = self.create_pt(input_pt)
+
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_equal_plano_trabalho(response.json(), input_pt)
+
+        # Consulta API para conferir se a alteração foi persistida
+        response = self.get_pt(
+            input_pt["id_plano_trabalho"],
+            self.user1_credentials["cod_unidade_autorizadora"],
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 @pytest.mark.parametrize(
