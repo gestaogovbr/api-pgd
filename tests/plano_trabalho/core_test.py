@@ -76,7 +76,6 @@ class BasePTTest:
         truncate_pe,  # pylint: disable=unused-argument
         truncate_pt,  # pylint: disable=unused-argument
         example_pe,  # pylint: disable=unused-argument
-        example_pt,  # pylint: disable=unused-argument
         input_pt: dict,
         user1_credentials: dict,
         header_usr_1: dict,
@@ -88,7 +87,6 @@ class BasePTTest:
             truncate_pe (callable): Fixture para truncar a tabela PE.
             truncate_pt (callable): Fixture para truncar a tabela PT.
             example_pe (callable): Fixture que cria exemplo de PE.
-            example_pt (callable): Fixture que cria exemplo de PT.
             input_pt (dict): Dados usados para ciar um PT
             user1_credentials (dict): Credenciais do usuário 1.
             header_usr_1 (dict): Cabeçalhos HTTP para o usuário 1.
@@ -326,8 +324,26 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
     de dados modificados.
     """
 
+    @pytest.fixture(autouse=True)
+    def create_example(
+        self,
+        example_pt,  # pylint: disable=unused-argument
+        ):
+        """Configurar o ambiente de teste.
+
+        Args:
+            example_pt (callable): Fixture que cria exemplo de PT.
+        """
+
+
     def test_update_plano_trabalho(self):
-        """Atualiza um Plano de Trabalho existente usando o método PUT."""
+        """Atualiza um Plano de Trabalho existente usando o método HTTP
+        PUT. Como o Plano de Trabalho já existe, o código HTTP retornado
+        deve ser 200 OK, em vez de 201 Created.
+
+        Além disso, obtém os dados novamente por método HTTP GET e
+        verifica se a alteração foi persistida.
+        """
         # Altera campos do PT e reenvia pra API (update)
         input_pt = self.input_pt.copy()
         input_pt["cod_unidade_executora"] = 100  # Valor era 99
