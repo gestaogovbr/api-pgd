@@ -238,15 +238,22 @@ class TestCreatePlanoTrabalhoCompleto(BasePTTest):
         self.assert_equal_plano_trabalho(response.json(), self.input_pt)
 
 
-class TestUpdatePlanoDeTrabalhoDiferenteUnidade(BasePTTest):
-    """Testes para atualizar um Plano de Trabalho existente."""
+class TestUpdatePlanoDeTrabalho(BasePTTest):
+    """Testes para atualizar um Plano de Trabalho existente.
+    
+    A fixture example_pt, chamada no método setup da classe BasePPTTest
+    cria um novo Plano de Trabalho na API. Ao chamar novamente a API
+    com método create_pt, o Plano de Trabalho receberá uma atualização
+    com alguns campos de dados modificados.
+    """
 
     def test_update_plano_trabalho(self):
         """Atualiza um Plano de Trabalho existente usando o método PUT."""
-        # A fixture example_pt cria um novo Plano de Trabalho na API
-        # Altera um campo do PT e reenvia pra API (update)
+        # 
+        # Altera campos do PT e reenvia pra API (update)
         input_pt = self.input_pt.copy()
         input_pt["cod_unidade_executora"] = 100  # Valor era 99
+        input_pt["data_termino"] = "2023-01-31"  # Valor era "2023-01-15"
         response = self.create_pt(input_pt)
 
         assert response.status_code == status.HTTP_200_OK
