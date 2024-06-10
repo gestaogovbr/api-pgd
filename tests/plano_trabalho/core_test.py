@@ -297,6 +297,55 @@ class TestCreatePlanoTrabalho(BasePTTest):
         # Assert
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
+    def test_create_pt_cod_plano_inconsistent(self):
+        """Tenta criar um plano de trabalho com um códigos diferentes
+        informados na URL e no campo id_plano_trabalho do JSON.
+        """
+        # Arrange
+        input_pt = self.input_pt.copy()
+        input_pt["id_plano_trabalho"] = "110"
+
+        # Act
+        response = self.create_pt(
+            input_pt, id_plano_trabalho="111", header_usr=self.header_usr_1
+        )
+
+        # Assert
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_message = "Parâmetro id_plano_trabalho na URL e no JSON devem ser iguais"
+        assert response.json().get("detail", None) == detail_message
+
+
+class TestUpdatePlanoDeTrabalho(BasePTTest):
+    """Testes para atualizar um Plano de Trabalho existente.
+
+    A fixture example_pt, chamada no método setup da classe BasePPTTest
+    cria um novo Plano de Trabalho na API. Ao chamar novamente a API com
+    método create_pt da classe (que, por sua vez, usa o método PUT da
+    API), o Plano de Trabalho receberá uma atualização com alguns campos
+    de dados modificados.
+    """
+
+    def test_update_plano_trabalho(self):
+        """Atualiza um Plano de Trabalho existente usando o método PUT."""
+        # Altera campos do PT e reenvia pra API (update)
+        input_pt = self.input_pt.copy()
+        input_pt["cod_unidade_executora"] = 100  # Valor era 99
+        input_pt["data_termino"] = "2023-01-31"  # Valor era "2023-01-15"
+        response = self.create_pt(input_pt)
+
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_equal_plano_trabalho(response.json(), input_pt)
+
+        # Consulta API para conferir se a alteração foi persistida
+        response = self.get_pt(
+            input_pt["id_plano_trabalho"],
+            self.user1_credentials["cod_unidade_autorizadora"],
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_equal_plano_trabalho(response.json(), input_pt)
+
 
 class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
     """Testes relacionados às Contribuições ao criar um Plano de Trabalho."""
@@ -382,61 +431,6 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
                 assert_error_message(response, detail_message)
         else:
             assert response.status_code == status.HTTP_201_CREATED
-
-
-class TestUpdatePlanoDeTrabalho(BasePTTest):
-    """Testes para atualizar um Plano de Trabalho existente.
-
-    A fixture example_pt, chamada no método setup da classe BasePPTTest
-    cria um novo Plano de Trabalho na API. Ao chamar novamente a API com
-    método create_pt da classe (que, por sua vez, usa o método PUT da
-    API), o Plano de Trabalho receberá uma atualização com alguns campos
-    de dados modificados.
-    """
-
-    def test_update_plano_trabalho(self):
-        """Atualiza um Plano de Trabalho existente usando o método PUT."""
-        # Altera campos do PT e reenvia pra API (update)
-        input_pt = self.input_pt.copy()
-        input_pt["cod_unidade_executora"] = 100  # Valor era 99
-        input_pt["data_termino"] = "2023-01-31"  # Valor era "2023-01-15"
-        response = self.create_pt(input_pt)
-
-        assert response.status_code == status.HTTP_200_OK
-        self.assert_equal_plano_trabalho(response.json(), input_pt)
-
-        # Consulta API para conferir se a alteração foi persistida
-        response = self.get_pt(
-            input_pt["id_plano_trabalho"],
-            self.user1_credentials["cod_unidade_autorizadora"],
-        )
-
-        assert response.status_code == status.HTTP_200_OK
-        self.assert_equal_plano_trabalho(response.json(), input_pt)
-
-
-def test_create_pt_cod_plano_inconsistent(
-    truncate_pe,  # pylint: disable=unused-argument
-    truncate_pt,  # pylint: disable=unused-argument
-    example_pe,  # pylint: disable=unused-argument
-    input_pt: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um plano de trabalho com um códigos diferentes
-    informados na URL e no campo id_plano_trabalho do JSON.
-    """
-    input_pt["id_plano_trabalho"] = "110"
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        "/plano_trabalho/111",
-        json=input_pt,
-        headers=header_usr_1,  # diferente de "110"
-    )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_message = "Parâmetro id_plano_trabalho na URL e no JSON devem ser iguais"
-    assert response.json().get("detail", None) == detail_message
 
 
 def test_get_plano_trabalho(
