@@ -433,42 +433,32 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
             assert response.status_code == status.HTTP_201_CREATED
 
 
-def test_get_plano_trabalho(
-    input_pt: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    truncate_pt,  # pylint: disable=unused-argument
-    example_pt,  # pylint: disable=unused-argument
-    client: Client,
-):
-    """Consulta um plano de trabalho."""
-    response = client.get(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        headers=header_usr_1,
-    )
+class TestGetPT(BasePTTest):
+    def test_get_plano_trabalho(self):
+        """Consulta um plano de trabalho."""
+        # Inclui os campos de resposta do json que não estavam no template
+        input_pt = self.input_pt.copy()
+        input_pt["cancelado"] = False
+        input_pt["contribuicoes"][1]["id_entrega"] = None
+        input_pt["contribuicoes"][1]["descricao_contribuicao"] = None
 
-    # Inclui os campos de resposta do json que não estavam no template
-    input_pt["cancelado"] = False
-    input_pt["contribuicoes"][1]["id_entrega"] = None
-    input_pt["contribuicoes"][1]["descricao_contribuicao"] = None
+        response = self.get_pt(
+            input_pt["id_plano_trabalho"], input_pt["cod_unidade_autorizadora"]
+        )
 
-    assert response.status_code == status.HTTP_200_OK
-    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_equal_plano_trabalho(response.json(), input_pt)
 
+    def test_get_pt_inexistente(self):
+        """Tenta acessar um plano de trabalho inexistente."""
+        non_existent_id = "888888888"
 
-def test_get_pt_inexistente(
-    user1_credentials: dict, header_usr_1: dict, client: Client
-):
-    """Tenta acessar um plano de trabalho inexistente."""
-    response = client.get(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        "/plano_trabalho/888888888",
-        headers=header_usr_1,
-    )
-    assert response.status_code == status.HTTP_404_NOT_FOUND
+        response = self.get_pt(
+            non_existent_id, self.user1_credentials["cod_unidade_autorizadora"]
+        )
 
-    assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
 
 
 def test_create_pt_duplicate_id_plano(
