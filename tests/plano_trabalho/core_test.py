@@ -238,6 +238,70 @@ class TestCreatePlanoTrabalho(BasePTTest):
         self.assert_equal_plano_trabalho(response.json(), self.input_pt)
 
     @pytest.mark.parametrize(
+        "data_inicio_pt",
+        [
+            ("2022-12-01",),
+            ("2023-01-15",),
+        ],
+    )
+    def test_data_inicio_check(
+        self,
+        input_pe: dict,
+        data_inicio_pt: str,
+    ):
+        """Testa a criação de um Plano de Trabalho com diferentes datas de início.
+
+        Args:
+            input_pe (dict): Dados do PE usado como exemplo.
+            data_inicio_pt (str): Data recebida como parâmetro de teste.
+        """
+        # Atualiza a data de início do Plano de Trabalho
+        input_pt = self.input_pt.copy()
+        input_pt["data_inicio"] = data_inicio_pt
+
+        response = self.create_pt(input_pt, header_usr=self.header_usr_1)
+
+        if data_inicio_pt < input_pe["data_inicio"]:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            assert_error_message(
+                response,
+                "A data de início do Plano de Trabalho não pode ser anterior "
+                "à data de início do Plano de Entregas.",
+            )
+        else:
+            assert response.status_code == status.HTTP_201_CREATED
+
+    @pytest.mark.parametrize(
+        "missing_fields", enumerate(FIELDS_PLANO_TRABALHO["mandatory"])
+    )
+    def test_create_plano_trabalho_missing_mandatory_fields(self, missing_fields):
+        """Tenta criar um plano de trabalho, faltando campos obrigatórios.
+        Tem que ser um plano de trabalho novo, pois na atualização de um
+        plano de trabalho existente, o campo que ficar faltando será
+        interpretado como um campo que não será atualizado, ainda que seja
+        obrigatório para a criação.
+        """
+        # Arrange
+        offset, field_list = missing_fields
+        example_pt = self.input_pt.copy()
+        for field in field_list:
+            del self.input_pt[field]
+
+        self.input_pt["id_plano_trabalho"] = (
+            f"{1800 + offset}"  # precisa ser um novo plano
+        )
+
+        # Act
+        response = self.create_pt(self.input_pt)
+
+        # Assert
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
+    """Testes relacionados às Contribuições ao criar um Plano de Trabalho."""
+
+    @pytest.mark.parametrize(
         "tipo_contribuicao, cod_unidade_autorizadora_externa, id_plano_entrega, id_entrega",
         [
             (1, None, "1", "1"),
@@ -319,40 +383,6 @@ class TestCreatePlanoTrabalho(BasePTTest):
         else:
             assert response.status_code == status.HTTP_201_CREATED
 
-    @pytest.mark.parametrize(
-        "data_inicio_pt",
-        [
-            ("2022-12-01",),
-            ("2023-01-15",),
-        ],
-    )
-    def test_data_inicio_check(
-        self,
-        input_pe: dict,
-        data_inicio_pt: str,
-    ):
-        """Testa a criação de um Plano de Trabalho com diferentes datas de início.
-
-        Args:
-            input_pe (dict): Dados do PE usado como exemplo.
-            data_inicio_pt (str): Data recebida como parâmetro de teste.
-        """
-        # Atualiza a data de início do Plano de Trabalho
-        input_pt = self.input_pt.copy()
-        input_pt["data_inicio"] = data_inicio_pt
-
-        response = self.create_pt(input_pt, header_usr=self.header_usr_1)
-
-        if data_inicio_pt < input_pe["data_inicio"]:
-            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            assert_error_message(
-                response,
-                "A data de início do Plano de Trabalho não pode ser anterior "
-                "à data de início do Plano de Entregas.",
-            )
-        else:
-            assert response.status_code == status.HTTP_201_CREATED
-
 
 class TestUpdatePlanoDeTrabalho(BasePTTest):
     """Testes para atualizar um Plano de Trabalho existente.
@@ -383,38 +413,6 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
 
         assert response.status_code == status.HTTP_200_OK
         self.assert_equal_plano_trabalho(response.json(), input_pt)
-
-
-@pytest.mark.parametrize(
-    "missing_fields", enumerate(FIELDS_PLANO_TRABALHO["mandatory"])
-)
-def test_create_plano_trabalho_missing_mandatory_fields(
-    input_pt: dict,
-    missing_fields: list,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    truncate_pt,  # pylint: disable=unused-argument
-    client: Client,
-):
-    """Tenta criar um plano de trabalho, faltando campos obrigatórios.
-    Tem que ser um plano de trabalho novo, pois na atualização de um
-    plano de trabalho existente, o campo que ficar faltando será
-    interpretado como um campo que não será atualizado, ainda que seja
-    obrigatório para a criação.
-    """
-    offset, field_list = missing_fields
-    example_pt = input_pt.copy()
-    for field in field_list:
-        del input_pt[field]
-
-    input_pt["id_plano_trabalho"] = f"{1800 + offset}"  # precisa ser um novo plano
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{example_pt['id_plano_trabalho']}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 def test_create_pt_cod_plano_inconsistent(
