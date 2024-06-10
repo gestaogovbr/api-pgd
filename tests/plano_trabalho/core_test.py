@@ -155,9 +155,9 @@ class BasePTTest:
     def create_pt(
         self,
         input_pt: dict,
-        id_plano_trabalho: str = None,
-        cod_unidade_autorizadora: int = None,
-        header_usr: dict = None,
+        id_plano_trabalho: Optional[str] = None,
+        cod_unidade_autorizadora: Optional[int] = None,
+        header_usr: Optional[dict] = None,
     ):
         """Criar um Plano de Trabalho.
 
