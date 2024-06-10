@@ -244,7 +244,7 @@ def example_pt(
     """Cria um Plano de Trabalho do Participante como exemplo."""
     client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_usr_1,
     )
@@ -260,7 +260,7 @@ def example_pt_unidade_3(
     input_pt["cod_unidade_autorizadora"] = 3
     client.put(
         f"/organizacao/SIAPE/{API_PGD_ADMIN_USER}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho_participante']}",
+        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
         json=input_pt,
         headers=header_admin,
     )
