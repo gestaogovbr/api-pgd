@@ -346,6 +346,29 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
         assert response.status_code == status.HTTP_200_OK
         self.assert_equal_plano_trabalho(response.json(), input_pt)
 
+    def test_create_pt_duplicate_id_plano(self):
+        """Testa a criação de um plano de trabalho com um ID de plano de
+        trabalho existente.
+
+        O teste envia duas requisições PUT para a mesma rota, com os mesmos
+        dados de entrada. Na primeira requisição, espera-se que o status da
+        resposta seja 201 Created. Na segunda requisição, espera-se que o
+        status da resposta seja 200 OK, e que a resposta não contenha uma
+        mensagem de erro. Também verifica se os dados do plano de trabalho na
+        resposta são iguais aos dados de entrada.
+        """
+        # Não é necessário incluir as fixtures já chamados na classe pai
+
+        # Primeira requisição
+        response = self.create_pt(self.input_pt)
+        assert response.status_code == status.HTTP_201_CREATED
+
+        # Segunda requisição
+        response = self.create_pt(self.input_pt)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json().get("detail", None) is None
+        self.assert_equal_plano_trabalho(response.json(), self.input_pt)
+
 
 class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
     """Testes relacionados às Contribuições ao criar um Plano de Trabalho."""
@@ -460,46 +483,6 @@ class TestGetPT(BasePTTest):
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
-
-
-def test_create_pt_duplicate_id_plano(
-    truncate_pe,  # pylint: disable=unused-argument
-    truncate_pt,  # pylint: disable=unused-argument
-    example_pe,  # pylint: disable=unused-argument
-    input_pt: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Testa a criação de um plano de trabalho com um ID de plano de
-    trabalho existente.
-
-    O teste envia duas requisições PUT para a mesma rota, com os mesmos
-    dados de entrada. Na primeira requisição, espera-se que o status da
-    resposta seja 201 Created. Na segunda requisição, espera-se que o
-    status da resposta seja 200 OK, e que a resposta não contenha uma
-    mensagem de erro. Também verifica se os dados do plano de trabalho na
-    resposta são iguais aos dados de entrada.
-    """
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
-
-    assert response.status_code == status.HTTP_201_CREATED
-
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json().get("detail", None) is None
-    BasePTTest.assert_equal_plano_trabalho(response.json(), input_pt)
 
 
 @pytest.mark.parametrize("carga_horaria_disponivel", [-2, -1])
