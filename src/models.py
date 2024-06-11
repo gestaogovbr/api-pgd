@@ -558,66 +558,92 @@ class ModalidadesExecucao(enum.IntEnum):
     teletrabalho_no_exterior_par7 = 5
 
 
-class StatusParticipante(Base):
-    "Status dos Participantes"
-    __tablename__ = "status_participante"
-
-    id = Column(
-        Integer, primary_key=True, index=True, autoincrement=True, nullable=False
-    )
-
-    cod_SIAPE_instituidora = Column(
-        Integer,
-        index=True,
-        nullable=False,
-        comment="Código da unidade organizacional (UORG) no "
-        "Sistema Integrado de Administração de Recursos Humanos "
-        "(Siape) corresponde à Unidade de Instituição",
-    )
-    cpf_participante = Column(
+class Participante(Base):
+    "Participante"
+    __tablename__ = "participante"
+    origem_unidade = Column(
         String,
         nullable=False,
-        comment="Número do CPF do participante responsável pelo plano de "
-        "trabalho, sem pontos, hífen ou caracteres especiais",
+        comment='Código do sistema da unidade: "SIAPE" ou "SIORG".',
     )
-    participante_ativo_inativo_pgd = Column(
+    cod_unidade_autorizadora = Column(
         Integer,
         nullable=False,
-        comment="Situação do participante no Programa de Gestão e Desempenho "
-        "(PGD): 0 - Inativo; 1 - Ativo. Participante ativo é aquele "
-        "habilitado para a proposição e/ou execução do plano de trabalho",
+        comment="Código da unidade organizacional (UORG) no Sistema Integrado de "
+        "Administração de Recursos Humanos (SIAPE) corresponde à Unidade de "
+        "autorização. Referente ao artigo 3º do Decreto nº 11.072, de 17 de "
+        'maio de 2022. De forma geral, são os "Ministros de Estado, os '
+        "dirigentes máximos dos órgãos diretamente subordinados ao Presidente "
+        'da República e as autoridades máximas das entidades". Em termos de '
+        "SIAPE, geralmente é o código Uorg Lv1. O próprio Decreto, contudo, "
+        "indica que tal autoridade poderá ser delegada a dois níveis "
+        "hierárquicos imediatamente inferiores, ou seja, para Uorg Lv2 e Uorg "
+        "Lv3. Haverá situações, portanto, em que uma unidade do Uorg Lv1 de "
+        "nível 2 ou 3 poderá enviar dados diretamente para API.\n\n"
+        'Exemplo: "Ministério da Gestão e da Inovação em Serviços Públicos" '
+        'ou "Conselho de Controle de Atividades Financeiras"\n\n'
+        "Obs: A instituição que não esteja no SIAPE pode usar o código SIORG.",
+    )
+    cod_unidade_lotacao = Column(
+        Integer,
+        nullable=False,
+        comment="Código da unidade organizacional (UORG) no Sistema Integrado de "
+        "Administração de Recursos Humanos (SIAPE) corresponde à unidade de "
+        "lotação do participante.\n\n"
+        "Obs: A instituição que não esteja no SIAPE pode usar o código SIORG.",
+    )
+    cpf = Column(
+        String,
+        nullable=False,
+        comment="Número do CPF do agente público selecionado para PGD, sem "
+        "pontos, hífen ou caracteres especiais.",
     )
     matricula_siape = Column(
         String,
-        comment="Número da matrícula do participante no Sistema Integrado "
-        "de Administração de Recursos Humanos (Siape)",
+        nullable=False,
+        comment="Número da matrícula do participante no Sistema Integrado de "
+        "Administração de Recursos Humanos (SIAPE).",
+    )
+    cod_unidade_instituidora = Column(
+        Integer,
+        nullable=False,
+        comment="Código da unidade organizacional (UORG) no Sistema Integrado de "
+        "Administração de Recursos Humanos (SIAPE) corresponde à Unidade de "
+        'Instituição. Pode ser o mesmo que o "cod_unidade_autorizadora".',
+    )
+    situacao = Column(
+        Integer,
+        nullable=False,
+        comment="Situação do agente público no Programa de Gestão e Desempenho "
+        "(PGD):\n\n"
+        "0 - Inativo\n"
+        "1 - Ativo",
     )
     modalidade_execucao = Column(
         Integer,
-        Enum(ModalidadesExecucao),
         nullable=False,
         comment="Modalidade e regime de execução do trabalho do participante, "
-        "restrito a uma das quatro opções: 1 - Presencial; "
-        "2 - Teletrabalho Parcial; 3 - Teletrabalho Integral; "
-        "4 - Teletrabalho com Residência no Exterior.",
+        "restrito a uma das cinco opções:\n\n"
+        "1 - Presencial\n"
+        "2 - Teletrabalho parcial\n"
+        "3 - Teletrabalho integral\n"
+        "4 - Teletrabalho com residência no exterior (Dec.11.072/2022, art. 12, VIII)\n"
+        "5 - Teletrabalho com residência no exterior (Dec.11.072/2022, art. 12, §7°)\n\n"
+        "Regras de validação: Só é possível a escolha de uma das cinco opções.",
     )
-    jornada_trabalho_semanal = Column(
-        Integer,
-        nullable=False,
-        comment="Jornada de trabalho semanal fixada em razão das atribuições "
-        "pertinentes aos respectivos cargos dos participantes. "
-        "É definida em lei ou contrato.",
-    )
-    data_envio = Column(  # TODO: verificar descrição e relação com data_insercao
+    data_assinatura_tcr = Column(
         Date,
         nullable=False,
-        comment="Timestamp do envio dos dados pelo órgão ou entidade via API "
-        "(Application Programming Interface) para o Órgão Central do SIORG. "
-        "Cada envio é completo e não substitui envios anteriores; portanto, "
-        "não há uma chave para atualização.",
+        comment="Data de assinatura do Termo de Ciência e Responsabilidade (TCR) "
+        "referente ao previsto no inciso IV do art. 11 do Decreto 11.072/2022.",
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
+    planos_trabalho = relationship(
+        "PlanoTrabalho",
+        back_populates="participante",
+        lazy="joined",
+    )
 
 
 class Users(Base):
