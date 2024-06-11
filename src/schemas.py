@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from pydantic import model_validator, field_validator
 
 from models import PlanoEntregas, PlanoTrabalho, Entrega
-from models import Consolidacao, Contribuicao, StatusParticipante
+from models import Contribuicao, AvaliacaoRegistrosExecucao, Participante
 from models import Users
 from util import over_a_year
 
@@ -67,14 +67,14 @@ class ContribuicaoSchema(BaseModel):
         default=None,
         title="Descrição da Contribuição",
         max_length=300,
-        description=Contribuicao.descricao_contribuicao.comment,
+        #description=Contribuicao.descricao_contribuicao.comment,
     )
     id_entrega: Optional[int] = Field(
         default=None, title="Id da Entrega", description=Contribuicao.id_entrega.comment
     )
     horas_vinculadas: int = Field(
         title="Horas vinculadas à determinada entrega",
-        description=Contribuicao.horas_vinculadas.comment,
+        #description=Contribuicao.horas_vinculadas.comment,
     )
 
     @model_validator(mode="after")
