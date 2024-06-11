@@ -525,7 +525,7 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
             assert response.status_code == status.HTTP_201_CREATED
 
 
-class TestGetPT(BasePTTest):
+class TestGetPlanoTrabalho(BasePTTest):
     """Testes para consultar um Plano de Trabalho."""
 
     def test_get_plano_trabalho(self):
