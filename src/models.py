@@ -23,6 +23,7 @@ from db_config import Base
 
 
 class PlanoEntregas(Base):
+    "Plano de Entregas"
     __tablename__ = "plano_entregas"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -35,30 +36,30 @@ class PlanoEntregas(Base):
         Integer,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema "
-            "Integrado de Administração de Recursos Humanos (SIAPE) "
-            "corresponde à Unidade de autorização. Referente ao artigo "
-            "3º do Decreto nº 11.072, de 17 de maio de 2022. De forma "
-            "geral, são os “Ministros de Estado, os dirigentes máximos "
-            "dos órgãos diretamente subordinados ao Presidente da "
-            "República e as autoridades máximas das entidades”. Em "
-            "termos de SIAPE, geralmente é o código Uorg Lv1. O "
-            "próprio Decreto, contudo, indica que tal autoridade "
-            "poderá ser delegada a dois níveis hierárquicos "
-            "imediatamente inferiores, ou seja, para Uorg Lv2 e Uorg "
-            "Lv3. Haverá situações, portanto, em que uma unidade do "
-            "Uorg Lv1 de nível 2 ou 3 poderá enviar dados diretamente "
-            "para API.",
+        "Integrado de Administração de Recursos Humanos (SIAPE) "
+        "corresponde à Unidade de autorização. Referente ao artigo "
+        "3º do Decreto nº 11.072, de 17 de maio de 2022. De forma "
+        "geral, são os “Ministros de Estado, os dirigentes máximos "
+        "dos órgãos diretamente subordinados ao Presidente da "
+        "República e as autoridades máximas das entidades”. Em "
+        "termos de SIAPE, geralmente é o código Uorg Lv1. O "
+        "próprio Decreto, contudo, indica que tal autoridade "
+        "poderá ser delegada a dois níveis hierárquicos "
+        "imediatamente inferiores, ou seja, para Uorg Lv2 e Uorg "
+        "Lv3. Haverá situações, portanto, em que uma unidade do "
+        "Uorg Lv1 de nível 2 ou 3 poderá enviar dados diretamente "
+        "para API.",
     )
     cod_unidade_instituidora = Column(
         Integer,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema "
-            "Integrado de Administração de Recursos Humanos (SIAPE) "
-            "corresponde à Unidade de Instituição. A unidade "
-            "administrativa prevista no art. 4º do Decreto nº 11.072, "
-            "de 2022. Ele deve ser “de nível não inferior ao de "
-            "Secretaria ou equivalente”. Pode ser a mesma que a "
-            "unidade de autorização.",
+        "Integrado de Administração de Recursos Humanos (SIAPE) "
+        "corresponde à Unidade de Instituição. A unidade "
+        "administrativa prevista no art. 4º do Decreto nº 11.072, "
+        "de 2022. Ele deve ser “de nível não inferior ao de "
+        "Secretaria ou equivalente”. Pode ser a mesma que a "
+        "unidade de autorização.",
     )
     cod_unidade_executora = Column(
         Integer,
@@ -80,13 +81,13 @@ class PlanoEntregas(Base):
             Indica qual o status do plano de entregas.
             O código deve corresponder às seguintes categorias:
 
-            1 - Cancelado
-            2 - Aprovado
-            3 - Em execução
-            4 - Concluído
-            5 - Avaliado
+            1. Cancelado
+            2. Aprovado
+            3. Em execução
+            4. Concluído
+            5. Avaliado
 
-            Regras de validação: a categoria "5" só poderá ser usada se
+            **Regras de validação:** a categoria "5" só poderá ser usada se
             os campos "avaliacao_plano_entregas" e
             "data_avaliacao_plano_entregas" estiverem preenchidos.
 
@@ -187,7 +188,7 @@ class Entrega(Base):
     tipo_meta = Column(
         String,
         nullable=False,
-        comment='Qualificação do tipo da meta: "unidade" ou "percentual"',
+        comment="Qualificação do tipo da meta: “unidade” ou “percentual”",
     )
     data_entrega = Column(
         Date,
@@ -230,7 +231,6 @@ class Entrega(Base):
             ],
         ),
     )
-    
 
 
 class PlanoTrabalho(Base):
@@ -241,27 +241,25 @@ class PlanoTrabalho(Base):
     origem_unidade = Column(
         String,
         nullable=False,
-        comment="Código do sistema da unidade: \"SIAPE\" ou \"SIORG\".",
+        comment='Código do sistema da unidade: "SIAPE" ou "SIORG".',
     )
     cod_unidade_autorizadora = Column(
         Integer,
         nullable=False,
-        comment="""
-        Código da unidade organizacional (UORG) no Sistema
-        Integrado de Administração de Recursos Humanos (Siape)
-        corresponde à Unidade de autorização. Referente ao artigo
-        3º do Decreto nº 11.072, de 17 de maio de 2022. De forma
-        geral, são os "Ministros de Estado, os dirigentes máximos
-        dos órgãos diretamente subordinados ao Presidente da
-        República e as autoridades máximas das entidades". Em
-        termos de SIAPE, geralmente é o código Uorg Lv1. O
-        próprio Decreto, contudo, indica que tal autoridade
-        poderá ser delegada a dois níveis hierárquicos
-        imediatamente inferiores, ou seja, para Uorg Lv2 e Uorg
-        Lv3. Haverá situações, portanto, em que uma unidade do
-        Uorg Lv1 de nível 2 ou 3 poderá enviar dados diretamente
-        para API.
-        """,
+        comment="Código da unidade organizacional (UORG) no Sistema "
+        "Integrado de Administração de Recursos Humanos (Siape) "
+        "corresponde à Unidade de autorização. Referente ao artigo "
+        "3º do Decreto nº 11.072, de 17 de maio de 2022. De forma "
+        "geral, são os “Ministros de Estado, os dirigentes máximos "
+        "dos órgãos diretamente subordinados ao Presidente da "
+        "República e as autoridades máximas das entidades”. Em "
+        "termos de SIAPE, geralmente é o código Uorg Lv1. O "
+        "próprio Decreto, contudo, indica que tal autoridade "
+        "poderá ser delegada a dois níveis hierárquicos "
+        "imediatamente inferiores, ou seja, para Uorg Lv2 e Uorg "
+        "Lv3. Haverá situações, portanto, em que uma unidade do "
+        "Uorg Lv1 de nível 2 ou 3 poderá enviar dados diretamente "
+        "para API.",
     )
     id_plano_trabalho = Column(
         String, nullable=False, comment="Identificador único do plano de trabalho."
@@ -269,37 +267,37 @@ class PlanoTrabalho(Base):
     status = Column(
         Integer,
         nullable=False,
-        comment="""
-        Indica qual o status do plano de trabalho. O código deve
-        corresponder às seguintes categorias:
+        comment=dedent(
+            """
+            Indica qual o status do plano de trabalho. O código deve
+            corresponder às seguintes categorias:
 
-        Cancelado
-        Aprovado
-        Em execução
-        Concluído
+            1. Cancelado
+            2. Aprovado
+            3. Em execução
+            4. Concluído
 
-        O status "2" refere-se ao inciso II do art. 17 da IN nº 24/2023,
-        ou seja, com a pactuação entre chefia e participante do plano
-        de trabalho.
-        O status "3" refere-se ao art. 20 da IN SEGES-SGPRT/MGi nº 24/2022
-        O status "4" (Concluído) indica que os registros de execução do
-        plano de trabalho foram inseridos e encaminhados para avaliação.
+            O status "2" refere-se ao inciso II do art. 17 da IN nº 24/2023,
+            ou seja, com a pactuação entre chefia e participante do plano
+            de trabalho.
+            O status "3" refere-se ao art. 20 da IN SEGES-SGPRT/MGi nº 24/2022
+            O status "4" (Concluído) indica que os registros de execução do
+            plano de trabalho foram inseridos e encaminhados para avaliação.
 
-        Regras de validação: É obrigatório o envio dos planos nos status
-        "3" e "4". Os planos nos demais status não precisam
-        necessariamente ser enviados.
-        """,
+            **Regras de validação:** É obrigatório o envio dos planos nos status
+            "3" e "4". Os planos nos demais status não precisam
+            necessariamente ser enviados.
+        """
+        ),
     )
     cod_unidade_executora = Column(
         Integer,
         nullable=False,
-        comment="""
-        Código da unidade organizacional (UORG) no Sistema
-        Integrado de Administração de Recursos Humanos (SIAPE)
-        corresponde à Unidade de Execução. Qualquer unidade da
-        estrutura administrativa que tenha plano de entregas
-        pactuado.
-        """,
+        comment="Código da unidade organizacional (UORG) no Sistema "
+        "Integrado de Administração de Recursos Humanos (SIAPE) "
+        "corresponde à Unidade de Execução. Qualquer unidade da "
+        "estrutura administrativa que tenha plano de entregas "
+        "pactuado.",
     )
     cpf_participante = Column(
         String,
@@ -316,14 +314,14 @@ class PlanoTrabalho(Base):
         Date,
         nullable=False,
         comment="Data de início do plano de trabalho do participante. "
-        "Regras de validação: deve ser posterior à \"data_assinatura_tcr\" "
-        "e à \"data_inicio\" do \"plano_entregas\".",
+        "\n\n**Regras de validação:** deve ser posterior à “data_assinatura_tcr”"
+        "e à “data_inicio” do “plano_entregas”.",
     )
     data_termino = Column(
         Date,
         nullable=False,
         comment="Data de término do plano de trabalho do participante. "
-        "Regras de validação: deve ser posterior à \"data_inicio\".",
+        "\n\n**Regras de validação:** deve ser posterior à “data_inicio”.",
     )
     carga_horaria_disponivel = Column(
         Integer,
@@ -350,7 +348,6 @@ class PlanoTrabalho(Base):
     )
 
 
-
 class TipoContribuicao(enum.IntEnum):
     entrega_propria_unidade = 1
     nao_vinculada = 2
@@ -360,56 +357,86 @@ class TipoContribuicao(enum.IntEnum):
 class Contribuicao(Base):
     "Contribuição para um Plano de Trabalho"
     __tablename__ = "contribuicao"
+
     id = Column(
         Integer, primary_key=True, index=True, autoincrement=True, nullable=False
     )
-    cod_SIAPE_instituidora = Column(
-        Integer,
-        primary_key=True,
-        index=True,
+    origem_unidade = Column(
+        String,
         nullable=False,
-        comment="Código da unidade organizacional (UORG) no "
-        "Sistema Integrado de Administração de Recursos Humanos "
-        "(Siape) corresponde à Unidade de Instituição",
+        comment="Código do sistema da unidade: “SIAPE” ou “SIORG”.",
     )
-    id_plano_trabalho_participante = Column(
+    id_contribuicao = Column(
+        String,
+        nullable=False,
+        comment="Identificador único da contribuição.",
+    )
+    cod_unidade_instituidora = Column(
         Integer,
         nullable=False,
-        comment="Identificador único do plano de trabalho",
+        comment="Código da unidade organizacional (UORG) no Sistema Integrado "
+        "de Administração de Recursos Humanos (SIAPE) corresponde à Unidade "
+        "de Instituição.",
     )
     tipo_contribuicao = Column(
         Integer,
-        Enum(TipoContribuicao),
         nullable=False,
-        comment="Tipos de contribuição que o participante pode realizar: "
-        "1 - Contribuição para entrega da própria unidade de execução "
-        "do participante; 2 - Contribuição não vinculada diretamente a entrega, "
-        "mas necessária ao adequado funcionamento administrativo (por exemplo, "
-        "Atividades de apoio, assessoramento e desenvolvimento, e Atividades "
-        "de gestão de equipes e entregas); 3 - Contribuição vinculada a "
-        "entrega de outra unidade de execução, inclusive de outros órgãos "
-        "e entidades",
+        comment=dedent(
+            """
+            Tipos de contribuição que o participante pode realizar:
+
+            1. Contribuição para entrega da própria unidade de execução
+            do participante;
+            2. Contribuição não vinculada diretamente a entrega, mas
+            necessária ao adequado funcionamento administrativo (por
+            exemplo, Atividades de apoio, assessoramento e
+            desenvolvimento, e Atividades de gestão de equipes e
+            entregas);
+            3. Contribuição vinculada a entrega de outra unidade de
+            execução, inclusive de outros órgãos e entidades
+            """
+        ),
     )
-    descricao_contribuicao = Column(
+    cod_unidade_autorizadora_externa = Column(
+        Integer,
+        nullable=True,
+        comment=dedent(
+            """
+            Código da unidade organizacional (UORG) no Sistema
+            Integrado de Administração de Recursos Humanos (SIAPE)
+            correspondente à Unidade de autorização, à qual está
+            vinculado o plano de entregas.
+
+            **Regras de validação:** Deve ser preenchido somente quando
+            tipo_contribuicao for igual a "3" e os campos "id_plano_entrega"
+            e "id_entrega" estiverem preenchidos.
+        """
+        ),
+    )
+    id_plano_entrega = Column(
         String,
-        comment="Descrição do conjunto de tarefas e/ou atividades a serem "
-        "realizadas no período de vigência do plano de trabalho com o "
-        "intuito de contribuir com a execução de determinada entrega",
+        nullable=True,
+        comment="Identificador único do plano de entrega ao qual o plano de "
+        "trabalho está ligado.",
     )
-    id_plano_entrega_unidade = Column(
-        Integer, nullable=True
-    )  # se tipo_contribuicao != 1
     id_entrega = Column(
-        Integer,
-        nullable=True,  # se tipo_contribuicao != 1
-        comment="Identificador único da entrega",
+        String,
+        nullable=True,
+        comment="Identificador único da entrega.",
     )
-    horas_vinculadas = Column(
+    percentual_contribuicao = Column(
         Integer,
         nullable=False,
-        comment="Quantidade de horas da carga horária útil total do "
-        "participante disponível no período de vigência do plano de "
-        "trabalho vinculadas a uma determinada entrega",
+        comment=dedent(
+            """
+            Proporção (%) da "carga_horaria_disponivel" vinculada a uma
+            determinada contribuição, podendo ser entregas da unidade de
+            execução, entregas de outra unidade ou não vinculadas diretamente
+            a entregas.
+
+            **Regras de validação:** Deve ser maior que 0 e menor ou igual a 100.
+        """
+        ),
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
