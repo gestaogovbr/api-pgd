@@ -205,6 +205,32 @@ class Entrega(Base):
         nullable=False,
         comment="Nome da unidade destinatária ou beneficiária da entrega.",
     )
+    data_atualizacao = Column(DateTime)
+    data_insercao = Column(DateTime, nullable=False)
+    plano_entregas = relationship(
+        "PlanoEntregas",
+        back_populates="entregas",
+        lazy="joined",
+    )
+    # campos implícitos a partir do relacionamento
+    cod_unidade_autorizadora = Column(
+        Integer,
+        nullable=False,
+        comment="cod_unidade_autorizadora do Plano de Entregas (FK)",
+    )
+    id_plano_entrega = Column(
+        String, nullable=False, comment="id_plano_entrega do Plano de Entregas (FK)"
+    )
+    __table_args__ = (
+        ForeignKeyConstraint(
+            [cod_unidade_autorizadora, id_plano_entrega],
+            [
+                "plano_entregas.cod_unidade_autorizadora",
+                "plano_entregas.id_plano_entrega",
+            ],
+        ),
+    )
+    
 
 
 class PlanoTrabalho(Base):
