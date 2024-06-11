@@ -418,19 +418,30 @@ class Contribuicao(Base):
         back_populates="contribuicoes",
         lazy="joined",
     )
+    # campos implícitos a partir do relacionamento
+    cod_unidade_autorizadora = Column(
+        Integer,
+        nullable=False,
+        comment="cod_unidade_autorizadora do Plano de Trabalho (FK)",
+    )
+    id_plano_trabalho = Column(
+        String,
+        nullable=False,
+        comment="id_plano_trabalho do Plano de Trabalho (FK)",
+    )
     __table_args__ = (
         ForeignKeyConstraint(
-            [cod_SIAPE_instituidora, id_plano_trabalho_participante],
+            [cod_unidade_autorizadora, id_plano_trabalho],
             [
-                "plano_trabalho.cod_SIAPE_instituidora",
-                "plano_trabalho.id_plano_trabalho_participante",
+                "plano_trabalho.cod_unidade_autorizadora",
+                "plano_trabalho.id_plano_trabalho",
             ],
         ),
         ForeignKeyConstraint(
-            [cod_SIAPE_instituidora, id_plano_entrega_unidade, id_entrega],
+            [cod_unidade_autorizadora, id_plano_entrega, id_entrega],
             [
-                "entrega.cod_SIAPE_instituidora",
-                "entrega.id_plano_entrega_unidade",
+                "entrega.cod_unidade_autorizadora",
+                "entrega.id_plano_entrega",
                 "entrega.id_entrega",
             ],
         ),
