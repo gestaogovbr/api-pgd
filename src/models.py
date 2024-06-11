@@ -1,17 +1,20 @@
 """Definições dos modelos de dados da API que serão persistidos no
 banco pelo mapeamento objeto-relacional (ORM) do SQLAlchemy.
 """
+
 import enum
+from textwrap import dedent
+
 from sqlalchemy import (
     Boolean,
     Column,
-    Integer,
-    String,
     Date,
     DateTime,
     Enum,
-    UniqueConstraint,
     ForeignKeyConstraint,
+    Integer,
+    String,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.functions import now
@@ -20,73 +23,117 @@ from db_config import Base
 
 
 class PlanoEntregas(Base):
-    "Plano de Entregas da unidade"
     __tablename__ = "plano_entregas"
-    cod_SIAPE_instituidora = Column(
-        Integer,
-        primary_key=True,
-        index=True,
+
+    id = Column(Integer, primary_key=True, index=True)
+    origem_unidade = Column(
+        String,
         nullable=False,
-        comment="Código da unidade organizacional (UORG) no "
-        "Sistema Integrado de Administração de Recursos Humanos"
-        "(Siape) corresponde à Unidade de Instituição",
+        comment='Código do sistema da unidade: "SIAPE" ou "SIORG"',
     )
-    id_plano_entrega_unidade = Column(
-        Integer,
-        primary_key=True,
-        index=True,
-        nullable=False,
-        comment="Identificador único do plano de entregas",
-    )
-    cancelado = Column(
-        Boolean,
-        comment="TRUE se o plano tiver sido cancelado; FALSE caso contrário. "
-        "O valor padrão é FALSE. A ausência do atributo ou NULL "
-        "deve ser interpretada como FALSE.",
-    )
-    data_inicio_plano_entregas = Column(
-        Date,
-        nullable=False,
-        comment="Data de início da vigência do plano de entregas da"
-        "Unidade de Execução",
-    )
-    data_termino_plano_entregas = Column(
-        Date,
-        nullable=False,
-        comment="Data de término da vigência do plano de entregas da"
-        "Unidade de Execução",
-    )
-    avaliacao_plano_entregas = Column(
-        Integer,
-        comment="Avaliação do plano de entregas pelo nível hierárquico "
-        "superior ao da chefia da unidade de execução, em até trinta "
-        "dias após o término do plano de entregas, em uma das seguintes "
-        "escalas:\n\n\n"
-        "I - excepcional: plano de entregas executado com "
-        "desempenho muito acima do esperado;\n\n"
-        "II - alto desempenho: "
-        "plano de entregas executado com desempenho acima do esperado;\n\n"
-        "III - adequado: plano de entregas executado dentro do esperado;\n\n"
-        "IV - inadequado: plano de entregas executado abaixo do esperado;\n\n"
-        "ou V - plano de entregas não executado",
-    )
-    data_avaliacao_plano_entregas = Column(
-        Date,
-        comment="Data em que o nível hierárquico superior ao da chefia "
-        "da unidade de execução avaliou o cumprimento do plano de "
-        "entregas",
-    )
-    cod_SIAPE_unidade_plano = Column(
+    cod_unidade_autorizadora = Column(
         Integer,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema "
-        "Integrado de Administração de Recursos Humanos (Siape) "
-        "corresponde à Unidade de Execução",
+            "Integrado de Administração de Recursos Humanos (SIAPE) "
+            "corresponde à Unidade de autorização. Referente ao artigo "
+            "3º do Decreto nº 11.072, de 17 de maio de 2022. De forma "
+            "geral, são os “Ministros de Estado, os dirigentes máximos "
+            "dos órgãos diretamente subordinados ao Presidente da "
+            "República e as autoridades máximas das entidades”. Em "
+            "termos de SIAPE, geralmente é o código Uorg Lv1. O "
+            "próprio Decreto, contudo, indica que tal autoridade "
+            "poderá ser delegada a dois níveis hierárquicos "
+            "imediatamente inferiores, ou seja, para Uorg Lv2 e Uorg "
+            "Lv3. Haverá situações, portanto, em que uma unidade do "
+            "Uorg Lv1 de nível 2 ou 3 poderá enviar dados diretamente "
+            "para API.",
+    )
+    cod_unidade_instituidora = Column(
+        Integer,
+        nullable=False,
+        comment="Código da unidade organizacional (UORG) no Sistema "
+            "Integrado de Administração de Recursos Humanos (SIAPE) "
+            "corresponde à Unidade de Instituição. A unidade "
+            "administrativa prevista no art. 4º do Decreto nº 11.072, "
+            "de 2022. Ele deve ser “de nível não inferior ao de "
+            "Secretaria ou equivalente”. Pode ser a mesma que a "
+            "unidade de autorização.",
+    )
+    cod_unidade_executora = Column(
+        Integer,
+        nullable=False,
+        comment="Código da unidade organizacional (UORG) no Sistema "
+        "Integrado de Administração de Recursos Humanos (SIAPE) "
+        "corresponde à Unidade de Execução. Qualquer unidade da "
+        "estrutura administrativa que tenha plano de entregas "
+        "pactuado.",
+    )
+    id_plano_entrega = Column(
+        String, nullable=False, comment="Identificador único do plano de entregas."
+    )
+    status = Column(
+        Integer,
+        nullable=False,
+        comment=dedent(
+            """
+            Indica qual o status do plano de entregas.
+            O código deve corresponder às seguintes categorias:
+
+            1 - Cancelado
+            2 - Aprovado
+            3 - Em execução
+            4 - Concluído
+            5 - Avaliado
+
+            Regras de validação: a categoria "5" só poderá ser usada se
+            os campos "avaliacao_plano_entregas" e
+            "data_avaliacao_plano_entregas" estiverem preenchidos.
+
+            É obrigatório o envio dos planos nos status "3", "4" e "5".
+            Os planos nos demais status não precisam necessariamente ser
+            enviados."""
+        ),
+    )
+    data_inicio = Column(
+        Date, nullable=False, comment="Data de início da vigência do plano de entregas."
+    )
+    data_termino = Column(
+        Date,
+        nullable=False,
+        comment="Data de término da vigência do plano de entregas. Deve "
+        'ser depois da "data_inicio_plano_entregas".',
+    )
+    avaliacao = Column(
+        Integer,
+        comment=dedent(
+            """
+            Avaliação do plano de entregas pelo nível hierárquico
+            superior ao da chefia da unidade de execução, em até
+            trinta dias após o término do plano de entregas, em uma
+            das seguintes escalas:
+            
+            I - excepcional: plano de entregas executado com desempenho
+            muito acima do esperado;
+            II - alto desempenho: plano de entregas executado com
+            desempenho acima do esperado;
+            III - adequado: plano de entregas executado dentro do
+            esperado;
+            IV - inadequado: plano de entregas executado abaixo do
+            esperado;
+            ou V - plano de entregas não executado"""
+        ),
+    )
+    data_avaliacao = Column(
+        Date,
+        comment="Data em que o nível hierárquico superior ao da chefia da "
+        "unidade de execução avaliou o cumprimento do plano de "
+        "entregas",
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
     entregas = relationship(
-        "Entrega",
+        "Entregas",
         back_populates="plano_entregas",
         lazy="joined",
         passive_deletes=True,
@@ -94,7 +141,7 @@ class PlanoEntregas(Base):
     )
     __table_args__ = (
         UniqueConstraint(
-            "cod_SIAPE_instituidora",
+            "cod_unidade_autorizadora",
             "id_plano_entrega_unidade",
             name="_instituidora_plano_entregas_uc",
         ),
@@ -102,7 +149,7 @@ class PlanoEntregas(Base):
 
 
 class TipoMeta(enum.IntEnum):
-    absoluto = 1
+    unidade = 1
     percentual = 2
 
 
@@ -110,101 +157,53 @@ class Entrega(Base):
     "Entrega"
     __tablename__ = "entrega"
     id_entrega = Column(
-        Integer,
+        String,
         primary_key=True,
         index=True,
         nullable=False,
-        autoincrement=True,
         comment="Identificador único da entrega",
     )
-    id_plano_entrega_unidade = Column(
-        Integer,
-        primary_key=True,
-        index=True,
-        nullable=False,
-        comment="Identificador único do plano de entregas",
-    )
-    cod_SIAPE_instituidora = Column(
-        Integer,
-        primary_key=True,
-        index=True,
-        nullable=False,
-        comment="Código da unidade organizacional (UORG) no "
-        "Sistema Integrado de Administração de Recursos Humanos "
-        "(Siape) corresponde à Unidade de Instituição",
+    entrega_cancelada = Column(
+        Boolean,
+        nullable=True,
+        default=False,
+        comment="TRUE se a entrega tiver sido cancelada; FALSE caso contrário. "
+        "O valor padrão é FALSE. A ausência do atributo ou NULL deve ser "
+        "interpretada como FALSE.",
     )
     nome_entrega = Column(
         String,
         nullable=False,
-        comment="Título do produto ou serviço gerado por uma Unidade "
-        "de Execução, resultante da contribuição de seus membros",
+        comment="Título do produto ou serviço gerado por uma Unidade de Execução, "
+        "resultante da contribuição de seus membros.",
     )
     meta_entrega = Column(
         Integer,
         nullable=False,
-        comment="Quantidade unitária de produto ou serviço a ser gerado "
-        "pela Unidade de Execução; ou Desempenho percentual da geração "
-        "de entrega em relação à quantidade, tempo ou qualidade a ser "
-        "alcançada",
+        comment="Quantidade unitária de produto ou serviço a ser gerado pela "
+        "Unidade de Execução; ou Desempenho percentual da geração de entrega "
+        "em relação à quantidade, tempo ou qualidade a ser alcançada.",
     )
     tipo_meta = Column(
-        Integer,
-        Enum(TipoMeta),
+        String,
         nullable=False,
-        comment="Qualificação do tipo da meta: unidade ou percentual",
-    )
-    nome_vinculacao_cadeia_valor = Column(
-        String,
-        comment="Nome do processo da cadeia de valor da instituição no "
-        "qual a entrega se vincula diretamente",
-    )
-    nome_vinculacao_planejamento = Column(
-        String,
-        comment="Nome do item mais próximo do planejamento da instituição "
-        "no qual a entrega se vincula diretamente",
-    )
-    percentual_progresso_esperado = Column(
-        Integer,
-        comment="Percentual de execução da meta da entrega a ser alcançado "
-        "no prazo de vigência do plano de entregas. Indica o nível de "
-        "progresso esperado em relação à meta definida",
-    )
-    percentual_progresso_realizado = Column(
-        Integer,
-        comment="Percentual de execução da meta da entrega alcançado no "
-        "prazo de vigência do plano de entregas. Indica o nível de "
-        "progresso alcançado em relação à meta definida",
+        comment='Qualificação do tipo da meta: "unidade" ou "percentual"',
     )
     data_entrega = Column(
         Date,
         nullable=False,
-        comment="Data em que a meta de entrega será alcançada",
+        comment="Data em que a meta de entrega será alcançada, no momento do "
+        "planejamento.",
     )
-    nome_demandante = Column(
+    nome_unidade_demandante = Column(
         String,
         nullable=False,
-        comment="Nome da unidade que demandou a execução da entrega",
+        comment="Nome da unidade que demandou a execução da entrega.",
     )
-    nome_destinatario = Column(
+    nome_unidade_destinataria = Column(
         String,
         nullable=False,
-        comment="Nome do destinatário ou beneficiário da entrega",
-    )
-    data_atualizacao = Column(DateTime)
-    data_insercao = Column(DateTime, nullable=False)
-    plano_entregas = relationship(
-        "PlanoEntregas",
-        back_populates="entregas",
-        lazy="joined",
-    )
-    __table_args__ = (
-        ForeignKeyConstraint(
-            [id_plano_entrega_unidade, cod_SIAPE_instituidora],
-            [
-                "plano_entregas.id_plano_entrega_unidade",
-                "plano_entregas.cod_SIAPE_instituidora",
-            ],
-        ),
+        comment="Nome da unidade destinatária ou beneficiária da entrega.",
     )
 
 
