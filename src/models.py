@@ -210,62 +210,101 @@ class Entrega(Base):
 class PlanoTrabalho(Base):
     "Plano de Trabalho do participante"
     __tablename__ = "plano_trabalho"
-    cod_SIAPE_instituidora = Column(
-        Integer,
-        primary_key=True,
-        index=True,
+
+    id = Column(Integer, primary_key=True, index=True)
+    origem_unidade = Column(
+        String,
         nullable=False,
-        comment="Código da unidade organizacional (UORG) no "
-        "Sistema Integrado de Administração de Recursos Humanos "
-        "(Siape) corresponde à Unidade de Instituição",
+        comment="Código do sistema da unidade: \"SIAPE\" ou \"SIORG\".",
     )
-    id_plano_trabalho_participante = Column(
-        Integer,
-        primary_key=True,
-        index=True,
-        nullable=False,
-        comment="Identificador único do plano de trabalho",
-    )
-    cancelado = Column(
-        Boolean,
-        comment="TRUE se o plano tiver sido cancelado; FALSE caso contrário. "
-        "O valor padrão é FALSE. A ausência do atributo ou NULL "
-        "deve ser interpretada como FALSE.",
-    )
-    id_plano_entrega_unidade = Column(
+    cod_unidade_autorizadora = Column(
         Integer,
         nullable=False,
-        comment="Identificador único do plano de entregas",
+        comment="""
+        Código da unidade organizacional (UORG) no Sistema
+        Integrado de Administração de Recursos Humanos (Siape)
+        corresponde à Unidade de autorização. Referente ao artigo
+        3º do Decreto nº 11.072, de 17 de maio de 2022. De forma
+        geral, são os "Ministros de Estado, os dirigentes máximos
+        dos órgãos diretamente subordinados ao Presidente da
+        República e as autoridades máximas das entidades". Em
+        termos de SIAPE, geralmente é o código Uorg Lv1. O
+        próprio Decreto, contudo, indica que tal autoridade
+        poderá ser delegada a dois níveis hierárquicos
+        imediatamente inferiores, ou seja, para Uorg Lv2 e Uorg
+        Lv3. Haverá situações, portanto, em que uma unidade do
+        Uorg Lv1 de nível 2 ou 3 poderá enviar dados diretamente
+        para API.
+        """,
     )
-    cod_SIAPE_unidade_exercicio = Column(
+    id_plano_trabalho = Column(
+        String, nullable=False, comment="Identificador único do plano de trabalho."
+    )
+    status = Column(
         Integer,
         nullable=False,
-        comment="Código da unidade organizacional (UORG) no Sistema Integrado "
-        "de Administração de Recursos Humanos (Siape) onde o participante "
-        "se encontra formalmente em exercício",
+        comment="""
+        Indica qual o status do plano de trabalho. O código deve
+        corresponder às seguintes categorias:
+
+        Cancelado
+        Aprovado
+        Em execução
+        Concluído
+
+        O status "2" refere-se ao inciso II do art. 17 da IN nº 24/2023,
+        ou seja, com a pactuação entre chefia e participante do plano
+        de trabalho.
+        O status "3" refere-se ao art. 20 da IN SEGES-SGPRT/MGi nº 24/2022
+        O status "4" (Concluído) indica que os registros de execução do
+        plano de trabalho foram inseridos e encaminhados para avaliação.
+
+        Regras de validação: É obrigatório o envio dos planos nos status
+        "3" e "4". Os planos nos demais status não precisam
+        necessariamente ser enviados.
+        """,
+    )
+    cod_unidade_executora = Column(
+        Integer,
+        nullable=False,
+        comment="""
+        Código da unidade organizacional (UORG) no Sistema
+        Integrado de Administração de Recursos Humanos (SIAPE)
+        corresponde à Unidade de Execução. Qualquer unidade da
+        estrutura administrativa que tenha plano de entregas
+        pactuado.
+        """,
     )
     cpf_participante = Column(
         String,
-        # ForeignKey("status_participante.cpf_participante"),
         nullable=False,
-        comment="Número do CPF do participante responsável pelo " "plano de trabalho",
+        comment="Número do CPF do participante responsável pelo plano de trabalho.",
     )
-    data_inicio_plano = Column(
+    matricula_siape = Column(
+        String,
+        nullable=False,
+        comment="Número da matrícula do participante no Sistema Integrado de "
+        "Administração de Recursos Humanos (SIAPE).",
+    )
+    data_inicio = Column(
         Date,
         nullable=False,
-        comment="Data de início da vigência do plano de trabalho do " "participante.",
+        comment="Data de início do plano de trabalho do participante. "
+        "Regras de validação: deve ser posterior à \"data_assinatura_tcr\" "
+        "e à \"data_inicio\" do \"plano_entregas\".",
     )
-    data_termino_plano = Column(
+    data_termino = Column(
         Date,
         nullable=False,
-        comment="Data de término da vigência do plano de trabalho do " "participante",
+        comment="Data de término do plano de trabalho do participante. "
+        "Regras de validação: deve ser posterior à \"data_inicio\".",
     )
-    carga_horaria_total_periodo_plano = Column(
+    carga_horaria_disponivel = Column(
         Integer,
         nullable=False,
-        comment="Carga horária útil total do participante disponível no "
-        "período de vigência do plano de trabalho. Não inclui "
-        "períodos de férias,  ocorrências e afastamentos",
+        comment="Carga horária total do participante disponível no período de "
+        "vigência do plano de trabalho. Não inclui períodos de férias, "
+        "ocorrências e afastamentos.",
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
@@ -276,27 +315,14 @@ class PlanoTrabalho(Base):
         passive_deletes=True,
         cascade="save-update, merge, delete, delete-orphan",
     )
-    consolidacoes = relationship(
-        "Consolidacao",
+    avaliacao_registros_execucao = relationship(
+        "AvaliacaoRegistrosExecucao",
         back_populates="plano_trabalho",
         lazy="joined",
         passive_deletes=True,
         cascade="save-update, merge, delete, delete-orphan",
     )
-    __table_args__ = (
-        UniqueConstraint(
-            "cod_SIAPE_instituidora",
-            "id_plano_trabalho_participante",
-            name="_instituidora_plano_trabalho_uc",
-        ),
-        ForeignKeyConstraint(
-            [id_plano_entrega_unidade, cod_SIAPE_instituidora],
-            [
-                "plano_entregas.id_plano_entrega_unidade",
-                "plano_entregas.cod_SIAPE_instituidora",
-            ],
-        ),
-    )
+
 
 
 class TipoContribuicao(enum.IntEnum):
