@@ -142,8 +142,9 @@ class PlanoEntregas(Base):
     )
     __table_args__ = (
         UniqueConstraint(
+            "origem_unidade",
             "cod_unidade_autorizadora",
-            "id_plano_entrega_unidade",
+            "id_plano_entrega",
             name="_instituidora_plano_entregas_uc",
         ),
     )
