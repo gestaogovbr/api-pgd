@@ -285,9 +285,7 @@ class TestCreatePlanoTrabalho(BasePTTest):
         for field in field_list:
             del input_pt[field]
 
-        input_pt["id_plano_trabalho"] = (
-            f"{1800 + offset}"  # precisa ser um novo plano
-        )
+        input_pt["id_plano_trabalho"] = f"{1800 + offset}"  # precisa ser um novo plano
 
         # Act
         response = self.create_pt(input_pt)
@@ -313,6 +311,32 @@ class TestCreatePlanoTrabalho(BasePTTest):
         detail_message = "Parâmetro id_plano_trabalho na URL e no JSON devem ser iguais"
         assert response.json().get("detail", None) == detail_message
 
+    @pytest.mark.parametrize("carga_horaria_disponivel", [-2, -1])
+    def test_create_pt_invalid_carga_horaria_disponivel(self, carga_horaria_disponivel):
+        """Testa a criação de um plano de trabalho com um valor inválido para
+        o campo carga_horaria_disponivel.
+
+        O teste envia uma requisição PUT para a rota
+        "/organizacao/SIAPE/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}"
+        com um valor negativo para o campo carga_horaria_disponivel.
+        Espera-se que a resposta tenha o status HTTP 422 Unprocessable Entity
+        e que a mensagem de erro "Valor de carga_horaria_disponivel deve ser
+        maior ou igual a zero" esteja presente na resposta.
+        """
+        # Arrange
+        input_pt = self.input_pt.copy()
+        input_pt["carga_horaria_disponivel"] = carga_horaria_disponivel
+
+        # Act
+        response = self.create_pt(input_pt)
+
+        # Assert
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_message = (
+            "Valor de carga_horaria_disponivel deve ser maior ou igual a zero"
+        )
+        assert_error_message(response, detail_message)
+
 
 class TestUpdatePlanoDeTrabalho(BasePTTest):
     """Testes para atualizar um Plano de Trabalho existente.
@@ -328,13 +352,12 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
     def create_example(
         self,
         example_pt,  # pylint: disable=unused-argument
-        ):
+    ):
         """Configurar o ambiente de teste.
 
         Args:
             example_pt (callable): Fixture que cria exemplo de PT.
         """
-
 
     def test_update_plano_trabalho(self):
         """Atualiza um Plano de Trabalho existente usando o método HTTP
@@ -451,6 +474,7 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
 
 class TestGetPT(BasePTTest):
     """Testes para consultar um Plano de Trabalho."""
+
     def test_get_plano_trabalho(self):
         """Consulta um plano de trabalho existente."""
         # Inclui os campos de resposta do json que não estavam no template
@@ -476,38 +500,6 @@ class TestGetPT(BasePTTest):
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
-
-
-@pytest.mark.parametrize("carga_horaria_disponivel", [-2, -1])
-def test_create_pt_invalid_carga_horaria_disponivel(
-    input_pt: dict,
-    carga_horaria_disponivel: int,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    truncate_pt,  # pylint: disable=unused-argument
-    client: Client,
-):
-    """Testa a criação de um plano de trabalho com um valor inválido para
-    o campo carga_horaria_disponivel.
-
-    O teste envia uma requisição PUT para a rota
-    "/organizacao/SIAPE/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}"
-    com um valor negativo para o campo carga_horaria_disponivel.
-    Espera-se que a resposta tenha o status HTTP 422 Unprocessable Entity
-    e que a mensagem de erro "Valor de carga_horaria_disponivel deve ser
-    maior ou igual a zero" esteja presente na resposta.
-    """
-    input_pt["carga_horaria_disponivel"] = carga_horaria_disponivel
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
-
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_message = "Valor de carga_horaria_disponivel deve ser maior ou igual a zero"
-    assert_error_message(response, detail_message)
 
 
 @pytest.mark.parametrize(
