@@ -475,46 +475,51 @@ class Contribuicao(Base):
     )
 
 
-class Consolidacao(Base):
-    "Consolidação (registro) de execução do Plano de Trabalho"
-    __tablename__ = "consolidacao"
-    id = Column(
-        Integer, primary_key=True, index=True, autoincrement=True, nullable=False
-    )
-    cod_SIAPE_instituidora = Column(
-        Integer,
+class AvaliacaoRegistrosExecucao(Base):
+    "Avaliação de Registros de Execução"
+    __tablename__ = "avaliacao_registros_execucao"
+    id_periodo_avaliativo = Column(
+        String,
         primary_key=True,
         index=True,
         nullable=False,
-        comment="Código da unidade organizacional (UORG) no "
-        "Sistema Integrado de Administração de Recursos Humanos "
-        "(Siape) corresponde à Unidade de Instituição",
+        comment="Identificador único do período avaliativo contendo o registro de "
+        "execução do plano de trabalho.",
     )
-    id_plano_trabalho_participante = Column(
-        Integer,
-        nullable=False,
-        comment="Identificador único do plano de trabalho",
-    )
-    data_inicio_registro = Column(
+    data_inicio_periodo_avaliativo = Column(
         Date,
         nullable=False,
-        comment="Data de início do registro das informações do plano de trabalho",
+        comment="Início do período avaliativo. Regras de validação: deve ser "
+        "posterior à “data_inicio” do “plano_trabalho”",
     )
-    data_fim_registro = Column(
+    data_fim_periodo_avaliativo = Column(
         Date,
         nullable=False,
-        comment="Data final de registro das informações do plano de trabalho",
+        comment="Fim do período avaliativo. Regras de validação: deve ser "
+        "posterior à “data_inicio_periodo_avaliativo”",
     )
-    avaliacao_plano_trabalho = Column(
+    avaliacao_registros_execucao = Column(
         Integer,
-        comment="Avaliação do plano de trabalho do participante pela chefia da "
-        "unidade de execução ou a quem ela delegar, em até vinte dias após a "
-        "data limite do registro feito pelo participante, em uma das seguintes escalas:\n\n\n"
-        "I - excepcional: plano de trabalho executado muito acima do esperado;\n\n"
-        "II - alto desempenho: plano de trabalho executado acima do esperado;\n\n"
-        "III - adequado: plano de trabalho executado dentro do esperado;\n\n"
-        "IV - inadequado: plano de trabalho executado abaixo do esperado ou parcialmente executado;\n\n"
-        "V - não executado: plano de trabalho integralmente não executado",
+        nullable=False,
+        comment=dedent(
+            """
+            Avaliação dos registros de execução do plano de trabalho no
+            respectivo período avaliativo, em uma das seguintes escalas:
+
+            1. excepcional: plano de trabalho executado muito acima do esperado;
+            2. alto desempenho: plano de trabalho executado acima do esperado;
+            3. adequado: plano de trabalho executado dentro do esperado;
+            4. inadequado: plano de trabalho executado abaixo do esperado ou 
+            parcialmente executado;
+            5. não executado: plano de trabalho integralmente não executado."""
+        ),
+    )
+    data_avaliacao_registros_execucao = Column(
+        Date,
+        nullable=False,
+        comment="Data em que foi realizada avaliação dos registros de execução do "
+        "plano de trabalho no período avaliativo. Regras de validação: deve ser "
+        "posterior à “data_inicio_periodo_avaliativo”",
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
@@ -523,12 +528,23 @@ class Consolidacao(Base):
         back_populates="consolidacoes",
         lazy="joined",
     )
+    # campos implícitos a partir do relacionamento
+    cod_unidade_autorizadora = Column(
+        Integer,
+        nullable=False,
+        comment="cod_unidade_autorizadora do Plano de Trabalho (FK)",
+    )
+    id_plano_trabalho = Column(
+        String,
+        nullable=False,
+        comment="id_plano_trabalho do Plano de Trabalho (FK)",
+    )
     __table_args__ = (
         ForeignKeyConstraint(
-            [cod_SIAPE_instituidora, id_plano_trabalho_participante],
+            [cod_unidade_autorizadora, id_plano_trabalho],
             [
-                "plano_trabalho.cod_SIAPE_instituidora",
-                "plano_trabalho.id_plano_trabalho_participante",
+                "plano_trabalho.cod_unidade_autorizadora",
+                "plano_trabalho.id_plano_trabalho",
             ],
         ),
     )
