@@ -601,11 +601,13 @@ class Participante(Base):
     __tablename__ = "participante"
     origem_unidade = Column(
         String,
+        primary_key=True,
         nullable=False,
         comment='Código do sistema da unidade: "SIAPE" ou "SIORG".',
     )
     cod_unidade_autorizadora = Column(
         Integer,
+        primary_key=True,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema Integrado de "
         "Administração de Recursos Humanos (SIAPE) corresponde à Unidade de "
@@ -624,6 +626,7 @@ class Participante(Base):
     )
     cod_unidade_lotacao = Column(
         Integer,
+        primary_key=True,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema Integrado de "
         "Administração de Recursos Humanos (SIAPE) corresponde à unidade de "
@@ -632,12 +635,14 @@ class Participante(Base):
     )
     cpf = Column(
         String,
+        primary_key=True,
         nullable=False,
         comment="Número do CPF do agente público selecionado para PGD, sem "
         "pontos, hífen ou caracteres especiais.",
     )
     matricula_siape = Column(
         String,
+        primary_key=True,
         nullable=False,
         comment="Número da matrícula do participante no Sistema Integrado de "
         "Administração de Recursos Humanos (SIAPE).",
