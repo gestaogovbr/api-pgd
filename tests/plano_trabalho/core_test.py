@@ -337,6 +337,59 @@ class TestCreatePlanoTrabalho(BasePTTest):
         )
         assert_error_message(response, detail_message)
 
+    @pytest.mark.parametrize(
+        "cpf_participante",
+        [
+            ("11111111111"),
+            ("22222222222"),
+            ("33333333333"),
+            ("44444444444"),
+            ("04811556435"),
+            ("444-444-444.44"),
+            ("-44444444444"),
+            ("444444444"),
+            ("-444 4444444"),
+            ("4811556437"),
+            ("048115564-37"),
+            ("04811556437     "),
+            ("    04811556437     "),
+            (""),
+        ],
+    )
+    def test_put_plano_trabalho_invalid_cpf(self, cpf_participante):
+        """Testa o envio de um plano de trabalho com um CPF inválido.
+
+        O teste envia uma requisição PUT para a rota
+        "/organizacao/SIAPE/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}"
+        com um valor inválido para o campo cpf_participante. Espera-se que a
+        resposta tenha o status HTTP 422 Unprocessable Entity e que uma das
+        seguintes mensagens de erro esteja presente na resposta:
+        - "Dígitos verificadores do CPF inválidos."
+        - "CPF inválido."
+        - "CPF precisa ter 11 dígitos."
+        - "CPF deve conter apenas dígitos."
+        """
+        # Arrange
+        input_pt = self.input_pt.copy()
+        input_pt["cpf_participante"] = cpf_participante
+
+        # Act
+        response = self.create_pt(input_pt)
+
+        # Assert
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_messages = [
+            "Dígitos verificadores do CPF inválidos.",
+            "CPF inválido.",
+            "CPF precisa ter 11 dígitos.",
+            "CPF deve conter apenas dígitos.",
+        ]
+        assert any(
+            f"Value error, {message}" in error["msg"]
+            for message in detail_messages
+            for error in response.json().get("detail")
+        )
+
 
 class TestUpdatePlanoDeTrabalho(BasePTTest):
     """Testes para atualizar um Plano de Trabalho existente.
@@ -500,62 +553,3 @@ class TestGetPT(BasePTTest):
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
-
-
-@pytest.mark.parametrize(
-    "cpf_participante",
-    [
-        ("11111111111"),
-        ("22222222222"),
-        ("33333333333"),
-        ("44444444444"),
-        ("04811556435"),
-        ("444-444-444.44"),
-        ("-44444444444"),
-        ("444444444"),
-        ("-444 4444444"),
-        ("4811556437"),
-        ("048115564-37"),
-        ("04811556437     "),
-        ("    04811556437     "),
-        (""),
-    ],
-)
-def test_put_plano_trabalho_invalid_cpf(
-    input_pt: dict,
-    cpf_participante: str,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    truncate_pt,  # pylint: disable=unused-argument
-    client: Client,
-):
-    """Testa o envio de um plano de trabalho com um CPF inválido.
-
-    O teste envia uma requisição PUT para a rota
-    "/organizacao/SIAPE/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}"
-    com um valor inválido para o campo cpf_participante. Espera-se que a
-    resposta tenha o status HTTP 422 Unprocessable Entity e que uma das
-    seguintes mensagens de erro esteja presente na resposta: - "Dígitos
-    verificadores do CPF inválidos." - "CPF inválido." - "CPF precisa ter
-    11 dígitos." - "CPF deve conter apenas dígitos."
-    """
-    input_pt["cpf_participante"] = cpf_participante
-
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        json=input_pt,
-        headers=header_usr_1,
-    )
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_messages = [
-        "Dígitos verificadores do CPF inválidos.",
-        "CPF inválido.",
-        "CPF precisa ter 11 dígitos.",
-        "CPF deve conter apenas dígitos.",
-    ]
-    assert any(
-        f"Value error, {message}" in error["msg"]
-        for message in detail_messages
-        for error in response.json().get("detail")
-    )
