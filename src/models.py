@@ -30,7 +30,7 @@ class PlanoEntregas(Base):
     origem_unidade = Column(
         String,
         nullable=False,
-        comment='Código do sistema da unidade: "SIAPE" ou "SIORG"',
+        comment="Código do sistema da unidade: “SIAPE” ou “SIORG”",
     )
     cod_unidade_autorizadora = Column(
         Integer,
@@ -103,7 +103,7 @@ class PlanoEntregas(Base):
         Date,
         nullable=False,
         comment="Data de término da vigência do plano de entregas. Deve "
-        'ser depois da "data_inicio_plano_entregas".',
+        "ser depois da “data_inicio_plano_entregas”.",
     )
     avaliacao = Column(
         Integer,
@@ -214,6 +214,11 @@ class Entrega(Base):
         lazy="joined",
     )
     # campos implícitos a partir do relacionamento
+    origem_unidade = Column(
+        String,
+        nullable=False,
+        comment="origem_unidade do Plano de Entregas (FK)",
+    )
     cod_unidade_autorizadora = Column(
         Integer,
         nullable=False,
@@ -224,8 +229,9 @@ class Entrega(Base):
     )
     __table_args__ = (
         ForeignKeyConstraint(
-            [cod_unidade_autorizadora, id_plano_entrega],
+            [origem_unidade, cod_unidade_autorizadora, id_plano_entrega],
             [
+                "plano_entregas.origem_unidade",
                 "plano_entregas.cod_unidade_autorizadora",
                 "plano_entregas.id_plano_entrega",
             ],
@@ -339,12 +345,35 @@ class PlanoTrabalho(Base):
         passive_deletes=True,
         cascade="save-update, merge, delete, delete-orphan",
     )
-    avaliacao_registros_execucao = relationship(
+    avaliacoes_registros_execucao = relationship(
         "AvaliacaoRegistrosExecucao",
         back_populates="plano_trabalho",
         lazy="joined",
         passive_deletes=True,
         cascade="save-update, merge, delete, delete-orphan",
+    )
+    participante = relationship(
+        "Participante",
+        back_populates="planos_trabalho",
+        lazy="joined",
+    )
+    __table_args__ = (
+        ForeignKeyConstraint(
+            [
+                origem_unidade,
+                cod_unidade_autorizadora,
+                cod_unidade_executora,
+                cpf_participante,
+                matricula_siape,
+            ],
+            [
+                "participante.origem_unidade",
+                "participante.cod_unidade_autorizadora",
+                "participante.cod_unidade_lotacao",
+                "participante.cpf",
+                "participante.matricula_siape",
+            ],
+        ),
     )
 
 
@@ -458,15 +487,17 @@ class Contribuicao(Base):
     )
     __table_args__ = (
         ForeignKeyConstraint(
-            [cod_unidade_autorizadora, id_plano_trabalho],
+            [origem_unidade, cod_unidade_autorizadora, id_plano_trabalho],
             [
+                "plano_trabalho.origem_unidade",
                 "plano_trabalho.cod_unidade_autorizadora",
                 "plano_trabalho.id_plano_trabalho",
             ],
         ),
         ForeignKeyConstraint(
-            [cod_unidade_autorizadora, id_plano_entrega, id_entrega],
+            [origem_unidade, cod_unidade_autorizadora, id_plano_entrega, id_entrega],
             [
+                "entrega.origem_unidade",
                 "entrega.cod_unidade_autorizadora",
                 "entrega.id_plano_entrega",
                 "entrega.id_entrega",
@@ -525,10 +556,15 @@ class AvaliacaoRegistrosExecucao(Base):
     data_insercao = Column(DateTime, nullable=False)
     plano_trabalho = relationship(
         "PlanoTrabalho",
-        back_populates="consolidacoes",
+        back_populates="avaliacoes_registros_execucao",
         lazy="joined",
     )
     # campos implícitos a partir do relacionamento
+    origem_unidade = Column(
+        String,
+        nullable=False,
+        comment="origem_unidade do Plano de Entregas (FK)",
+    )
     cod_unidade_autorizadora = Column(
         Integer,
         nullable=False,
@@ -541,8 +577,9 @@ class AvaliacaoRegistrosExecucao(Base):
     )
     __table_args__ = (
         ForeignKeyConstraint(
-            [cod_unidade_autorizadora, id_plano_trabalho],
+            [origem_unidade, cod_unidade_autorizadora, id_plano_trabalho],
             [
+                "plano_trabalho.origem_unidade",
                 "plano_trabalho.cod_unidade_autorizadora",
                 "plano_trabalho.id_plano_trabalho",
             ],
