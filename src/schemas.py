@@ -5,8 +5,9 @@ A principal ferramenta de validação de dados usada no FastAPI é o
 Pydantic: https://docs.pydantic.dev/2.0/
 """
 
-from typing import List, Optional
 from datetime import date
+from textwrap import dedent
+from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from pydantic import model_validator, field_validator
@@ -333,13 +334,12 @@ class PlanoEntregasSchema(BaseModel):
         title="Id do plano de entregas da unidade",
         description=PlanoEntregas.id_plano_entrega_unidade.comment,
     )
-    cancelado: Optional[bool] = Field(
-        default=False,
-        title="Plano cancelado",
-        description=PlanoEntregas.cancelado.comment,
+    status: int = Field(
+        title="Status do plano de entregas",
+        description=PlanoEntregas.status.comment,
     )
     data_inicio_plano_entregas: date = Field(
-        title="Data de início estipulada no plano de entregas",
+        title="Data de início do plano de entregas",
         description=PlanoEntregas.data_inicio_plano_entregas.comment,
     )
     data_termino_plano_entregas: date = Field(
@@ -365,79 +365,39 @@ class PlanoEntregasSchema(BaseModel):
         description="Lista de entregas associadas ao Plano de Entregas",
     )
 
-    @field_validator("avaliacao_plano_entregas")
-    @staticmethod
-    def must_be_between(avaliacao_plano_entregas: int) -> int:
-        if (
-            avaliacao_plano_entregas is not None
-            and avaliacao_plano_entregas not in range(1, 6)
+    @field_validator("status")
+    def validate_status(self, v):
+        if v not in range(1, 6):
+            raise ValueError("Status inválido; permitido: 1, 2, 3, 4, 5")
+        if v == 5 and (
+            self.avaliacao_plano_entregas is None
+            or self.data_avaliacao_plano_entregas is None
         ):
-            raise ValueError("Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5")
-        return avaliacao_plano_entregas
+            raise ValueError(
+                "Status 5 (Avaliado) requer avaliacao_plano_entregas e "
+                "data_avaliacao_plano_entregas preenchidos"
+            )
+        return v
 
     @field_validator("cod_SIAPE_instituidora", "cod_SIAPE_unidade_plano")
-    @staticmethod
-    def must_be_positive(cod_unidade: int) -> int:
-        if cod_unidade < 1:
+    def validate_cod_SIAPE(self, v):
+        if v < 1:
             raise ValueError("cod_SIAPE inválido")
-        return cod_unidade
+        return v
 
-    @model_validator(mode="after")
-    def must_be_unique(self) -> "PlanoEntregasSchema":
-        entregas_list = []
-        for entrega in self.entregas:
-            entregas_list.append(entrega.id_entrega)
-
-        if any(entregas_list.count(x) > 1 for x in entregas_list):
-            raise ValueError("Entregas devem possuir id_entrega diferentes")
-        return self
-
-    @model_validator(mode="after")
-    def year_interval(self) -> "PlanoEntregasSchema":
-        if (
-            over_a_year(
-                self.data_termino_plano_entregas, self.data_inicio_plano_entregas
-            )
-            == 1
-        ):
-            raise ValueError(
-                "Plano de entregas não pode abranger período maior que 1 ano."
-            )
-        return self
-
-    @model_validator(mode="after")
-    def must_be_proper_period(self) -> "PlanoEntregasSchema":
-        if self.data_termino_plano_entregas < self.data_inicio_plano_entregas:
+    @field_validator("data_termino_plano_entregas")
+    def validate_data_termino(self, v, values):
+        if v < values["data_inicio_plano_entregas"]:
             raise ValueError(
                 "data_termino_plano_entregas deve ser maior ou igual que "
-                "data_inicio_plano_entregas."
+                "data_inicio_plano_entregas"
             )
-        return self
+        return v
 
-    @model_validator(mode="after")
-    def must_be_sequential_dates(self) -> "PlanoEntregasSchema":
-        if (self.data_avaliacao_plano_entregas is not None) and (
-            self.data_avaliacao_plano_entregas < self.data_inicio_plano_entregas
-        ):
-            raise ValueError(
-                "Data de avaliação do Plano de Entrega deve ser maior ou igual"
-                " que a Data de início do Plano de Entrega."
-            )
-        return self
-
-    @model_validator(mode="after")
-    def must_be_in_period(self) -> "PlanoEntregasSchema":
-        if any(
-            entrega.data_entrega < self.data_inicio_plano_entregas
-            or entrega.data_entrega > self.data_termino_plano_entregas
-            for entrega in self.entregas
-            if entrega.data_entrega is not None
-        ):
-            raise ValueError(
-                "Data de entrega precisa estar dentro do intervalo entre "
-                "início e término do Plano de Entregas."
-            )
-        return self
+    @field_validator("data_avaliacao_plano_entregas")
+    def validate_data_avaliacao(self, v, values):
+        if v is not None and v < values["data_inicio_plano_entregas"]:
+            raise ValueError
 
 
 class StatusParticipanteSchema(BaseModel):
