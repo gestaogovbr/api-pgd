@@ -126,18 +126,25 @@ class ContribuicaoSchema(BaseModel):
             raise ValueError("Tipo de contribuição inválido; permitido: 1 a 3")
         return v
 
-    @model_validator
-    def validate_cod_unidade_autorizadora_externa(self) -> "ContribuicaoSchema":
+    @model_validator(mode="after")
+    def validate_tipo_contribuicao_entrega_outra_unidade(self) -> "ContribuicaoSchema":
         "Valida se o campo cod_unidade_autorizadora_externa deve ser preenchido."
-        if self.tipo_contribuicao == TipoContribuicao.entrega_outra_unidade and (
-            self.id_plano_entrega is None or self.id_entrega is None
-        ):
+        if self.tipo_contribuicao == TipoContribuicao.entrega_outra_unidade and \
+            not all(self.id_plano_entrega, self.id_entrega, self.cod_unidade_autorizadora_externa):
             raise ValueError(
-                "cod_unidade_autorizadora_externa precisa ser preenchido "
-                "quando tipo_contribuicao é 3 e id_plano_entrega e id_entrega "
-                "não são None"
+                "cod_unidade_autorizadora_externa, id_plano_entrega e id_entrega "
+                "precisam ser preenchidos quando tipo_contribuicao é 3"
             )
+        return self
 
+    @model_validator(mode="after")
+    def validate_cod_unidade_autorizadora_externa(self) -> "ContribuicaoSchema":
+        if self.tipo_contribuicao != TipoContribuicao.entrega_outra_unidade and \
+            self.cod_unidade_autorizadora_externa is not None:
+            raise ValueError(
+                "cod_unidade_autorizadora_externa só pode ser utilizado se "
+                "tipo_contribuicao é 3"
+            )
         return self
 
     @field_validator("percentual_contribuicao")
@@ -235,7 +242,7 @@ class PlanoTrabalhoSchema(BaseModel):
     def cpf_part_validate(cpf_participante: str) -> str:
         return cpf_validate(cpf_participante)
 
-    @model_validator(mode="after")
+    @(mode="after")(mode="after")
     def year_interval(self) -> "PlanoTrabalhoSchema":
         if over_a_year(self.data_termino_plano, self.data_inicio_plano) == 1:
             raise ValueError(
