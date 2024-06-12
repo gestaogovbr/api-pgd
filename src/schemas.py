@@ -5,8 +5,8 @@ A principal ferramenta de validação de dados usada no FastAPI é o
 Pydantic: https://docs.pydantic.dev/2.0/
 """
 
-from datetime import date
-from typing import List, Optional
+from datetime import date, datetime
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from pydantic import model_validator, field_validator
@@ -129,8 +129,14 @@ class ContribuicaoSchema(BaseModel):
     @model_validator(mode="after")
     def validate_tipo_contribuicao_entrega_outra_unidade(self) -> "ContribuicaoSchema":
         "Valida se o campo cod_unidade_autorizadora_externa deve ser preenchido."
-        if self.tipo_contribuicao == TipoContribuicao.entrega_outra_unidade and \
-            not all(self.id_plano_entrega, self.id_entrega, self.cod_unidade_autorizadora_externa):
+        if (
+            self.tipo_contribuicao == TipoContribuicao.entrega_outra_unidade
+            and not all(
+                self.id_plano_entrega,
+                self.id_entrega,
+                self.cod_unidade_autorizadora_externa,
+            )
+        ):
             raise ValueError(
                 "cod_unidade_autorizadora_externa, id_plano_entrega e id_entrega "
                 "precisam ser preenchidos quando tipo_contribuicao é 3"
@@ -139,8 +145,10 @@ class ContribuicaoSchema(BaseModel):
 
     @model_validator(mode="after")
     def validate_cod_unidade_autorizadora_externa(self) -> "ContribuicaoSchema":
-        if self.tipo_contribuicao != TipoContribuicao.entrega_outra_unidade and \
-            self.cod_unidade_autorizadora_externa is not None:
+        if (
+            self.tipo_contribuicao != TipoContribuicao.entrega_outra_unidade
+            and self.cod_unidade_autorizadora_externa is not None
+        ):
             raise ValueError(
                 "cod_unidade_autorizadora_externa só pode ser utilizado se "
                 "tipo_contribuicao é 3"
@@ -156,140 +164,180 @@ class ContribuicaoSchema(BaseModel):
         return v
 
 
-class ConsolidacaoSchema(BaseModel):
-    __doc__ = Consolidacao.__doc__
-    model_config = ConfigDict(from_attributes=True)
-    data_inicio_registro: date = Field(
-        title="Data de início do registro",
-        description=Consolidacao.data_inicio_registro.comment,
+class AvaliacaoRegistrosExecucaoSchema(BaseModel):
+    "Modelo Pydantic para Avaliação de Registros de Execução."
+    __doc__ = AvaliacaoRegistrosExecucao.__doc__
+
+    id_periodo_avaliativo: str = Field(
+        title="Identificador do período avaliativo",
+        description=AvaliacaoRegistrosExecucao.id_periodo_avaliativo.comment,
     )
-    data_fim_registro: date = Field(
-        title="Data de fim do registro",
-        description=Consolidacao.data_fim_registro.comment,
+    data_inicio_periodo_avaliativo: date = Field(
+        title="Data de início do período avaliativo",
+        description=AvaliacaoRegistrosExecucao.data_inicio_periodo_avaliativo.comment,
     )
-    avaliacao_plano_trabalho: Optional[int] = Field(
+    data_fim_periodo_avaliativo: date = Field(
+        title="Data de fim do período avaliativo",
+        description=AvaliacaoRegistrosExecucao.data_fim_periodo_avaliativo.comment,
+    )
+    avaliacao_registros_execucao: int = Field(
+        title="Avaliação dos registros de execução",
+        description=AvaliacaoRegistrosExecucao.avaliacao_registros_execucao.comment,
+    )
+    data_avaliacao_registros_execucao: date = Field(
+        title="Data da avaliação dos registros de execução",
+        description=AvaliacaoRegistrosExecucao.data_avaliacao_registros_execucao.comment,
+    )
+    data_atualizacao: Optional[datetime] = Field(
+        title="Data de atualização",
+        description=AvaliacaoRegistrosExecucao.data_atualizacao.comment,
+    )
+    data_insercao: datetime = Field(
+        title="Data de inserção",
+        description=AvaliacaoRegistrosExecucao.data_insercao.comment,
+    )
+    plano_trabalho: Optional["PlanoTrabalhoSchema"] = Field(
         default=None,
-        title="Avaliação do plano de trabalho",
-        description=Consolidacao.avaliacao_plano_trabalho.comment,
+        title="Plano de Trabalho",
+        description="Plano de Trabalho associado à avaliação.",
     )
 
-    @field_validator("avaliacao_plano_trabalho")
+    @field_validator("avaliacao_registros_execucao")
     @staticmethod
-    def must_be_between(avaliacao_plano_trabalho: int) -> int:
+    def validate_avaliacao_registros_execucao(value: int) -> int:
+        """Valida a avaliação dos registros de execução."""
+        if value not in range(1, 6):
+            raise ValueError(
+                "Avaliação de registros de execução inválida; permitido: 1 a 5"
+            )
+        return value
+
+    @model_validator(mode="before")
+    @staticmethod
+    def validate_data_inicio_periodo_avaliativo(
+        values: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Valida se a data de início do período avaliativo é posterior à
+        data de início do Plano de Trabalho."""
         if (
-            avaliacao_plano_trabalho is not None
-            and avaliacao_plano_trabalho not in range(1, 6)
+            values.get("plano_trabalho", None)
+            and values["data_inicio_periodo_avaliativo"] < values["plano_trabalho"].data_inicio
         ):
             raise ValueError(
-                "Avaliação de plano de trabalho inválida; permitido: 1 a 5"
+                "A data de início do período avaliativo deve ser posterior à "
+                "data de início do Plano de Trabalho."
             )
-        return avaliacao_plano_trabalho
+        return values
+
+    @model_validator(mode="after")
+    def validate_data_fim_periodo_avaliativo(
+        self,
+    ) -> "AvaliacaoRegistrosExecucaoSchema":
+        """Valida se a data de fim do período avaliativo é posterior à
+        data de início do período avaliativo."""
+        if self.data_fim_periodo_avaliativo <= self.data_inicio_periodo_avaliativo:
+            raise ValueError(
+                "A data de fim do período avaliativo deve ser posterior à "
+                "data de início do período avaliativo."
+            )
+        return self
 
 
 class PlanoTrabalhoSchema(BaseModel):
+    """Modelo Pydantic para o Plano de Trabalho."""
+
     __doc__ = PlanoTrabalho.__doc__
     model_config = ConfigDict(from_attributes=True)
-    cod_SIAPE_instituidora: int = Field(
-        title="Código SIAPE da organização que instituiu o PGD",
-        description=PlanoTrabalho.cod_SIAPE_instituidora.comment,
+
+    origem_unidade: str = Field(
+        title="Origem da unidade",
+        description=PlanoTrabalho.origem_unidade.comment,
     )
-    id_plano_trabalho_participante: int = Field(
-        title="Id do Plano de Trabalho",
-        description=PlanoTrabalho.id_plano_trabalho_participante.comment,
+    cod_unidade_autorizadora: int = Field(
+        title="Código da unidade autorizadora",
+        description=PlanoTrabalho.cod_unidade_autorizadora.comment,
     )
-    id_plano_entrega_unidade: int = Field(
-        title="Id do Plano de Entregas da unidade",
-        description=PlanoTrabalho.id_plano_entrega_unidade.comment,
+    id_plano_trabalho: str = Field(
+        title="Identificador único do plano de trabalho",
+        description=PlanoTrabalho.id_plano_trabalho.comment,
     )
-    cancelado: Optional[bool] = Field(
-        default=False,
-        title="Plano cancelado",
-        description=PlanoTrabalho.cancelado.comment,
+    status: int = Field(
+        title="Status do plano de trabalho",
+        description=PlanoTrabalho.status.comment,
     )
-    cod_SIAPE_unidade_exercicio: int = Field(
-        title="Código SIAPE da unidade de exercício do participante",
-        description=PlanoTrabalho.id_plano_entrega_unidade.comment,
+    cod_unidade_executora: int = Field(
+        title="Código da unidade executora",
+        description=PlanoTrabalho.cod_unidade_executora.comment,
     )
     cpf_participante: str = Field(
-        title="Número do CPF do participante",
+        title="CPF do participante",
         description=PlanoTrabalho.cpf_participante.comment,
     )
-    data_inicio_plano: date = Field(
-        title="Data de início do plano",
-        description=PlanoTrabalho.data_inicio_plano.comment,
+    matricula_siape: str = Field(
+        title="Matrícula SIAPE do participante",
+        description=PlanoTrabalho.matricula_siape.comment,
     )
-    data_termino_plano: date = Field(
-        title="Data de término do plano",
-        description=PlanoTrabalho.data_termino_plano.comment,
+    data_inicio: date = Field(
+        title="Data de início do plano de trabalho",
+        description=PlanoTrabalho.data_inicio.comment,
     )
-    carga_horaria_total_periodo_plano: int = Field(
-        title="Carga horária total do período do plano de trabalho",
-        description=PlanoTrabalho.carga_horaria_total_periodo_plano.comment,
+    data_termino: date = Field(
+        title="Data de término do plano de trabalho",
+        description=PlanoTrabalho.data_termino.comment,
+    )
+    carga_horaria_disponivel: int = Field(
+        title="Carga horária disponível do participante",
+        description=PlanoTrabalho.carga_horaria_disponivel.comment,
+    )
+    data_atualizacao: Optional[datetime] = Field(
+        title="Data de atualização",
+        description=PlanoTrabalho.data_atualizacao.comment,
+    )
+    data_insercao: datetime = Field(
+        title="Data de inserção",
+        description=PlanoTrabalho.data_insercao.comment,
     )
     contribuicoes: Optional[List[ContribuicaoSchema]] = Field(
         default=None,
         title="Contribuições",
         description="Lista de Contribuições planejadas para o Plano de Trabalho.",
     )
-    consolidacoes: Optional[List[ConsolidacaoSchema]] = Field(
+    avaliacoes_registros_execucao: Optional[List[AvaliacaoRegistrosExecucaoSchema]] = (
+        Field(
+            default=None,
+            title="Avaliações de registros de execução",
+            description="Lista de avaliações de registros de execução do Plano de Trabalho.",
+        )
+    )
+    participante: Optional["Participante"] = Field(
         default=None,
-        title="Consolidações",
-        description="Lista de Consolidações (registros) de execução do Plano de Trabalho.",
+        title="Participante",
+        description="Informações do participante do Plano de Trabalho.",
     )
 
     @field_validator("cpf_participante")
     @staticmethod
     def cpf_part_validate(cpf_participante: str) -> str:
+        """Valida o CPF do participante."""
         return cpf_validate(cpf_participante)
 
-    @(mode="after")(mode="after")
+    @model_validator(mode="after")
     def year_interval(self) -> "PlanoTrabalhoSchema":
-        if over_a_year(self.data_termino_plano, self.data_inicio_plano) == 1:
+        """Garante que o plano não abrange um período maior que 1 ano."""
+        if over_a_year(self.data_termino, self.data_inicio) == 1:
             raise ValueError(
-                "Plano de trabalho não pode abranger período maior que 1 ano."
+                "Plano de trabalho não pode abranger período maior que 1 ano"
             )
         return self
 
     @model_validator(mode="after")
-    def must_be_sequencial_dates(self) -> "PlanoTrabalhoSchema":
-        if self.data_inicio_plano > self.data_termino_plano:
+    def must_be_sequential_dates(self) -> "PlanoTrabalhoSchema":
+        "Verifica se a data de início e a data de término estão na ordem esperada."
+        if self.data_inicio > self.data_termino:
             raise ValueError(
-                "Data fim do Plano de Trabalho deve ser maior "
-                "ou igual que Data de início."
+                "data_termino do Plano de Trabalho deve ser maior "
+                "ou igual que data_inicio"
             )
-        return self
-
-    @model_validator(mode="after")
-    def consolidacao_must_be_in_period(self) -> "PlanoTrabalhoSchema":
-        if self.consolidacoes is not None and any(
-            (consolidacao.data_inicio_registro < self.data_inicio_plano)
-            or (consolidacao.data_fim_registro > self.data_termino_plano)
-            for consolidacao in self.consolidacoes
-        ):
-            raise ValueError(
-                "Data de início e de fim de registro devem estar contidos "
-                "no período do Plano de Trabalho."
-            )
-        return self
-
-    @model_validator(mode="after")
-    def consolidacao_must_not_overlap(self):
-        if self.consolidacoes is None:
-            return self
-        consolidacoes = sorted(
-            self.consolidacoes,
-            key=lambda consolidacao: consolidacao.data_inicio_registro,
-        )
-        # parear de 2 a 2
-        for consolidacao1, consolidacao2 in zip(consolidacoes[:-1], consolidacoes[1:]):
-            if (
-                consolidacao1.data_inicio_registro < consolidacao2.data_fim_registro
-                and consolidacao1.data_fim_registro > consolidacao2.data_inicio_registro
-            ):
-                raise ValueError(
-                    "Uma ou mais consolidações possuem "
-                    "data_inicio_registro e data_fim_registro sobrepostas."
-                )
         return self
 
 
