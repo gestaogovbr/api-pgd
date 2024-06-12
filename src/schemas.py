@@ -20,6 +20,7 @@ from models import (
     TipoContribuicao,
     AvaliacaoRegistrosExecucao,
     Participante,
+    ModalidadesExecucao,
     Users,
 )
 from util import over_a_year
@@ -490,94 +491,69 @@ class PlanoEntregasSchema(BaseModel):
             raise ValueError
 
 
-class StatusParticipanteSchema(BaseModel):
-    __doc__ = StatusParticipante.__doc__
-    model_config = ConfigDict(from_attributes=True)
-    cod_SIAPE_instituidora: int = Field(
-        title="Código SIAPE da organização que instituiu o PGD",
-        description=PlanoEntregas.cod_SIAPE_instituidora.comment,
+class ParticipanteSchema(BaseModel):
+    """Participante"""
+
+    origem_unidade: str = Field(
+        title="Código do sistema da unidade",
+        description=Participante.origem_unidade.comment,
     )
-    cpf_participante: str = Field(
-        title="Número do CPF do participante",
-        description=StatusParticipante.cpf_participante.comment,
+    cod_unidade_autorizadora: int = Field(
+        title="Código da unidade organizacional (UORG) no SIAPE",
+        description=Participante.cod_unidade_autorizadora.comment,
     )
-    matricula_siape: Optional[str] = Field(
-        default=None,
-        title="Número da matrícula do participante",
-        description=StatusParticipante.matricula_siape.comment,
+    cod_unidade_lotacao: int = Field(
+        title="Código da unidade organizacional (UORG) no SIAPE",
+        description=Participante.cod_unidade_lotacao.comment,
     )
-    participante_ativo_inativo_pgd: int = Field(
-        title="Situação do participante no Programa de Gestão e Desempenho (PGD)",
-        description=StatusParticipante.participante_ativo_inativo_pgd.comment,
+    cpf: str = Field(
+        title="Número do CPF do agente público", description=Participante.cpf.comment
+    )
+    matricula_siape: str = Field(
+        title="Número da matrícula do participante no SIAPE",
+        description=Participante.matricula_siape.comment,
+    )
+    cod_unidade_instituidora: int = Field(
+        title="Código da unidade organizacional (UORG) no SIAPE",
+        description=Participante.cod_unidade_instituidora.comment,
+    )
+    situacao: int = Field(
+        title="Situação do agente público no PGD",
+        description=Participante.situacao.comment,
     )
     modalidade_execucao: int = Field(
-        title="Modalidade e regime de execução do trabalho do participante",
-        description=StatusParticipante.modalidade_execucao.comment,
+        title="Modalidade e regime de execução do trabalho",
+        description=Participante.modalidade_execucao.comment,
     )
-    jornada_trabalho_semanal: int = Field(
-        title="Jornada de trabalho semanal",
-        description=StatusParticipante.jornada_trabalho_semanal.comment,
+    data_assinatura_tcr: Optional[str] = Field(
+        title="Data de assinatura do TCR",
+        description=Participante.data_assinatura_tcr.comment,
     )
-    data_envio: date = Field(
-        title="Timestamp do envio dos dados",
-        description=StatusParticipante.data_envio.comment,
+    data_atualizacao: Optional[str] = Field(
+        title="Data de atualização", description=Participante.data_atualizacao.comment
+    )
+    data_insercao: str = Field(
+        title="Data de inserção", description=Participante.data_insercao.comment
     )
 
-    @field_validator("cpf_participante")
+    @field_validator("situacao")
     @staticmethod
-    def cpf_part_validate(cpf_participante: str) -> str:
-        return cpf_validate(cpf_participante)
-
-    @field_validator("matricula_siape")
-    @staticmethod
-    def siape_validate(matricula_siape: str) -> str:
-        if matricula_siape is None:
-            return matricula_siape
-        if len(matricula_siape) != 7:
-            raise ValueError("Matrícula SIAPE deve ter 7 dígitos.")
-        if len(set(matricula_siape)) < 2:
-            raise ValueError("Matricula SIAPE Inválida.")
-        return matricula_siape
-
-    @field_validator("participante_ativo_inativo_pgd")
-    @staticmethod
-    def must_be_bool(participante_ativo_inativo_pgd: int) -> int:
-        """Verifica se o campo participante_ativo_inativo_pgd está
-        entre os valores permitidos.
-
-        Foi usado int em vez de bool para preservar a possibilidade
-        futura de passar a aceitar um valor diferente.
-        """
-        if participante_ativo_inativo_pgd not in (0, 1):
-            raise ValueError(
-                "Valor do campo 'participante_ativo_inativo_pgd' inválida; "
-                "permitido: 0, 1"
-            )
-        return participante_ativo_inativo_pgd
+    def validate_situacao(value):
+        "Verifica se o campo 'situacao' tem um dos valores permitidos"
+        if value not in [0, 1]:
+            raise ValueError("Situação inválida; permitido: 0 - Inativo, 1 - Ativo")
+        return value
 
     @field_validator("modalidade_execucao")
     @staticmethod
-    def must_be_between(modalidade_execucao: int) -> int:
-        if modalidade_execucao not in range(1, 4):
-            raise ValueError("Modalidade de execução inválida; permitido: 1, 2, 3, 4")
-        return modalidade_execucao
-
-    @field_validator("jornada_trabalho_semanal")
-    @staticmethod
-    def must_be_positive(jornada_trabalho_semanal: int) -> int:
-        if jornada_trabalho_semanal < 1:
-            raise ValueError("Jornada de trabalho semanal deve ser maior que zero")
-        return jornada_trabalho_semanal
-
-
-class ListaStatusParticipanteSchema(BaseModel):
-    """Lista de status do participante."""
-
-    model_config = ConfigDict(from_attributes=True)
-    lista_status: List[StatusParticipanteSchema] = Field(
-        title="Contribuições",
-        description="Lista de Contribuições planejadas para o Plano de Trabalho.",
-    )
+    def validate_modalidade_execucao(value):
+        "Verifica se o campo 'modalidade_execucao' tem um dos valores permitidos"
+        if value not in set(ModalidadesExecucao):
+            raise ValueError(
+                "Modalidade de execução inválida; permitido: "
+                + ", ".join(list(ModalidadesExecucao))
+            )
+        return value
 
 
 class Token(BaseModel):
