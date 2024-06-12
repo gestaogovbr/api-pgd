@@ -6,7 +6,6 @@ Pydantic: https://docs.pydantic.dev/2.0/
 """
 
 from datetime import date
-from textwrap import dedent
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
@@ -16,8 +15,9 @@ from models import (
     PlanoEntregas,
     Entrega,
     TipoMeta,
-    lanoTrabalho,
+    PlanoTrabalho,
     Contribuicao,
+    TipoContribuicao,
     AvaliacaoRegistrosExecucao,
     Participante,
     Users,
