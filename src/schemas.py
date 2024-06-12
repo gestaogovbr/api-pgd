@@ -68,6 +68,7 @@ def cpf_validate(input_cpf: str) -> str:
 
 class ContribuicaoSchema(BaseModel):
     __doc__ = Contribuicao.__doc__
+    model_config = ConfigDict(from_attributes=True)
 
     id: Optional[int] = Field(
         default=None,
@@ -166,8 +167,8 @@ class ContribuicaoSchema(BaseModel):
 
 
 class AvaliacaoRegistrosExecucaoSchema(BaseModel):
-    "Modelo Pydantic para Avaliação de Registros de Execução."
     __doc__ = AvaliacaoRegistrosExecucao.__doc__
+    model_config = ConfigDict(from_attributes=True)
 
     id_periodo_avaliativo: str = Field(
         title="Identificador do período avaliativo",
@@ -246,8 +247,6 @@ class AvaliacaoRegistrosExecucaoSchema(BaseModel):
 
 
 class PlanoTrabalhoSchema(BaseModel):
-    """Modelo Pydantic para o Plano de Trabalho."""
-
     __doc__ = PlanoTrabalho.__doc__
     model_config = ConfigDict(from_attributes=True)
 
@@ -311,7 +310,7 @@ class PlanoTrabalhoSchema(BaseModel):
             description="Lista de avaliações de registros de execução do Plano de Trabalho.",
         )
     )
-    participante: Optional["Participante"] = Field(
+    participante: Optional["ParticipanteSchema"] = Field(
         default=None,
         title="Participante",
         description="Informações do participante do Plano de Trabalho.",
@@ -416,52 +415,122 @@ class EntregaSchema(BaseModel):
 
 
 class PlanoEntregasSchema(BaseModel):
-    __doc__ = PlanoEntregas.__doc__
-    model_config = ConfigDict(from_attributes=True)
-    cod_SIAPE_instituidora: int = Field(
-        title="Código SIAPE da organização que instituiu o PGD",
-        description=PlanoEntregas.cod_SIAPE_instituidora.comment,
+    """Esquema de Plano de Entregas"""
+
+    origem_unidade: str = Field(
+        title="Código do sistema da unidade",
+        description=PlanoEntregas.origem_unidade.comment,
     )
-    id_plano_entrega_unidade: int = Field(
-        title="Id do plano de entregas da unidade",
-        description=PlanoEntregas.id_plano_entrega_unidade.comment,
+    cod_unidade_autorizadora: int = Field(
+        title="Código da unidade autorizadora",
+        description=PlanoEntregas.cod_unidade_autorizadora.comment,
+    )
+    cod_unidade_instituidora: int = Field(
+        title="Código da unidade instituidora",
+        description=PlanoEntregas.cod_unidade_instituidora.comment,
+    )
+    cod_unidade_executora: int = Field(
+        title="Código da unidade executora",
+        description=PlanoEntregas.cod_unidade_executora.comment,
+    )
+    id_plano_entrega: str = Field(
+        title="Identificador único do plano de entregas",
+        description=PlanoEntregas.id_plano_entrega.comment,
     )
     status: int = Field(
         title="Status do plano de entregas",
         description=PlanoEntregas.status.comment,
     )
-    data_inicio_plano_entregas: date = Field(
+    data_inicio: date = Field(
         title="Data de início do plano de entregas",
-        description=PlanoEntregas.data_inicio_plano_entregas.comment,
+        description=PlanoEntregas.data_inicio.comment,
     )
-    data_termino_plano_entregas: date = Field(
+    data_termino: date = Field(
         title="Data de término do plano de entregas",
-        description=PlanoEntregas.data_termino_plano_entregas.comment,
+        description=PlanoEntregas.data_termino.comment,
     )
-    avaliacao_plano_entregas: Optional[int] = Field(
-        default=None,
+    avaliacao: Optional[int] = Field(
         title="Avaliação do plano de entregas",
-        description=PlanoEntregas.avaliacao_plano_entregas.comment,
+        description=PlanoEntregas.avaliacao.comment,
     )
-    data_avaliacao_plano_entregas: Optional[date] = Field(
-        default=None,
+    data_avaliacao: Optional[date] = Field(
         title="Data de avaliação do plano de entregas",
-        description=PlanoEntregas.data_avaliacao_plano_entregas.comment,
-    )
-    cod_SIAPE_unidade_plano: int = Field(
-        title="Código SIAPE da unidade do plano de entregas",
-        description=PlanoEntregas.cod_SIAPE_unidade_plano.comment,
+        description=PlanoEntregas.data_avaliacao.comment,
     )
     entregas: List[EntregaSchema] = Field(
         title="Entregas",
         description="Lista de entregas associadas ao Plano de Entregas",
     )
 
-    @field_validator("status")
-    def validate_status(self, status):
-        if status not in range(1, 6):
+    @field_validator(
+        "cod_unidade_autorizadora", "cod_unidade_instituidora", "cod_unidade_executora"
+    )
+    @staticmethod
+    def validate_codigo_unidade(value: int) -> int:
+        """Valida o código da unidade"""
+        if value < 1:
+            raise ValueError("Código da unidade inválido")
+        return value
+
+    @field_validator("data_termino")
+    @staticmethod
+    def validate_data_termino(data_termino: date, values: dict) -> date:
+        """Valida a data de término do plano de entregas"""
+        if data_termino < values["data_inicio"]:
+            raise ValueError("Data de término deve ser maior ou igual à data de início")
+        return data_termino
+
+    @model_validator(mode="after")
+    def validate_data_avaliacao(self) -> "PlanoEntregasSchema":
+        """Valida a data de avaliação do plano de entregas"""
+        if self.data_avaliacao is not None and self.data_avaliacao < self.data_inicio:
+            raise ValueError(
+                "Data de avaliação deve ser maior ou igual à data de início"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_entregas_uniqueness(self) -> "PlanoEntregasSchema":
+        """Valida a unicidade das entregas"""
+        entregas_ids = [entrega.id_entrega for entrega in self.entregas]
+        if len(entregas_ids) != len(set(entregas_ids)):
+            raise ValueError("Entregas devem possuir id_entrega diferentes")
+        return self
+
+    @model_validator(mode="after")
+    def validate_period(self) -> "PlanoEntregasSchema":
+        """Valida o período do plano de entregas"""
+        if over_a_year(self.data_termino, self.data_inicio) > 1:
+            raise ValueError(
+                "Plano de entregas não pode abranger período maior que 1 ano"
+            )
+        if self.data_termino < self.data_inicio:
+            raise ValueError("Data de término deve ser maior ou igual à data de início")
+        if self.data_avaliacao is not None and self.data_avaliacao < self.data_inicio:
+            raise ValueError(
+                "Data de avaliação deve ser maior ou igual à data de início"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_entrega_dates(self) -> "PlanoEntregasSchema":
+        """Valida as datas das entregas"""
+        for entrega in self.entregas:
+            if entrega.data_entrega is not None and (
+                entrega.data_entrega < self.data_inicio
+                or entrega.data_entrega > self.data_termino
+            ):
+                raise ValueError(
+                    "Data de entrega deve estar dentro do período do plano"
+                )
+        return self
+
+    @model_validator(mode="after")
+    def validate_status(self) -> "PlanoEntregasSchema":
+        "Verifica se o status possui valor válido"
+        if self.status not in range(1, 6):
             raise ValueError("Status inválido; permitido: 1, 2, 3, 4, 5")
-        if status == 5 and (
+        if self.status == 5 and (
             self.avaliacao_plano_entregas is None
             or self.data_avaliacao_plano_entregas is None
         ):
@@ -469,35 +538,21 @@ class PlanoEntregasSchema(BaseModel):
                 "Status 5 (Avaliado) requer avaliacao_plano_entregas e "
                 "data_avaliacao_plano_entregas preenchidos"
             )
-        return status
+        return self
 
-    @field_validator("cod_SIAPE_instituidora", "cod_SIAPE_unidade_plano")
-    def validate_cod_SIAPE(self, value):
+    @field_validator(
+        "cod_unidade_autorizadora", "cod_unidade_instituidora", "cod_unidade_executora"
+    )
+    @staticmethod
+    def validate_cod_SIAPE(value):
         if value < 1:
             raise ValueError("cod_SIAPE inválido")
         return value
 
-    @model_validator(mode="after")
-    def validate_data_termino(self):
-        if self.data_termino_plano_entregas < self.data_inicio_plano_entregas:
-            raise ValueError(
-                "data_termino_plano_entregas deve ser maior ou igual que "
-                "data_inicio_plano_entregas"
-            )
-        return self
-
-    @model_validator(mode="after")
-    def validate_data_avaliacao(self):
-        if (
-            self.data_avaliacao_plano_entregas is not None
-            and self.data_avaliacao_plano_entregas < self.data_inicio_plano_entregas
-        ):
-            raise ValueError
-
 
 class ParticipanteSchema(BaseModel):
-    """Participante"""
-
+    __doc__ = Participante.__doc__
+    model_config = ConfigDict(from_attributes=True)
     origem_unidade: str = Field(
         title="Código do sistema da unidade",
         description=Participante.origem_unidade.comment,
