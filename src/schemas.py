@@ -11,9 +11,16 @@ from datetime import date
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from pydantic import model_validator, field_validator
 
-from models import PlanoEntregas, PlanoTrabalho, Entrega
-from models import Contribuicao, AvaliacaoRegistrosExecucao, Participante
-from models import Users
+from models import (
+    PlanoEntregas,
+    Entrega,
+    TipoMeta,
+    lanoTrabalho,
+    Contribuicao,
+    AvaliacaoRegistrosExecucao,
+    Participante,
+    Users,
+)
 from util import over_a_year
 
 
@@ -67,14 +74,14 @@ class ContribuicaoSchema(BaseModel):
         default=None,
         title="Descrição da Contribuição",
         max_length=300,
-        #description=Contribuicao.descricao_contribuicao.comment,
+        # description=Contribuicao.descricao_contribuicao.comment,
     )
     id_entrega: Optional[int] = Field(
         default=None, title="Id da Entrega", description=Contribuicao.id_entrega.comment
     )
     horas_vinculadas: int = Field(
         title="Horas vinculadas à determinada entrega",
-        #description=Contribuicao.horas_vinculadas.comment,
+        # description=Contribuicao.horas_vinculadas.comment,
     )
 
     @model_validator(mode="after")
@@ -246,11 +253,17 @@ class PlanoTrabalhoSchema(BaseModel):
 class EntregaSchema(BaseModel):
     __doc__ = Entrega.__doc__
     model_config = ConfigDict(from_attributes=True)
-    id_entrega: int = Field(
-        title="Id da entrega",
+    id_entrega: str = Field(
+        title="Identificador único da entrega",
+        description=Entrega.id_entrega.comment,
+    )
+    entrega_cancelada: Optional[bool] = Field(
+        default=False,
+        title="Entrega cancelada",
+        description=Entrega.entrega_cancelada.comment,
     )
     nome_entrega: str = Field(
-        title="Nome da entrega",
+        title="Título da entrega",
         max_length=300,
         description=Entrega.nome_entrega.comment,
     )
@@ -258,62 +271,55 @@ class EntregaSchema(BaseModel):
         title="Meta estipulada na inclusão no plano",
         description=Entrega.meta_entrega.comment,
     )
-    tipo_meta: int = Field(title="Tipo da meta", description=Entrega.tipo_meta.comment)
-    nome_vinculacao_cadeia_valor: Optional[str] = Field(
-        default=None,
-        title="Nome da vinculação de cadeia de valor",
-        max_length=300,
-        description=Entrega.nome_vinculacao_cadeia_valor.comment,
-    )
-    nome_vinculacao_planejamento: Optional[str] = Field(
-        default=None,
-        max_length=300,
-        title="Nome da vinculação do planejamento",
-        description=Entrega.nome_vinculacao_planejamento.comment,
-    )
-    percentual_progresso_esperado: Optional[int] = Field(
-        default=None,
-        title="Percentual de progresso esperado",
-        description=Entrega.percentual_progresso_esperado.comment,
-    )
-    percentual_progresso_realizado: Optional[int] = Field(
-        default=None,
-        title="Percentual de progresso realizado",
-        description=Entrega.percentual_progresso_realizado.comment,
+    tipo_meta: int = Field(
+        title="Tipo da meta",
+        description=Entrega.tipo_meta.comment,
     )
     data_entrega: date = Field(
-        default=None, title="Data da entrega", description=Entrega.data_entrega.comment
+        title="Data da entrega",
+        description=Entrega.data_entrega.comment,
     )
-    nome_demandante: str = Field(
-        default=None,
-        title="Nome do demandante",
-        max_length=300,
-        description=Entrega.nome_demandante.comment,
+    nome_unidade_demandante: str = Field(
+        title="Nome da unidade demandante",
+        description=Entrega.nome_unidade_demandante.comment,
     )
-    nome_destinatario: str = Field(
-        default=None,
-        title="Nome do destinatário",
-        max_length=300,
-        description=Entrega.nome_destinatario.comment,
+    nome_unidade_destinataria: str = Field(
+        title="Nome da unidade destinatária",
+        description=Entrega.nome_unidade_destinataria.comment,
+    )
+    data_atualizacao: Optional[date] = Field(
+        title="Data de atualização",
+        description=Entrega.data_atualizacao.comment,
+    )
+    data_insercao: date = Field(
+        title="Data de inserção",
+        description=Entrega.data_insercao.comment,
     )
 
     @field_validator("tipo_meta")
     @staticmethod
     def must_be_in(tipo_meta: int) -> int:
-        if tipo_meta not in (1, 2):
+        if tipo_meta not in (TipoMeta.unidade.value, TipoMeta.percentual.value):
             raise ValueError("Tipo de meta inválido; permitido: 1, 2")
         return tipo_meta
 
-    @field_validator(
-        "meta_entrega",
-        "percentual_progresso_esperado",
-        "percentual_progresso_realizado",
-    )
+    @field_validator("meta_entrega")
     @staticmethod
-    def must_be_percent(percent: int) -> int:
-        if percent is not None and not 0 <= percent <= 100:
-            raise ValueError("Valor percentual inválido.")
-        return percent
+    def must_be_positive(meta_entrega: int) -> int:
+        if meta_entrega < 0:
+            raise ValueError("Meta de entrega deve ser um valor positivo")
+        return meta_entrega
+
+    @field_validator("meta_entrega", pre=True)
+    def validate_meta_percentual(self, meta_entrega: int) -> int:
+        if (
+            meta_entrega is not None
+            and isinstance(meta_entrega, int)
+            and self.tipo_meta == TipoMeta.percentual.value
+            and not 0 <= meta_entrega <= 100
+        ):
+            raise ValueError("Meta percentual deve estar entre 0 e 100")
+        return meta_entrega
 
 
 class PlanoEntregasSchema(BaseModel):
