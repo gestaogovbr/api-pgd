@@ -310,7 +310,7 @@ class EntregaSchema(BaseModel):
             raise ValueError("Meta de entrega deve ser um valor positivo")
         return meta_entrega
 
-    @field_validator("meta_entrega", pre=True)
+    @field_validator("meta_entrega", mode="before")
     def validate_meta_percentual(self, meta_entrega: int) -> int:
         if (
             meta_entrega is not None
