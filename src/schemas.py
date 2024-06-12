@@ -121,11 +121,11 @@ class ContribuicaoSchema(BaseModel):
 
     @field_validator("tipo_contribuicao")
     @staticmethod
-    def validate_tipo_contribuicao(v: TipoContribuicao):
+    def validate_tipo_contribuicao(tipo_contribuicao: TipoContribuicao):
         "Valida se o tipo de contribuição é válido (entre 1 e 3)."
-        if v not in TipoContribuicao:
+        if tipo_contribuicao not in set(TipoContribuicao):
             raise ValueError("Tipo de contribuição inválido; permitido: 1 a 3")
-        return v
+        return tipo_contribuicao
 
     @model_validator(mode="after")
     def validate_tipo_contribuicao_entrega_outra_unidade(self) -> "ContribuicaoSchema":
@@ -158,11 +158,11 @@ class ContribuicaoSchema(BaseModel):
 
     @field_validator("percentual_contribuicao")
     @staticmethod
-    def validate_percentual_contribuicao(v: int):
+    def validate_percentual_contribuicao(percentual_contribuicao: int):
         "Valida se o percentual de contribuição está entre 0 e 100."
-        if v < 0 or v > 100:
+        if percentual_contribuicao < 0 or percentual_contribuicao > 100:
             raise ValueError("Percentual de contribuição deve estar entre 0 e 100")
-        return v
+        return percentual_contribuicao
 
 
 class AvaliacaoRegistrosExecucaoSchema(BaseModel):
@@ -222,7 +222,8 @@ class AvaliacaoRegistrosExecucaoSchema(BaseModel):
         data de início do Plano de Trabalho."""
         if (
             values.get("plano_trabalho", None)
-            and values["data_inicio_periodo_avaliativo"] < values["plano_trabalho"].data_inicio
+            and values["data_inicio_periodo_avaliativo"]
+            < values["plano_trabalho"].data_inicio
         ):
             raise ValueError(
                 "A data de início do período avaliativo deve ser posterior à "
@@ -391,7 +392,7 @@ class EntregaSchema(BaseModel):
     @field_validator("tipo_meta")
     @staticmethod
     def must_be_in(tipo_meta: int) -> int:
-        if tipo_meta not in (TipoMeta.unidade.value, TipoMeta.percentual.value):
+        if tipo_meta not in set(TipoMeta):
             raise ValueError("Tipo de meta inválido; permitido: 1, 2")
         return tipo_meta
 
@@ -457,10 +458,10 @@ class PlanoEntregasSchema(BaseModel):
     )
 
     @field_validator("status")
-    def validate_status(self, v):
-        if v not in range(1, 6):
+    def validate_status(self, status):
+        if status not in range(1, 6):
             raise ValueError("Status inválido; permitido: 1, 2, 3, 4, 5")
-        if v == 5 and (
+        if status == 5 and (
             self.avaliacao_plano_entregas is None
             or self.data_avaliacao_plano_entregas is None
         ):
@@ -468,26 +469,29 @@ class PlanoEntregasSchema(BaseModel):
                 "Status 5 (Avaliado) requer avaliacao_plano_entregas e "
                 "data_avaliacao_plano_entregas preenchidos"
             )
-        return v
+        return status
 
     @field_validator("cod_SIAPE_instituidora", "cod_SIAPE_unidade_plano")
-    def validate_cod_SIAPE(self, v):
-        if v < 1:
+    def validate_cod_SIAPE(self, value):
+        if value < 1:
             raise ValueError("cod_SIAPE inválido")
-        return v
+        return value
 
-    @field_validator("data_termino_plano_entregas")
-    def validate_data_termino(self, v, values):
-        if v < values["data_inicio_plano_entregas"]:
+    @model_validator(mode="after")
+    def validate_data_termino(self):
+        if self.data_termino_plano_entregas < self.data_inicio_plano_entregas:
             raise ValueError(
                 "data_termino_plano_entregas deve ser maior ou igual que "
                 "data_inicio_plano_entregas"
             )
-        return v
+        return self
 
-    @field_validator("data_avaliacao_plano_entregas")
-    def validate_data_avaliacao(self, v, values):
-        if v is not None and v < values["data_inicio_plano_entregas"]:
+    @model_validator(mode="after")
+    def validate_data_avaliacao(self):
+        if (
+            self.data_avaliacao_plano_entregas is not None
+            and self.data_avaliacao_plano_entregas < self.data_inicio_plano_entregas
+        ):
             raise ValueError
 
 
