@@ -67,51 +67,86 @@ def cpf_validate(input_cpf: str) -> str:
 
 class ContribuicaoSchema(BaseModel):
     __doc__ = Contribuicao.__doc__
-    model_config = ConfigDict(from_attributes=True)
-    tipo_contribuicao: int = Field(
-        title="Tipo de contribuição", description=Contribuicao.tipo_contribuicao.comment
-    )
-    descricao_contribuicao: Optional[str] = Field(
+
+    id: Optional[int] = Field(
         default=None,
-        title="Descrição da Contribuição",
-        max_length=300,
-        # description=Contribuicao.descricao_contribuicao.comment,
+        title="ID da Contribuição",
+        description=Contribuicao.id.comment,
     )
-    id_entrega: Optional[int] = Field(
-        default=None, title="Id da Entrega", description=Contribuicao.id_entrega.comment
+    origem_unidade: str = Field(
+        title="Código do sistema da unidade",
+        description=Contribuicao.origem_unidade.comment,
     )
-    horas_vinculadas: int = Field(
-        title="Horas vinculadas à determinada entrega",
-        # description=Contribuicao.horas_vinculadas.comment,
+    id_contribuicao: str = Field(
+        title="Identificador único da contribuição",
+        description=Contribuicao.id_contribuicao.comment,
+    )
+    cod_unidade_instituidora: int = Field(
+        title="Código da unidade organizacional (UORG)",
+        description=Contribuicao.cod_unidade_instituidora.comment,
+    )
+    tipo_contribuicao: TipoContribuicao = Field(
+        title="Tipo de contribuição",
+        description=Contribuicao.tipo_contribuicao.comment,
+    )
+    cod_unidade_autorizadora_externa: Optional[int] = Field(
+        default=None,
+        title="Código da unidade organizacional (UORG) da unidade de autorização",
+        description=Contribuicao.cod_unidade_autorizadora_externa.comment,
+    )
+    id_plano_entrega: Optional[str] = Field(
+        default=None,
+        title="Identificador único do plano de entrega",
+        description=Contribuicao.id_plano_entrega.comment,
+    )
+    id_entrega: Optional[str] = Field(
+        default=None,
+        title="Identificador único da entrega",
+        description=Contribuicao.id_entrega.comment,
+    )
+    percentual_contribuicao: int = Field(
+        title="Percentual de contribuição",
+        description=Contribuicao.percentual_contribuicao.comment,
+    )
+    data_atualizacao: Optional[date] = Field(
+        default=None,
+        title="Data de atualização",
+        description=Contribuicao.data_atualizacao.comment,
+    )
+    data_insercao: date = Field(
+        title="Data de inserção",
+        description=Contribuicao.data_insercao.comment,
     )
 
-    @model_validator(mode="after")
-    def must_be_mandatory_if(self) -> "ContribuicaoSchema":
-        if self.tipo_contribuicao == 1 and self.id_entrega is None:
+    @field_validator("tipo_contribuicao")
+    @staticmethod
+    def validate_tipo_contribuicao(v: TipoContribuicao):
+        "Valida se o tipo de contribuição é válido (entre 1 e 3)."
+        if v not in TipoContribuicao:
+            raise ValueError("Tipo de contribuição inválido; permitido: 1 a 3")
+        return v
+
+    @model_validator
+    def validate_cod_unidade_autorizadora_externa(self) -> "ContribuicaoSchema":
+        "Valida se o campo cod_unidade_autorizadora_externa deve ser preenchido."
+        if self.tipo_contribuicao == TipoContribuicao.entrega_outra_unidade and (
+            self.id_plano_entrega is None or self.id_entrega is None
+        ):
             raise ValueError(
-                "O campo id_entrega é obrigatório quando tipo_contribuicao "
-                "tiver o valor 1."
-            )
-        if self.tipo_contribuicao == 2 and self.id_entrega is not None:
-            raise ValueError(
-                "Não se deve informar id_entrega quando tipo_contribuicao == 2"
+                "cod_unidade_autorizadora_externa precisa ser preenchido "
+                "quando tipo_contribuicao é 3 e id_plano_entrega e id_entrega "
+                "não são None"
             )
 
         return self
 
-    @field_validator("tipo_contribuicao")
+    @field_validator("percentual_contribuicao")
     @staticmethod
-    def must_be_between(tipo_contribuicao: int) -> int:
-        if tipo_contribuicao not in range(1, 4):
-            raise ValueError("Tipo de contribuição inválida; permitido: 1 a 3")
-        return tipo_contribuicao
-
-    @field_validator("horas_vinculadas")
-    @staticmethod
-    def must_be_zero_or_positive(horas_vinculadas: int) -> int:
-        if horas_vinculadas < 0:
-            raise ValueError("Valor de horas_vinculadas deve ser maior ou igual a zero")
-        return horas_vinculadas
+    def validate_percentual_contribuicao(v: int):
+        "Valida se o percentual de contribuição está entre 0 e 100."
+        if v < 0 or v > 100:
+            raise ValueError("Percentual de contribuição deve estar entre 0 e 100")
+        return v
 
 
 class ConsolidacaoSchema(BaseModel):
