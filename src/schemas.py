@@ -201,7 +201,7 @@ class PlanoTrabalhoSchema(BaseModel):
         return cpf_validate(cpf_participante)
 
     @model_validator(mode="after")
-    def year_interval(self):
+    def year_interval(self) -> "PlanoTrabalhoSchema":
         if over_a_year(self.data_termino_plano, self.data_inicio_plano) == 1:
             raise ValueError(
                 "Plano de trabalho não pode abranger período maior que 1 ano."
@@ -209,7 +209,7 @@ class PlanoTrabalhoSchema(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def must_be_sequencial_dates(self):
+    def must_be_sequencial_dates(self) -> "PlanoTrabalhoSchema":
         if self.data_inicio_plano > self.data_termino_plano:
             raise ValueError(
                 "Data fim do Plano de Trabalho deve ser maior "
@@ -218,7 +218,7 @@ class PlanoTrabalhoSchema(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def consolidacao_must_be_in_period(self):
+    def consolidacao_must_be_in_period(self) -> "PlanoTrabalhoSchema":
         if self.consolidacoes is not None and any(
             (consolidacao.data_inicio_registro < self.data_inicio_plano)
             or (consolidacao.data_fim_registro > self.data_termino_plano)
