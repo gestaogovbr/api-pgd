@@ -14,8 +14,9 @@ from db_config import DbContextManager, SyncSession
 
 async def get_plano_trabalho(
     db_session: DbContextManager,
-    cod_SIAPE_instituidora: int,
-    id_plano_trabalho_participante: str,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    id_plano_trabalho: str,
 ) -> Optional[schemas.PlanoTrabalhoSchema]:
     """Traz um plano de trabalho a partir do banco de dados, consultando
     a partir dos parâmetros informados.
@@ -23,10 +24,9 @@ async def get_plano_trabalho(
     Args:
         db_session (DbContextManager): Context manager para a sessão async
             do SQL Alchemy.
-        cod_SIAPE_instituidora (int): Código SIAPE da unidade instituidora.
-        id_plano_trabalho_participante (str): id do Plano de Trabalho do
-            participante.
-
+        origem_unidade (str): Código do sistema da unidade: “SIAPE” ou “SIORG”
+        cod_unidade_autorizadora (int): Código da unidade autorizadora.
+        id_plano_trabalho (str): id do Plano de Trabalho
     Returns:
         Optional[schemas.PlanoTrabalhoSchema]: Esquema Pydantic do Plano
             de Trabalho encontrado ou None.
@@ -34,8 +34,9 @@ async def get_plano_trabalho(
     async with db_session as session:
         result = await session.execute(
             select(models.PlanoTrabalho)
-            .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
-            .filter_by(id_plano_trabalho_participante=id_plano_trabalho_participante)
+            .filter_by(origem_unidade=origem_unidade)
+            .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
+            .filter_by(id_plano_trabalho=id_plano_trabalho)
         )
         db_plano_trabalho = result.unique().scalar_one_or_none()
     if db_plano_trabalho:
@@ -45,12 +46,14 @@ async def get_plano_trabalho(
 
 async def check_planos_trabalho_per_period(
     db_session: DbContextManager,
-    cod_SIAPE_instituidora: int,
-    cod_SIAPE_unidade_exercicio: int,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    cod_unidade_executora: int,
     cpf_participante: str,
-    id_plano_trabalho_participante: int,
-    data_inicio_plano: date,
-    data_termino_plano: date,
+    id_plano_trabalho: int,
+    status: int,
+    data_inicio: date,
+    data_termino: date,
 ) -> bool:
     """Verifica se há outros Planos de Trabalho no período informado,
     para a mesma unidade instituidora, mesma unidade de exercício e mesmo
@@ -60,14 +63,14 @@ async def check_planos_trabalho_per_period(
     Args:
         db_session (DbContextManager): Context manager para a sessão async
             do SQL Alchemy.
-        cod_SIAPE_instituidora (int): Código SIAPE da unidade instituidora.
-        cod_SIAPE_unidade_exercicio (int): Código SIAPE da unidade de
-            exercício do participante.
+        origem_unidade (str): Código do sistema da unidade: “SIAPE” ou “SIORG”
+        cod_unidade_autorizadora (int): Código da unidade autorizadora.
+        cod_unidade_executora (int): Código da unidade executora.
         cpf_participante (str): CPF do participante.
-        id_plano_trabalho_participante (int): id do Plano de Trabalho do
-            participante.
-        data_inicio_plano (date): Data de início do Plano de Trabalho.
-        data_termino_plano (date): Data de término do Plano de Trabalho.
+        id_plano_trabalho (int): id do Plano de Trabalho.
+        status (int): Status do Plano de Trabalho
+        data_inicio (date): Data de início do Plano de Trabalho.
+        data_termino (date): Data de término do Plano de Trabalho.
 
     Returns:
         bool: True se há conflito; False caso contrário.
@@ -76,20 +79,21 @@ async def check_planos_trabalho_per_period(
         query = (
             select(func.count())
             .select_from(models.PlanoTrabalho)
-            .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
-            .filter_by(cod_SIAPE_unidade_exercicio=cod_SIAPE_unidade_exercicio)
+            .filter_by(origem_unidade=origem_unidade)
+            .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
+            .filter_by(cod_unidade_executora=cod_unidade_executora)
             .filter_by(cpf_participante=cpf_participante)
-            .filter_by(cancelado=False)
+            .filter(models.PlanoTrabalho.status != 1)
             .where(
                 and_(
                     (
                         # exclui o próprio plano de trabalho da verificação para
                         # não conflitar com ele mesmo
-                        models.PlanoTrabalho.id_plano_trabalho_participante
-                        != id_plano_trabalho_participante
+                        models.PlanoTrabalho.id_plano_trabalho
+                        != id_plano_trabalho
                     ),
-                    (models.PlanoTrabalho.data_inicio_plano <= data_termino_plano),
-                    (models.PlanoTrabalho.data_termino_plano >= data_inicio_plano),
+                    (models.PlanoTrabalho.data_inicio <= data_termino),
+                    (models.PlanoTrabalho.data_termino >= data_inicio),
                 )
             )
         )
@@ -114,7 +118,7 @@ async def create_plano_trabalho(
             de trabalho como um esquema Pydantic.
 
     Returns:
-        schemas.PlanoEntregasSchema: Esquema Pydantic do Plano de Trabalho
+        schemas.PlanoTrabalhoSchema: Esquema Pydantic do Plano de Trabalho
             com os dados que foram gravados no banco.
     """
     creation_timestamp = datetime.now()
@@ -123,27 +127,27 @@ async def create_plano_trabalho(
         for contribuicao in plano_trabalho.contribuicoes
     ]
 
-    consolidacoes = [
-        models.Consolidacao(**consolidacao.model_dump())
-        for consolidacao in plano_trabalho.consolidacoes
+    avaliacoes_registros_execucao = [
+        models.AvaliacaoRegistrosExecucao(**avaliacao_registros_execucao.model_dump())
+        for avaliacao_registros_execucao in plano_trabalho.avaliacoes_registros_execucao
     ]
     plano_trabalho.contribuicoes = []
-    plano_trabalho.consolidacoes = []
+    plano_trabalho.avaliacoes_registros_execucao = []
     db_plano_trabalho = models.PlanoTrabalho(**plano_trabalho.model_dump())
     db_plano_trabalho.data_insercao = creation_timestamp
     async with db_session as session:
         for contribuicao in contribuicoes:
             contribuicao.data_insercao = creation_timestamp
-            contribuicao.id_plano_entrega_unidade = (
-                plano_trabalho.id_plano_entrega_unidade
+            contribuicao.id_plano_entrega = (
+                plano_trabalho.id_plano_entrega
             )
             session.add(contribuicao)
             db_plano_trabalho.contribuicoes.append(contribuicao)
             db_plano_trabalho.contribuicoes = contribuicoes
-        for consolidacao in consolidacoes:
-            consolidacao.data_insercao = creation_timestamp
-            session.add(consolidacao)
-            db_plano_trabalho.consolidacoes.append(consolidacao)
+        for avaliacao_registros_execucao in avaliacoes_registros_execucao:
+            avaliacao_registros_execucao.data_insercao = creation_timestamp
+            session.add(avaliacao_registros_execucao)
+            db_plano_trabalho.avaliacoes_registros_execucao.append(avaliacao_registros_execucao)
         session.add(db_plano_trabalho)
         try:
             await session.commit()

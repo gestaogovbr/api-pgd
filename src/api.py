@@ -411,15 +411,16 @@ async def get_plano_trabalho(
 
 
 @app.put(
-    "/organizacao/{cod_SIAPE_instituidora}/plano_trabalho/{id_plano_trabalho_participante}",
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}",
     summary="Cria ou substitui plano de trabalho",
     response_model=schemas.PlanoTrabalhoSchema,
     tags=["plano de trabalho"],
 )
 async def create_or_update_plano_trabalho(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
-    cod_SIAPE_instituidora: int,
-    id_plano_trabalho_participante: int,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    id_plano_trabalho: str,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
@@ -428,22 +429,23 @@ async def create_or_update_plano_trabalho(
     plano de trabalho por um novo com os dados informados."""
 
     # Validações de permissão
-    if (cod_SIAPE_instituidora != user.cod_SIAPE_instituidora) and not user.is_admin:
+    if (cod_unidade_autorizadora != user.cod_unidade_autorizadora) and not user.is_admin:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
         )
 
     # Validações de conteúdo JSON e URL
-    if cod_SIAPE_instituidora != plano_trabalho.cod_SIAPE_instituidora:
+    if cod_unidade_autorizadora != plano_trabalho.cod_unidade_autorizadora:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro cod_SIAPE_instituidora diferente do conteúdo do JSON",
+            detail="Parâmetro cod_unidade_autorizadora diferente do conteúdo do JSON",
         )
-    if id_plano_trabalho_participante != plano_trabalho.id_plano_trabalho_participante:
+
+    if id_plano_trabalho != plano_trabalho.id_plano_trabalho:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro id_plano_trabalho_participante na URL e no JSON devem ser iguais",
+            detail="Parâmetro id_plano_trabalho na URL e no JSON devem ser iguais",
         )
 
     # Validações do esquema
@@ -461,12 +463,15 @@ async def create_or_update_plano_trabalho(
     # com planos já existentes
     conflicting_period = await crud.check_planos_trabalho_per_period(
         db_session=db,
-        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
-        cod_SIAPE_unidade_exercicio=plano_trabalho.cod_SIAPE_unidade_exercicio,
+        origem_unidade=origem_unidade,
+        cod_unidade_autorizadora=cod_unidade_autorizadora,
+        cod_unidade_executora=plano_trabalho.cod_unidade_executora,
         cpf_participante=plano_trabalho.cpf_participante,
-        id_plano_trabalho_participante=plano_trabalho.id_plano_trabalho_participante,
-        data_inicio_plano=plano_trabalho.data_inicio_plano,
-        data_termino_plano=plano_trabalho.data_termino_plano,
+        id_plano_trabalho=plano_trabalho.id_plano_trabalho,
+        status=plano_trabalho.status,
+        data_inicio=plano_trabalho.data_inicio,
+        data_termino=plano_trabalho.data_termino,
+
     )
 
     if conflicting_period and not plano_trabalho.cancelado:
@@ -480,8 +485,8 @@ async def create_or_update_plano_trabalho(
     # Verifica se já existe
     db_plano_trabalho = await crud.get_plano_trabalho(
         db_session=db,
-        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
-        id_plano_trabalho_participante=id_plano_trabalho_participante,
+        cod_unidade_autorizadora=cod_unidade_autorizadora,
+        id_plano_trabalho=id_plano_trabalho,
     )
 
     try:
