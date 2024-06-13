@@ -158,9 +158,9 @@ class TipoMeta(enum.IntEnum):
 class Entrega(Base):
     "Entrega"
     __tablename__ = "entrega"
+    id = Column(Integer, primary_key=True, index=True)
     id_entrega = Column(
         String,
-        primary_key=True,
         index=True,
         nullable=False,
         comment="Identificador único da entrega",
@@ -226,7 +226,9 @@ class Entrega(Base):
         comment="cod_unidade_autorizadora do Plano de Entregas (FK)",
     )
     id_plano_entrega = Column(
-        String, nullable=False, comment="id_plano_entrega do Plano de Entregas (FK)"
+        String,
+        nullable=False,
+        comment="id_plano_entrega do Plano de Entregas (FK)",
     )
     __table_args__ = (
         ForeignKeyConstraint(
@@ -236,6 +238,13 @@ class Entrega(Base):
                 "plano_entregas.cod_unidade_autorizadora",
                 "plano_entregas.id_plano_entrega",
             ],
+        ),
+        UniqueConstraint(
+            "origem_unidade",
+            "cod_unidade_autorizadora",
+            "id_plano_entrega",
+            "id_entrega",
+            name="_entrega_uc",
         ),
     )
 
@@ -375,6 +384,12 @@ class PlanoTrabalho(Base):
                 "participante.matricula_siape",
             ],
         ),
+        UniqueConstraint(
+            "origem_unidade",
+            "cod_unidade_autorizadora",
+            "id_plano_trabalho",
+            name="_plano_trabalho_uc"
+        )
     )
 
 
