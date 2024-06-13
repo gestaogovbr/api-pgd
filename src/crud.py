@@ -51,7 +51,6 @@ async def check_planos_trabalho_per_period(
     cod_unidade_executora: int,
     cpf_participante: str,
     id_plano_trabalho: int,
-    status: int,
     data_inicio: date,
     data_termino: date,
 ) -> bool:
