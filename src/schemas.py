@@ -110,15 +110,6 @@ class ContribuicaoSchema(BaseModel):
         title="Percentual de contribuição",
         description=Contribuicao.percentual_contribuicao.comment,
     )
-    data_atualizacao: Optional[date] = Field(
-        default=None,
-        title="Data de atualização",
-        description=Contribuicao.data_atualizacao.comment,
-    )
-    data_insercao: date = Field(
-        title="Data de inserção",
-        description=Contribuicao.data_insercao.comment,
-    )
 
     @field_validator("tipo_contribuicao")
     @staticmethod
@@ -190,14 +181,7 @@ class AvaliacaoRegistrosExecucaoSchema(BaseModel):
         title="Data da avaliação dos registros de execução",
         description=AvaliacaoRegistrosExecucao.data_avaliacao_registros_execucao.comment,
     )
-    data_atualizacao: Optional[datetime] = Field(
-        title="Data de atualização",
-        description=AvaliacaoRegistrosExecucao.data_atualizacao.comment,
-    )
-    data_insercao: datetime = Field(
-        title="Data de inserção",
-        description=AvaliacaoRegistrosExecucao.data_insercao.comment,
-    )
+
     plano_trabalho: Optional["PlanoTrabalhoSchema"] = Field(
         default=None,
         title="Plano de Trabalho",
@@ -290,14 +274,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Carga horária disponível do participante",
         description=PlanoTrabalho.carga_horaria_disponivel.comment,
     )
-    data_atualizacao: Optional[datetime] = Field(
-        title="Data de atualização",
-        description=PlanoTrabalho.data_atualizacao.comment,
-    )
-    data_insercao: datetime = Field(
-        title="Data de inserção",
-        description=PlanoTrabalho.data_insercao.comment,
-    )
+
     contribuicoes: Optional[List[ContribuicaoSchema]] = Field(
         default=None,
         title="Contribuições",
@@ -378,14 +355,6 @@ class EntregaSchema(BaseModel):
     nome_unidade_destinataria: str = Field(
         title="Nome da unidade destinatária",
         description=Entrega.nome_unidade_destinataria.comment,
-    )
-    data_atualizacao: Optional[date] = Field(
-        title="Data de atualização",
-        description=Entrega.data_atualizacao.comment,
-    )
-    data_insercao: date = Field(
-        title="Data de inserção",
-        description=Entrega.data_insercao.comment,
     )
 
     @field_validator("tipo_meta")
@@ -587,12 +556,6 @@ class ParticipanteSchema(BaseModel):
     data_assinatura_tcr: Optional[str] = Field(
         title="Data de assinatura do TCR",
         description=Participante.data_assinatura_tcr.comment,
-    )
-    data_atualizacao: Optional[str] = Field(
-        title="Data de atualização", description=Participante.data_atualizacao.comment
-    )
-    data_insercao: str = Field(
-        title="Data de inserção", description=Participante.data_insercao.comment
     )
 
     @field_validator("situacao")
