@@ -509,7 +509,7 @@ async def create_or_update_plano_trabalho(
 @app.get(
     "/organizacao/{cod_SIAPE_instituidora}/participante/{cpf_participante}",
     summary="Consulta Status do Participante",
-    response_model=schemas.ListaStatusParticipanteSchema,
+    response_model=schemas.ParticipanteSchema,
     tags=["status participante"],
 )
 async def get_status_participante(
@@ -517,7 +517,7 @@ async def get_status_participante(
     cod_SIAPE_instituidora: int,
     cpf_participante: str,
     db: DbContextManager = Depends(DbContextManager),
-) -> schemas.ListaStatusParticipanteSchema:
+) -> schemas.ParticipanteSchema:
     "Consulta o status do participante a partir da matricula SIAPE."
 
     #  Validações de permissão
@@ -543,17 +543,17 @@ async def get_status_participante(
 @app.put(
     "/organizacao/{cod_SIAPE_instituidora}/participante/{cpf_participante}",
     summary="Envia o status de um participante",
-    response_model=schemas.ListaStatusParticipanteSchema,
+    response_model=schemas.ParticipanteSchema,
     tags=["status participante"],
 )
 async def create_status_participante(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     cod_SIAPE_instituidora: int,
     cpf_participante: str,
-    lista_status_participante: schemas.ListaStatusParticipanteSchema,
+    lista_status_participante: schemas.ParticipanteSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
-) -> schemas.ListaStatusParticipanteSchema:
+) -> schemas.ParticipanteSchema:
     """Envia um ou mais status de Programa de Gestão de um participante."""
 
     # Validações de permissão
@@ -577,7 +577,7 @@ async def create_status_participante(
     # Validações do esquema
     try:
         nova_lista_status_participante = (
-            schemas.ListaStatusParticipanteSchema.model_validate(
+            schemas.ParticipanteSchema.model_validate(
                 lista_status_participante
             )
         )
@@ -590,7 +590,7 @@ async def create_status_participante(
         ) from exception
 
     # Gravar no banco de dados e retornar os dados gravados como Pydantic
-    lista_gravada = schemas.ListaStatusParticipanteSchema.model_validate(
+    lista_gravada = schemas.ParticipanteSchema.model_validate(
         {
             "lista_status": [
                 await crud.create_status_participante(
