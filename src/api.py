@@ -507,30 +507,32 @@ async def create_or_update_plano_trabalho(
 
 # ### Participante ---------------------------------------
 @app.get(
-    "/organizacao/{cod_SIAPE_instituidora}/participante/{cpf_participante}",
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}/participante/{cpf}",
     summary="Consulta Status do Participante",
     response_model=schemas.ParticipanteSchema,
     tags=["status participante"],
 )
-async def get_status_participante(
+async def get_participante(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
-    cod_SIAPE_instituidora: int,
-    cpf_participante: str,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    cpf: str,
     db: DbContextManager = Depends(DbContextManager),
 ) -> schemas.ParticipanteSchema:
     "Consulta o status do participante a partir da matricula SIAPE."
 
     #  Validações de permissão
-    if (cod_SIAPE_instituidora != user.cod_SIAPE_instituidora) and not user.is_admin:
+    if (cod_unidade_autorizadora != user.cod_unidade_autorizadora) and not user.is_admin:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
         )
 
-    lista_status_participante = await crud.get_status_participante(
+    lista_status_participante = await crud.get_participante(
         db_session=db,
-        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
-        cpf_participante=cpf_participante,
+        origem_unidade=origem_unidade,
+        cod_unidade_autorizadora=cod_unidade_autorizadora,
+        cpf=cpf,
     )
     if not lista_status_participante:
         raise HTTPException(
@@ -541,44 +543,44 @@ async def get_status_participante(
 
 
 @app.put(
-    "/organizacao/{cod_SIAPE_instituidora}/participante/{cpf_participante}",
-    summary="Envia o status de um participante",
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}/participante/{cpf}",
+    summary="Envia um participante",
     response_model=schemas.ParticipanteSchema,
-    tags=["status participante"],
+    tags=["participante"],
 )
-async def create_status_participante(
+async def create_participante(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
-    cod_SIAPE_instituidora: int,
-    cpf_participante: str,
-    lista_status_participante: schemas.ParticipanteSchema,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    cpf: str,
+    participante: schemas.ParticipanteSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
 ) -> schemas.ParticipanteSchema:
     """Envia um ou mais status de Programa de Gestão de um participante."""
 
     # Validações de permissão
-    if (cod_SIAPE_instituidora != user.cod_SIAPE_instituidora) and not user.is_admin:
+    if (cod_unidade_autorizadora != user.cod_unidade_autorizadora) and not user.is_admin:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
         )
-    for status_participante in lista_status_participante.lista_status:
-        if cod_SIAPE_instituidora != status_participante.cod_SIAPE_instituidora:
-            raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais",
-            )
-        if cpf_participante != status_participante.cpf_participante:
-            raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Parâmetro cpf_participante na URL e no JSON devem ser iguais",
-            )
+    if cod_unidade_autorizadora != participante.cod_unidade_autorizadora:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais",
+        )
+    if cpf != participante.cpf:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Parâmetro cpf_participante na URL e no JSON devem ser iguais",
+        )
 
     # Validações do esquema
     try:
         nova_lista_status_participante = (
             schemas.ParticipanteSchema.model_validate(
-                lista_status_participante
+                participante
             )
         )
     except Exception as exception:
@@ -593,8 +595,10 @@ async def create_status_participante(
     lista_gravada = schemas.ParticipanteSchema.model_validate(
         {
             "lista_status": [
-                await crud.create_status_participante(
+                await crud.create_participante(
                     db_session=db,
+                    origem_unidade=origem_unidade,
+                    cod_unidade_autorizadora=cod_unidade_autorizadora,
                     status_participante=status_participante,
                 )
                 for status_participante in nova_lista_status_participante.lista_status

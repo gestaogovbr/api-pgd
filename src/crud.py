@@ -347,10 +347,11 @@ async def update_plano_entregas(
     return await create_plano_entregas(db_session, plano_entregas)
 
 
-async def get_status_participante(
+async def get_participante(
     db_session: DbContextManager,
-    cod_SIAPE_instituidora: int,
-    cpf_participante: str,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    cpf: str,
 ) -> Optional[schemas.ParticipanteSchema]:
     """Traz os status do participante a partir do banco de dados, consultando
     a partir dos parâmetros informados.
@@ -358,8 +359,8 @@ async def get_status_participante(
     Args:
         db_session (DbContextManager): Context manager para a sessão async
             do SQL Alchemy.
-        cod_SIAPE_instituidora (int): Código SIAPE da unidade instituidora.
-        cpf_participante (str): CPF do participante.
+        cod_unidade_autorizadora (int): Código SIAPE da unidade instituidora.
+        cpf (str): CPF do participante.
 
     Returns:
         Optional[schemas.tatusParticipanteSchema]: Lista de Status
@@ -369,8 +370,9 @@ async def get_status_participante(
     async with db_session as session:
         result = await session.execute(
             select(models.Participante)
-            .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
-            .filter_by(cpf_participante=cpf_participante)
+            .filter_by(origem_unidade=origem_unidade)
+            .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
+            .filter_by(cpf=cpf)
         )
         db_list_status_participante = result.scalars().all()
     if db_list_status_participante:
@@ -383,8 +385,10 @@ async def get_status_participante(
     return None
 
 
-async def create_status_participante(
+async def create_participante(
     db_session: DbContextManager,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
     status_participante: schemas.ParticipanteSchema,
 ) -> schemas.ParticipanteSchema:
     """Cria um status de participante definido pelos dados do schema Pydantic
