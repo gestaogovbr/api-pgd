@@ -134,7 +134,7 @@ class PlanoEntregas(Base):
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
     entregas = relationship(
-        "Entregas",
+        "Entrega",
         back_populates="plano_entregas",
         lazy="joined",
         passive_deletes=True,
