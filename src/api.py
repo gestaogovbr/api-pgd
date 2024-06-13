@@ -536,7 +536,7 @@ async def get_participante(
     )
     if not lista_status_participante:
         raise HTTPException(
-            status.HTTP_404_NOT_FOUND, detail="Status de Participante não encontrado"
+            status.HTTP_404_NOT_FOUND, detail="Participante não encontrado"
         )
 
     return lista_status_participante
