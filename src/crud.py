@@ -351,7 +351,7 @@ async def get_status_participante(
     db_session: DbContextManager,
     cod_SIAPE_instituidora: int,
     cpf_participante: str,
-) -> Optional[schemas.ListaStatusParticipanteSchema]:
+) -> Optional[schemas.ParticipanteSchema]:
     """Traz os status do participante a partir do banco de dados, consultando
     a partir dos parâmetros informados.
 
@@ -362,13 +362,13 @@ async def get_status_participante(
         cpf_participante (str): CPF do participante.
 
     Returns:
-        Optional[schemas.ListaStatusParticipanteSchema]: Lista de Status
+        Optional[schemas.tatusParticipanteSchema]: Lista de Status
             de Participante, cada item contendo um esquema Pydantic
             representando um Status de participante. Ou None se não houver.
     """
     async with db_session as session:
         result = await session.execute(
-            select(models.StatusParticipante)
+            select(models.Participante)
             .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
             .filter_by(cpf_participante=cpf_participante)
         )
@@ -376,7 +376,7 @@ async def get_status_participante(
     if db_list_status_participante:
         return {
             "lista_status": [
-                schemas.StatusParticipanteSchema.model_validate(status_participante)
+                schemas.ParticipanteSchema.model_validate(status_participante)
                 for status_participante in db_list_status_participante
             ]
         }
@@ -385,19 +385,19 @@ async def get_status_participante(
 
 async def create_status_participante(
     db_session: DbContextManager,
-    status_participante: schemas.StatusParticipanteSchema,
-) -> schemas.StatusParticipanteSchema:
+    status_participante: schemas.ParticipanteSchema,
+) -> schemas.ParticipanteSchema:
     """Cria um status de participante definido pelos dados do schema Pydantic
     status_participante.
 
     Args:
         db_session (DbContextManager): Context manager para a sessão async
             do SQL Alchemy.
-        status_participante (schemas.StatusParticipanteSchema): Esquema
+        status_participante (schemas.ParticipanteSchema): Esquema
             do Pydantic de um Status de Participante.
 
     Returns:
-        schemas.StatusParticipanteSchema: Esquema do Pydantic de um Status
+        schemas.ParticipanteSchema: Esquema do Pydantic de um Status
         de Participante dos dados inseridos.
     """
 
@@ -409,7 +409,7 @@ async def create_status_participante(
         session.add(db_status_participante)
         await session.commit()
         await session.refresh(db_status_participante)
-    return schemas.StatusParticipanteSchema.model_validate(db_status_participante)
+    return schemas.ParticipanteSchema.model_validate(db_status_participante)
 
 
 # The following methods are only for test in CI/CD environment
