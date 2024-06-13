@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from crud import (
     truncate_plano_entregas,
     truncate_plano_trabalho,
-    truncate_status_participante,
+    truncate_participante,
     truncate_user,
 )
 from crud_auth import init_user_admin
@@ -305,7 +305,7 @@ def truncate_pt():
 
 @pytest.fixture()
 def truncate_participantes():
-    truncate_status_participante()
+    truncate_participante()
 
 
 @pytest.fixture(scope="module", name="truncate_users")

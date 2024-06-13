@@ -433,12 +433,12 @@ def truncate_plano_trabalho():
     return result
 
 
-def truncate_status_participante():
+def truncate_participante():
     """Apaga a tabela status_participante.
     Usado no ambiente de testes de integração contínua.
     """
     with SyncSession.begin() as session:
-        result = session.execute(text("TRUNCATE status_participante CASCADE;"))
+        result = session.execute(text("TRUNCATE participante CASCADE;"))
     return result
 
 def truncate_user():
