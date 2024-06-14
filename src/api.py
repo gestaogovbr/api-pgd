@@ -429,7 +429,9 @@ async def create_or_update_plano_trabalho(
     plano de trabalho por um novo com os dados informados."""
 
     # Validações de permissão
-    if (cod_unidade_autorizadora != user.cod_unidade_autorizadora) and not user.is_admin:
+    if (
+        cod_unidade_autorizadora != user.cod_unidade_autorizadora
+    ) and not user.is_admin:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
@@ -471,7 +473,6 @@ async def create_or_update_plano_trabalho(
         status=plano_trabalho.status,
         data_inicio=plano_trabalho.data_inicio,
         data_termino=plano_trabalho.data_termino,
-
     )
 
     if conflicting_period and not plano_trabalho.cancelado:
@@ -527,7 +528,9 @@ async def get_participante(
     "Consulta o status do participante a partir da matricula SIAPE."
 
     #  Validações de permissão
-    if (cod_unidade_autorizadora != user.cod_unidade_autorizadora) and not user.is_admin:
+    if (
+        cod_unidade_autorizadora != user.cod_unidade_autorizadora
+    ) and not user.is_admin:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
@@ -565,7 +568,10 @@ async def create_participante(
     """Envia um ou mais status de Programa de Gestão de um participante."""
 
     # Validações de permissão
-    if (cod_unidade_autorizadora != user.cod_unidade_autorizadora) and not user.is_admin:
+    if (
+        origem_unidade != user.origem_unidade
+        or cod_unidade_autorizadora != user.cod_unidade_autorizadora
+    ) and not user.is_admin:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
@@ -583,11 +589,7 @@ async def create_participante(
 
     # Validações do esquema
     try:
-        nova_lista_status_participante = (
-            schemas.ParticipanteSchema.model_validate(
-                participante
-            )
-        )
+        novo_participante = schemas.ParticipanteSchema.model_validate(participante)
     except Exception as exception:
         message = getattr(exception, "message", str(exception))
         if getattr(exception, "json", None):
@@ -597,19 +599,14 @@ async def create_participante(
         ) from exception
 
     # Gravar no banco de dados e retornar os dados gravados como Pydantic
-    lista_gravada = schemas.ParticipanteSchema.model_validate(
-        {
-            "lista_status": [
-                await crud.create_participante(
-                    db_session=db,
-                    origem_unidade=origem_unidade,
-                    cod_unidade_autorizadora=cod_unidade_autorizadora,
-                    status_participante=status_participante,
-                )
-                for status_participante in nova_lista_status_participante.lista_status
-            ]
-        }
+    participante_gravado = schemas.ParticipanteSchema.model_validate(
+        await crud.create_participante(
+            db_session=db,
+            origem_unidade=origem_unidade,
+            cod_unidade_autorizadora=cod_unidade_autorizadora,
+            participante=novo_participante,
+        )
     )
 
     response.status_code = status.HTTP_201_CREATED
-    return lista_gravada
+    return participante_gravado

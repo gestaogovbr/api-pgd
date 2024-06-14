@@ -523,15 +523,15 @@ class ParticipanteSchema(BaseModel):
     __doc__ = Participante.__doc__
     model_config = ConfigDict(from_attributes=True)
     origem_unidade: str = Field(
-        title="Código do sistema da unidade",
+        title="Código do sistema da unidade (SIAPE ou SIORG)",
         description=Participante.origem_unidade.comment,
     )
     cod_unidade_autorizadora: int = Field(
-        title="Código da unidade organizacional (UORG) no SIAPE",
+        title="Código da unidade organizacional autorizadora do PGD",
         description=Participante.cod_unidade_autorizadora.comment,
     )
     cod_unidade_lotacao: int = Field(
-        title="Código da unidade organizacional (UORG) no SIAPE",
+        title="Código da unidade organizacional de lotação do participante",
         description=Participante.cod_unidade_lotacao.comment,
     )
     cpf: str = Field(
@@ -542,7 +542,7 @@ class ParticipanteSchema(BaseModel):
         description=Participante.matricula_siape.comment,
     )
     cod_unidade_instituidora: int = Field(
-        title="Código da unidade organizacional (UORG) no SIAPE",
+        title="Código da unidade organizacional instituidora do PGD",
         description=Participante.cod_unidade_instituidora.comment,
     )
     situacao: int = Field(
@@ -597,7 +597,11 @@ class UsersInputSchema(BaseModel):
 
 
 class UsersGetSchema(UsersInputSchema):
-    __doc__ = Users.__doc__
+    """Esquema usado para responder a consultas à API sobre usuários, por
+    meio do método HTTP GET.
+
+    Campos ocultos não são mostrados.
+    """
     model_config = ConfigDict(from_attributes=True)
     is_admin: bool = Field(
         title="se o usuário será administrador da api-pgd",
@@ -609,8 +613,12 @@ class UsersGetSchema(UsersInputSchema):
         default=False,
         description=Users.disabled.comment,
     )
+    origem_unidade: str = Field(
+        title="Código do sistema da unidade (SIAPE ou SIORG)",
+        description=Users.origem_unidade.comment,
+    )
     cod_unidade_autorizadora: int = Field(
-        title="Código SIAPE da organização que autorizou o PGD",
+        title="Código da organização que autorizou o PGD",
         description=Users.cod_unidade_autorizadora.comment,
     )
 
