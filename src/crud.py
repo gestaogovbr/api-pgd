@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 
 import models, schemas
-from db_config import DbContextManager, SyncSession
+from db_config import DbContextManager, sync_engine
 
 
 async def get_plano_trabalho(
@@ -404,16 +404,60 @@ async def create_participante(
         de Participante dos dados inseridos.
     """
 
-    db_participante = models.Participante(
-        **participante.model_dump()
-    )
-    db_participante.data_insercao = datetime.now()
     async with db_session as session:
+        db_participante = models.Participante(
+            **participante.model_dump()
+        )
+        db_participante.data_insercao = datetime.now()
         session.add(db_participante)
         await session.commit()
         await session.refresh(db_participante)
     return schemas.ParticipanteSchema.model_validate(db_participante)
 
+
+async def update_participante(
+    db_session: DbContextManager,
+    participante: schemas.ParticipanteSchema,
+) -> schemas.ParticipanteSchema:
+    """Atualiza um participante conforme os dados recebidos no
+    esquema Pydantic em participante.
+
+    Os dados existentes são primeiro apagados do banco para depois
+    inserir os dados recebidos.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão
+            async do SQL Alchemy.
+        participante (schemas.ParticipanteSchema): Dados do plano
+            de entregas como um esquema Pydantic.
+
+    Returns:
+        schemas.ParticipanteSchema: Esquema Pydantic do Participante
+            com o retorno de create_participante.
+    """
+    async with db_session as session:
+        # find and delete
+        result = await session.execute(
+            select(models.Participante)
+            .filter_by(origem_unidade=participante.origem_unidade)
+            .filter_by(cod_unidade_autorizadora=participante.cod_unidade_autorizadora)
+            .filter_by(cod_unidade_lotacao=participante.cod_unidade_lotacao)
+            .filter_by(matricula_siape=participante.matricula_siape)
+        )
+        db_participante = result.unique().scalar_one()
+        data_insercao = db_participante.data_insercao
+        await session.delete(db_participante)
+        await session.commit()
+        # create a new
+        db_participante = models.Participante(
+            **participante.model_dump()
+        )
+        db_participante.data_insercao = data_insercao
+        db_participante.data_atualizacao = datetime.now()
+        session.add(db_participante)
+        await session.commit()
+        await session.refresh(db_participante)
+    return schemas.ParticipanteSchema.model_validate(db_participante)
 
 # The following methods are only for test in CI/CD environment
 
@@ -422,8 +466,9 @@ def truncate_plano_entregas():
     """Apaga a tabela plano_entregas.
     Usado no ambiente de testes de integração contínua.
     """
-    with SyncSession.begin() as session:
-        result = session.execute(text("TRUNCATE plano_entregas CASCADE;"))
+    with sync_engine.connect() as conn:
+        result = conn.execute(text("TRUNCATE plano_entregas CASCADE;"))
+        conn.commit()
     return result
 
 
@@ -431,8 +476,9 @@ def truncate_plano_trabalho():
     """Apaga a tabela plano_trabalho.
     Usado no ambiente de testes de integração contínua.
     """
-    with SyncSession.begin() as session:
-        result = session.execute(text("TRUNCATE plano_trabalho CASCADE;"))
+    with sync_engine.connect() as conn:
+        result = conn.execute(text("TRUNCATE plano_trabalho CASCADE;"))
+        conn.commit()
     return result
 
 
@@ -440,14 +486,18 @@ def truncate_participante():
     """Apaga a tabela status_participante.
     Usado no ambiente de testes de integração contínua.
     """
-    with SyncSession.begin() as session:
-        result = session.execute(text("TRUNCATE participante CASCADE;"))
+    with sync_engine.connect() as conn:
+        result = conn.execute(text("TRUNCATE participante CASCADE;"))
+        result2 = conn.execute(text("SELECT 1;"))
+        result2.one_or_none()
+        conn.commit()
     return result
 
 def truncate_user():
     """Apaga a tabela users.
     Usado no ambiente de testes de integração contínua.
     """
-    with SyncSession.begin() as session:
-        result = session.execute(text("TRUNCATE users CASCADE;"))
+    with sync_engine.connect() as conn:
+        result = conn.execute(text("TRUNCATE users CASCADE;"))
+        conn.commit()
     return result

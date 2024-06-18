@@ -562,7 +562,7 @@ async def get_participante(
     response_model=schemas.ParticipanteSchema,
     tags=["participante"],
 )
-async def create_participante(
+async def create_or_update_participante(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     origem_unidade: str,
     cod_unidade_autorizadora: int,
@@ -583,16 +583,19 @@ async def create_participante(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
         )
-    if cod_unidade_autorizadora != participante.cod_unidade_autorizadora:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais",
-        )
-    if matricula_siape != participante.matricula_siape:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro matricula_siape na URL e no JSON devem ser iguais",
-        )
+
+    # Validações de conteúdo JSON e URL
+    for field in (
+        "origem_unidade",
+        "cod_unidade_autorizadora",
+        "cod_unidade_lotacao",
+        "matricula_siape",
+    ):
+        if locals().get(field) != getattr(participante, field):
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Parâmetro {field} na URL e no JSON devem ser iguais",
+            )
 
     # Validações do esquema
     try:
@@ -605,13 +608,35 @@ async def create_participante(
             status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
         ) from exception
 
-    # Gravar no banco de dados e retornar os dados gravados como Pydantic
-    participante_gravado = schemas.ParticipanteSchema.model_validate(
-        await crud.create_participante(
-            db_session=db,
-            participante=novo_participante,
-        )
+    # Verifica se já existe
+    db_participante = await crud.get_participante(
+        db_session=db,
+        origem_unidade=origem_unidade,
+        cod_unidade_autorizadora=cod_unidade_autorizadora,
+        cod_unidade_lotacao=cod_unidade_lotacao,
+        matricula_siape=matricula_siape,
     )
 
-    response.status_code = status.HTTP_201_CREATED
+    # Gravar no banco de dados
+    try:
+        if not db_participante:  # create
+            novo_participante = await crud.create_participante(
+                db_session=db,
+                participante=novo_participante,
+            )
+            response.status_code = status.HTTP_201_CREATED
+        else:  # update
+            novo_participante = await crud.update_participante(
+                db_session=db,
+                participante=novo_participante,
+            )
+    except IntegrityError as exception:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"IntegrityError: {str(exception)}",
+        ) from exception
+
+    # retornar os dados gravados como Pydantic
+    participante_gravado = schemas.ParticipanteSchema.model_validate(novo_participante)
+
     return participante_gravado

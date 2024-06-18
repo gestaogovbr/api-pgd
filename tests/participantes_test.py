@@ -147,6 +147,7 @@ def test_put_participante_outra_unidade_admin(
     assert response.json().get("detail", None) is None
     assert_equal_participante(response.json(), input_part)
 
+
 @pytest.mark.parametrize(
     (
         "cod_unidade_autorizadora_1, cod_unidade_autorizadora_2, "
@@ -190,6 +191,8 @@ def test_put_duplicate_participante(
     criado um novo registro e será retornado o código HTTP 201 Created.
     """
     input_part["cod_unidade_autorizadora"] = cod_unidade_autorizadora_1
+    input_part["cod_unidade_lotacao"] = cod_unidade_lotacao_1
+    input_part["matricula_siape"] = matricula_siape_1
     response = client.put(
         f"/organizacao/SIAPE/{cod_unidade_autorizadora_1}"
         f"/{cod_unidade_lotacao_1}"
@@ -206,6 +209,8 @@ def test_put_duplicate_participante(
     else:
         header_usr = header_usr_2
     input_part["cod_unidade_autorizadora"] = cod_unidade_autorizadora_2
+    input_part["cod_unidade_lotacao"] = cod_unidade_lotacao_2
+    input_part["matricula_siape"] = matricula_siape_2
     response = client.put(
         f"/organizacao/SIAPE/{cod_unidade_autorizadora_2}"
         f"/{cod_unidade_lotacao_2}"
@@ -214,8 +219,10 @@ def test_put_duplicate_participante(
         headers=header_usr,
     )
 
-    if (cod_unidade_autorizadora_1 == cod_unidade_autorizadora_2) and (
-        matricula_siape_1 == matricula_siape_2
+    if (
+        (cod_unidade_autorizadora_1 == cod_unidade_autorizadora_2)
+        and (cod_unidade_lotacao_1 == cod_unidade_lotacao_2)
+        and (matricula_siape_1 == matricula_siape_2)
     ):
         assert response.status_code == status.HTTP_200_OK
     else:
