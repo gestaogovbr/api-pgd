@@ -534,9 +534,6 @@ class ParticipanteSchema(BaseModel):
         title="Código da unidade organizacional de lotação do participante",
         description=Participante.cod_unidade_lotacao.comment,
     )
-    cpf: str = Field(
-        title="Número do CPF do agente público", description=Participante.cpf.comment
-    )
     matricula_siape: str = Field(
         title="Número da matrícula do participante no SIAPE",
         description=Participante.matricula_siape.comment,
@@ -544,6 +541,9 @@ class ParticipanteSchema(BaseModel):
     cod_unidade_instituidora: int = Field(
         title="Código da unidade organizacional instituidora do PGD",
         description=Participante.cod_unidade_instituidora.comment,
+    )
+    cpf: str = Field(
+        title="Número do CPF do agente público", description=Participante.cpf.comment
     )
     situacao: int = Field(
         title="Situação do agente público no PGD",

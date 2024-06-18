@@ -354,37 +354,39 @@ async def get_participante(
     db_session: DbContextManager,
     origem_unidade: str,
     cod_unidade_autorizadora: int,
-    cpf: str,
+    cod_unidade_lotacao: int,
+    matricula_siape: str,
 ) -> Optional[schemas.ParticipanteSchema]:
-    """Traz os status do participante a partir do banco de dados, consultando
-    a partir dos parâmetros informados.
+    """Traz o participante a partir do banco de dados, consultando a
+    partir dos parâmetros informados.
 
     Args:
-        db_session (DbContextManager): Context manager para a sessão async
-            do SQL Alchemy.
-        cod_unidade_autorizadora (int): Código SIAPE da unidade instituidora.
-        cpf (str): CPF do participante.
+        db_session (DbContextManager): Context manager para a sessão
+            async do SQL Alchemy.
+        origem_unidade (str): Origem do sistema da unidade: "SIAPE" ou
+            "SIORG"
+        cod_unidade_autorizadora (int): Código da unidade autorizadora.
+        cod_unidade_lotacao (int): Código da unidade de lotação.
+        matricula_siape (Optional[str]): Matrícula SIAPE do participante.
+            If omitted, will return the first one found.
 
     Returns:
-        Optional[schemas.tatusParticipanteSchema]: Lista de Status
-            de Participante, cada item contendo um esquema Pydantic
-            representando um Status de participante. Ou None se não houver.
+        Optional[schemas.ParticipanteSchema]: Participante, contendo um
+            esquema Pydantic representando um participante. Ou None se
+            não houver.
     """
     async with db_session as session:
-        result = await session.execute(
+        query = (
             select(models.Participante)
             .filter_by(origem_unidade=origem_unidade)
             .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
-            .filter_by(cpf=cpf)
+            .filter_by(cod_unidade_lotacao=cod_unidade_lotacao)
+            .filter_by(matricula_siape=matricula_siape)
         )
-        db_list_status_participante = result.scalars().all()
-    if db_list_status_participante:
-        return {
-            "lista_status": [
-                schemas.ParticipanteSchema.model_validate(status_participante)
-                for status_participante in db_list_status_participante
-            ]
-        }
+        result = await session.execute(query)
+        db_participante = result.scalars().unique().one_or_none()
+    if db_participante:
+        return schemas.ParticipanteSchema.model_validate(db_participante)
     return None
 
 
