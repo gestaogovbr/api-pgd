@@ -273,7 +273,7 @@ def test_get_participante(
     """Tenta ler os dados de um participante pelo cpf."""
     response = client.get(
         f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
-        f"{input_part['cod_unidade_lotacao']}"
+        f"/{input_part['cod_unidade_lotacao']}"
         f"/participante/{input_part['matricula_siape']}",
         headers=header_usr_1,
     )
@@ -335,7 +335,8 @@ def test_get_participante_different_unit_admin(
     input_part["cod_unidade_autorizadora"] = 3
 
     response = client.get(
-        f"/organizacao/{input_part['cod_unidade_autorizadora']}"
+        f"/organizacao/{input_part['origem_unidade']}"
+        f"/{input_part['cod_unidade_autorizadora']}"
         f"/{input_part['cod_unidade_lotacao']}"
         f"/participante/{input_part['matricula_siape']}",
         headers=header_admin,
