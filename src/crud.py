@@ -67,7 +67,6 @@ async def check_planos_trabalho_per_period(
         cod_unidade_executora (int): Código da unidade executora.
         cpf_participante (str): CPF do participante.
         id_plano_trabalho (int): id do Plano de Trabalho.
-        status (int): Status do Plano de Trabalho
         data_inicio (date): Data de início do Plano de Trabalho.
         data_termino (date): Data de término do Plano de Trabalho.
 
@@ -137,9 +136,6 @@ async def create_plano_trabalho(
     async with db_session as session:
         for contribuicao in contribuicoes:
             contribuicao.data_insercao = creation_timestamp
-            contribuicao.id_plano_entrega = (
-                plano_trabalho.id_plano_entrega
-            )
             session.add(contribuicao)
             db_plano_trabalho.contribuicoes.append(contribuicao)
             db_plano_trabalho.contribuicoes = contribuicoes

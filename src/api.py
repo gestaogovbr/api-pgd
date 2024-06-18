@@ -470,12 +470,11 @@ async def create_or_update_plano_trabalho(
         cod_unidade_executora=plano_trabalho.cod_unidade_executora,
         cpf_participante=plano_trabalho.cpf_participante,
         id_plano_trabalho=plano_trabalho.id_plano_trabalho,
-        status=plano_trabalho.status,
         data_inicio=plano_trabalho.data_inicio,
         data_termino=plano_trabalho.data_termino,
     )
 
-    if conflicting_period and not plano_trabalho.cancelado:
+    if plano_trabalho.status != 1 and conflicting_period:
         detail_msg = (
             "Já existe um plano de trabalho para este "
             "cod_SIAPE_unidade_exercicio para este cpf_participante "
@@ -486,6 +485,7 @@ async def create_or_update_plano_trabalho(
     # Verifica se já existe
     db_plano_trabalho = await crud.get_plano_trabalho(
         db_session=db,
+        origem_unidade=origem_unidade,
         cod_unidade_autorizadora=cod_unidade_autorizadora,
         id_plano_trabalho=id_plano_trabalho,
     )
