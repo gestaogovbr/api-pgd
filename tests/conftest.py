@@ -30,6 +30,7 @@ USERS_CREDENTIALS = [
         "password": "secret1",
         "is_admin": True,
         "disabled": False,
+        "origem_unidade": "SIAPE",
         "cod_unidade_autorizadora": 1,
     },
     {
@@ -38,6 +39,7 @@ USERS_CREDENTIALS = [
         "password": "secret2",
         # "is_admin": False, # defaults set to False
         # "disabled": False, # defaults set to False
+        "origem_unidade": "SIAPE",
         "cod_unidade_autorizadora": 2,
     },
 ]

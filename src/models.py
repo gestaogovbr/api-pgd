@@ -736,10 +736,14 @@ class Users(Base):
         default=False,
         comment="Se usuário está inativado",
     )
+    origem_unidade = Column(
+        String,
+        nullable=False,
+        comment="Código do sistema da unidade: “SIAPE” ou “SIORG”.",
+    )
     cod_unidade_autorizadora = Column(
         Integer,
         nullable=False,
-        # default=False,
         comment="Em qual unidade autorizadora o usuário está cadastrado",
     )
     data_atualizacao = Column(
