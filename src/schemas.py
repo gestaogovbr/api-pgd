@@ -276,13 +276,13 @@ class PlanoTrabalhoSchema(BaseModel):
     )
 
     contribuicoes: Optional[List[ContribuicaoSchema]] = Field(
-        default=None,
+        default=[],
         title="Contribuições",
         description="Lista de Contribuições planejadas para o Plano de Trabalho.",
     )
     avaliacoes_registros_execucao: Optional[List[AvaliacaoRegistrosExecucaoSchema]] = (
         Field(
-            default=None,
+            default=[],
             title="Avaliações de registros de execução",
             description="Lista de avaliações de registros de execução do Plano de Trabalho.",
         )
@@ -602,6 +602,7 @@ class UsersGetSchema(UsersInputSchema):
 
     Campos ocultos não são mostrados.
     """
+
     model_config = ConfigDict(from_attributes=True)
     is_admin: bool = Field(
         title="se o usuário será administrador da api-pgd",
