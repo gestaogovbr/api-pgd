@@ -602,8 +602,6 @@ async def create_participante(
     participante_gravado = schemas.ParticipanteSchema.model_validate(
         await crud.create_participante(
             db_session=db,
-            origem_unidade=origem_unidade,
-            cod_unidade_autorizadora=cod_unidade_autorizadora,
             participante=novo_participante,
         )
     )
