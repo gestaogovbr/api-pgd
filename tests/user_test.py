@@ -22,6 +22,7 @@ USERS_TEST = [
         "password": "secret",
         "is_admin": False,
         "disabled": False,
+        "origem_unidade": "SIAPE",
         "cod_unidade_autorizadora": 1,
     },
     # to get and delete (not created)
@@ -30,6 +31,7 @@ USERS_TEST = [
         "password": "secret",
         "is_admin": False,
         "disabled": False,
+        "origem_unidade": "SIAPE",
         "cod_unidade_autorizadora": 1,
     },
     # to get without one of required fields (email, password, cod_unidade_autorizadora)
@@ -44,6 +46,7 @@ USERS_TEST = [
         "password": "secret",
         # "is_admin": False, # defaults do False
         # "disabled": False, # defaults do False
+        "origem_unidade": "SIAPE",
         "cod_unidade_autorizadora": 1,
     },
 ]
@@ -107,6 +110,10 @@ def test_get_user_self_logged_in(
     assert data.get("email", None) == user1_credentials["email"]
     assert data.get("is_admin", None) == user1_credentials["is_admin"]
     assert data.get("disabled", None) == user1_credentials["disabled"]
+    assert (
+        data.get("origem_unidade", None)
+        == user1_credentials["origem_unidade"]
+    )
     assert (
         data.get("cod_unidade_autorizadora", None)
         == user1_credentials["cod_unidade_autorizadora"]
