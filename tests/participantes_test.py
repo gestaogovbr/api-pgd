@@ -2,7 +2,7 @@
 Testes relacionados aos status de participantes.
 """
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from httpx import Client
 
@@ -43,13 +43,22 @@ def remove_null_optional_fields(data: dict) -> dict:
     return data
 
 
+def parse_datetimes(data: dict) -> dict:
+    """Parse datetimes from the data."""
+    if isinstance(data["data_assinatura_tcr"], str):
+        data["data_assinatura_tcr"] = datetime.fromisoformat(
+            data["data_assinatura_tcr"]
+        )
+    return data
+
+
 def assert_equal_participante(participante_1: list[dict], participante_2: list[dict]):
     """Verifica a igualdade de dois participantes, considerando
     apenas os campos obrigatórios.
     """
-    assert remove_null_optional_fields(participante_1) == remove_null_optional_fields(
-        participante_2
-    )
+    assert parse_datetimes(
+        remove_null_optional_fields(participante_1)
+    ) == parse_datetimes(remove_null_optional_fields(participante_2))
 
 
 # Os testes usam muitas fixtures, então necessariamente precisam de
@@ -252,7 +261,9 @@ def test_put_participante_missing_mandatory_fields(
     for field in field_list:
         del input_part[field]
 
-    input_part["matricula_siape"] = f"{1800000 + offset}"  # precisa ser um novo participante
+    input_part["matricula_siape"] = (
+        f"{1800000 + offset}"  # precisa ser um novo participante
+    )
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         f"/{input_part['cod_unidade_lotacao']}"
@@ -287,7 +298,7 @@ def test_get_participante_inexistente(
     """Tenta consultar um participante que não existe na base de dados."""
     response = client.get(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        "/1" # cod_unidade_lotacao
+        "/1"  # cod_unidade_lotacao
         "/participante/3311776",
         headers=header_usr_1,
     )
