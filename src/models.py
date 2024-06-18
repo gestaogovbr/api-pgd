@@ -648,13 +648,6 @@ class Participante(Base):
         "lotação do participante.\n\n"
         "Obs: A instituição que não esteja no SIAPE pode usar o código SIORG.",
     )
-    cpf = Column(
-        String,
-        primary_key=True,
-        nullable=False,
-        comment="Número do CPF do agente público selecionado para PGD, sem "
-        "pontos, hífen ou caracteres especiais.",
-    )
     matricula_siape = Column(
         String,
         primary_key=True,
@@ -668,6 +661,12 @@ class Participante(Base):
         comment="Código da unidade organizacional (UORG) no Sistema Integrado de "
         "Administração de Recursos Humanos (SIAPE) corresponde à Unidade de "
         'Instituição. Pode ser o mesmo que o "cod_unidade_autorizadora".',
+    )
+    cpf = Column(
+        String,
+        nullable=False,
+        comment="Número do CPF do agente público selecionado para PGD, sem "
+        "pontos, hífen ou caracteres especiais.",
     )
     situacao = Column(
         Integer,

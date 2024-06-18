@@ -513,45 +513,51 @@ async def create_or_update_plano_trabalho(
 
 # ### Participante ---------------------------------------
 @app.get(
-    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}/participante/{cpf}",
-    summary="Consulta Status do Participante",
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+    "/{cod_unidade_lotacao}/participante/{matricula_siape}",
+    summary="Consulta um Participante",
     response_model=schemas.ParticipanteSchema,
-    tags=["status participante"],
+    tags=["participante"],
 )
 async def get_participante(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     origem_unidade: str,
     cod_unidade_autorizadora: int,
-    cpf: str,
+    cod_unidade_lotacao: int,
+    matricula_siape: str,
     db: DbContextManager = Depends(DbContextManager),
 ) -> schemas.ParticipanteSchema:
-    "Consulta o status do participante a partir da matricula SIAPE."
+    "Consulta o participante a partir da matricula SIAPE."
 
     #  Validações de permissão
     if (
-        cod_unidade_autorizadora != user.cod_unidade_autorizadora
-    ) and not user.is_admin:
+        (origem_unidade != user.origem_unidade)
+        or (cod_unidade_autorizadora != user.cod_unidade_autorizadora)
+        and not user.is_admin
+    ):
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
         )
 
-    lista_status_participante = await crud.get_participante(
+    participante = await crud.get_participante(
         db_session=db,
         origem_unidade=origem_unidade,
         cod_unidade_autorizadora=cod_unidade_autorizadora,
-        cpf=cpf,
+        cod_unidade_lotacao=cod_unidade_lotacao,
+        matricula_siape=matricula_siape,
     )
-    if not lista_status_participante:
+    if not participante:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail="Participante não encontrado"
         )
 
-    return lista_status_participante
+    return participante
 
 
 @app.put(
-    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}/participante/{cpf}",
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+    "/{cod_unidade_lotacao}/participante/{matricula_siape}",
     summary="Envia um participante",
     response_model=schemas.ParticipanteSchema,
     tags=["participante"],
@@ -560,7 +566,8 @@ async def create_participante(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     origem_unidade: str,
     cod_unidade_autorizadora: int,
-    cpf: str,
+    cod_unidade_lotacao: int,
+    matricula_siape: str,
     participante: schemas.ParticipanteSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
@@ -581,10 +588,10 @@ async def create_participante(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais",
         )
-    if cpf != participante.cpf:
+    if matricula_siape != participante.matricula_siape:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro cpf_participante na URL e no JSON devem ser iguais",
+            detail="Parâmetro matricula_siape na URL e no JSON devem ser iguais",
         )
 
     # Validações do esquema

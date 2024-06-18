@@ -70,7 +70,8 @@ def test_put_participante(
     """Testa a submissão de um participante a partir do template"""
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/participante/{input_part['cpf']}",
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -91,7 +92,7 @@ def test_put_participante_unidade_nao_permitida(
     (user não é admin)
     """
     response = client.put(
-        f"/organizacao/SIAPE/3/participante/{input_part['cpf']}",
+        f"/organizacao/SIAPE/3/3/participante/{input_part['cpf']}",
         json=input_part,
         headers=header_usr_2,
     )
@@ -128,7 +129,7 @@ def test_put_participante_outra_unidade_admin(
     assert admin_data.get("is_admin", None) is True
 
     response = client.put(
-        f"/organizacao/SIAPE/3/participante/{input_part['cpf']}",
+        f"/organizacao/SIAPE/3/3/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_admin,
     )
@@ -141,13 +142,20 @@ def test_put_participante_outra_unidade_admin(
 @pytest.mark.parametrize(
     (
         "cod_unidade_autorizadora_1, cod_unidade_autorizadora_2, "
+        "cod_unidade_lotacao_1, cod_unidade_lotacao_2, "
         "matricula_siape_1, matricula_siape_2"
     ),
     [
-        (1, 1, "1237654", "1237654"),  # mesma unidade, mesma matrícula SIAPE
-        (1, 2, "1237654", "1237654"),  # unidades diferentes, mesma matrícula SIAPE
-        (1, 1, "1237654", "1230054"),  # mesma unidade, matrículas diferentes
-        (1, 2, "1237654", "1230054"),  # unidades diferentes, matrículas diferentes
+        # mesmas unidades, mesma matrícula SIAPE
+        (1, 1, 10, 10, "1237654", "1237654"),
+        # unidades autorizadoras diferentes, mesma matrícula SIAPE
+        (1, 2, 10, 20, "1237654", "1237654"),
+        # unidades de lotação diferentes, mesma matrícula SIAPE
+        (1, 1, 10, 11, "1237654", "1237654"),
+        # mesma unidade, matrículas diferentes
+        (1, 1, 10, 10, "1237654", "1230054"),
+        # unidades diferentes, matrículas diferentes
+        (1, 2, 10, 20, "1237654", "1230054"),
     ],
 )
 def test_put_duplicate_participante(
@@ -155,6 +163,8 @@ def test_put_duplicate_participante(
     input_part: dict,
     cod_unidade_autorizadora_1: int,
     cod_unidade_autorizadora_2: int,
+    cod_unidade_lotacao_1: int,
+    cod_unidade_lotacao_2: int,
     matricula_siape_1: str,
     matricula_siape_2: str,
     user1_credentials: dict,
@@ -163,10 +173,10 @@ def test_put_duplicate_participante(
     client: Client,
 ):
     """
-    Testa o envio de um mesmo participantes com o mesmo cpf. O
-    comportamento do segundo envio será testado conforme o caso.
+    Testa o envio de um mesmo participantes com a mesma matrícula SIAPE.
+    O comportamento do segundo envio será testado conforme o caso.
 
-    Sendo a mesma matrícula e o mesmo CPF na mesma unidade autorizadora,
+    Sendo a mesma matrícula na mesma unidade autorizadora e de lotação,
     o registro será atualizado e retornará o código HTTP 200 Ok.
     Se a unidade e/ou a matrícula forem diferentes, entende-se que será
     criado um novo registro e será retornado o código HTTP 201 Created.
@@ -174,7 +184,8 @@ def test_put_duplicate_participante(
     input_part["cod_unidade_autorizadora"] = cod_unidade_autorizadora_1
     response = client.put(
         f"/organizacao/SIAPE/{cod_unidade_autorizadora_1}"
-        f"/participante/{input_part['cpf']}",
+        f"/{cod_unidade_lotacao_1}"
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -189,7 +200,8 @@ def test_put_duplicate_participante(
     input_part["cod_unidade_autorizadora"] = cod_unidade_autorizadora_2
     response = client.put(
         f"/organizacao/SIAPE/{cod_unidade_autorizadora_2}"
-        f"/participante/{input_part['cpf']}",
+        f"/{cod_unidade_lotacao_2}"
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr,
     )
@@ -212,15 +224,16 @@ def test_create_participante_inconsistent(
     client: Client,
 ):
     """Tenta submeter participante inconsistente (URL difere do JSON)"""
-    novo_cpf = "82893311776"
+    nova_matricula = "3311776"
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/participante/{novo_cpf}",
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{nova_matricula}",
         json=input_part,
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro cpf na URL e no JSON devem ser iguais"
+    detail_msg = "Parâmetro matricula_siape na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_msg
 
 
@@ -234,15 +247,16 @@ def test_put_participante_missing_mandatory_fields(
     client: Client,
 ):
     """Tenta submeter participantes faltando campos obrigatórios"""
-    cpf_participante = input_part["cpf"]
+    matricula_siape = input_part["matricula_siape"]
     offset, field_list = missing_fields
     for field in field_list:
         del input_part[field]
 
-    input_part["cpf"] = f"{1800 + offset}"  # precisa ser um novo participante
+    input_part["matricula_siape"] = f"{1800000 + offset}"  # precisa ser um novo participante
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/participante/{cpf_participante}",
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{matricula_siape}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -259,7 +273,8 @@ def test_get_participante(
     """Tenta ler os dados de um participante pelo cpf."""
     response = client.get(
         f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
-        f"/participante/{input_part['cpf']}",
+        f"{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         headers=header_usr_1,
     )
     assert response.status_code == status.HTTP_200_OK
@@ -272,7 +287,8 @@ def test_get_participante_inexistente(
     """Tenta consultar um participante que não existe na base de dados."""
     response = client.get(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        "/participante/82893311776",
+        "/1" # cod_unidade_lotacao
+        "/participante/3311776",
         headers=header_usr_1,
     )
 
@@ -296,7 +312,8 @@ def test_get_participante_different_unit(
 
     response = client.get(
         f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
-        f"/participante/{input_part['cpf']}",
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         headers=header_usr_2,
     )
 
@@ -319,7 +336,8 @@ def test_get_participante_different_unit_admin(
 
     response = client.get(
         f"/organizacao/{input_part['cod_unidade_autorizadora']}"
-        f"/participante/{input_part['cpf']}",
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         headers=header_admin,
     )
     assert response.status_code == status.HTTP_200_OK
@@ -350,7 +368,8 @@ def test_put_participante_invalid_matricula_siape(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/participante/{input_part['cpf']}",
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -391,7 +410,8 @@ def test_put_participante_invalid_cpf(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/participante/{input_part['cpf']}",
+        f"{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -429,7 +449,8 @@ def test_put_part_invalid_ativo(
     input_part["situacao"] = situacao
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/participante/{input_part['cpf']}",
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -456,7 +477,8 @@ def test_put_part_invalid_modalidade_execucao(
     input_part["modalidade_execucao"] = modalidade_execucao
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/participante/{input_part['cpf']}",
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -482,7 +504,8 @@ def test_put_invalid_data_assinatura_tcr(
     input_part["data_assinatura_tcr"] = date.today() + timedelta(days=1)
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/participante/{input_part['cpf']}",
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
@@ -508,7 +531,8 @@ def test_put_data_assinatura_tcr_default_value(
     input_part["data_assinatura_tcr"] = None
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/participante/{input_part['cpf']}",
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
     )
