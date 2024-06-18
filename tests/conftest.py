@@ -275,21 +275,23 @@ def example_part(
     """Cria um exemplo de status de participante."""
     client.put(
         f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
-        f"/participante/{input_part['cpf']}",
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_admin,
     )
 
 
 @pytest.fixture()
-def example_part_unidade_3(
+def example_part_unidade_3( 
     client: httpx.Client, input_part: dict, header_admin: dict
 ):
     """Cria um exemplo de status de participante na unidade 3."""
     input_part["cod_unidade_autorizadora"] = 3
     client.put(
         f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
-        f"/participante/{input_part['cpf']}",
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_admin,
     )
