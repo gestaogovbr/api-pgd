@@ -553,7 +553,7 @@ class ParticipanteSchema(BaseModel):
         title="Modalidade e regime de execução do trabalho",
         description=Participante.modalidade_execucao.comment,
     )
-    data_assinatura_tcr: Optional[str] = Field(
+    data_assinatura_tcr: Optional[datetime] = Field(
         title="Data de assinatura do TCR",
         description=Participante.data_assinatura_tcr.comment,
     )
