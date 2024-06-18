@@ -52,13 +52,13 @@ def parse_datetimes(data: dict) -> dict:
     return data
 
 
-def assert_equal_participante(participante_1: list[dict], participante_2: list[dict]):
+def assert_equal_participante(participante_1: dict, participante_2: dict):
     """Verifica a igualdade de dois participantes, considerando
     apenas os campos obrigatórios.
     """
     assert parse_datetimes(
-        remove_null_optional_fields(participante_1)
-    ) == parse_datetimes(remove_null_optional_fields(participante_2))
+        remove_null_optional_fields(participante_1.copy())
+    ) == parse_datetimes(remove_null_optional_fields(participante_2.copy()))
 
 
 # Os testes usam muitas fixtures, então necessariamente precisam de
@@ -145,8 +145,7 @@ def test_put_participante_outra_unidade_admin(
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert response.json() == input_part
-
+    assert_equal_participante(response.json(), input_part)
 
 @pytest.mark.parametrize(
     (
@@ -200,7 +199,7 @@ def test_put_duplicate_participante(
     )
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert response.json() == input_part
+    assert_equal_participante(response.json(), input_part)
 
     if cod_unidade_autorizadora_2 == user1_credentials["cod_unidade_autorizadora"]:
         header_usr = header_usr_1
@@ -222,7 +221,7 @@ def test_put_duplicate_participante(
     else:
         assert response.status_code == status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert response.json() == input_part
+    assert_equal_participante(response.json(), input_part)
 
 
 def test_create_participante_inconsistent(
