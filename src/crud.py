@@ -390,33 +390,31 @@ async def get_participante(
 
 async def create_participante(
     db_session: DbContextManager,
-    origem_unidade: str,
-    cod_unidade_autorizadora: int,
-    status_participante: schemas.ParticipanteSchema,
+    participante: schemas.ParticipanteSchema,
 ) -> schemas.ParticipanteSchema:
-    """Cria um status de participante definido pelos dados do schema Pydantic
-    status_participante.
+    """Cria um participante definido pelos dados do schema Pydantic
+    participante.
 
     Args:
         db_session (DbContextManager): Context manager para a sessão async
             do SQL Alchemy.
-        status_participante (schemas.ParticipanteSchema): Esquema
-            do Pydantic de um Status de Participante.
+        participante (schemas.ParticipanteSchema): Esquema
+            do Pydantic de um Participante.
 
     Returns:
         schemas.ParticipanteSchema: Esquema do Pydantic de um Status
         de Participante dos dados inseridos.
     """
 
-    db_status_participante = models.StatusParticipante(
-        **status_participante.model_dump()
+    db_participante = models.Participante(
+        **participante.model_dump()
     )
-    db_status_participante.data_insercao = datetime.now()
+    db_participante.data_insercao = datetime.now()
     async with db_session as session:
-        session.add(db_status_participante)
+        session.add(db_participante)
         await session.commit()
-        await session.refresh(db_status_participante)
-    return schemas.ParticipanteSchema.model_validate(db_status_participante)
+        await session.refresh(db_participante)
+    return schemas.ParticipanteSchema.model_validate(db_participante)
 
 
 # The following methods are only for test in CI/CD environment
