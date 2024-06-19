@@ -577,6 +577,30 @@ class ParticipanteSchema(BaseModel):
             )
         return value
 
+    @field_validator("matricula_siape")
+    @staticmethod
+    def matricula_siape_validate(matricula_siape: str) -> str:
+        "Valida a matrícula SIAPE do participante."
+        if len(matricula_siape) != 7:
+            raise ValueError(
+                "Matrícula SIAPE deve ter 7 dígitos."
+            )
+        if not matricula_siape.isdecimal():
+            raise ValueError(
+                "Matricula SIAPE deve ser numérica."
+            )
+        if len(set(matricula_siape)) < 2:
+            raise ValueError(
+                "Matricula SIAPE inválida."
+            )
+        return matricula_siape
+
+    @field_validator("cpf")
+    @staticmethod
+    def cpf_part_validate(cpf: str) -> str:
+        "Valida o CPF do participante."
+        return cpf_validate(cpf)
+
 
 class Token(BaseModel):
     access_token: str

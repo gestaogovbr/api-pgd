@@ -373,7 +373,8 @@ def test_get_participante_different_unit_admin(
         ("0000000"),
         ("9999999"),
         ("123456"),
-        (""),
+        ("-123456"),
+        ("abcdefg"),
     ],
 )
 def test_put_participante_invalid_matricula_siape(
@@ -397,14 +398,22 @@ def test_put_participante_invalid_matricula_siape(
     )
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     detail_messages = [
-        "Matricula SIAPE Inválida.",
+        "Matricula SIAPE deve ser numérica.",
         "Matrícula SIAPE deve ter 7 dígitos.",
+        "Matricula SIAPE inválida.",
     ]
-    assert any(
-        f"Value error, {message}" in error["msg"]
-        for message in detail_messages
-        for error in response.json().get("detail")
-    )
+    received_error = response.json().get("detail")
+    if isinstance(received_error, str):
+        assert any(
+            message in received_error
+            for message in detail_messages
+        )
+    else:
+        assert any(
+            f"Value error, {message}" in error["msg"]
+            for message in detail_messages
+            for error in received_error
+        )
 
 
 @pytest.mark.parametrize(
@@ -432,7 +441,7 @@ def test_put_participante_invalid_cpf(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"{input_part['cod_unidade_lotacao']}"
+        f"/{input_part['cod_unidade_lotacao']}"
         f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_usr_1,
