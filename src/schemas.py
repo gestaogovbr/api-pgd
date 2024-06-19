@@ -573,7 +573,9 @@ class ParticipanteSchema(BaseModel):
         if value not in set(ModalidadesExecucao):
             raise ValueError(
                 "Modalidade de execução inválida; permitido: "
-                + ", ".join(list(ModalidadesExecucao))
+                + ", ".join(
+                    [str(modalidade.value) for modalidade in ModalidadesExecucao]
+                )
             )
         return value
 
