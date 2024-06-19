@@ -266,6 +266,7 @@ def test_put_participante_missing_mandatory_fields(
 ):
     """Tenta submeter participantes faltando campos obrigatórios"""
     matricula_siape = input_part["matricula_siape"]
+    cod_unidade_lotacao = input_part['cod_unidade_lotacao']
     offset, field_list = missing_fields
     for field in field_list:
         del input_part[field]
@@ -275,7 +276,7 @@ def test_put_participante_missing_mandatory_fields(
     )
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/{input_part['cod_unidade_lotacao']}"
+        f"/{cod_unidade_lotacao}"
         f"/participante/{matricula_siape}",
         json=input_part,
         headers=header_usr_1,
