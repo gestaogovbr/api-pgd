@@ -563,7 +563,7 @@ class ParticipanteSchema(BaseModel):
     def validate_situacao(value):
         "Verifica se o campo 'situacao' tem um dos valores permitidos"
         if value not in [0, 1]:
-            raise ValueError("Situação inválida; permitido: 0 - Inativo, 1 - Ativo")
+            raise ValueError("Valor do campo 'situacao' inválido; permitido: 0, 1")
         return value
 
     @field_validator("modalidade_execucao")
