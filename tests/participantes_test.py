@@ -122,6 +122,7 @@ def test_put_participante_outra_unidade_admin(
     unidade autorizadora
     """
     input_part["cod_unidade_autorizadora"] = 3  # unidade diferente
+    input_part["cod_unidade_lotacao"] = 30  # unidade diferente
 
     response = client.get(
         f"/user/{admin_credentials['username']}",
@@ -138,7 +139,9 @@ def test_put_participante_outra_unidade_admin(
     assert admin_data.get("is_admin", None) is True
 
     response = client.put(
-        f"/organizacao/SIAPE/3/3/participante/{input_part['matricula_siape']}",
+        f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
         json=input_part,
         headers=header_admin,
     )
