@@ -532,7 +532,10 @@ def test_put_invalid_data_assinatura_tcr(
 ):
     """Tenta criar um participante com data futura do TCR."""
     # data de amanhã
-    input_part["data_assinatura_tcr"] = date.today() + timedelta(days=1)
+    input_part["data_assinatura_tcr"] = (
+        (date.today() + timedelta(days=1))
+        .isoformat()
+    )
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         f"/{input_part['cod_unidade_lotacao']}"
