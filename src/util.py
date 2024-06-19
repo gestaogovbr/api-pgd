@@ -41,6 +41,8 @@ def assert_error_message(response: Response, detail_message: str):
     """
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     assert any(
-        f"Value error, {detail_message}" in error["msg"]
+        detail_message
+        if isinstance(error, str)
+        else f"Value error, {detail_message}" in error["msg"]
         for error in response.json().get("detail")
     )
