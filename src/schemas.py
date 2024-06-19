@@ -441,13 +441,12 @@ class PlanoEntregasSchema(BaseModel):
             raise ValueError("Código da unidade inválido")
         return value
 
-    @field_validator("data_termino")
-    @staticmethod
-    def validate_data_termino(data_termino: date, values: dict) -> date:
+    @model_validator(mode="after")
+    def validate_data_termino(self, data_termino) -> date:
         """Valida a data de término do plano de entregas"""
-        if data_termino < values["data_inicio"]:
+        if self.data_termino < self.data_inicio:
             raise ValueError("Data de término deve ser maior ou igual à data de início")
-        return data_termino
+        return self
 
     @model_validator(mode="after")
     def validate_data_avaliacao(self) -> "PlanoEntregasSchema":
