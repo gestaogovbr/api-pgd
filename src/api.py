@@ -250,29 +250,36 @@ async def reset_password(
 
 # ### Entregas & Plano Entregas ----------------------------
 @app.get(
-    "/organizacao/{cod_SIAPE_instituidora}/plano_entregas/{id_plano_entrega_unidade}",
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+    "/plano_entregas/{id_plano_entrega_unidade}",
     summary="Consulta plano de entregas",
     response_model=schemas.PlanoEntregasSchema,
     tags=["plano de entregas"],
 )
 async def get_plano_entrega(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
-    cod_SIAPE_instituidora: int,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
     id_plano_entrega_unidade: int,
     db: DbContextManager = Depends(DbContextManager),
 ):
     "Consulta o plano de entregas com o código especificado."
 
     # Validações de permissão
-    if (cod_SIAPE_instituidora != user.cod_SIAPE_instituidora) and not user.is_admin:
+    if (
+        (origem_unidade != user.origem_unidade)
+        or (cod_unidade_autorizadora != user.cod_unidade_autorizadora)
+        and not user.is_admin
+    ):
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
         )
 
     db_plano_entrega = await crud.get_plano_entregas(
         db_session=db,
-        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+        origem_unidade=origem_unidade,
+        cod_unidade_autorizadora=cod_unidade_autorizadora,
         id_plano_entrega_unidade=id_plano_entrega_unidade,
     )
     if not db_plano_entrega:
@@ -284,14 +291,16 @@ async def get_plano_entrega(
 
 
 @app.put(
-    "/organizacao/{cod_SIAPE_instituidora}/plano_entregas/{id_plano_entrega_unidade}",
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+    "/plano_entregas/{id_plano_entrega_unidade}",
     summary="Cria ou substitui plano de entregas",
     response_model=schemas.PlanoEntregasSchema,
     tags=["plano de entregas"],
 )
 async def create_or_update_plano_entregas(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
-    cod_SIAPE_instituidora: int,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
     id_plano_entrega_unidade: int,
     plano_entregas: schemas.PlanoEntregasSchema,
     response: Response,
@@ -301,22 +310,24 @@ async def create_or_update_plano_entregas(
     plano de entregas por um novo com os dados informados."""
 
     # Validações de permissão
-    if (cod_SIAPE_instituidora != user.cod_SIAPE_instituidora) and not user.is_admin:
+    if (origem_unidade != user.origem_unidade) or (
+        cod_unidade_autorizadora != user.cod_unidade_autorizadora
+    ) and not user.is_admin:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
         )
 
     # Validações de conteúdo JSON e URL
-    if cod_SIAPE_instituidora != plano_entregas.cod_SIAPE_instituidora:
+    if cod_unidade_autorizadora != plano_entregas.cod_unidade_autorizadora:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais",
+            detail="Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais",
         )
     if id_plano_entrega_unidade != plano_entregas.id_plano_entrega_unidade:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro cod_SIAPE_instituidora na URL e no JSON devem ser iguais",
+            detail="Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais",
         )
 
     # Validações do esquema
@@ -334,7 +345,8 @@ async def create_or_update_plano_entregas(
     # com planos já existentes
     conflicting_period = await crud.check_planos_entregas_unidade_per_period(
         db_session=db,
-        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+        origem_unidade=origem_unidade,
+        cod_unidade_autorizadora=cod_unidade_autorizadora,
         cod_SIAPE_unidade_plano=plano_entregas.cod_SIAPE_unidade_plano,
         id_plano_entrega_unidade=plano_entregas.id_plano_entrega_unidade,
         data_inicio_plano_entregas=plano_entregas.data_inicio_plano_entregas,
@@ -351,7 +363,8 @@ async def create_or_update_plano_entregas(
     # Verifica se já existe
     db_plano_entregas = await crud.get_plano_entregas(
         db_session=db,
-        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+        origem_unidade=origem_unidade,
+        cod_unidade_autorizadora=cod_unidade_autorizadora,
         id_plano_entrega_unidade=id_plano_entrega_unidade,
     )
 
@@ -377,29 +390,36 @@ async def create_or_update_plano_entregas(
 
 # ### Plano Trabalho ---------------------------------------
 @app.get(
-    "/organizacao/{cod_SIAPE_instituidora}/plano_trabalho/{id_plano_trabalho_participante}",
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+    "/plano_trabalho/{id_plano_trabalho_participante}",
     summary="Consulta plano de trabalho",
     response_model=schemas.PlanoTrabalhoSchema,
     tags=["plano de trabalho"],
 )
 async def get_plano_trabalho(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
-    cod_SIAPE_instituidora: int,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
     id_plano_trabalho_participante: int,
     db: DbContextManager = Depends(DbContextManager),
 ):
     "Consulta o plano de trabalho com o código especificado."
 
     # Validações de permissão
-    if (cod_SIAPE_instituidora != user.cod_SIAPE_instituidora) and not user.is_admin:
+    if (
+        (origem_unidade != user.origem_unidade)
+        or (cod_unidade_autorizadora != user.cod_unidade_autorizadora)
+        and not user.is_admin
+    ):
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_SIAPE_instituidora informada",
+            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
         )
 
     db_plano_trabalho = await crud.get_plano_trabalho(
         db_session=db,
-        cod_SIAPE_instituidora=cod_SIAPE_instituidora,
+        origem_unidade=origem_unidade,
+        cod_unidade_autorizadora=cod_unidade_autorizadora,
         id_plano_trabalho_participante=id_plano_trabalho_participante,
     )
     if not db_plano_trabalho:
@@ -411,7 +431,8 @@ async def get_plano_trabalho(
 
 
 @app.put(
-    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}/plano_trabalho/{id_plano_trabalho}",
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+    "/plano_trabalho/{id_plano_trabalho}",
     summary="Cria ou substitui plano de trabalho",
     response_model=schemas.PlanoTrabalhoSchema,
     tags=["plano de trabalho"],
@@ -430,8 +451,10 @@ async def create_or_update_plano_trabalho(
 
     # Validações de permissão
     if (
-        cod_unidade_autorizadora != user.cod_unidade_autorizadora
-    ) and not user.is_admin:
+        (origem_unidade != user.origem_unidade)
+        or (cod_unidade_autorizadora != user.cod_unidade_autorizadora)
+        and not user.is_admin
+    ):
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
             detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
