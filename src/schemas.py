@@ -595,6 +595,14 @@ class ParticipanteSchema(BaseModel):
         "Valida o CPF do participante."
         return cpf_validate(cpf)
 
+    @field_validator("data_assinatura_tcr")
+    @staticmethod
+    def data_assinatura_tcr_validate(data_assinatura_tcr: datetime) -> datetime:
+        "Valida a data de assinatura do TCR."
+        if data_assinatura_tcr > datetime.now():
+            raise ValueError("A data_assinatura_tcr não pode ser data futura.")
+        return data_assinatura_tcr
+
 
 class Token(BaseModel):
     access_token: str
