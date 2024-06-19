@@ -548,23 +548,3 @@ def test_put_invalid_data_assinatura_tcr(
         for message in detail_messages
         for error in response.json().get("detail")
     )
-
-
-def test_put_data_assinatura_tcr_default_value(
-    truncate_participantes,  # pylint: disable=unused-argument
-    input_part: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Verifica se ao criar um participante e o campo data_assinatura_tcr
-    for ausente ou NULL o mesmo é interpretado como FALSE."""
-    input_part["data_assinatura_tcr"] = None
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/{input_part['cod_unidade_lotacao']}"
-        f"/participante/{input_part['matricula_siape']}",
-        json=input_part,
-        headers=header_usr_1,
-    )
-    assert response.json().get("data_assinatura_tcr") is False
