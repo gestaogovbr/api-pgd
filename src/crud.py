@@ -464,9 +464,7 @@ async def create_participante(
     """
 
     async with db_session as session:
-        db_participante = models.Participante(
-            **participante.model_dump()
-        )
+        db_participante = models.Participante(**participante.model_dump())
         db_participante.data_insercao = datetime.now()
         session.add(db_participante)
         await session.commit()
@@ -508,15 +506,14 @@ async def update_participante(
         await session.delete(db_participante)
         await session.commit()
         # create a new
-        db_participante = models.Participante(
-            **participante.model_dump()
-        )
+        db_participante = models.Participante(**participante.model_dump())
         db_participante.data_insercao = data_insercao
         db_participante.data_atualizacao = datetime.now()
         session.add(db_participante)
         await session.commit()
         await session.refresh(db_participante)
     return schemas.ParticipanteSchema.model_validate(db_participante)
+
 
 # The following methods are only for test in CI/CD environment
 
@@ -551,6 +548,7 @@ def truncate_participante():
         result2.one_or_none()
         conn.commit()
     return result
+
 
 def truncate_user():
     """Apaga a tabela users.
