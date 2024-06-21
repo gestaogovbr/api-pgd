@@ -294,7 +294,7 @@ async def create_or_update_plano_entregas(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     origem_unidade: str,
     cod_unidade_autorizadora: int,
-    id_plano_entregas: int,
+    id_plano_entregas: str,
     plano_entregas: schemas.PlanoEntregasSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
@@ -307,7 +307,7 @@ async def create_or_update_plano_entregas(
 
     # Validações de conteúdo JSON e URL
     for field in ("origem_unidade", "cod_unidade_autorizadora", "id_plano_entregas"):
-        if field != getattr(plano_entregas, field):
+        if locals().get(field) != getattr(plano_entregas, field):
             raise HTTPException(
                 status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=f"Parâmetro {field} na URL e no JSON devem ser iguais",
