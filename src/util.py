@@ -4,7 +4,7 @@
 import calendar
 from datetime import date, timedelta
 
-from fastapi import status
+from fastapi import status, HTTPException
 from httpx import Response
 
 
@@ -41,8 +41,32 @@ def assert_error_message(response: Response, detail_message: str):
     """
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     assert any(
-        detail_message
-        if isinstance(error, str)
-        else f"Value error, {detail_message}" in error["msg"]
+        (
+            detail_message
+            if isinstance(error, str)
+            else f"Value error, {detail_message}" in error["msg"]
+        )
         for error in response.json().get("detail")
     )
+
+
+def check_permissions(
+    origem_unidade: str, cod_unidade_autorizadora: int, user: "UsersSchema"
+):
+    """Verifica se o usuário possui permissões para acessar a API.
+
+    Args:
+        origem_unidade (str): origem do código da unidade.
+        cod_unidade_autorizadora (int): código da unidade autorizadora.
+        user (UsersSchema): informações do usuário.
+    """
+    if user.is_admin:
+        return
+    if (
+        origem_unidade != user.origem_unidade
+        or cod_unidade_autorizadora != user.cod_unidade_autorizadora
+    ) and not user.is_admin:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
+        )
