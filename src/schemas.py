@@ -96,10 +96,10 @@ class ContribuicaoSchema(BaseModel):
         title="Código da unidade organizacional (UORG) da unidade de autorização",
         description=Contribuicao.cod_unidade_autorizadora_externa.comment,
     )
-    id_plano_entrega: Optional[str] = Field(
+    id_plano_entregas: Optional[str] = Field(
         default=None,
         title="Identificador único do plano de entrega",
-        description=Contribuicao.id_plano_entrega.comment,
+        description=Contribuicao.id_plano_entregas.comment,
     )
     id_entrega: Optional[str] = Field(
         default=None,
@@ -402,9 +402,9 @@ class PlanoEntregasSchema(BaseModel):
         title="Código da unidade executora",
         description=PlanoEntregas.cod_unidade_executora.comment,
     )
-    id_plano_entrega: str = Field(
+    id_plano_entregas: str = Field(
         title="Identificador único do plano de entregas",
-        description=PlanoEntregas.id_plano_entrega.comment,
+        description=PlanoEntregas.id_plano_entregas.comment,
     )
     status: int = Field(
         title="Status do plano de entregas",

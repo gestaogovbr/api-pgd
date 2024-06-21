@@ -70,7 +70,7 @@ class PlanoEntregas(Base):
         "estrutura administrativa que tenha plano de entregas "
         "pactuado.",
     )
-    id_plano_entrega = Column(
+    id_plano_entregas = Column(
         String, nullable=False, comment="Identificador único do plano de entregas."
     )
     status = Column(
@@ -144,7 +144,7 @@ class PlanoEntregas(Base):
         UniqueConstraint(
             "origem_unidade",
             "cod_unidade_autorizadora",
-            "id_plano_entrega",
+            "id_plano_entregas",
             name="_instituidora_plano_entregas_uc",
         ),
     )
@@ -225,24 +225,24 @@ class Entrega(Base):
         nullable=False,
         comment="cod_unidade_autorizadora do Plano de Entregas (FK)",
     )
-    id_plano_entrega = Column(
+    id_plano_entregas = Column(
         String,
         nullable=False,
-        comment="id_plano_entrega do Plano de Entregas (FK)",
+        comment="id_plano_entregas do Plano de Entregas (FK)",
     )
     __table_args__ = (
         ForeignKeyConstraint(
-            [origem_unidade, cod_unidade_autorizadora, id_plano_entrega],
+            [origem_unidade, cod_unidade_autorizadora, id_plano_entregas],
             [
                 "plano_entregas.origem_unidade",
                 "plano_entregas.cod_unidade_autorizadora",
-                "plano_entregas.id_plano_entrega",
+                "plano_entregas.id_plano_entregas",
             ],
         ),
         UniqueConstraint(
             "origem_unidade",
             "cod_unidade_autorizadora",
-            "id_plano_entrega",
+            "id_plano_entregas",
             "id_entrega",
             name="_entrega_uc",
         ),
@@ -511,11 +511,16 @@ class Contribuicao(Base):
             ],
         ),
         ForeignKeyConstraint(
-            [origem_unidade, cod_unidade_autorizadora, id_plano_entrega, id_entrega],
+            [
+                origem_unidade_entrega,
+                cod_unidade_autorizadora_entrega,
+                id_plano_entregas,
+                id_entrega,
+            ],
             [
                 "entrega.origem_unidade",
                 "entrega.cod_unidade_autorizadora",
-                "entrega.id_plano_entrega",
+                "entrega.id_plano_entregas",
                 "entrega.id_entrega",
             ],
         ),

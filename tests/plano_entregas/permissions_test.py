@@ -20,7 +20,7 @@ def test_get_plano_entregas_different_unit(
 
     response = client.get(
         f"/organizacao/SIAPE/3"  # Sem autorização nesta unidade
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         headers=header_usr_2,
     )
     assert response.status_code == http_status.HTTP_403_FORBIDDEN
@@ -54,7 +54,7 @@ def test_get_plano_entregas_different_unit_admin(
 
     response = client.put(
         f"/organizacao/SIAPE/{input_pe['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_admin,
     )

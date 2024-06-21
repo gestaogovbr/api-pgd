@@ -190,8 +190,9 @@ async def update_plano_trabalho(
 
 async def get_plano_entregas(
     db_session: DbContextManager,
-    cod_SIAPE_instituidora: int,
-    id_plano_entrega_unidade: int,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    id_plano_entregas: int,
 ) -> Optional[schemas.PlanoEntregasSchema]:
     """Traz um plano de entregas a partir do banco de dados, consultando
     a partir dos parâmetros informados.
@@ -199,8 +200,9 @@ async def get_plano_entregas(
     Args:
         db_session (DbContextManager): Context manager para a sessão async
             do SQL Alchemy.
-        cod_SIAPE_instituidora (int): Código SIAPE da unidade instituidora.
-        id_plano_entrega_unidade (int): id do Plano de Entregas da Unidade.
+        origem_unidade (str): origem do código da unidade (SIAPE ou SIORG).
+        cod_unidade_autorizadora (int): Código SIAPE da unidade instituidora.
+        id_plano_entregas (int): id do Plano de Entregas da Unidade.
 
     Returns:
         Optional[schemas.PlanoEntregasSchema]: O Plano de Entregas
@@ -209,8 +211,9 @@ async def get_plano_entregas(
     async with db_session as session:
         result = await session.execute(
             select(models.PlanoEntregas)
-            .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
-            .filter_by(id_plano_entrega_unidade=id_plano_entrega_unidade)
+            .filter_by(origem_unidade=origem_unidade)
+            .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
+            .filter_by(id_plano_entregas=id_plano_entregas)
         )
         db_plano_entrega = result.unique().scalar_one_or_none()
     if db_plano_entrega:
@@ -220,9 +223,10 @@ async def get_plano_entregas(
 
 async def check_planos_entregas_unidade_per_period(
     db_session: DbContextManager,
-    cod_SIAPE_instituidora: int,
-    cod_SIAPE_unidade_plano: int,
-    id_plano_entrega_unidade: int,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    cod_unidade_executora: int,
+    id_plano_entregas: int,
     data_inicio_plano_entregas: date,
     data_termino_plano_entregas: date,
 ) -> bool:
@@ -236,7 +240,7 @@ async def check_planos_entregas_unidade_per_period(
         cod_SIAPE_instituidora (int): Código SIAPE da unidade instituidora.
         cod_SIAPE_unidade_plano (int): Código SIAPE da unidade do Plano
             de Entregas.
-        id_plano_entrega_unidade (int): id do Plano de Entregas da unidade.
+        id_plano_entregas (int): id do Plano de Entregas da unidade.
         data_inicio_plano_entregas (date): Data de início do Plano de
             Entregas.
         data_termino_plano_entregas (date): Data de término do Plano de
@@ -257,8 +261,8 @@ async def check_planos_entregas_unidade_per_period(
                     (
                         # exclui o próprio plano de entregas da verificação
                         # para não conflitar com ele mesmo
-                        models.PlanoEntregas.id_plano_entrega_unidade
-                        != id_plano_entrega_unidade
+                        models.PlanoEntregas.id_plano_entregas
+                        != id_plano_entregas
                     ),
                     (
                         models.PlanoEntregas.data_inicio_plano_entregas
@@ -337,8 +341,9 @@ async def update_plano_entregas(
     async with db_session as session:
         result = await session.execute(
             select(models.PlanoEntregas)
-            .filter_by(cod_SIAPE_instituidora=plano_entregas.cod_SIAPE_instituidora)
-            .filter_by(id_plano_entrega_unidade=plano_entregas.id_plano_entrega_unidade)
+            .filter_by(origem_unidade=plano_entregas.origem_unidade)
+            .filter_by(cod_unidade_autorizadora=plano_entregas.cod_unidade_autorizadora)
+            .filter_by(id_plano_entregas=plano_entregas.id_plano_entregas)
         )
         db_plano_entregas = result.unique().scalar_one()
         await session.delete(db_plano_entregas)

@@ -3,7 +3,7 @@
     "cod_unidade_autorizadora": 1,
     "cod_unidade_instituidora": 1,
     "cod_unidade_executora": 99,
-    "id_plano_entrega": "1",
+    "id_plano_entregas": "1",
     "status": 4,
     "data_inicio": "2023-01-01",
     "data_termino": "2023-06-30",
