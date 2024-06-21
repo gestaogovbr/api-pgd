@@ -349,9 +349,11 @@ class EntregaSchema(BaseModel):
 
     @field_validator("tipo_meta")
     @staticmethod
-    def must_be_in(tipo_meta: int) -> int:
-        if tipo_meta not in set(TipoMeta):
-            raise ValueError("Tipo de meta inválido; permitido: 1, 2")
+    def must_be_in(tipo_meta: str) -> str:
+        if tipo_meta not in set(tipo.value for tipo in TipoMeta):
+            raise ValueError(
+                'Tipo de meta inválido; permitido: "unidade", "percentual"'
+            )
         return tipo_meta
 
     @field_validator("meta_entrega")
@@ -370,7 +372,7 @@ class EntregaSchema(BaseModel):
             and not 0 <= meta_entrega <= 100
         ):
             raise ValueError("Meta percentual deve estar entre 0 e 100")
-        return meta_entrega
+        return self
 
 
 class PlanoEntregasSchema(BaseModel):
@@ -448,14 +450,13 @@ class PlanoEntregasSchema(BaseModel):
             )
         return self
 
-    @model_validator(mode="before")
-    @classmethod
-    def validate_entregas_uniqueness(cls, data: dict) -> dict:
+    @model_validator(mode="after")
+    def validate_entregas_uniqueness(self) -> "PlanoEntregasSchema":
         """Valida a unicidade das entregas"""
-        entregas_ids = [entrega["id_entrega"] for entrega in data["entregas"]]
+        entregas_ids = [entrega.id_entrega for entrega in self.entregas]
         if len(entregas_ids) != len(set(entregas_ids)):
             raise ValueError("Entregas devem possuir id_entrega diferentes")
-        return data
+        return self
 
     @model_validator(mode="after")
     def validate_period(self) -> "PlanoEntregasSchema":
@@ -472,19 +473,18 @@ class PlanoEntregasSchema(BaseModel):
             )
         return self
 
-    @model_validator(mode="before")
-    @classmethod
-    def validate_entrega_dates(cls, data: dict) -> dict:
+    @model_validator(mode="after")
+    def validate_entrega_dates(self) -> "PlanoEntregasSchema":
         """Valida as datas das entregas"""
-        for entrega in data["entregas"]:
-            if entrega["data_entrega"] is not None and (
-                entrega["data_entrega"] < data["data_inicio"]
-                or entrega["data_entrega"] > data["data_termino"]
+        for entrega in self.entregas:
+            if entrega.data_entrega is not None and (
+                entrega.data_entrega < self.data_inicio
+                or entrega.data_entrega > self.data_termino
             ):
                 raise ValueError(
                     "Data de entrega deve estar dentro do período do plano"
                 )
-        return data
+        return self
 
     @model_validator(mode="after")
     def validate_status(self) -> "PlanoEntregasSchema":
