@@ -1,5 +1,6 @@
 """Funções para ler, gravar, atualizar ou apagar dados no banco de dados.
 """
+
 from datetime import datetime, date
 from typing import Optional
 
@@ -121,7 +122,11 @@ async def create_plano_trabalho(
     """
     creation_timestamp = datetime.now()
     contribuicoes = [
-        models.Contribuicao(**contribuicao.model_dump())
+        models.Contribuicao(
+            origem_unidade_pt=plano_trabalho.origem_unidade,
+            cod_unidade_autorizadora_pt=plano_trabalho.cod_unidade_autorizadora,
+            **contribuicao.model_dump(),
+        )
         for contribuicao in plano_trabalho.contribuicoes
     ]
 
@@ -134,15 +139,62 @@ async def create_plano_trabalho(
     db_plano_trabalho = models.PlanoTrabalho(**plano_trabalho.model_dump())
     db_plano_trabalho.data_insercao = creation_timestamp
     async with db_session as session:
+        # Estabelece relacionamentos
+        # Relacionamento com Participante
+        query = (
+            select(models.Participante)
+            .filter_by(origem_unidade=plano_trabalho.origem_unidade)
+            .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
+            .filter_by(cod_unidade_lotacao=plano_trabalho.cod_unidade_executora)
+            .filter_by(matricula_siape=plano_trabalho.matricula_siape)
+        )
+        result = await session.execute(query)
+        db_participante = result.scalars().unique().one_or_none()
+        if db_participante is None:
+            raise ValueError(
+                "Plano de Trabalho faz referência a participante inexistente. "
+                f"origem_unidade: {plano_trabalho.origem_unidade} "
+                f"cod_unidade_autorizadora: {plano_trabalho.cod_unidade_autorizadora} "
+                f"cod_unidade_lotacao: {plano_trabalho.cod_unidade_executora} "
+                f"matricula_siape: {plano_trabalho.matricula_siape}"
+            )
+        db_plano_trabalho.participante = db_participante
+        # Relacionamento com Contribuicao
         for contribuicao in contribuicoes:
             contribuicao.data_insercao = creation_timestamp
+            # Relacionamento com Entrega
+            query = (
+                select(models.Entrega)
+                .filter_by(origem_unidade=contribuicao.origem_unidade_entrega)
+                .filter_by(
+                    cod_unidade_autorizadora=contribuicao.cod_unidade_autorizadora_entrega
+                )
+                .filter_by(id_plano_entregas=contribuicao.id_plano_entregas)
+                .filter_by(id_entrega=contribuicao.id_entrega)
+            )
+            result = await session.execute(query)
+            db_entrega = result.scalars().unique().one_or_none()
+            if db_entrega is None:
+                raise ValueError(
+                    "Contibuição do Plano de Trabalho faz referência a entrega "
+                    "inexistente. "
+                    f"origem_unidade_entrega: {contribuicao.origem_unidade_entrega} "
+                    "cod_unidade_autorizadora_entrega: "
+                    f"{contribuicao.cod_unidade_autorizadora_entrega} "
+                    f"id_plano_entregas: {contribuicao.id_plano_entregas} "
+                    f"id_entrega: {contribuicao.id_entrega}"
+                )
+            contribuicao.entrega = db_entrega
             session.add(contribuicao)
             db_plano_trabalho.contribuicoes.append(contribuicao)
             db_plano_trabalho.contribuicoes = contribuicoes
+        # Relacionamento com AvaliacaoRegistrosExecucao
         for avaliacao_registros_execucao in avaliacoes_registros_execucao:
             avaliacao_registros_execucao.data_insercao = creation_timestamp
             session.add(avaliacao_registros_execucao)
-            db_plano_trabalho.avaliacoes_registros_execucao.append(avaliacao_registros_execucao)
+            db_plano_trabalho.avaliacoes_registros_execucao.append(
+                avaliacao_registros_execucao
+            )
         session.add(db_plano_trabalho)
         try:
             await session.commit()
