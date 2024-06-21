@@ -427,14 +427,6 @@ async def create_or_update_plano_trabalho(
     # Validações de permissão
     check_permissions(origem_unidade, cod_unidade_autorizadora, user)
 
-        or (cod_unidade_autorizadora != user.cod_unidade_autorizadora)
-        and not user.is_admin
-    ):
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
-        )
-
     # Validações de conteúdo JSON e URL
     for field in ("origem_unidade", "cod_unidade_autorizadora", "id_plano_trabalho"):
         if locals().get("field") != getattr(plano_trabalho, field):
