@@ -289,8 +289,9 @@ async def check_planos_entregas_unidade_per_period(
     Args:
         db_session (DbContextManager): Context manager para a sessão async
             do SQL Alchemy.
-        cod_SIAPE_instituidora (int): Código SIAPE da unidade instituidora.
-        cod_SIAPE_unidade_plano (int): Código SIAPE da unidade do Plano
+        origem_unidade (str): Origem do código da unidade.
+        cod_unidade_autorizadora (int): Código da unidade autorizadora.
+        cod_unidade_executora (int): Código da unidade do Plano
             de Entregas.
         id_plano_entregas (int): id do Plano de Entregas da unidade.
         data_inicio_plano_entregas (date): Data de início do Plano de
@@ -305,8 +306,9 @@ async def check_planos_entregas_unidade_per_period(
         query = (
             select(func.count())
             .select_from(models.PlanoEntregas)
-            .filter_by(cod_SIAPE_instituidora=cod_SIAPE_instituidora)
-            .filter_by(cod_SIAPE_unidade_plano=cod_SIAPE_unidade_plano)
+            .filter_by(origem_unidade=origem_unidade)
+            .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
+            .filter_by(cod_unidade_executora=cod_unidade_executora)
             .filter_by(cancelado=False)
             .where(
                 and_(
