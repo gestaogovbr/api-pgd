@@ -93,6 +93,8 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
 
     def test_create_plano_trabalho_outra_unidade_admin(
         self,
+        example_part_unidade_3,  # pylint: disable=unused-argument
+        example_pe_unidade_3,  # pylint: disable=unused-argument
         header_admin: dict,
         admin_credentials: dict,
     ):
@@ -100,11 +102,15 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
         Participante em uma organização diferente da sua própria organização.
 
         Args:
+            example_pe_unidade_3: Fixture para criar um PE na unidade 3.
             header_admin (dict): Cabeçalho HTTP do usuário logado como admin.
             admin_credentials (dict): Credenciais do usuário admin.
         """
         input_pt = self.input_pt.copy()
         input_pt["cod_unidade_autorizadora"] = 3  # unidade diferente
+        for contribuicao in input_pt["contribuicoes"]:
+            if contribuicao["tipo_contribuicao"] in (1, 3):
+                contribuicao["cod_unidade_autorizadora_entrega"] = 3
 
         # Verifica se o usuário é admin e se está em outra unidade
         response = self.client.get(
