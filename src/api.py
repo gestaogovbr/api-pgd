@@ -18,6 +18,7 @@ import crud
 from db_config import DbContextManager, create_db_and_tables
 import crud_auth
 import email_config
+from util import check_permissions
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
@@ -266,15 +267,7 @@ async def get_plano_entrega(
     "Consulta o plano de entregas com o código especificado."
 
     # Validações de permissão
-    if (
-        (origem_unidade != user.origem_unidade)
-        or (cod_unidade_autorizadora != user.cod_unidade_autorizadora)
-        and not user.is_admin
-    ):
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
-        )
+    check_permissions(origem_unidade, cod_unidade_autorizadora, user)
 
     db_plano_entrega = await crud.get_plano_entregas(
         db_session=db,
@@ -310,13 +303,7 @@ async def create_or_update_plano_entregas(
     plano de entregas por um novo com os dados informados."""
 
     # Validações de permissão
-    if (origem_unidade != user.origem_unidade) or (
-        cod_unidade_autorizadora != user.cod_unidade_autorizadora
-    ) and not user.is_admin:
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
-        )
+    check_permissions(origem_unidade, cod_unidade_autorizadora, user)
 
     # Validações de conteúdo JSON e URL
     for field in ("origem_unidade", "cod_unidade_autorizadora", "id_plano_entregas"):
@@ -402,15 +389,7 @@ async def get_plano_trabalho(
     "Consulta o plano de trabalho com o código especificado."
 
     # Validações de permissão
-    if (
-        (origem_unidade != user.origem_unidade)
-        or (cod_unidade_autorizadora != user.cod_unidade_autorizadora)
-        and not user.is_admin
-    ):
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
-        )
+    check_permissions(origem_unidade, cod_unidade_autorizadora, user)
 
     db_plano_trabalho = await crud.get_plano_trabalho(
         db_session=db,
@@ -446,8 +425,8 @@ async def create_or_update_plano_trabalho(
     plano de trabalho por um novo com os dados informados."""
 
     # Validações de permissão
-    if (
-        (origem_unidade != user.origem_unidade)
+    check_permissions(origem_unidade, cod_unidade_autorizadora, user)
+
         or (cod_unidade_autorizadora != user.cod_unidade_autorizadora)
         and not user.is_admin
     ):
@@ -549,15 +528,7 @@ async def get_participante(
     "Consulta o participante a partir da matricula SIAPE."
 
     #  Validações de permissão
-    if (
-        (origem_unidade != user.origem_unidade)
-        or (cod_unidade_autorizadora != user.cod_unidade_autorizadora)
-        and not user.is_admin
-    ):
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
-        )
+    check_permissions(origem_unidade, cod_unidade_autorizadora, user)
 
     participante = await crud.get_participante(
         db_session=db,
@@ -594,14 +565,7 @@ async def create_or_update_participante(
     """Envia um ou mais status de Programa de Gestão de um participante."""
 
     # Validações de permissão
-    if (
-        origem_unidade != user.origem_unidade
-        or cod_unidade_autorizadora != user.cod_unidade_autorizadora
-    ) and not user.is_admin:
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
-            detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
-        )
+    check_permissions(origem_unidade, cod_unidade_autorizadora, user)
 
     # Validações de conteúdo JSON e URL
     for field in (
