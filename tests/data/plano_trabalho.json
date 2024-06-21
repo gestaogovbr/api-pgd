@@ -1,29 +1,31 @@
 {
-    "origem_unidade": "string",
+    "origem_unidade": "SIAPE",
     "cod_unidade_autorizadora": 1,
     "id_plano_trabalho": "555",
     "status": 3,
     "cod_unidade_executora": 99,
     "cpf_participante": "64635210600",
-    "matricula_siape": "1234567",
+    "matricula_siape": "1237654",
     "data_inicio": "2023-01-01",
     "data_termino": "2023-01-15",
     "carga_horaria_disponivel": 80,
     "contribuicoes": [
         {
-            "origem_unidade": "string",
             "id_contribuicao": "string",
             "cod_unidade_instituidora": 1,
             "tipo_contribuicao": 1,
+            "origem_unidade_entrega": "SIAPE",
+            "cod_unidade_autorizadora_entrega": 1,
             "id_plano_entregas": "1",
             "id_entrega": "1",
             "percentual_contribuicao": 40
         },
         {
-            "origem_unidade": "string",
             "id_contribuicao": "string",
             "cod_unidade_instituidora": 1,
             "tipo_contribuicao": 2,
+            "origem_unidade_entrega": null,
+            "cod_unidade_autorizadora_entrega": null,
             "id_plano_entregas": null,
             "id_entrega": null,
             "percentual_contribuicao": 40
