@@ -279,8 +279,8 @@ async def check_planos_entregas_unidade_per_period(
     cod_unidade_autorizadora: int,
     cod_unidade_executora: int,
     id_plano_entregas: int,
-    data_inicio_plano_entregas: date,
-    data_termino_plano_entregas: date,
+    data_inicio: date,
+    data_termino: date,
 ) -> bool:
     """Verifica se há outros Planos de Entrega no período informado,
     para a mesma unidade instituidora e mesma unidade do plano, gerando
@@ -294,10 +294,8 @@ async def check_planos_entregas_unidade_per_period(
         cod_unidade_executora (int): Código da unidade do Plano
             de Entregas.
         id_plano_entregas (int): id do Plano de Entregas da unidade.
-        data_inicio_plano_entregas (date): Data de início do Plano de
-            Entregas.
-        data_termino_plano_entregas (date): Data de término do Plano de
-            Entregas.
+        data_inicio (date): Data de início do Plano de Entregas.
+        data_termino (date): Data de término do Plano de Entregas.
 
     Returns:
         bool: True se há conflito; False caso contrário.
@@ -309,7 +307,7 @@ async def check_planos_entregas_unidade_per_period(
             .filter_by(origem_unidade=origem_unidade)
             .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
             .filter_by(cod_unidade_executora=cod_unidade_executora)
-            .filter_by(cancelado=False)
+            .filter(models.PlanoEntregas.status != 1)
             .where(
                 and_(
                     (
@@ -318,14 +316,8 @@ async def check_planos_entregas_unidade_per_period(
                         models.PlanoEntregas.id_plano_entregas
                         != id_plano_entregas
                     ),
-                    (
-                        models.PlanoEntregas.data_inicio_plano_entregas
-                        <= data_termino_plano_entregas
-                    ),
-                    (
-                        models.PlanoEntregas.data_termino_plano_entregas
-                        >= data_inicio_plano_entregas
-                    ),
+                    (models.PlanoEntregas.data_inicio <= data_termino),
+                    (models.PlanoEntregas.data_termino >= data_inicio),
                 )
             )
         )
