@@ -330,16 +330,16 @@ async def create_or_update_plano_entregas(
         db_session=db,
         origem_unidade=origem_unidade,
         cod_unidade_autorizadora=cod_unidade_autorizadora,
-        cod_SIAPE_unidade_plano=plano_entregas.cod_SIAPE_unidade_plano,
+        cod_unidade_executora=plano_entregas.cod_unidade_executora,
         id_plano_entregas=plano_entregas.id_plano_entregas,
-        data_inicio_plano_entregas=plano_entregas.data_inicio_plano_entregas,
-        data_termino_plano_entregas=plano_entregas.data_termino_plano_entregas,
+        data_inicio=plano_entregas.data_inicio,
+        data_termino=plano_entregas.data_termino,
     )
 
     if conflicting_period and not plano_entregas.cancelado:
         detail_msg = (
             "Já existe um plano de entregas para este "
-            "cod_SIAPE_unidade_plano no período informado."
+            "cod_unidade_executora no período informado."
         )
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
 
