@@ -436,17 +436,12 @@ async def create_or_update_plano_trabalho(
         )
 
     # Validações de conteúdo JSON e URL
-    if cod_unidade_autorizadora != plano_trabalho.cod_unidade_autorizadora:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro cod_unidade_autorizadora diferente do conteúdo do JSON",
-        )
-
-    if id_plano_trabalho != plano_trabalho.id_plano_trabalho:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro id_plano_trabalho na URL e no JSON devem ser iguais",
-        )
+    for field in ("origem_unidade", "cod_unidade_autorizadora", "id_plano_trabalho"):
+        if locals().get("field") != getattr(plano_trabalho, field):
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Parâmetro {field} na URL e no JSON devem ser iguais",
+            )
 
     # Validações do esquema
     try:
