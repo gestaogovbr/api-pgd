@@ -374,8 +374,8 @@ class EntregaSchema(BaseModel):
 
 
 class PlanoEntregasSchema(BaseModel):
-    """Esquema de Plano de Entregas"""
-
+    __doc__ = PlanoEntregas.__doc__
+    model_config = ConfigDict(from_attributes=True)
     origem_unidade: str = Field(
         title="Código do sistema da unidade",
         description=PlanoEntregas.origem_unidade.comment,
@@ -417,6 +417,7 @@ class PlanoEntregasSchema(BaseModel):
         description=PlanoEntregas.data_avaliacao.comment,
     )
     entregas: List[EntregaSchema] = Field(
+        default=[],
         title="Entregas",
         description="Lista de entregas associadas ao Plano de Entregas",
     )
@@ -432,7 +433,7 @@ class PlanoEntregasSchema(BaseModel):
         return value
 
     @model_validator(mode="after")
-    def validate_data_termino(self, data_termino) -> date:
+    def validate_data_termino(self) -> "PlanoEntregasSchema":
         """Valida a data de término do plano de entregas"""
         if self.data_termino < self.data_inicio:
             raise ValueError("Data de término deve ser maior ou igual à data de início")
@@ -447,13 +448,14 @@ class PlanoEntregasSchema(BaseModel):
             )
         return self
 
-    @model_validator(mode="after")
-    def validate_entregas_uniqueness(self) -> "PlanoEntregasSchema":
+    @model_validator(mode="before")
+    @classmethod
+    def validate_entregas_uniqueness(cls, data: dict) -> dict:
         """Valida a unicidade das entregas"""
-        entregas_ids = [entrega.id_entrega for entrega in self.entregas]
+        entregas_ids = [entrega["id_entrega"] for entrega in data["entregas"]]
         if len(entregas_ids) != len(set(entregas_ids)):
             raise ValueError("Entregas devem possuir id_entrega diferentes")
-        return self
+        return data
 
     @model_validator(mode="after")
     def validate_period(self) -> "PlanoEntregasSchema":
@@ -470,18 +472,19 @@ class PlanoEntregasSchema(BaseModel):
             )
         return self
 
-    @model_validator(mode="after")
-    def validate_entrega_dates(self) -> "PlanoEntregasSchema":
+    @model_validator(mode="before")
+    @classmethod
+    def validate_entrega_dates(cls, data: dict) -> dict:
         """Valida as datas das entregas"""
-        for entrega in self.entregas:
-            if entrega.data_entrega is not None and (
-                entrega.data_entrega < self.data_inicio
-                or entrega.data_entrega > self.data_termino
+        for entrega in data["entregas"]:
+            if entrega["data_entrega"] is not None and (
+                entrega["data_entrega"] < data["data_inicio"]
+                or entrega["data_entrega"] > data["data_termino"]
             ):
                 raise ValueError(
                     "Data de entrega deve estar dentro do período do plano"
                 )
-        return self
+        return data
 
     @model_validator(mode="after")
     def validate_status(self) -> "PlanoEntregasSchema":
