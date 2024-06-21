@@ -67,6 +67,6 @@ def check_permissions(
         or cod_unidade_autorizadora != user.cod_unidade_autorizadora
     ) and not user.is_admin:
         raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_403_FORBIDDEN,
             detail="Usuário não tem permissão na cod_unidade_autorizadora informada",
         )

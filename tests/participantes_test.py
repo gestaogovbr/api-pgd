@@ -106,7 +106,7 @@ def test_put_participante_unidade_nao_permitida(
         headers=header_usr_2,
     )
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == status.HTTP_403_FORBIDDEN
     detail_msg = "Usuário não tem permissão na cod_unidade_autorizadora informada"
     assert response.json().get("detail", None) == detail_msg
 
@@ -338,7 +338,7 @@ def test_get_participante_different_unit(
         headers=header_usr_2,
     )
 
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == status.HTTP_403_FORBIDDEN
     detail_msg = "Usuário não tem permissão na cod_unidade_autorizadora informada"
     assert response.json().get("detail", None) == detail_msg
 
