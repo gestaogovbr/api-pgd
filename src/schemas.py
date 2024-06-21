@@ -330,7 +330,7 @@ class EntregaSchema(BaseModel):
         title="Meta estipulada na inclusão no plano",
         description=Entrega.meta_entrega.comment,
     )
-    tipo_meta: int = Field(
+    tipo_meta: TipoMeta = Field(
         title="Tipo da meta",
         description=Entrega.tipo_meta.comment,
     )
