@@ -34,11 +34,12 @@ FIELDS_PLANO_TRABALHO = {
 
 FIELDS_CONTRIBUICAO = {
     "optional": (
+        ["origem_unidade_entrega"],
+        ["cod_unidade_autorizadora_entrega"],
         ["id_plano_entregas"],
         ["id_entrega"],
     ),
     "mandatory": (
-        ["origem_unidade"],
         ["id_contribuicao"],
         ["cod_unidade_instituidora"],
         ["tipo_contribuicao"],
@@ -153,6 +154,7 @@ class BasePTTest:
         self,
         input_pt: dict,
         id_plano_trabalho: Optional[str] = None,
+        origem_unidade: Optional[str] = None,
         cod_unidade_autorizadora: Optional[int] = None,
         header_usr: Optional[dict] = None,
     ):
@@ -161,6 +163,7 @@ class BasePTTest:
         Args:
             input_pt (dict): O dicionário de entrada do Plano de Trabalho.
             id_plano_trabalho (str): O ID do Plano de Trabalho.
+            origem_unidade (str): origem do código da unidade.
             cod_unidade_autorizadora (int): O ID da unidade autorizadora.
             header_usr (dict): Cabeçalhos HTTP para o usuário.
 
@@ -169,6 +172,8 @@ class BasePTTest:
         """
         if id_plano_trabalho is None:
             id_plano_trabalho = input_pt["id_plano_trabalho"]
+        if origem_unidade is None:
+            origem_unidade = input_pt["origem_unidade"]
         if cod_unidade_autorizadora is None:
             cod_unidade_autorizadora = input_pt["cod_unidade_autorizadora"]
         if header_usr is None:
@@ -177,7 +182,7 @@ class BasePTTest:
         # Criar o Plano de Trabalho
         response = self.client.put(
             (
-                f"/organizacao/SIAPE/{cod_unidade_autorizadora}/"
+                f"/organizacao/{origem_unidade}/{cod_unidade_autorizadora}/"
                 f"plano_trabalho/{id_plano_trabalho}"
             ),
             json=input_pt,
@@ -189,6 +194,7 @@ class BasePTTest:
         self,
         id_plano_trabalho: str,
         cod_unidade_autorizadora: int,
+        origem_unidade: Optional[str] = "SIAPE",
         header_usr: Optional[dict] = None,
     ):
         """Obter um Plano de Trabalho.
@@ -196,6 +202,7 @@ class BasePTTest:
         Args:
             id_plano_trabalho (str): O ID do Plano de Trabalho.
             cod_unidade_autorizadora (int): O ID da unidade autorizadora.
+            origem_unidade (str): origem do código da unidade.
             header_usr (dict): Cabeçalhos HTTP para o usuário.
 
         Returns:
@@ -205,7 +212,7 @@ class BasePTTest:
             header_usr = self.header_usr_1
         response = self.client.get(
             (
-                f"/organizacao/SIAPE/{cod_unidade_autorizadora}/"
+                f"/organizacao/{origem_unidade}/{cod_unidade_autorizadora}/"
                 f"plano_trabalho/{id_plano_trabalho}"
             ),
             headers=header_usr,
