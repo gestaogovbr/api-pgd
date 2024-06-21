@@ -209,10 +209,18 @@ class Entrega(Base):
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
+    # relacionamentos
     plano_entregas = relationship(
         "PlanoEntregas",
         back_populates="entregas",
         lazy="joined",
+    )
+    contribuicoes = relationship(
+        "Contribuicao",
+        back_populates="entrega",
+        lazy="joined",
+        passive_deletes=True,
+        cascade="save-update, merge, delete, delete-orphan",
     )
     # campos implícitos a partir do relacionamento
     origem_unidade = Column(
