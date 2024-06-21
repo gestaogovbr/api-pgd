@@ -150,9 +150,9 @@ class PlanoEntregas(Base):
     )
 
 
-class TipoMeta(enum.IntEnum):
-    unidade = 1
-    percentual = 2
+class TipoMeta(str, enum.Enum):
+    unidade = "unidade"
+    percentual = "percentual"
 
 
 class Entrega(Base):
