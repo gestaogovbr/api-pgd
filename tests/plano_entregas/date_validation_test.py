@@ -100,7 +100,7 @@ def test_create_pe_invalid_period(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega, data_inicio, data_avaliacao",
+    "id_plano_entregas, data_inicio, data_avaliacao",
     [
         ("77", "2020-06-04", "2020-04-01"),
         ("78", "2020-06-04", "2020-06-11"),
@@ -111,7 +111,7 @@ def test_create_pe_invalid_data_avaliacao(
     input_pe: dict,
     data_inicio: str,
     data_avaliacao: str,
-    id_plano_entrega: str,
+    id_plano_entregas: str,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
@@ -121,11 +121,11 @@ def test_create_pe_invalid_data_avaliacao(
 
     input_pe["data_inicio"] = data_inicio
     input_pe["data_avaliacao"] = data_avaliacao
-    input_pe["id_plano_entrega"] = id_plano_entrega
+    input_pe["id_plano_entregas"] = id_plano_entregas
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{id_plano_entrega}",
+        f"/plano_entregas/{id_plano_entregas}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -148,7 +148,7 @@ def test_create_pe_invalid_data_avaliacao(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega, data_inicio, data_termino, data_entrega",
+    "id_plano_entregas, data_inicio, data_termino, data_entrega",
     [
         ("91", "2023-08-01", "2023-09-01", "2023-08-08"),
         ("92", "2023-08-01", "2023-09-01", "2023-07-01"),
@@ -158,7 +158,7 @@ def test_create_pe_invalid_data_avaliacao(
 def test_create_data_entrega_out_of_bounds(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    id_plano_entrega: str,
+    id_plano_entregas: str,
     data_inicio: str,
     data_termino: str,
     data_entrega: str,
@@ -170,7 +170,7 @@ def test_create_data_entrega_out_of_bounds(
     intervalo do plano de entregas. Segundo as regras de negócio, essa
     data tem que ser posterior ao início do plano_entregas.
     """
-    input_pe["id_plano_entrega"] = id_plano_entrega
+    input_pe["id_plano_entregas"] = id_plano_entregas
     input_pe["data_inicio"] = data_inicio
     input_pe["data_termino"] = data_termino
     for entrega in input_pe["entregas"]:
@@ -178,7 +178,7 @@ def test_create_data_entrega_out_of_bounds(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{id_plano_entrega}",
+        f"/plano_entregas/{id_plano_entregas}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -196,7 +196,7 @@ def test_create_data_entrega_out_of_bounds(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega, cod_unidade_executora, data_inicio, data_termino, status",
+    "id_plano_entregas, cod_unidade_executora, data_inicio, data_termino, status",
     [
         ("1", 99, "2023-01-01", "2023-06-30", 4),  # igual ao exemplo
         ("2", 99, "2024-01-01", "2024-06-30", 4),  # sem sobreposição
@@ -213,7 +213,7 @@ def test_create_plano_entregas_overlapping_date_interval(
     truncate_pe,  # pylint: disable=unused-argument
     example_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    id_plano_entrega: str,
+    id_plano_entregas: str,
     cod_unidade_executora: int,
     data_inicio: str,
     data_termino: str,
@@ -231,20 +231,20 @@ def test_create_plano_entregas_overlapping_date_interval(
     """
     original_pe = input_pe.copy()
     input_pe2 = original_pe.copy()
-    input_pe2["id_plano_entrega"] = "2"
+    input_pe2["id_plano_entregas"] = "2"
     input_pe2["data_inicio"] = "2023-07-01"
     input_pe2["data_termino"] = "2023-12-31"
     for entrega in input_pe2["entregas"]:
         entrega["data_entrega"] = "2023-12-31"
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe2['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe2['id_plano_entregas']}",
         json=input_pe2,
         headers=header_usr_1,
     )
     assert response.status_code == http_status.HTTP_201_CREATED
 
-    input_pe["id_plano_entrega"] = id_plano_entrega
+    input_pe["id_plano_entregas"] = id_plano_entregas
     input_pe["cod_unidade_executora"] = cod_unidade_executora
     input_pe["data_inicio"] = data_inicio
     input_pe["data_termino"] = data_termino
@@ -255,7 +255,7 @@ def test_create_plano_entregas_overlapping_date_interval(
     del input_pe["data_avaliacao"]
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )

@@ -230,11 +230,10 @@ def example_pe_unidade_3(
     header_usr_1: dict,
 ):
     """Cria um Plano de Entrega como exemplo."""
-    input_pe["cod_unidade_autorizadora"] = 3
-    client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
-        json=input_pe,
+    response = client.put(
+        f"/organizacao/SIAPE/{input_pe_3['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe_3['id_plano_entregas']}",
+        json=input_pe_3,
         headers=header_usr_1,
     )
 

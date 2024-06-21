@@ -251,7 +251,7 @@ async def reset_password(
 # ### Entregas & Plano Entregas ----------------------------
 @app.get(
     "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
-    "/plano_entregas/{id_plano_entrega_unidade}",
+    "/plano_entregas/{id_plano_entregas}",
     summary="Consulta plano de entregas",
     response_model=schemas.PlanoEntregasSchema,
     tags=["plano de entregas"],
@@ -260,7 +260,7 @@ async def get_plano_entrega(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     origem_unidade: str,
     cod_unidade_autorizadora: int,
-    id_plano_entrega_unidade: int,
+    id_plano_entregas: int,
     db: DbContextManager = Depends(DbContextManager),
 ):
     "Consulta o plano de entregas com o código especificado."
@@ -280,7 +280,7 @@ async def get_plano_entrega(
         db_session=db,
         origem_unidade=origem_unidade,
         cod_unidade_autorizadora=cod_unidade_autorizadora,
-        id_plano_entrega_unidade=id_plano_entrega_unidade,
+        id_plano_entregas=id_plano_entregas,
     )
     if not db_plano_entrega:
         raise HTTPException(
@@ -292,7 +292,7 @@ async def get_plano_entrega(
 
 @app.put(
     "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
-    "/plano_entregas/{id_plano_entrega_unidade}",
+    "/plano_entregas/{id_plano_entregas}",
     summary="Cria ou substitui plano de entregas",
     response_model=schemas.PlanoEntregasSchema,
     tags=["plano de entregas"],
@@ -301,7 +301,7 @@ async def create_or_update_plano_entregas(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     origem_unidade: str,
     cod_unidade_autorizadora: int,
-    id_plano_entrega_unidade: int,
+    id_plano_entregas: int,
     plano_entregas: schemas.PlanoEntregasSchema,
     response: Response,
     db: DbContextManager = Depends(DbContextManager),
@@ -319,16 +319,12 @@ async def create_or_update_plano_entregas(
         )
 
     # Validações de conteúdo JSON e URL
-    if cod_unidade_autorizadora != plano_entregas.cod_unidade_autorizadora:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais",
-        )
-    if id_plano_entrega_unidade != plano_entregas.id_plano_entrega_unidade:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais",
-        )
+    for field in ("origem_unidade", "cod_unidade_autorizadora", "id_plano_entregas"):
+        if field != getattr(plano_entregas, field):
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Parâmetro {field} na URL e no JSON devem ser iguais",
+            )
 
     # Validações do esquema
     try:
@@ -348,7 +344,7 @@ async def create_or_update_plano_entregas(
         origem_unidade=origem_unidade,
         cod_unidade_autorizadora=cod_unidade_autorizadora,
         cod_SIAPE_unidade_plano=plano_entregas.cod_SIAPE_unidade_plano,
-        id_plano_entrega_unidade=plano_entregas.id_plano_entrega_unidade,
+        id_plano_entregas=plano_entregas.id_plano_entregas,
         data_inicio_plano_entregas=plano_entregas.data_inicio_plano_entregas,
         data_termino_plano_entregas=plano_entregas.data_termino_plano_entregas,
     )
@@ -365,7 +361,7 @@ async def create_or_update_plano_entregas(
         db_session=db,
         origem_unidade=origem_unidade,
         cod_unidade_autorizadora=cod_unidade_autorizadora,
-        id_plano_entrega_unidade=id_plano_entrega_unidade,
+        id_plano_entregas=id_plano_entregas,
     )
 
     try:

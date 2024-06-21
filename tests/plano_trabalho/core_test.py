@@ -34,8 +34,7 @@ FIELDS_PLANO_TRABALHO = {
 
 FIELDS_CONTRIBUICAO = {
     "optional": (
-        ["cod_unidade_autorizadora_externa"],
-        ["id_plano_entrega"],
+        ["id_plano_entregas"],
         ["id_entrega"],
     ),
     "mandatory": (

@@ -91,9 +91,9 @@ Trabalho.
 ### 3.2. Planos de Trabalho
 
 Os **Planos de Trabalho** submetidos devem seguir as seguintes regras:
-* O `id_plano_entrega_unidade` deve ser único para cada Plano de Trabalho.
+* O `id_plano_entregas` deve ser único para cada Plano de Trabalho.
 * Ao utilizar o método PUT do Plano de Trabalho, o
-  `id_plano_entrega_unidade` que compõe a URL deve ser igual ao fornecido
+  `id_plano_entregas` que compõe a URL deve ser igual ao fornecido
   no JSON.
 * A `data_inicio_plano` do Plano de Trabalho deve ser menor ou igual à
   `data_termino_plano`.

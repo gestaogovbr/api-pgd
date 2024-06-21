@@ -25,7 +25,7 @@ FIELDS_PLANO_ENTREGAS = {
         ["cod_unidade_autorizadora"],
         ["cod_unidade_instituidora"],
         ["cod_unidade_executora"],
-        ["id_plano_entrega"],
+        ["id_plano_entregas"],
         ["status"],
         ["data_inicio"],
         ["data_termino"],
@@ -96,7 +96,7 @@ def test_create_plano_entregas_completo(
     """Tenta criar um novo plano de entregas"""
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -123,7 +123,7 @@ def test_update_plano_entregas(
     input_pe["data_avaliacao"] = "2023-08-15"
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -135,7 +135,7 @@ def test_update_plano_entregas(
     # Consulta API para conferir se a alteração foi persistida
     response = client.get(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         headers=header_usr_1,
     )
 
@@ -161,10 +161,10 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
             if field in entrega:
                 del entrega[field]
 
-    input_pe["id_plano_entrega"] = 557 + offset
+    input_pe["id_plano_entregas"] = 557 + offset
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -189,10 +189,10 @@ def test_create_plano_entregas_entrega_null_optional_fields(
             if field in entrega:
                 entrega[field] = None
 
-    input_pe["id_plano_entrega"] = 557 + offset
+    input_pe["id_plano_entregas"] = 557 + offset
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -221,14 +221,14 @@ def test_create_plano_entregas_missing_mandatory_fields(
 
     # para usar na URL, necessário existir caso tenha sido removido
     # como campo obrigatório
-    id_plano_entrega = 1800 + offset
-    if input_pe.get("id_plano_entrega", None):
+    id_plano_entregas = 1800 + offset
+    if input_pe.get("id_plano_entregas", None):
         # Atualiza o id_plano_entrega somente se existir.
         # Se não existir, é porque foi removido como campo obrigatório.
-        input_pe["id_plano_entrega"] = id_plano_entrega
+        input_pe["id_plano_entregas"] = id_plano_entregas
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{id_plano_entrega}",
+        f"/plano_entregas/{id_plano_entregas}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -258,7 +258,7 @@ def test_create_huge_plano_entregas(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -281,7 +281,7 @@ def test_create_huge_plano_entregas(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega, nome_entrega, nome_unidade_demandante, nome_unidade_destinataria",
+    "id_plano_entregas, nome_entrega, nome_unidade_demandante, nome_unidade_destinataria",
     [
         (1, "x" * 301, "string", "string"),
         (2, "string", "x" * 301, "string"),
@@ -292,7 +292,7 @@ def test_create_huge_plano_entregas(
 def test_create_pe_exceed_string_max_size(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    id_plano_entrega: int,
+    id_plano_entregas: int,
     nome_entrega: str,  # 300 caracteres
     nome_unidade_demandante: str,  # 300 caracteres
     nome_unidade_destinataria: str,  # 300 caracteres
@@ -303,7 +303,7 @@ def test_create_pe_exceed_string_max_size(
     """Testa a criação de um plano de entregas excedendo o tamanho
     máximo de cada campo"""
 
-    input_pe["id_plano_entrega"] = id_plano_entrega
+    input_pe["id_plano_entregas"] = id_plano_entregas
     input_pe["entregas"][0]["nome_entrega"] = nome_entrega  # 300 caracteres
     input_pe["entregas"][0][
         "nome_unidade_demandante"
@@ -314,7 +314,7 @@ def test_create_pe_exceed_string_max_size(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -339,7 +339,7 @@ def test_create_pe_cod_plano_inconsistent(
 ):
     """Tenta criar um plano de entregas com código de plano divergente"""
 
-    input_pe["id_plano_entrega"] = "110"
+    input_pe["id_plano_entregas"] = "110"
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         f"/plano_entregas/111",  # diferente de 110
@@ -347,7 +347,7 @@ def test_create_pe_cod_plano_inconsistent(
         headers=header_usr_1,
     )
     assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro id_plano_entrega na URL e no JSON devem ser iguais"
+    detail_msg = "Parâmetro id_plano_entregas na URL e no JSON devem ser iguais"
     assert response.json().get("detail", None) == detail_msg
 
 
@@ -362,7 +362,7 @@ def test_create_pe_cod_unidade_inconsistent(
     input_pe["cod_unidade_autorizadora"] = 999  # era 1
     response = client.put(
         f"/organizacao/SIAPE/{original_input_pe['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{original_input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{original_input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -383,7 +383,7 @@ def test_get_plano_entregas(
 
     response = client.get(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         headers=header_usr_1,
     )
     assert response.status_code == http_status.HTTP_200_OK
@@ -406,7 +406,7 @@ def test_get_pe_inexistente(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega, status, avaliacao, data_avaliacao",
+    "id_plano_entregas, status, avaliacao, data_avaliacao",
     [
         ("77", 5, 2, "2020-04-01"),
         ("78", 5, 2, "2020-06-11"),
@@ -418,7 +418,7 @@ def test_create_pe_status_avaliado(
     status: int,
     avaliacao: int,
     data_avaliacao: str,
-    id_plano_entrega: str,
+    id_plano_entregas: str,
     user1_credentials: dict,
     header_usr_1: dict,
     client: Client,
@@ -433,11 +433,11 @@ def test_create_pe_status_avaliado(
     input_pe["status"] = status
     input_pe["avaliacao"] = avaliacao
     input_pe["data_avaliacao"] = data_avaliacao
-    input_pe["id_plano_entrega"] = id_plano_entrega
+    input_pe["id_plano_entregas"] = id_plano_entregas
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{id_plano_entrega}",
+        f"/plano_entregas/{id_plano_entregas}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -454,7 +454,7 @@ def test_create_pe_status_avaliado(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega, id_entrega_1, id_entrega_2",
+    "id_plano_entregas, id_entrega_1, id_entrega_2",
     [
         ("90", "401", "402"),
         ("91", "403", "403"),  # <<<< IGUAIS
@@ -465,7 +465,7 @@ def test_create_pe_status_avaliado(
 def test_create_pe_duplicate_entrega(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    id_plano_entrega: str,
+    id_plano_entregas: str,
     id_entrega_1: str,
     id_entrega_2: str,
     user1_credentials: dict,
@@ -474,13 +474,13 @@ def test_create_pe_duplicate_entrega(
 ):
     """Tenta criar um plano de entregas com entregas com id_entrega duplicados"""
 
-    input_pe["id_plano_entrega"] = id_plano_entrega
+    input_pe["id_plano_entregas"] = id_plano_entregas
     input_pe["entregas"][0]["id_entrega"] = id_entrega_1
     input_pe["entregas"][1]["id_entrega"] = id_entrega_2
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{id_plano_entrega}",
+        f"/plano_entregas/{id_plano_entregas}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -508,7 +508,7 @@ def test_create_pe_duplicate_id_plano(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -517,7 +517,7 @@ def test_create_pe_duplicate_id_plano(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -542,7 +542,7 @@ def test_create_pe_same_id_plano_different_instituidora(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -551,7 +551,7 @@ def test_create_pe_same_id_plano_different_instituidora(
     input_pe["cod_unidade_instituidora"] = user2_credentials["cod_unidade_autorizadora"]
     response = client.put(
         f"/organizacao/SIAPE/{user2_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_2,
     )
@@ -575,7 +575,7 @@ def test_create_invalid_cod_unidade(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -592,7 +592,7 @@ def test_create_invalid_cod_unidade(
 
 
 @pytest.mark.parametrize(
-    "id_plano_entrega, meta_entrega, tipo_meta",
+    "id_plano_entregas, meta_entrega, tipo_meta",
     [
         ("555", 10, "unidade"),
         ("556", 100, "percentual"),
@@ -604,7 +604,7 @@ def test_create_invalid_cod_unidade(
 def test_create_entrega_invalid_percent(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    id_plano_entrega: str,
+    id_plano_entregas: str,
     meta_entrega: int,
     tipo_meta: str,
     user1_credentials: dict,
@@ -612,13 +612,13 @@ def test_create_entrega_invalid_percent(
     client: Client,
 ):
     """Tenta criar um Plano de Entregas com entrega com percentuais inválidos"""
-    input_pe["id_plano_entrega"] = id_plano_entrega
+    input_pe["id_plano_entregas"] = id_plano_entregas
     input_pe["entregas"][1]["meta_entrega"] = meta_entrega
     input_pe["entregas"][1]["tipo_meta"] = tipo_meta
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -660,7 +660,7 @@ def test_create_entrega_invalid_tipo_meta(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -690,7 +690,7 @@ def test_create_pe_invalid_avaliacao(
     input_pe["avaliacao"] = avaliacao
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )

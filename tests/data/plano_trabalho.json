@@ -15,8 +15,7 @@
             "id_contribuicao": "string",
             "cod_unidade_instituidora": 1,
             "tipo_contribuicao": 1,
-            "cod_unidade_autorizadora_externa": null,
-            "id_plano_entrega": "1",
+            "id_plano_entregas": "1",
             "id_entrega": "1",
             "percentual_contribuicao": 40
         },
@@ -25,8 +24,7 @@
             "id_contribuicao": "string",
             "cod_unidade_instituidora": 1,
             "tipo_contribuicao": 2,
-            "cod_unidade_autorizadora_externa": null,
-            "id_plano_entrega": null,
+            "id_plano_entregas": null,
             "id_entrega": null,
             "percentual_contribuicao": 40
         }
