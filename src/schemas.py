@@ -75,10 +75,6 @@ class ContribuicaoSchema(BaseModel):
         title="ID da Contribuição",
         description=Contribuicao.id.comment,
     )
-    origem_unidade: str = Field(
-        title="Código do sistema da unidade",
-        description=Contribuicao.origem_unidade.comment,
-    )
     id_contribuicao: str = Field(
         title="Identificador único da contribuição",
         description=Contribuicao.id_contribuicao.comment,
@@ -91,10 +87,21 @@ class ContribuicaoSchema(BaseModel):
         title="Tipo de contribuição",
         description=Contribuicao.tipo_contribuicao.comment,
     )
-    cod_unidade_autorizadora_externa: Optional[int] = Field(
+    percentual_contribuicao: int = Field(
+        title="Percentual de contribuição",
+        description=Contribuicao.percentual_contribuicao.comment,
+    )
+    origem_unidade_entrega: Optional[str] = Field(
+        title="Código do sistema da unidade do Plano de Entregas da "
+        "Entrega, quando a Contribuição for para uma Entrega externa.",
+        description=Contribuicao.origem_unidade_entrega.comment,
+    )
+    cod_unidade_autorizadora_entrega: Optional[int] = Field(
         default=None,
-        title="Código da unidade organizacional (UORG) da unidade de autorização",
-        description=Contribuicao.cod_unidade_autorizadora_externa.comment,
+        title="Código da unidade organizacional (UORG) da unidade "
+        "autorizadora do Plano de Entregas da Entrega, quando a Contribuição "
+        "for para uma Entrega externa.",
+        description=Contribuicao.cod_unidade_autorizadora_entrega.comment,
     )
     id_plano_entregas: Optional[str] = Field(
         default=None,
@@ -106,10 +113,6 @@ class ContribuicaoSchema(BaseModel):
         title="Identificador único da entrega",
         description=Contribuicao.id_entrega.comment,
     )
-    percentual_contribuicao: int = Field(
-        title="Percentual de contribuição",
-        description=Contribuicao.percentual_contribuicao.comment,
-    )
 
     @field_validator("tipo_contribuicao")
     @staticmethod
@@ -120,31 +123,18 @@ class ContribuicaoSchema(BaseModel):
         return tipo_contribuicao
 
     @model_validator(mode="after")
-    def validate_tipo_contribuicao_entrega_outra_unidade(self) -> "ContribuicaoSchema":
-        "Valida se o campo cod_unidade_autorizadora_externa deve ser preenchido."
+    def validate_cod_unidade_autorizadora_entrega(self) -> "ContribuicaoSchema":
         if (
-            self.tipo_contribuicao == TipoContribuicao.entrega_outra_unidade
-            and not all(
-                self.id_plano_entrega,
-                self.id_entrega,
-                self.cod_unidade_autorizadora_externa,
+            self.tipo_contribuicao
+            not in (
+                TipoContribuicao.entrega_propria_unidade,
+                TipoContribuicao.entrega_outra_unidade,
             )
+            and self.cod_unidade_autorizadora_entrega is not None
         ):
             raise ValueError(
-                "cod_unidade_autorizadora_externa, id_plano_entrega e id_entrega "
-                "precisam ser preenchidos quando tipo_contribuicao é 3"
-            )
-        return self
-
-    @model_validator(mode="after")
-    def validate_cod_unidade_autorizadora_externa(self) -> "ContribuicaoSchema":
-        if (
-            self.tipo_contribuicao != TipoContribuicao.entrega_outra_unidade
-            and self.cod_unidade_autorizadora_externa is not None
-        ):
-            raise ValueError(
-                "cod_unidade_autorizadora_externa só pode ser utilizado se "
-                "tipo_contribuicao é 3"
+                "cod_unidade_autorizadora_entrega só pode ser utilizado se "
+                "tipo_contribuicao for 1 ou 3"
             )
         return self
 
