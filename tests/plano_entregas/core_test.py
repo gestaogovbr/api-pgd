@@ -587,7 +587,7 @@ def test_create_invalid_cod_unidade(
         assert response.status_code == http_status.HTTP_201_CREATED
     else:
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "cod_unidade_executora inválido"
+        detail_message = "Código da unidade inválido"
         assert any(
             f"Value error, {detail_message}" in error["msg"]
             for error in response.json().get("detail")

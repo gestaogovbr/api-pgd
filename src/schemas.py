@@ -435,7 +435,7 @@ class PlanoEntregasSchema(BaseModel):
     def validate_codigo_unidade(value: int) -> int:
         """Valida o código da unidade"""
         if value < 1:
-            raise ValueError("Código da unidade inválido")
+            raise ValueError(f"Código da unidade inválido: {value}")
         return value
 
     @model_validator(mode="after")
@@ -504,15 +504,6 @@ class PlanoEntregasSchema(BaseModel):
                 "data_avaliacao estiverem preenchidos."
             )
         return self
-
-    @field_validator(
-        "cod_unidade_autorizadora", "cod_unidade_instituidora", "cod_unidade_executora"
-    )
-    @staticmethod
-    def validate_cod_SIAPE(value):
-        if value < 1:
-            raise ValueError("cod_SIAPE inválido")
-        return value
 
 
 class ParticipanteSchema(BaseModel):
