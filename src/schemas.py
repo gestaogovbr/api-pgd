@@ -503,7 +503,7 @@ class PlanoEntregasSchema(BaseModel):
     @staticmethod
     def validate_avaliacao(value: int) -> int:
         """Verifica se a avaliação possui um valor válido."""
-        if value not in range(1, 6):
+        if value is not None and value not in range(1, 6):
             raise ValueError(
                 "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
             )
