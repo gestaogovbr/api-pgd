@@ -408,8 +408,11 @@ def test_get_pe_inexistente(
 @pytest.mark.parametrize(
     "id_plano_entregas, status, avaliacao, data_avaliacao",
     [
-        ("77", 5, 2, "2020-04-01"),
-        ("78", 5, 2, "2020-06-11"),
+        ("78", 5, 2, "2023-06-11"),
+        ("79", 5, 2, None), # falta data_avaliacao
+        ("80", 5, None, "2023-06-11"), # falta avaliacao
+        ("81", 5, None, None), # faltam ambos
+        ("81", 2, None, None), # status não é 5
     ],
 )
 def test_create_pe_status_avaliado(
@@ -442,7 +445,7 @@ def test_create_pe_status_avaliado(
         headers=header_usr_1,
     )
 
-    if status == 5 and (field is None for field in (avaliacao, data_avaliacao)):
+    if status == 5 and not (avaliacao and data_avaliacao):
         assert response.status_code == 422
         detail_message = (
             "O status 5 só poderá ser usado se os campos avaliacao e "

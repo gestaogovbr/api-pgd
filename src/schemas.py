@@ -496,12 +496,12 @@ class PlanoEntregasSchema(BaseModel):
         if self.status not in range(1, 6):
             raise ValueError("Status inválido; permitido: 1, 2, 3, 4, 5")
         if self.status == 5 and (
-            self.avaliacao_plano_entregas is None
-            or self.data_avaliacao_plano_entregas is None
+            self.avaliacao is None
+            or self.data_avaliacao is None
         ):
             raise ValueError(
-                "Status 5 (Avaliado) requer avaliacao_plano_entregas e "
-                "data_avaliacao_plano_entregas preenchidos"
+                "O status 5 só poderá ser usado se os campos avaliacao e "
+                "data_avaliacao estiverem preenchidos."
             )
         return self
 
