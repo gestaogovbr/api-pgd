@@ -551,7 +551,7 @@ def test_create_pe_same_id_plano_different_instituidora(
     )
     assert response.status_code == http_status.HTTP_201_CREATED
 
-    input_pe["cod_unidade_instituidora"] = user2_credentials["cod_unidade_autorizadora"]
+    input_pe["cod_unidade_autorizadora"] = user2_credentials["cod_unidade_autorizadora"]
     response = client.put(
         f"/organizacao/SIAPE/{user2_credentials['cod_unidade_autorizadora']}"
         f"/plano_entregas/{input_pe['id_plano_entregas']}",
