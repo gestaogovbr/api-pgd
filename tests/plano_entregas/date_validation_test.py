@@ -187,15 +187,15 @@ def test_create_data_entrega_out_of_bounds(
 @pytest.mark.parametrize(
     "id_plano_entregas, cod_unidade_executora, data_inicio, data_termino, status",
     [
-        ("1", 99, "2023-01-01", "2023-06-30", 4),  # igual ao exemplo
-        ("2", 99, "2024-01-01", "2024-06-30", 4),  # sem sobreposição
-        ("3", 99, "2022-12-01", "2023-01-31", 4),  # sobreposição no início
-        ("4", 99, "2023-12-01", "2024-01-31", 4),  # sobreposição no fim
-        ("5", 99, "2023-02-01", "2023-05-31", 4),  # contido no período
-        ("6", 99, "2022-12-01", "2024-01-31", 4),  # contém o período
-        ("7", 100, "2023-02-01", "2023-05-31", 4),  # outra unidade
+        ("11", 99, "2023-01-01", "2023-06-30", 4),  # igual ao exemplo
+        ("12", 99, "2024-01-01", "2024-06-30", 4),  # sem sobreposição
+        ("13", 99, "2022-12-01", "2023-01-31", 4),  # sobreposição no início
+        ("14", 99, "2023-12-01", "2024-01-31", 4),  # sobreposição no fim
+        ("15", 99, "2023-02-01", "2023-05-31", 4),  # contido no período
+        ("16", 99, "2022-12-01", "2024-01-31", 4),  # contém o período
+        ("17", 100, "2023-02-01", "2023-05-31", 4),  # outra unidade
         # sobreposição porém um é cancelado
-        ("8", 99, "2022-12-01", "2023-01-31", 1),
+        ("18", 99, "2022-12-01", "2023-01-31", 1),
     ],
 )
 def test_create_plano_entregas_overlapping_date_interval(
@@ -240,8 +240,8 @@ def test_create_plano_entregas_overlapping_date_interval(
     input_pe["status"] = status
     for entrega in input_pe["entregas"]:
         entrega["data_entrega"] = data_termino
-    del input_pe["avaliacao"]
-    del input_pe["data_avaliacao"]
+    input_pe["avaliacao"] = None
+    input_pe["data_avaliacao"] = None
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         f"/plano_entregas/{input_pe['id_plano_entregas']}",
@@ -255,7 +255,7 @@ def test_create_plano_entregas_overlapping_date_interval(
         # se são unidades diferentes, não há problema em haver sobreposição
         or input_pe["cod_unidade_executora"] != original_pe["cod_unidade_executora"]
     ):
-        # um dos planos está cancelado, deve ser criado
+        # um dos planos está cancelado, pode ser criado
         assert response.status_code == http_status.HTTP_201_CREATED
         assert_equal_plano_entregas(response.json(), input_pe)
     else:
@@ -272,7 +272,7 @@ def test_create_plano_entregas_overlapping_date_interval(
         ):
             assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_msg = (
-                "Já existe um plano de entregas para esta "
+                "Já existe um plano de entregas para este "
                 "cod_unidade_executora no período informado."
             )
             assert response.json().get("detail", None) == detail_msg

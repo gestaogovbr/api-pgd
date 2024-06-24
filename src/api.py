@@ -336,7 +336,7 @@ async def create_or_update_plano_entregas(
         data_termino=plano_entregas.data_termino,
     )
 
-    if conflicting_period and not plano_entregas.cancelado:
+    if conflicting_period and plano_entregas.status != 1:
         detail_msg = (
             "Já existe um plano de entregas para este "
             "cod_unidade_executora no período informado."

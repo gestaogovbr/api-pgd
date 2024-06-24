@@ -308,7 +308,7 @@ async def check_planos_entregas_unidade_per_period(
             .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
             .filter_by(cod_unidade_executora=cod_unidade_executora)
             .filter(models.PlanoEntregas.status != 1)
-            .where(
+            .filter(
                 and_(
                     (
                         # exclui o próprio plano de entregas da verificação
