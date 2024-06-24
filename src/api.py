@@ -261,7 +261,7 @@ async def get_plano_entrega(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     origem_unidade: str,
     cod_unidade_autorizadora: int,
-    id_plano_entregas: int,
+    id_plano_entregas: str,
     db: DbContextManager = Depends(DbContextManager),
 ):
     "Consulta o plano de entregas com o código especificado."
