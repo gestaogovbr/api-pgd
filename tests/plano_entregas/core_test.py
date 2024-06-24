@@ -292,7 +292,7 @@ def test_create_huge_plano_entregas(
 def test_create_pe_exceed_string_max_size(
     truncate_pe,  # pylint: disable=unused-argument
     input_pe: dict,
-    id_plano_entregas: int,
+    id_plano_entregas: str,
     nome_entrega: str,  # 300 caracteres
     nome_unidade_demandante: str,  # 300 caracteres
     nome_unidade_destinataria: str,  # 300 caracteres
