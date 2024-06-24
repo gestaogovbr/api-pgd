@@ -364,18 +364,21 @@ class EntregaSchema(BaseModel):
     @staticmethod
     def must_be_positive(meta_entrega: int) -> int:
         if meta_entrega < 0:
-            raise ValueError("Meta de entrega deve ser um valor positivo")
+            raise ValueError("Valor meta_entrega deve ser positivo.")
         return meta_entrega
 
     @model_validator(mode="after")
-    def validate_meta_percentual(self, meta_entrega: int) -> int:
+    def validate_meta_percentual(self) -> "EntregaSchema":
         if (
-            meta_entrega is not None
-            and isinstance(meta_entrega, int)
+            self.meta_entrega is not None
+            and isinstance(self.meta_entrega, int)
             and self.tipo_meta == TipoMeta.percentual.value
-            and not 0 <= meta_entrega <= 100
+            and not 0 <= self.meta_entrega <= 100
         ):
-            raise ValueError("Meta percentual deve estar entre 0 e 100")
+            raise ValueError(
+                "Valor meta_entrega deve estar entre 0 e 100 "
+                "quando tipo_entrega for percentual."
+            )
         return self
 
 
