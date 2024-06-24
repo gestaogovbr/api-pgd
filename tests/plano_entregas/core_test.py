@@ -246,7 +246,7 @@ def test_create_huge_plano_entregas(
 
     def create_huge_entrega(id_entrega: int):
         new_entrega = input_pe["entregas"][0].copy()
-        new_entrega["id_entrega"] = 3 + id_entrega
+        new_entrega["id_entrega"] = str(3 + id_entrega)
         new_entrega["nome_entrega"] = "x" * 300  # 300 caracteres
         new_entrega["nome_unidade_demandante"] = "x" * 300  # 300 caracteres
         new_entrega["nome_unidade_destinataria"] = "x" * 300  # 300 caracteres
@@ -269,9 +269,9 @@ def test_create_huge_plano_entregas(
 
     # Compara o conteúdo de cada entrega, somente campos obrigatórios
     response_by_entrega = {
-        id_entrega: entrega for entrega in response.json()["entregas"]
+        entrega["id_entrega"]: entrega for entrega in response.json()["entregas"]
     }
-    input_by_entrega = {id_entrega: entrega for entrega in input_pe["entregas"]}
+    input_by_entrega = {entrega["id_entrega"]: entrega for entrega in input_pe["entregas"]}
     assert all(
         response_by_entrega[id_entrega][attribute] == entrega[attribute]
         for attributes in FIELDS_ENTREGA["mandatory"]
