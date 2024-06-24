@@ -39,7 +39,7 @@ def test_create_plano_entregas_date_interval_over_a_year(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -84,7 +84,7 @@ def test_create_pe_invalid_period(
 
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
