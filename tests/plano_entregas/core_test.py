@@ -672,9 +672,9 @@ def test_create_entrega_invalid_tipo_meta(
         assert response.status_code == http_status.HTTP_201_CREATED
     else:
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "Tipo de meta inválido; permitido: 'unidade', 'percentual'"
+        detail_message = "Input should be 'unidade' or 'percentual'"
         assert any(
-            f"Value error, {detail_message}" in error["msg"]
+            detail_message in error["msg"]
             for error in response.json().get("detail")
         )
 

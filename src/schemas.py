@@ -351,15 +351,6 @@ class EntregaSchema(BaseModel):
         max_length=STR_FIELD_MAX_SIZE,
     )
 
-    @field_validator("tipo_meta")
-    @staticmethod
-    def must_be_in(tipo_meta: str) -> str:
-        if tipo_meta not in set(tipo.value for tipo in TipoMeta):
-            raise ValueError(
-                'Tipo de meta inválido; permitido: "unidade", "percentual"'
-            )
-        return tipo_meta
-
     @field_validator("meta_entrega")
     @staticmethod
     def must_be_positive(meta_entrega: int) -> int:
