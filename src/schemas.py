@@ -499,6 +499,16 @@ class PlanoEntregasSchema(BaseModel):
             )
         return self
 
+    @field_validator("avaliacao")
+    @staticmethod
+    def validate_avaliacao(value: int) -> int:
+        "Verifica se a avaliação possui um valor válido."
+        if value not in range(1, 6):
+            raise ValueError(
+                "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
+            )
+        return value
+
 
 class ParticipanteSchema(BaseModel):
     __doc__ = Participante.__doc__
