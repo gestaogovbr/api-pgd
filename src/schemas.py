@@ -25,6 +25,8 @@ from models import (
 )
 from util import over_a_year
 
+STR_FIELD_MAX_SIZE = 300
+
 
 # Função para validar CPF
 def cpf_validate(input_cpf: str) -> str:
@@ -323,8 +325,8 @@ class EntregaSchema(BaseModel):
     )
     nome_entrega: str = Field(
         title="Título da entrega",
-        max_length=300,
         description=Entrega.nome_entrega.comment,
+        max_length=STR_FIELD_MAX_SIZE,
     )
     meta_entrega: int = Field(
         title="Meta estipulada na inclusão no plano",
@@ -341,10 +343,12 @@ class EntregaSchema(BaseModel):
     nome_unidade_demandante: str = Field(
         title="Nome da unidade demandante",
         description=Entrega.nome_unidade_demandante.comment,
+        max_length=STR_FIELD_MAX_SIZE,
     )
     nome_unidade_destinataria: str = Field(
         title="Nome da unidade destinatária",
         description=Entrega.nome_unidade_destinataria.comment,
+        max_length=STR_FIELD_MAX_SIZE,
     )
 
     @field_validator("tipo_meta")
