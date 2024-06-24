@@ -427,21 +427,21 @@ class PlanoEntregasSchema(BaseModel):
     )
     @staticmethod
     def validate_codigo_unidade(value: int) -> int:
-        """Valida o código da unidade"""
+        """Valida o código da unidade."""
         if value < 1:
             raise ValueError(f"Código da unidade inválido: {value}")
         return value
 
     @model_validator(mode="after")
     def validate_data_termino(self) -> "PlanoEntregasSchema":
-        """Valida a data de término do plano de entregas"""
+        """Valida a data de término do plano de entregas."""
         if self.data_termino < self.data_inicio:
             raise ValueError("Data de término deve ser maior ou igual à data de início")
         return self
 
     @model_validator(mode="after")
     def validate_data_avaliacao(self) -> "PlanoEntregasSchema":
-        """Valida a data de avaliação do plano de entregas"""
+        """Valida a data de avaliação do plano de entregas."""
         if self.data_avaliacao is not None and self.data_avaliacao < self.data_inicio:
             raise ValueError(
                 "Data de avaliação deve ser maior ou igual à data de início"
@@ -450,7 +450,7 @@ class PlanoEntregasSchema(BaseModel):
 
     @model_validator(mode="after")
     def validate_entregas_uniqueness(self) -> "PlanoEntregasSchema":
-        """Valida a unicidade das entregas"""
+        """Valida a unicidade das entregas."""
         entregas_ids = [entrega.id_entrega for entrega in self.entregas]
         if len(entregas_ids) != len(set(entregas_ids)):
             raise ValueError("Entregas devem possuir id_entrega diferentes")
@@ -458,7 +458,7 @@ class PlanoEntregasSchema(BaseModel):
 
     @model_validator(mode="after")
     def validate_period(self) -> "PlanoEntregasSchema":
-        """Valida o período do plano de entregas"""
+        """Valida o período do plano de entregas."""
         if over_a_year(self.data_termino, self.data_inicio) > 1:
             raise ValueError(
                 "Plano de entregas não pode abranger período maior que 1 ano"
@@ -473,7 +473,7 @@ class PlanoEntregasSchema(BaseModel):
 
     @model_validator(mode="after")
     def validate_entrega_dates(self) -> "PlanoEntregasSchema":
-        """Valida as datas das entregas"""
+        """Valida as datas das entregas."""
         for entrega in self.entregas:
             if entrega.data_entrega is not None and (
                 entrega.data_entrega < self.data_inicio
@@ -486,7 +486,7 @@ class PlanoEntregasSchema(BaseModel):
 
     @model_validator(mode="after")
     def validate_status(self) -> "PlanoEntregasSchema":
-        "Verifica se o status possui valor válido"
+        """Verifica se o status possui valor válido."""
         if self.status not in range(1, 6):
             raise ValueError("Status inválido; permitido: 1, 2, 3, 4, 5")
         if self.status == 5 and (
@@ -502,7 +502,7 @@ class PlanoEntregasSchema(BaseModel):
     @field_validator("avaliacao")
     @staticmethod
     def validate_avaliacao(value: int) -> int:
-        "Verifica se a avaliação possui um valor válido."
+        """Verifica se a avaliação possui um valor válido."""
         if value not in range(1, 6):
             raise ValueError(
                 "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
