@@ -189,7 +189,7 @@ def test_create_plano_entregas_entrega_null_optional_fields(
             if field in entrega:
                 entrega[field] = None
 
-    input_pe["id_plano_entregas"] = 557 + offset
+    input_pe["id_plano_entregas"] = str(557 + offset)
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         f"/plano_entregas/{input_pe['id_plano_entregas']}",
