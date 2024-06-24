@@ -283,10 +283,10 @@ def test_create_huge_plano_entregas(
 @pytest.mark.parametrize(
     "id_plano_entregas, nome_entrega, nome_unidade_demandante, nome_unidade_destinataria",
     [
-        (1, "x" * 301, "string", "string"),
-        (2, "string", "x" * 301, "string"),
-        (3, "string", "string", "x" * 301),
-        (4, "x" * 300, "x" * 300, "x" * 300),
+        ("1", "x" * 301, "string", "string"),
+        ("2", "string", "x" * 301, "string"),
+        ("3", "string", "string", "x" * 301),
+        ("4", "x" * 300, "x" * 300, "x" * 300),
     ],
 )
 def test_create_pe_exceed_string_max_size(
