@@ -436,7 +436,7 @@ class PlanoEntregasSchema(BaseModel):
     def validate_data_termino(self) -> "PlanoEntregasSchema":
         """Valida a data de término do plano de entregas."""
         if self.data_termino < self.data_inicio:
-            raise ValueError("Data de término deve ser maior ou igual à data de início")
+            raise ValueError("data_termino deve ser maior ou igual que data_inicio.")
         return self
 
     @model_validator(mode="after")
