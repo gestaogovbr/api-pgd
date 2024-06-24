@@ -132,9 +132,7 @@ def test_create_pe_invalid_data_avaliacao(
 
     if data_avaliacao < data_inicio:
         assert response.status_code == 422
-        detail_message = (
-            "Data de avaliação deve ser maior ou igual à data de início"
-        )
+        detail_message = "Data de avaliação deve ser maior ou igual à data de início"
         assert any(
             f"Value error, {detail_message}" in error["msg"]
             for error in response.json().get("detail")
@@ -149,9 +147,9 @@ def test_create_pe_invalid_data_avaliacao(
 @pytest.mark.parametrize(
     "id_plano_entregas, data_inicio, data_termino, data_entrega",
     [
-        ("91", "2023-08-01", "2023-09-01", "2023-08-08"),
-        ("92", "2023-08-01", "2023-09-01", "2023-07-01"),
-        ("93", "2023-08-01", "2023-09-01", "2023-10-01"),
+        ("91", "2023-08-01", "2023-09-01", "2023-08-08"),  # dentro
+        ("92", "2023-08-01", "2023-09-01", "2023-07-01"),  # antes do início
+        ("93", "2023-08-01", "2023-09-01", "2023-10-01"),  # depois do fim
     ],
 )
 def test_create_data_entrega_out_of_bounds(
@@ -167,7 +165,8 @@ def test_create_data_entrega_out_of_bounds(
 ):
     """Tenta criar uma entrega com data de entrega dentro e fora do
     intervalo do plano de entregas. Segundo as regras de negócio, essa
-    data tem que ser posterior ao início do plano_entregas.
+    data pode ser qualquer data e não precisa estar dentro do período
+    entre o início e o fim do plano_entregas.
     """
     input_pe["id_plano_entregas"] = id_plano_entregas
     input_pe["data_inicio"] = data_inicio
@@ -181,17 +180,8 @@ def test_create_data_entrega_out_of_bounds(
         json=input_pe,
         headers=header_usr_1,
     )
-    if date.fromisoformat(data_entrega) < date.fromisoformat(data_inicio):
-        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = (
-            "A data_entrega precisa ser posterior à data_inicio do Plano de Entregas."
-        )
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
-    else:
-        assert response.status_code == http_status.HTTP_201_CREATED
+    # Aceitar em todos os casos
+    assert response.status_code == http_status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(

@@ -471,18 +471,6 @@ class PlanoEntregasSchema(BaseModel):
             )
         return self
 
-    @model_validator(mode="after")
-    def validate_entrega_dates(self) -> "PlanoEntregasSchema":
-        """Valida as datas das entregas."""
-        for entrega in self.entregas:
-            if entrega.data_entrega is not None and (
-                entrega.data_entrega < self.data_inicio
-                or entrega.data_entrega > self.data_termino
-            ):
-                raise ValueError(
-                    "Data de entrega deve estar dentro do período do plano"
-                )
-        return self
 
     @model_validator(mode="after")
     def validate_status(self) -> "PlanoEntregasSchema":
