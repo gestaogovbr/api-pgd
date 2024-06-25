@@ -210,13 +210,12 @@ def fixture_user2_credentials() -> dict:
 def example_pe(
     client: httpx.Client,
     input_pe: dict,
-    user1_credentials: dict,
     header_usr_1: dict,
 ):
     """Cria um Plano de Entrega como exemplo."""
     client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entrega']}",
+        f"/organizacao/SIAPE/{input_pe['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{input_pe['id_plano_entregas']}",
         json=input_pe,
         headers=header_usr_1,
     )
@@ -226,11 +225,12 @@ def example_pe(
 def example_pe_unidade_3(
     client: httpx.Client,
     input_pe: dict,
-    user1_credentials: dict,
     header_usr_1: dict,
 ):
     """Cria um Plano de Entrega como exemplo."""
-    response = client.put(
+    input_pe_3 = input_pe.copy()
+    input_pe_3["cod_unidade_autorizadora"] = 3
+    client.put(
         f"/organizacao/SIAPE/{input_pe_3['cod_unidade_autorizadora']}"
         f"/plano_entregas/{input_pe_3['id_plano_entregas']}",
         json=input_pe_3,
