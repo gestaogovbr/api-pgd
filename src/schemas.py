@@ -94,6 +94,7 @@ class ContribuicaoSchema(BaseModel):
         description=Contribuicao.percentual_contribuicao.comment,
     )
     origem_unidade_entrega: Optional[str] = Field(
+        default=None,
         title="Código do sistema da unidade do Plano de Entregas da "
         "Entrega, quando a Contribuição for para uma Entrega externa.",
         description=Contribuicao.origem_unidade_entrega.comment,
