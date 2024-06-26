@@ -157,6 +157,9 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucaoDates(BasePTTest):
         """Testa a criação de um plano de trabalho com a data de início do
         período avaliativo anterior, igual ou posterior à data de início do
         Plano de Trabalho.
+
+        Aqueles que possuem data de início do período avaliativo anterior à
+        data de início do Plano de Trabalho devem ser rejeitados.
         """
         input_pt = self.input_pt.copy()
         input_pt["data_inicio_plano_trabalho"] = data_inicio_plano_trabalho
