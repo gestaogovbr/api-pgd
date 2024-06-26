@@ -145,7 +145,7 @@ class ContribuicaoSchema(BaseModel):
     def validate_percentual_contribuicao(percentual_contribuicao: int):
         "Valida se o percentual de contribuição está entre 0 e 100."
         if percentual_contribuicao < 0 or percentual_contribuicao > 100:
-            raise ValueError("Percentual de contribuição deve estar entre 0 e 100")
+            raise ValueError("O percentual de contribuição deve estar entre 0 e 100.")
         return percentual_contribuicao
 
 
