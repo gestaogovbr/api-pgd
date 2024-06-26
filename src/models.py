@@ -480,7 +480,7 @@ class Contribuicao(Base):
         String,
         nullable=False,
         comment="Código do sistema da unidade: “SIAPE” ou “SIORG”, referente "
-        "ao Plano de Trabalho.",
+        "ao Plano de Trabalho. (FK)",
     )
     cod_unidade_autorizadora_pt = Column(
         Integer,
