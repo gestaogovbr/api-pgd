@@ -273,7 +273,8 @@ def example_part(
 ):
     """Cria um exemplo de status de participante."""
     client.put(
-        f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
+        f"/organizacao/{input_part['origem_unidade']}"
+        f"/{input_part['cod_unidade_autorizadora']}"
         f"/{input_part['cod_unidade_lotacao']}"
         f"/participante/{input_part['matricula_siape']}",
         json=input_part,
@@ -288,7 +289,8 @@ def example_part_unidade_3(
     """Cria um exemplo de status de participante na unidade 3."""
     input_part["cod_unidade_autorizadora"] = 3
     client.put(
-        f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
+        f"/organizacao/{input_part['origem_unidade']}"
+        f"/{input_part['cod_unidade_autorizadora']}"
         f"/{input_part['cod_unidade_lotacao']}"
         f"/participante/{input_part['matricula_siape']}",
         json=input_part,
