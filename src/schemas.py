@@ -286,23 +286,24 @@ class PlanoTrabalhoSchema(BaseModel):
             )
         return self
 
+    # Validações relacionadas às avaliações de registros de execução
+
     @model_validator(mode="after")
-    def validate_data_inicio_periodo_avaliativo(
-        self
-    ) -> "PlanoTrabalhoSchema":
+    def validate_data_inicio_periodo_avaliativo(self) -> "PlanoTrabalhoSchema":
         """Valida se a data de início do período avaliativo de cada item
         das avaliacoes_registros_execucao é posterior à data de início do
         Plano de Trabalho."""
-        if self.avaliacoes_registros_execucao and \
-            any(
-                avaliacao_registros_execucao.data_inicio_periodo_avaliativo < self.data_inicio
-                for avaliacao_registros_execucao in self.avaliacoes_registros_execucao
+        if self.avaliacoes_registros_execucao and any(
+            avaliacao_registros_execucao.data_inicio_periodo_avaliativo
+            <= self.data_inicio
+            for avaliacao_registros_execucao in self.avaliacoes_registros_execucao
         ):
             raise ValueError(
                 "A data de início do período avaliativo deve ser posterior à "
                 "data de início do Plano de Trabalho."
             )
         return self
+
 
 class EntregaSchema(BaseModel):
     __doc__ = Entrega.__doc__
