@@ -190,10 +190,10 @@ class AvaliacaoRegistrosExecucaoSchema(BaseModel):
     ) -> "AvaliacaoRegistrosExecucaoSchema":
         """Valida se a data de fim do período avaliativo é posterior à
         data de início do período avaliativo."""
-        if self.data_fim_periodo_avaliativo <= self.data_inicio_periodo_avaliativo:
+        if self.data_fim_periodo_avaliativo < self.data_inicio_periodo_avaliativo:
             raise ValueError(
-                "A data de fim do período avaliativo deve ser posterior à "
-                "data de início do período avaliativo."
+                "A data de fim do período avaliativo deve ser igual ou "
+                "posterior à data de início do período avaliativo."
             )
         return self
 
