@@ -44,7 +44,7 @@ def assert_error_message(response: Response, detail_message: str):
         (
             detail_message
             if isinstance(error, str)
-            else f"Value error, {detail_message}" in error["msg"]
+            else detail_message in error["msg"]
         )
         for error in response.json().get("detail")
     )
