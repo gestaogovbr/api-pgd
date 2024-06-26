@@ -33,7 +33,7 @@ class TestCreatePTMissingMandatoryFieldsAvaliacaoRegistrosExecucao(BasePTTest):
         input_pt = self.input_pt.copy()
         _, field_list = omitted_fields
         for field in field_list:
-            input_pt["avaliacao_registros_execucao"][0][field] = None
+            input_pt["avaliacoes_registros_execucao"][0][field] = None
 
         input_pt["id_plano_trabalho"] = "111222333"
         response = self.create_pt(input_pt)
@@ -63,7 +63,10 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucao(BasePTTest):
         o campo avaliacao_registros_execucao.
         """
         input_pt = self.input_pt.copy()
-        input_pt["avaliacao_registros_execucao"][0][
+        input_pt["avaliacoes_registros_execucao"][0]["id_periodo_avaliativo"] = str(
+            10 + avaliacao_registros_execucao
+        )
+        input_pt["avaliacoes_registros_execucao"][0][
             "avaliacao_registros_execucao"
         ] = avaliacao_registros_execucao
 
@@ -117,10 +120,10 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucaoDates(BasePTTest):
             data_fim_periodo_avaliativo (str): Data de fim do período avaliativo.
         """
         input_pt = self.input_pt.copy()
-        input_pt["avaliacao_registros_execucao"][0][
+        input_pt["avaliacoes_registros_execucao"][0][
             "data_inicio_periodo_avaliativo"
         ] = data_inicio_periodo_avaliativo
-        input_pt["avaliacao_registros_execucao"][0][
+        input_pt["avaliacoes_registros_execucao"][0][
             "data_fim_periodo_avaliativo"
         ] = data_fim_periodo_avaliativo
 
@@ -157,7 +160,7 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucaoDates(BasePTTest):
         """
         input_pt = self.input_pt.copy()
         input_pt["data_inicio_plano_trabalho"] = data_inicio_plano_trabalho
-        input_pt["avaliacao_registros_execucao"][0][
+        input_pt["avaliacoes_registros_execucao"][0][
             "data_inicio_periodo_avaliativo"
         ] = data_inicio_periodo_avaliativo
 
@@ -193,10 +196,10 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucaoDates(BasePTTest):
         avaliativo.
         """
         input_pt = self.input_pt.copy()
-        input_pt["avaliacao_registros_execucao"][0][
+        input_pt["avaliacoes_registros_execucao"][0][
             "data_inicio_periodo_avaliativo"
         ] = data_inicio_periodo_avaliativo
-        input_pt["avaliacao_registros_execucao"][0][
+        input_pt["avaliacoes_registros_execucao"][0][
             "data_avaliacao_registros_execucao"
         ] = data_avaliacao_registros_execucao
 

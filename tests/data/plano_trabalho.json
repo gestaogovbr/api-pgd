@@ -31,7 +31,7 @@
             "percentual_contribuicao": 40
         }
     ],
-    "avaliacao_registros_execucao": [
+    "avaliacoes_registros_execucao": [
         {
             "id_periodo_avaliativo": "string",
             "data_inicio_periodo_avaliativo": "2023-01-01",

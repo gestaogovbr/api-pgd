@@ -15,7 +15,9 @@ from util import assert_error_message
 # grupos de campos opcionais e obrigatórios a testar
 
 FIELDS_PLANO_TRABALHO = {
-    "optional": tuple(),  # nenhum campo é opcional
+    "optional": (
+        ["avaliacoes_registros_execucao"],
+    ),
     "mandatory": (
         ["origem_unidade"],
         ["cod_unidade_autorizadora"],
@@ -28,7 +30,6 @@ FIELDS_PLANO_TRABALHO = {
         ["data_termino"],
         ["carga_horaria_disponivel"],
         ["contribuicoes"],
-        ["avaliacao_registros_execucao"],
     ),
 }
 
