@@ -73,6 +73,7 @@ class BasePTTest:
         truncate_pe,  # pylint: disable=unused-argument
         truncate_pt,  # pylint: disable=unused-argument
         example_pe,  # pylint: disable=unused-argument
+        example_part,  # pylint: disable=unused-argument
         input_pt: dict,
         user1_credentials: dict,
         header_usr_1: dict,
