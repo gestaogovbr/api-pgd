@@ -125,6 +125,7 @@ async def create_plano_trabalho(
         models.Contribuicao(
             origem_unidade_pt=plano_trabalho.origem_unidade,
             cod_unidade_autorizadora_pt=plano_trabalho.cod_unidade_autorizadora,
+            id_plano_trabalho=plano_trabalho.id_plano_trabalho,
             **contribuicao.model_dump(),
         )
         for contribuicao in plano_trabalho.contribuicoes
@@ -159,42 +160,44 @@ async def create_plano_trabalho(
                 f"matricula_siape: {plano_trabalho.matricula_siape}"
             )
         db_plano_trabalho.participante = db_participante
+
         # Relacionamento com Contribuicao
         for contribuicao in contribuicoes:
             contribuicao.data_insercao = creation_timestamp
-            # Relacionamento com Entrega
-            query = (
-                select(models.Entrega)
-                .filter_by(origem_unidade=contribuicao.origem_unidade_entrega)
-                .filter_by(
-                    cod_unidade_autorizadora=contribuicao.cod_unidade_autorizadora_entrega
+            # Relacionamento com Entrega, se existir
+            if (
+                contribuicao.origem_unidade_entrega
+                and contribuicao.cod_unidade_autorizadora_entrega
+                and contribuicao.id_plano_entregas
+            ):
+                query = (
+                    select(models.Entrega)
+                    .filter_by(origem_unidade=contribuicao.origem_unidade_entrega)
+                    .filter_by(
+                        cod_unidade_autorizadora=contribuicao.cod_unidade_autorizadora_entrega
+                    )
+                    .filter_by(id_plano_entregas=contribuicao.id_plano_entregas)
+                    .filter_by(id_entrega=contribuicao.id_entrega)
                 )
-                .filter_by(id_plano_entregas=contribuicao.id_plano_entregas)
-                .filter_by(id_entrega=contribuicao.id_entrega)
-            )
-            result = await session.execute(query)
-            db_entrega = result.scalars().unique().one_or_none()
-            if db_entrega is None:
-                raise ValueError(
-                    "Contibuição do Plano de Trabalho faz referência a entrega "
-                    "inexistente. "
-                    f"origem_unidade_entrega: {contribuicao.origem_unidade_entrega} "
-                    "cod_unidade_autorizadora_entrega: "
-                    f"{contribuicao.cod_unidade_autorizadora_entrega} "
-                    f"id_plano_entregas: {contribuicao.id_plano_entregas} "
-                    f"id_entrega: {contribuicao.id_entrega}"
-                )
-            contribuicao.entrega = db_entrega
-            session.add(contribuicao)
-            db_plano_trabalho.contribuicoes.append(contribuicao)
-            db_plano_trabalho.contribuicoes = contribuicoes
+                result = await session.execute(query)
+                db_entrega = result.scalars().unique().one_or_none()
+                if db_entrega is None:
+                    raise ValueError(
+                        "Contibuição do Plano de Trabalho faz referência a entrega "
+                        "inexistente. "
+                        f"origem_unidade_entrega: {contribuicao.origem_unidade_entrega} "
+                        "cod_unidade_autorizadora_entrega: "
+                        f"{contribuicao.cod_unidade_autorizadora_entrega} "
+                        f"id_plano_entregas: {contribuicao.id_plano_entregas} "
+                        f"id_entrega: {contribuicao.id_entrega}"
+                    )
+                contribuicao.entrega = db_entrega
+        db_plano_trabalho.contribuicoes = contribuicoes
+
         # Relacionamento com AvaliacaoRegistrosExecucao
         for avaliacao_registros_execucao in avaliacoes_registros_execucao:
             avaliacao_registros_execucao.data_insercao = creation_timestamp
-            session.add(avaliacao_registros_execucao)
-            db_plano_trabalho.avaliacoes_registros_execucao.append(
-                avaliacao_registros_execucao
-            )
+        db_plano_trabalho.avaliacoes_registros_execucao = avaliacoes_registros_execucao
         session.add(db_plano_trabalho)
         try:
             await session.commit()
