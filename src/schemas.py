@@ -300,6 +300,73 @@ class PlanoTrabalhoSchema(BaseModel):
             )
         return self
 
+    # Validações relacionadas às contribuições
+
+    @model_validator(mode="after")
+    def validate_tipo_contribuicao_entrega_outra_unidade(self) -> "PlanoTrabalhoSchema":
+        """Para cada Contribuicao, valida se os valores dos campos:
+
+        - origem_unidade_entrega
+        - cod_unidade_autorizadora_externa
+        - id_plano_entregas
+        - id_entrega
+
+        estão em conformidade com as regras definidas para campo
+        tipo_contribuicao.
+        """
+        field_names_entrega_externa = (
+            "origem_unidade_entrega",
+            "cod_unidade_autorizadora_externa",
+            "id_plano_entregas",
+            "id_entrega",
+        )
+        for contribuicao in self.contribuicoes:
+            if (
+                contribuicao.tipo_contribuicao
+                == TipoContribuicao.entrega_propria_unidade
+            ):
+                if (
+                    contribuicao.id_plano_entregas is None
+                    or contribuicao.id_entrega is None
+                ):
+                    raise ValueError(
+                        "Os campos id_plano_entregas e id_entrega são obrigatórios "
+                        "quando tipo_contribuicao == 1."
+                    )
+                if (
+                    contribuicao.origem_unidade_entrega is not None
+                    and contribuicao.origem_unidade_entrega != self.origem_unidade
+                ):
+                    raise ValueError(
+                        "O campo origem_unidade_entrega deve ser null ou igual ao "
+                        "origem_unidade do Plano de Trabalho "
+                        "quando tipo_contribuicao == 1."
+                    )
+                if (
+                    contribuicao.cod_unidade_autorizadora_entrega is not None
+                    and contribuicao.cod_unidade_autorizadora_entrega
+                    != self.cod_unidade_executora
+                ):
+                    raise ValueError(
+                        "O campo cod_unidade_autorizadora_entrega deve ser null "
+                        "ou igual ao campo cod_unidade_executora do Plano de "
+                        "Trabalho quando tipo_contribuicao == 1."
+                    )
+            if (
+                contribuicao.tipo_contribuicao == TipoContribuicao.entrega_outra_unidade
+                and not all(
+                    (
+                        getattr(self, field_name, None)
+                        for field_name in field_names_entrega_externa
+                    )
+                )
+            ):
+                raise ValueError(
+                    f"Os campos {', '.join(field_names_entrega_externa)} "
+                    "são obrigatórios quando tipo_contribuicao == 3"
+                )
+        return self
+
     # Validações relacionadas às avaliações de registros de execução
 
     # TODO: Verificar com área de negócio se essa validação é assim mesmo
