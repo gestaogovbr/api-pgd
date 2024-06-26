@@ -74,7 +74,7 @@ class TestCreatePTInvalidTipoContribuicao(BasePTTest):
             assert response.status_code == status.HTTP_201_CREATED
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_message = "Tipo de contribuição inválida; permitido: 1 a 3"
+            detail_message = "Input should be 1, 2 or 3"
             assert_error_message(response, detail_message)
 
 
