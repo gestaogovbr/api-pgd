@@ -218,6 +218,6 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucaoDates(BasePTTest):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
                 "A data de avaliação de registros de execução "
-                "deve ser posterior à data de início do período avaliativo"
+                "deve ser posterior à data de início do período avaliativo."
             )
             assert_error_message(response, detail_message)
