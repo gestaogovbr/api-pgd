@@ -57,10 +57,6 @@ FIELDS_AVALIACAO_REGISTROS_EXECUCAO = {
         ["data_fim_periodo_avaliativo"],
         ["avaliacao_registros_execucao"],
         ["data_avaliacao_registros_execucao"],
-        ["cpf_participante"],
-        ["data_inicio"],
-        ["data_termino"],
-        ["carga_horaria_disponivel"],
     ),
 }
 
