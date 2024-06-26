@@ -174,12 +174,6 @@ class AvaliacaoRegistrosExecucaoSchema(BaseModel):
         description=AvaliacaoRegistrosExecucao.data_avaliacao_registros_execucao.comment,
     )
 
-    plano_trabalho: Optional["PlanoTrabalhoSchema"] = Field(
-        default=None,
-        title="Plano de Trabalho",
-        description="Plano de Trabalho associado à avaliação.",
-    )
-
     @field_validator("avaliacao_registros_execucao")
     @staticmethod
     def validate_avaliacao_registros_execucao(value: int) -> int:
