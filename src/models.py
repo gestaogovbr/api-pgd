@@ -555,9 +555,12 @@ class Contribuicao(Base):
 class AvaliacaoRegistrosExecucao(Base):
     "Avaliação de Registros de Execução"
     __tablename__ = "avaliacao_registros_execucao"
+
+    id = Column(
+        Integer, primary_key=True, index=True, autoincrement=True, nullable=False
+    )
     id_periodo_avaliativo = Column(
         String,
-        primary_key=True,
         index=True,
         nullable=False,
         comment="Identificador único do período avaliativo contendo o registro de "
@@ -606,12 +609,13 @@ class AvaliacaoRegistrosExecucao(Base):
         lazy="joined",
     )
     # campos implícitos a partir do relacionamento
-    origem_unidade = Column(
+    origem_unidade_pt = Column(
         String,
         nullable=False,
-        comment="origem_unidade do Plano de Entregas (FK)",
+        comment="Código do sistema da unidade: “SIAPE” ou “SIORG”, referente "
+        "ao Plano de Trabalho. (FK)",
     )
-    cod_unidade_autorizadora = Column(
+    cod_unidade_autorizadora_pt = Column(
         Integer,
         nullable=False,
         comment="cod_unidade_autorizadora do Plano de Trabalho (FK)",
@@ -623,7 +627,7 @@ class AvaliacaoRegistrosExecucao(Base):
     )
     __table_args__ = (
         ForeignKeyConstraint(
-            [origem_unidade, cod_unidade_autorizadora, id_plano_trabalho],
+            [origem_unidade_pt, cod_unidade_autorizadora_pt, id_plano_trabalho],
             [
                 "plano_trabalho.origem_unidade",
                 "plano_trabalho.cod_unidade_autorizadora",
