@@ -464,16 +464,12 @@ class PlanoEntregasSchema(BaseModel):
             )
         return self
 
-
     @model_validator(mode="after")
     def validate_status(self) -> "PlanoEntregasSchema":
         """Verifica se o status possui valor válido."""
         if self.status not in range(1, 6):
             raise ValueError("Status inválido; permitido: 1, 2, 3, 4, 5")
-        if self.status == 5 and (
-            self.avaliacao is None
-            or self.data_avaliacao is None
-        ):
+        if self.status == 5 and (self.avaliacao is None or self.data_avaliacao is None):
             raise ValueError(
                 "O status 5 só poderá ser usado se os campos avaliacao e "
                 "data_avaliacao estiverem preenchidos."
@@ -485,9 +481,7 @@ class PlanoEntregasSchema(BaseModel):
     def validate_avaliacao(value: int) -> int:
         """Verifica se a avaliação possui um valor válido."""
         if value is not None and value not in range(1, 6):
-            raise ValueError(
-                "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
-            )
+            raise ValueError("Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5")
         return value
 
 
