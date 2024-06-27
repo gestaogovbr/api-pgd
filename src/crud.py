@@ -135,6 +135,9 @@ async def create_plano_trabalho(
         models.AvaliacaoRegistrosExecucao(**avaliacao_registros_execucao.model_dump())
         for avaliacao_registros_execucao in plano_trabalho.avaliacoes_registros_execucao
     ]
+    # Esvazia as listas para poder converter o plano_trabalho para SQL Alchemy
+    plano_trabalho.contribuicoes = []
+    plano_trabalho.avaliacoes_registros_execucao = []
     db_plano_trabalho = models.PlanoTrabalho(**plano_trabalho.model_dump())
     db_plano_trabalho.data_insercao = creation_timestamp
     async with db_session as session:
