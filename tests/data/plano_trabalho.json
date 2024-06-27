@@ -11,21 +11,15 @@
     "carga_horaria_disponivel": 80,
     "contribuicoes": [
         {
-            "id_contribuicao": "string",
-            "cod_unidade_instituidora": 1,
+            "id_contribuicao": "55501",
             "tipo_contribuicao": 1,
-            "origem_unidade_entrega": "SIAPE",
-            "cod_unidade_autorizadora_entrega": 1,
             "id_plano_entregas": "1",
             "id_entrega": "1",
             "percentual_contribuicao": 40
         },
         {
-            "id_contribuicao": "string",
-            "cod_unidade_instituidora": 1,
+            "id_contribuicao": "55502",
             "tipo_contribuicao": 2,
-            "origem_unidade_entrega": null,
-            "cod_unidade_autorizadora_entrega": null,
             "id_plano_entregas": null,
             "id_entrega": null,
             "percentual_contribuicao": 40

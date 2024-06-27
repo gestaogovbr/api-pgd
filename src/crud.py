@@ -166,16 +166,17 @@ async def create_plano_trabalho(
         for contribuicao in contribuicoes:
             contribuicao.data_insercao = creation_timestamp
             # Relacionamento com Entrega, se existir
+            contribuicao.entrega = None
             if (
-                contribuicao.origem_unidade_entrega
-                and contribuicao.cod_unidade_autorizadora_entrega
+                contribuicao.tipo_contribuicao == 1
                 and contribuicao.id_plano_entregas
+                and contribuicao.id_entrega
             ):
                 query = (
                     select(models.Entrega)
-                    .filter_by(origem_unidade=contribuicao.origem_unidade_entrega)
+                    .filter_by(origem_unidade=plano_trabalho.origem_unidade)
                     .filter_by(
-                        cod_unidade_autorizadora=contribuicao.cod_unidade_autorizadora_entrega
+                        cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora
                     )
                     .filter_by(id_plano_entregas=contribuicao.id_plano_entregas)
                     .filter_by(id_entrega=contribuicao.id_entrega)
@@ -184,11 +185,11 @@ async def create_plano_trabalho(
                 db_entrega = result.scalars().unique().one_or_none()
                 if db_entrega is None:
                     raise ValueError(
-                        "Contibuição do Plano de Trabalho faz referência a entrega "
+                        "Contribuição do Plano de Trabalho faz referência a entrega "
                         "inexistente. "
-                        f"origem_unidade_entrega: {contribuicao.origem_unidade_entrega} "
-                        "cod_unidade_autorizadora_entrega: "
-                        f"{contribuicao.cod_unidade_autorizadora_entrega} "
+                        f"origem_unidade: {plano_trabalho.origem_unidade} "
+                        "cod_unidade_autorizadora: "
+                        f"{plano_trabalho.cod_unidade_autorizadora} "
                         f"id_plano_entregas: {contribuicao.id_plano_entregas} "
                         f"id_entrega: {contribuicao.id_entrega}"
                     )

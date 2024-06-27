@@ -215,13 +215,6 @@ class Entrega(Base):
         back_populates="entregas",
         lazy="joined",
     )
-    contribuicoes = relationship(
-        "Contribuicao",
-        back_populates="entrega",
-        lazy="joined",
-        passive_deletes=True,
-        cascade="save-update, merge, delete, delete-orphan",
-    )
     # campos implícitos a partir do relacionamento
     origem_unidade = Column(
         String,
@@ -422,13 +415,13 @@ class Contribuicao(Base):
         nullable=False,
         comment="Identificador único da contribuição.",
     )
-    cod_unidade_instituidora = Column(
-        Integer,
-        nullable=False,
-        comment="Código da unidade organizacional (UORG) no Sistema Integrado "
-        "de Administração de Recursos Humanos (SIAPE) corresponde à Unidade "
-        "de Instituição.",
-    )
+    # cod_unidade_instituidora = Column(
+    #     Integer,
+    #     nullable=False,
+    #     comment="Código da unidade organizacional (UORG) no Sistema Integrado "
+    #     "de Administração de Recursos Humanos (SIAPE) corresponde à Unidade "
+    #     "de Instituição.",
+    # )
     tipo_contribuicao = Column(
         Integer,
         nullable=False,
@@ -470,11 +463,6 @@ class Contribuicao(Base):
         back_populates="contribuicoes",
         lazy="joined",
     )
-    entrega = relationship(
-        "Entrega",
-        back_populates="contribuicoes",
-        lazy="joined",
-    )
     # campos implícitos a partir do relacionamento
     origem_unidade_pt = Column(
         String,
@@ -491,29 +479,6 @@ class Contribuicao(Base):
         String,
         nullable=False,
         comment="id_plano_trabalho do Plano de Trabalho (FK)",
-    )
-    origem_unidade_entrega = Column(
-        String,
-        nullable=True,
-        comment="Código do sistema da unidade: “SIAPE” ou “SIORG”, referente "
-        "à entrega vinculada a unidade da entrega, quando houver, podendo "
-        "também ser uma unidade externa.",
-    )
-    cod_unidade_autorizadora_entrega = Column(
-        Integer,
-        nullable=True,
-        comment=dedent(
-            """
-            Código da unidade organizacional (UORG) no Sistema
-            Integrado de Administração de Recursos Humanos (SIAPE)
-            correspondente à Unidade de autorização, à qual está
-            vinculado o plano de entregas.
-
-            **Regras de validação:** Deve ser preenchido somente quando
-            tipo_contribuicao for igual a "3" e os campos "id_plano_entregas"
-            e "id_entrega" estiverem preenchidos.
-        """
-        ),
     )
     id_plano_entregas = Column(
         String,
@@ -533,20 +498,6 @@ class Contribuicao(Base):
                 "plano_trabalho.origem_unidade",
                 "plano_trabalho.cod_unidade_autorizadora",
                 "plano_trabalho.id_plano_trabalho",
-            ],
-        ),
-        ForeignKeyConstraint(
-            [
-                origem_unidade_entrega,
-                cod_unidade_autorizadora_entrega,
-                id_plano_entregas,
-                id_entrega,
-            ],
-            [
-                "entrega.origem_unidade",
-                "entrega.cod_unidade_autorizadora",
-                "entrega.id_plano_entregas",
-                "entrega.id_entrega",
             ],
         ),
     )

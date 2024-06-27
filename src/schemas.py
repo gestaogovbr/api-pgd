@@ -81,10 +81,6 @@ class ContribuicaoSchema(BaseModel):
         title="Identificador único da contribuição",
         description=Contribuicao.id_contribuicao.comment,
     )
-    cod_unidade_instituidora: int = Field(
-        title="Código da unidade organizacional (UORG)",
-        description=Contribuicao.cod_unidade_instituidora.comment,
-    )
     tipo_contribuicao: TipoContribuicao = Field(
         title="Tipo de contribuição",
         description=Contribuicao.tipo_contribuicao.comment,
@@ -92,19 +88,6 @@ class ContribuicaoSchema(BaseModel):
     percentual_contribuicao: int = Field(
         title="Percentual de contribuição",
         description=Contribuicao.percentual_contribuicao.comment,
-    )
-    origem_unidade_entrega: Optional[str] = Field(
-        default=None,
-        title="Código do sistema da unidade do Plano de Entregas da "
-        "Entrega, quando a Contribuição for para uma Entrega externa.",
-        description=Contribuicao.origem_unidade_entrega.comment,
-    )
-    cod_unidade_autorizadora_entrega: Optional[int] = Field(
-        default=None,
-        title="Código da unidade organizacional (UORG) da unidade "
-        "autorizadora do Plano de Entregas da Entrega, quando a Contribuição "
-        "for para uma Entrega externa.",
-        description=Contribuicao.cod_unidade_autorizadora_entrega.comment,
     )
     id_plano_entregas: Optional[str] = Field(
         default=None,
@@ -126,18 +109,42 @@ class ContribuicaoSchema(BaseModel):
         return tipo_contribuicao
 
     @model_validator(mode="after")
-    def validate_cod_unidade_autorizadora_entrega(self) -> "ContribuicaoSchema":
+    def validate_tipo_contribuicao_entrega_outra_unidade(self) -> "ContribuicaoSchema":
+        """Valida se os valores dos campos:
+
+        - id_plano_entregas
+        - id_entrega
+
+        estão em conformidade com as regras definidas para campo
+        tipo_contribuicao.
+        """
         if (
             self.tipo_contribuicao
-            not in (
-                TipoContribuicao.entrega_propria_unidade,
-                TipoContribuicao.entrega_outra_unidade,
-            )
-            and self.cod_unidade_autorizadora_entrega is not None
+            == TipoContribuicao.entrega_propria_unidade
+        ) and (
+            getattr(self, "id_plano_entregas", None) is None
+            or getattr(self, "id_entrega", None) is None
         ):
             raise ValueError(
-                "cod_unidade_autorizadora_entrega só pode ser utilizado se "
-                "tipo_contribuicao for 1 ou 3"
+                "Os campos id_plano_entregas e id_entrega são obrigatórios "
+                "quando tipo_contribuicao == 1. "
+                "Valores informados: "
+                f"id_plano_entregas == {self.id_plano_entregas}, "
+                f"id_entrega == {self.id_entrega}."
+            )
+        if (
+            self.tipo_contribuicao
+            == TipoContribuicao.nao_vinculada
+        ) and (
+            getattr(self, "id_plano_entregas", None) is not None
+            or getattr(self, "id_entrega", None) is not None
+        ):
+            raise ValueError(
+                "Os campos id_plano_entregas e id_entrega não podem conter "
+                "valores quando tipo_contribuicao == 2. "
+                "Valores informados: "
+                f"id_plano_entregas == {self.id_plano_entregas}, "
+                f"id_entrega == {self.id_entrega}."
             )
         return self
 
@@ -204,7 +211,10 @@ class AvaliacaoRegistrosExecucaoSchema(BaseModel):
     ) -> "AvaliacaoRegistrosExecucaoSchema":
         """Valida se a data de avaliação dos registros de execução é
         posterior à data de início do período avaliativo."""
-        if self.data_avaliacao_registros_execucao <= self.data_inicio_periodo_avaliativo:
+        if (
+            self.data_avaliacao_registros_execucao
+            <= self.data_inicio_periodo_avaliativo
+        ):
             raise ValueError(
                 "A data de avaliação de registros de execução "
                 "deve ser posterior à data de início do período avaliativo."
@@ -298,73 +308,6 @@ class PlanoTrabalhoSchema(BaseModel):
                 "data_termino do Plano de Trabalho deve ser maior "
                 "ou igual que data_inicio"
             )
-        return self
-
-    # Validações relacionadas às contribuições
-
-    @model_validator(mode="after")
-    def validate_tipo_contribuicao_entrega_outra_unidade(self) -> "PlanoTrabalhoSchema":
-        """Para cada Contribuicao, valida se os valores dos campos:
-
-        - origem_unidade_entrega
-        - cod_unidade_autorizadora_externa
-        - id_plano_entregas
-        - id_entrega
-
-        estão em conformidade com as regras definidas para campo
-        tipo_contribuicao.
-        """
-        field_names_entrega_externa = (
-            "origem_unidade_entrega",
-            "cod_unidade_autorizadora_externa",
-            "id_plano_entregas",
-            "id_entrega",
-        )
-        for contribuicao in self.contribuicoes:
-            if (
-                contribuicao.tipo_contribuicao
-                == TipoContribuicao.entrega_propria_unidade
-            ):
-                if (
-                    contribuicao.id_plano_entregas is None
-                    or contribuicao.id_entrega is None
-                ):
-                    raise ValueError(
-                        "Os campos id_plano_entregas e id_entrega são obrigatórios "
-                        "quando tipo_contribuicao == 1."
-                    )
-                if (
-                    contribuicao.origem_unidade_entrega is not None
-                    and contribuicao.origem_unidade_entrega != self.origem_unidade
-                ):
-                    raise ValueError(
-                        "O campo origem_unidade_entrega deve ser null ou igual ao "
-                        "origem_unidade do Plano de Trabalho "
-                        "quando tipo_contribuicao == 1."
-                    )
-                if (
-                    contribuicao.cod_unidade_autorizadora_entrega is not None
-                    and contribuicao.cod_unidade_autorizadora_entrega
-                    != self.cod_unidade_executora
-                ):
-                    raise ValueError(
-                        "O campo cod_unidade_autorizadora_entrega deve ser null "
-                        "ou igual ao campo cod_unidade_executora do Plano de "
-                        "Trabalho quando tipo_contribuicao == 1."
-                    )
-            if (
-                contribuicao.tipo_contribuicao == TipoContribuicao.entrega_outra_unidade
-                and not all(
-                    (
-                        getattr(self, field_name, None)
-                        for field_name in field_names_entrega_externa
-                    )
-                )
-            ):
-                raise ValueError(
-                    f"Os campos {', '.join(field_names_entrega_externa)} "
-                    "são obrigatórios quando tipo_contribuicao == 3"
-                )
         return self
 
     # Validações relacionadas às avaliações de registros de execução
