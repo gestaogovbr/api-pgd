@@ -307,6 +307,7 @@ class PlanoTrabalhoSchema(BaseModel):
                 "zero. Valor informado: "
                 f"carga_horaria_disponivel == {carga_horaria_disponivel}"
             )
+        return carga_horaria_disponivel
 
     @model_validator(mode="after")
     def year_interval(self) -> "PlanoTrabalhoSchema":
