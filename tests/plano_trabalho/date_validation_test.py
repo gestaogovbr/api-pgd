@@ -382,7 +382,7 @@ class TestCreatePlanoDeTrabalhoPeriodoAvaliativoOverlapping(BasePTTest):
         Planos de Trabalho cujas avaliações de registros de execução possuam
         sobreposição de data devem ser rejeitadas.
         """
-        original_avaliacao = self.input_pt["avaliacao_registros_execucao"][0].copy()
+        original_avaliacao = self.input_pt["avaliacoes_registros_execucao"][0].copy()
 
         input_pt = self.input_pt.copy()
         input_pt["id_plano_trabalho"] = id_plano_trabalho
@@ -392,7 +392,7 @@ class TestCreatePlanoDeTrabalhoPeriodoAvaliativoOverlapping(BasePTTest):
             avaliacao_template = original_avaliacao.copy()
             avaliacao_template["data_inicio_periodo_avaliativo"] = avaliacao[0]
             avaliacao_template["data_fim_periodo_avaliativo"] = avaliacao[1]
-            input_pt["avaliacao_registros_execucao"].append(avaliacao_template)
+            input_pt["avaliacoes_registros_execucao"].append(avaliacao_template)
 
         response = self.create_pt(input_pt)
 
