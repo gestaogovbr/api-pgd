@@ -235,11 +235,9 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
             )
         if error_messages:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            print("response: ", response.json())
             for detail_message in error_messages:
                 assert_error_message(response, detail_message)
         else:
-            print("response: ", response.json())
             assert response.status_code == status.HTTP_201_CREATED
 
     @pytest.mark.parametrize(
@@ -265,10 +263,8 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
 
         if id_plano_entregas == input_pe["id_plano_entregas"] and \
             id_entrega in [entrega["id_entrega"] for entrega in input_pe["entregas"]]:
-            print("response: ", response.json())
             assert response.status_code == status.HTTP_201_CREATED
         else:
-            print("response: ", response.json())
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             # assert_error_message(
             #     response, ""
