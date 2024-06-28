@@ -56,17 +56,18 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
             example_pe_unidade_3: Fixture para criar um PE na unidade 3.
             example_pt_unidade_3: Fixture para criar um PT na unidade 3.
         """
+        input_pt = self.input_pt.copy()
+
         # Obter o plano de trabalho de uma unidade diferente
         response = self.get_pt(
             self.input_pt["id_plano_trabalho"], 3, header_usr=header_admin
         )
 
         # Inclui os campos de resposta do json que não estavam no template
-        input_pt = self.input_pt.copy()
         input_pt["status"] = 3
-        input_pt["cod_unidade_executora"] = 3
+        input_pt["cod_unidade_autorizadora"] = 3
         input_pt["carga_horaria_disponivel"] = input_pt["carga_horaria_disponivel"]
-        input_pt["avaliacao_registros_execucao"][0][
+        input_pt["avaliacoes_registros_execucao"][0][
             "data_avaliacao_registros_execucao"
         ] = "2023-01-03"
 
