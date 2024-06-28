@@ -285,6 +285,18 @@ class PlanoTrabalhoSchema(BaseModel):
         """Valida o CPF do participante."""
         return cpf_validate(cpf_participante)
 
+    @field_validator("contribuicoes")
+    @staticmethod
+    def contribuicoes_not_empty(
+        contribuicoes: List[ContribuicaoSchema],
+    ) -> List[ContribuicaoSchema]:
+        """Verifica se a lista de contribuições não está vazia."""
+        if not contribuicoes:
+            raise ValueError(
+                "O Plano de Trabalho precisa ter pelo menos uma Contribuição."
+            )
+        return contribuicoes
+
     @model_validator(mode="after")
     def year_interval(self) -> "PlanoTrabalhoSchema":
         """Garante que o plano não abrange um período maior que 1 ano."""
