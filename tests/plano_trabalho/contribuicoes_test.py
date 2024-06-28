@@ -136,6 +136,8 @@ class TestCreatePTOmitOptionalFields(BasePTTest):
         offset, field_list = omitted_fields
         for field in field_list:
             for contribuicao in partial_input_pt["contribuicoes"]:
+                # torna os opcionais campos id_plano_entregas e id_entrega
+                contribuicao["tipo_contribuicao"] = 3
                 if field in contribuicao:
                     del contribuicao[field]
 
