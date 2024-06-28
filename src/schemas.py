@@ -118,10 +118,7 @@ class ContribuicaoSchema(BaseModel):
         estão em conformidade com as regras definidas para campo
         tipo_contribuicao.
         """
-        if (
-            self.tipo_contribuicao
-            == TipoContribuicao.entrega_propria_unidade
-        ) and (
+        if (self.tipo_contribuicao == TipoContribuicao.entrega_propria_unidade) and (
             getattr(self, "id_plano_entregas", None) is None
             or getattr(self, "id_entrega", None) is None
         ):
@@ -132,10 +129,7 @@ class ContribuicaoSchema(BaseModel):
                 f"id_plano_entregas == {self.id_plano_entregas}, "
                 f"id_entrega == {self.id_entrega}."
             )
-        if (
-            self.tipo_contribuicao
-            == TipoContribuicao.nao_vinculada
-        ) and (
+        if (self.tipo_contribuicao == TipoContribuicao.nao_vinculada) and (
             getattr(self, "id_plano_entregas", None) is not None
             or getattr(self, "id_entrega", None) is not None
         ):
