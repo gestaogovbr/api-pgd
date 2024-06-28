@@ -56,7 +56,7 @@ class TestCreatePTInvalidDates(BasePTTest):
 
         # cria o plano_trabalho com a data_inicio informada
         response = self.create_pt(input_pt)
-        if data_inicio > data_termino:
+        if date.fromisoformat(data_inicio) > date.fromisoformat(data_termino):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = "data_termino do Plano de Trabalho deve ser maior ou igual que data_inicio"
             assert_error_message(response, detail_message)
