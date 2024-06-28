@@ -58,7 +58,10 @@ class TestCreatePTInvalidDates(BasePTTest):
         response = self.create_pt(input_pt)
         if date.fromisoformat(data_inicio) > date.fromisoformat(data_termino):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_message = "data_termino do Plano de Trabalho deve ser maior ou igual que data_inicio"
+            detail_message = (
+                "data_termino do Plano de Trabalho deve ser maior ou igual "
+                "que data_inicio"
+            )
             assert_error_message(response, detail_message)
         else:
             assert response.status_code == status.HTTP_201_CREATED
