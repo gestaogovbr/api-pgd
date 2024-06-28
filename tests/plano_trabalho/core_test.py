@@ -247,13 +247,23 @@ class TestCreatePlanoTrabalho(BasePTTest):
         # Arrange
         offset, field_list = missing_fields
         input_pt = self.input_pt.copy()
+        # Estes campos fazem parte da URL e para omiti-los será necessário
+        # inclui-los na chamada do método create_pt
+        fields_in_url = [
+            "origem_unidade",
+            "cod_unidade_autorizadora",
+            "id_plano_trabalho",
+        ]
+        placeholder_fields = {}
         for field in field_list:
+            if field in fields_in_url:
+                placeholder_fields[field] = input_pt[field]
             del input_pt[field]
 
         input_pt["id_plano_trabalho"] = f"{1800 + offset}"  # precisa ser um novo plano
 
         # Act
-        response = self.create_pt(input_pt)
+        response = self.create_pt(input_pt, **placeholder_fields)
 
         # Assert
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
