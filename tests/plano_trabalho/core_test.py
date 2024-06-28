@@ -429,7 +429,6 @@ class TestGetPlanoTrabalho(BasePTTest):
             input_pt["id_plano_trabalho"], input_pt["cod_unidade_autorizadora"]
         )
 
-        print("response: ", response.json())
         assert response.status_code == status.HTTP_200_OK
         self.assert_equal_plano_trabalho(response.json(), input_pt)
 
