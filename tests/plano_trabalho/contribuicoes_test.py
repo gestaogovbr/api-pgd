@@ -266,6 +266,6 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
             assert response.status_code == status.HTTP_201_CREATED
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            # assert_error_message(
-            #     response, ""
-            # )
+            assert_error_message(
+                response, "Contribuição do Plano de Trabalho faz referência a entrega inexistente"
+            )
