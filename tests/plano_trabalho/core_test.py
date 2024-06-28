@@ -128,7 +128,7 @@ class BasePTTest:
         avaliacao_registros_execucao_1 = set(
             {
                 field: value
-                for avaliacao in plano_trabalho_1["avaliacao_registros_execucao"]
+                for avaliacao in plano_trabalho_1["avaliacoes_registros_execucao"]
                 for field, value in avaliacao.items()
                 if field in FIELDS_AVALIACAO_REGISTROS_EXECUCAO["mandatory"]
             }
@@ -136,7 +136,7 @@ class BasePTTest:
         avaliacao_registros_execucao_2 = set(
             {
                 field: value
-                for avaliacao in plano_trabalho_2["avaliacao_registros_execucao"]
+                for avaliacao in plano_trabalho_2["avaliacoes_registros_execucao"]
                 for field, value in avaliacao.items()
                 if field in FIELDS_AVALIACAO_REGISTROS_EXECUCAO["mandatory"]
             }
