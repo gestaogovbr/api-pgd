@@ -221,9 +221,6 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
         contribuicao["id_entrega"] = id_entrega
         response = self.create_pt(input_pt, header_usr=self.header_usr_1)
 
-        origem_unidade = input_pt["origem_unidade"]
-        cod_unidade_autorizadora = input_pt["cod_unidade_autorizadora"]
-
         error_messages = []
         if tipo_contribuicao == 1:
             if id_plano_entregas is None or id_entrega is None:
