@@ -297,6 +297,17 @@ class PlanoTrabalhoSchema(BaseModel):
             )
         return contribuicoes
 
+    @field_validator("carga_horaria_disponivel")
+    @staticmethod
+    def validate_carga_horaria_disponivel(carga_horaria_disponivel: int) -> int:
+        """Valida o valor do campo carga_horaria_disponivel."""
+        if carga_horaria_disponivel < 0:
+            raise ValueError(
+                "Valor de carga_horaria_disponivel deve ser maior ou igual a "
+                "zero. Valor informado: "
+                f"carga_horaria_disponivel == {carga_horaria_disponivel}"
+            )
+
     @model_validator(mode="after")
     def year_interval(self) -> "PlanoTrabalhoSchema":
         """Garante que o plano não abrange um período maior que 1 ano."""
