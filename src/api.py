@@ -492,6 +492,11 @@ async def create_or_update_plano_trabalho(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"IntegrityError: {str(exception)}",
         ) from exception
+    except ValueError as exception:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exception),
+        ) from exception
 
     return novo_plano_trabalho
 
