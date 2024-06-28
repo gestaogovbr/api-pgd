@@ -300,10 +300,10 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         input_pt["id_plano_trabalho"] = id_plano_trabalho
         input_pt["data_inicio"] = data_inicio
         input_pt["data_termino"] = data_termino
-        input_pt["avaliacao_registros_execucao"][0][
+        input_pt["avaliacoes_registros_execucao"][0][
             "data_inicio_periodo_avaliativo"
         ] = data_inicio_periodo_avaliativo
-        input_pt["avaliacao_registros_execucao"][0][
+        input_pt["avaliacoes_registros_execucao"][0][
             "data_fim_periodo_avaliativo"
         ] = data_fim_periodo_avaliativo
 
