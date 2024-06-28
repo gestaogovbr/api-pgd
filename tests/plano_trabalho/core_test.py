@@ -205,8 +205,8 @@ class BasePTTest:
             header_usr = self.header_usr_1
         response = self.client.get(
             (
-                f"/organizacao/{origem_unidade}/{cod_unidade_autorizadora}/"
-                f"plano_trabalho/{id_plano_trabalho}"
+                f"/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+                f"/plano_trabalho/{id_plano_trabalho}"
             ),
             headers=header_usr,
         )
@@ -437,10 +437,11 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
         assert response.status_code == status.HTTP_200_OK
         self.assert_equal_plano_trabalho(response.json(), input_pt)
 
+
 class TestGetPlanoTrabalho(BasePTTest):
     """Testes para consultar um Plano de Trabalho."""
 
-    def test_get_plano_trabalho(self):
+    def test_get_plano_trabalho(self, example_pt):  # pylint: disable=unused-argument
         """Consulta um plano de trabalho existente."""
         # Inclui os campos de resposta do json que não estavam no template
         input_pt = self.input_pt.copy()
@@ -452,6 +453,7 @@ class TestGetPlanoTrabalho(BasePTTest):
             input_pt["id_plano_trabalho"], input_pt["cod_unidade_autorizadora"]
         )
 
+        print("response: ", response.json())
         assert response.status_code == status.HTTP_200_OK
         self.assert_equal_plano_trabalho(response.json(), input_pt)
 
