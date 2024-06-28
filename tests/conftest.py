@@ -258,11 +258,13 @@ def example_pt_unidade_3(
     header_admin: dict,
 ):
     """Cria um Plano de Trabalho do Participante como exemplo."""
-    input_pt["cod_unidade_autorizadora"] = 3
+    input_pt_3 = input_pt.copy()
+    input_pt_3["cod_unidade_autorizadora"] = 3
     client.put(
-        f"/organizacao/SIAPE/{API_PGD_ADMIN_USER}"
-        f"/plano_trabalho/{input_pt['id_plano_trabalho']}",
-        json=input_pt,
+        f"/organizacao/{input_pt_3['origem_unidade']}"
+        f"/{input_pt_3['cod_unidade_autorizadora']}"
+        f"/plano_trabalho/{input_pt_3['id_plano_trabalho']}",
+        json=input_pt_3,
         headers=header_admin,
     )
 
