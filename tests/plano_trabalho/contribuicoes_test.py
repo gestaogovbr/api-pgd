@@ -172,7 +172,7 @@ class TestCreatePTNullOptionalFields(BasePTTest):
                 if field in contribuicao:
                     contribuicao[field] = None
 
-        partial_input_pt["id_plano_trabalho"] = 557 + offset
+        partial_input_pt["id_plano_trabalho"] = str(557 + offset)
         response = self.create_pt(partial_input_pt)
         assert response.status_code == status.HTTP_201_CREATED
 
