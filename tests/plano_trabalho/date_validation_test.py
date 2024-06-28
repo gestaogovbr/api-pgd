@@ -44,23 +44,21 @@ class TestCreatePTInvalidDates(BasePTTest):
         # cria o participante com a data_assinatura_tcr informada
         response = self.client.put(
             (
-                "/organizacao/SIAPE/"
-                f"{input_part['cod_unidade_autorizadora']}/"
-                f"participante/{input_part['cpf_participante']}"
+                "/organizacao/SIAPE"
+                f"/{input_part['cod_unidade_autorizadora']}"
+                f"/{input_part['cod_unidade_lotacao']}"
+                f"/participante/{input_part['matricula_siape']}"
             ),
             json=input_part,
             headers=self.header_usr_1,
         )
-        response.raise_for_status()
+        assert response.status_code in (status.HTTP_200_OK, status.HTTP_201_CREATED)
 
         # cria o plano_trabalho com a data_inicio informada
         response = self.create_pt(input_pt)
         if data_inicio > data_termino:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_message = (
-                "Data fim do Plano de Trabalho deve ser maior "
-                "ou igual que Data de início."
-            )
+            detail_message = "data_termino do Plano de Trabalho deve ser maior ou igual que data_inicio"
             assert_error_message(response, detail_message)
         else:
             assert response.status_code == status.HTTP_201_CREATED
