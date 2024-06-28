@@ -374,7 +374,7 @@ async def create_or_update_plano_entregas(
 # ### Plano Trabalho ---------------------------------------
 @app.get(
     "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
-    "/plano_trabalho/{id_plano_trabalho_participante}",
+    "/plano_trabalho/{id_plano_trabalho}",
     summary="Consulta plano de trabalho",
     response_model=schemas.PlanoTrabalhoSchema,
     tags=["plano de trabalho"],
@@ -383,7 +383,7 @@ async def get_plano_trabalho(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     origem_unidade: str,
     cod_unidade_autorizadora: int,
-    id_plano_trabalho_participante: int,
+    id_plano_trabalho: str,
     db: DbContextManager = Depends(DbContextManager),
 ):
     "Consulta o plano de trabalho com o código especificado."
@@ -395,7 +395,7 @@ async def get_plano_trabalho(
         db_session=db,
         origem_unidade=origem_unidade,
         cod_unidade_autorizadora=cod_unidade_autorizadora,
-        id_plano_trabalho_participante=id_plano_trabalho_participante,
+        id_plano_trabalho=id_plano_trabalho,
     )
     if not db_plano_trabalho:
         raise HTTPException(
