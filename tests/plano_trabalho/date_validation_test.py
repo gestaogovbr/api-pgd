@@ -63,6 +63,45 @@ class TestCreatePTInvalidDates(BasePTTest):
         else:
             assert response.status_code == status.HTTP_201_CREATED
 
+    @pytest.mark.parametrize(
+        "data_inicio_pt",
+        (
+            "2022-12-01", # anterior à data_inicio do pe, que é "2023-01-01"
+            "2023-01-15",
+        ),
+    )
+    def test_data_inicio_check(
+        self,
+        input_pe: dict,
+        data_inicio_pt: str,
+    ):
+        """Testa a criação de um Plano de Trabalho com diferentes datas de
+        início. Caso a data de início do Plano de Trabalho seja anterior
+        à data de início do Plano de Entregas, deverá recusar a entrada
+        com uma mensagem de erro.
+
+        Args:
+            input_pe (dict): Dados do PE usado como exemplo.
+            data_inicio_pt (str): Data recebida como parâmetro de teste.
+        """
+        # Atualiza a data de início do Plano de Trabalho
+        input_pt = self.input_pt.copy()
+        input_pt["data_inicio"] = data_inicio_pt
+
+        response = self.create_pt(input_pt, header_usr=self.header_usr_1)
+
+        if date.fromisoformat(data_inicio_pt) < date.fromisoformat(
+            input_pe["data_inicio"]
+        ):
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            assert_error_message(
+                response,
+                "A data de início do Plano de Trabalho não pode ser anterior "
+                "à data de início do Plano de Entregas.",
+            )
+        else:
+            assert response.status_code == status.HTTP_201_CREATED
+
 
 class TestCreatePTDateIntervalOverAYear(BasePTTest):
     """Testes relacionados a criar um Plano de Trabalho com intervalo de
