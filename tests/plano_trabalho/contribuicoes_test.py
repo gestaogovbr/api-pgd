@@ -228,7 +228,7 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
                     "Os campos id_plano_entregas e id_entrega são obrigatórios "
                     "quando tipo_contribuicao == 1."
                 )
-        if tipo_contribuicao == 2 and id_plano_entregas or id_entrega:
+        if tipo_contribuicao == 2 and (id_plano_entregas or id_entrega):
             error_messages.append(
                 "Os campos id_plano_entregas e id_entrega não podem conter "
                 "valores quando tipo_contribuicao == 2. "
