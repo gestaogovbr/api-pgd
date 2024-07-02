@@ -228,15 +228,16 @@ async def update_plano_trabalho(
             de trabalho como um esquema Pydantic.
 
     Returns:
-        schemas.PlanoEntregasSchema: Esquema Pydantic do Plano de Trabalho
+        schemas.PlanoTrabalhoSchema: Esquema Pydantic do Plano de Trabalho
             com o retorno de create_plano_trabalho.
     """
     async with db_session as session:
         result = await session.execute(
             select(models.PlanoTrabalho)
-            .filter_by(cod_SIAPE_instituidora=plano_trabalho.cod_SIAPE_instituidora)
+            .filter_by(origem_unidade=plano_trabalho.origem_unidade)
+            .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
             .filter_by(
-                id_plano_trabalho_participante=plano_trabalho.id_plano_trabalho_participante
+                id_plano_trabalho=plano_trabalho.id_plano_trabalho
             )
         )
         db_plano_trabalho = result.unique().scalar_one()
