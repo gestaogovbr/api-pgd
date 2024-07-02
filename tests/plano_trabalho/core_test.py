@@ -396,11 +396,13 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
         verifica se a alteração foi persistida.
         """
         # Altera campos do PT e reenvia pra API (update)
+        # TODO: Verifcar porque a fixture não está criando o PT de exemplo
+        self.create_pt(self.input_pt)
+
         input_pt = self.input_pt.copy()
-        input_pt["cod_unidade_executora"] = 100  # Valor era 99
+        input_pt["status"] = 1  # Valor era 3
         input_pt["data_termino"] = "2023-01-31"  # Valor era "2023-01-15"
         response = self.create_pt(input_pt)
-
         assert response.status_code == status.HTTP_200_OK
         self.assert_equal_plano_trabalho(response.json(), input_pt)
 
