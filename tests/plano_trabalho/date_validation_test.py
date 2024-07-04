@@ -10,7 +10,7 @@ import pytest
 
 from util import over_a_year, assert_error_message
 from .core_test import BasePTTest
-
+from httpx import Client
 
 # Datas básicas
 
@@ -110,81 +110,67 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
     de intervalo de data na mesma unidade para o mesmo participante."""
 
     @pytest.mark.parametrize(
-        "id_plano_trabalho, cod_unidade_executora, cpf_participante, "
+        "id_plano_trabalho, cod_unidade_executora, matricula_siape, "
         "data_inicio, data_termino, "
-        "cancelado",
+        "status_pt",
         [
             (
                 "101",
                 99,
-                "64635210600",
+                "1237654",
                 "2023-01-01",
                 "2023-01-15",
-                False,
+                2,
             ),  # igual ao exemplo
             (
                 "102",
                 99,
-                "64635210600",
+                "1237654",
                 "2023-02-01",
                 "2023-02-15",
-                False,
+                2,
             ),  # sem sobreposição
             # sobreposição no início
-            ("103", 99, "64635210600", "2022-12-01", "2023-01-08", False),
+            ("103", 99, "1237654", "2022-12-01", "2023-01-08", 2),
             # sobreposição no fim
-            ("104", 99, "64635210600", "2023-01-30", "2023-02-15", False),
+            ("104", 99, "1237654", "2023-01-30", "2023-02-15", 2),
             (
                 "105",
                 99,
-                "64635210600",
+                "1237654",
                 "2023-01-02",
                 "2023-01-08",
-                False,
+                2,
             ),  # contido no período
             (
                 "106",
                 99,
-                "64635210600",
+                "1237654",
                 "2022-12-31",
                 "2023-01-16",
-                False,
+                2,
             ),  # contém o período
-            ("107", 99, "64635210600", "2022-12-01", "2023-01-08", True),  # cancelado
-            (
-                "108",
-                100,
-                "64635210600",
-                "2023-01-01",
-                "2023-01-15",
-                False,
-            ),  # outra unidade
+            ("107", 99, "1237654", "2022-12-01", "2023-01-08", 1),  # cancelado
             (
                 "109",
-                99,
-                "82893311776",
-                "2023-01-01",
-                "2023-01-15",
-                False,
-            ),  # outro participante
-            (
-                "110",
                 100,
-                "82893311776",
+                "1234567",
                 "2023-01-01",
                 "2023-01-15",
-                False,
-            ),  # ambos diferentes
+                2,
+            ),  # outro participante
         ],
     )
     def test_create_plano_trabalho_overlapping_date_interval(
         self,
         id_plano_trabalho: str,
         cod_unidade_executora: int,
-        cpf_participante: str,
+        matricula_siape: str,
         data_inicio: str,
         data_termino: str,
-        cancelado: bool,
+        status_pt: int,
+        example_pt,
+        example_part_2,
     ):
         """Tenta criar um plano de trabalho com sobreposição de intervalo de
         data na mesma unidade para o mesmo participante.
@@ -207,29 +193,28 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
                 "data_fim_periodo_avaliativo": "2023-01-23",
                 "avaliacao_registros_execucao": 5,
                 "data_avaliacao_registros_execucao": "2023-01-03",
-                "cpf_participante": "64635210600",
+                "matricula_siape": "1237654",
                 "data_inicio": "2023-01-16",
                 "data_termino": "2023-01-31",
                 "carga_horaria_disponivel": 80,
             }
         ]
         response = self.create_pt(input_pt2)
-
         assert response.status_code == status.HTTP_201_CREATED
 
         input_pt["id_plano_trabalho"] = id_plano_trabalho
         input_pt["cod_unidade_executora"] = cod_unidade_executora
-        input_pt["cpf_participante"] = cpf_participante
+        input_pt["matricula_siape"] = matricula_siape
         input_pt["data_inicio"] = data_inicio
         input_pt["data_termino"] = data_termino
-        input_pt["cancelado"] = cancelado
+        input_pt["status"] = status_pt
         input_pt["avaliacao_registros_execucao"] = []
         response = self.create_pt(input_pt)
 
         if (
             # se algum dos planos estiver cancelado, não há problema em haver
             # sobreposição
-            not cancelado
+            status_pt != 1
             # se são unidades diferentes, não há problema em haver sobreposição
             and (
                 input_pt["cod_unidade_executora"]
@@ -237,7 +222,7 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
             )
             # se são participantes diferentes, não há problema em haver
             # sobreposição
-            and (input_pt["cpf_participante"] == original_pt["cpf_participante"])
+            and (input_pt["matricula_siape"] == original_pt["matricula_siape"])
         ):
             if any(
                 (
@@ -250,10 +235,11 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
                 )
                 for existing_pt in (original_pt, input_pt2)
             ):
+
                 assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
                 detail_msg = (
                     "Já existe um plano de trabalho para esta "
-                    "cod_unidade_executora para este cpf_participante "
+                    "cod_unidade_executora para esta matrícula "
                     "no período informado."
                 )
                 assert_error_message(response, detail_msg)
