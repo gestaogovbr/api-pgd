@@ -453,7 +453,7 @@ async def create_or_update_plano_trabalho(
         origem_unidade=origem_unidade,
         cod_unidade_autorizadora=cod_unidade_autorizadora,
         cod_unidade_executora=plano_trabalho.cod_unidade_executora,
-        cpf_participante=plano_trabalho.cpf_participante,
+        matricula_siape=plano_trabalho.matricula_siape,
         id_plano_trabalho=plano_trabalho.id_plano_trabalho,
         data_inicio=plano_trabalho.data_inicio,
         data_termino=plano_trabalho.data_termino,
@@ -462,7 +462,7 @@ async def create_or_update_plano_trabalho(
     if plano_trabalho.status != 1 and conflicting_period:
         detail_msg = (
             "Já existe um plano de trabalho para este "
-            "cod_SIAPE_unidade_exercicio para este cpf_participante "
+            "cod_SIAPE_unidade_exercicio para esta matrícula "
             "no período informado."
         )
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
