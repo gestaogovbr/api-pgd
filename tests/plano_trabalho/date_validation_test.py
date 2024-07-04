@@ -347,7 +347,6 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         ] = data_avaliacao_registros_execucao
 
         response = self.create_pt(input_pt)
-        print (response.text)
         if (
             date.fromisoformat(data_avaliacao_registros_execucao)
             < date.fromisoformat(data_inicio_periodo_avaliativo)
