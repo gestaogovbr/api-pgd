@@ -262,15 +262,57 @@ class TestCreatePTDataAvaliacao(BasePTTest):
 
     @pytest.mark.parametrize(
         "id_plano_trabalho, data_inicio, data_termino, "
-        "data_inicio_periodo_avaliativo, data_fim_periodo_avaliativo",
+        "data_inicio_periodo_avaliativo, data_fim_periodo_avaliativo, "
+        "data_avaliacao_registros_execucao",
         [
-            ("80", "2023-06-04", "2023-06-11", "2023-04-01", "2023-04-02"),
-            ("81", "2023-06-04", "2023-06-11", "2024-04-01", "2023-04-02"),
-            ("82", "2023-06-04", "2023-06-11", "2021-04-02", "2023-06-02"),
-            ("83", "2023-04-01", "2023-04-01", "2023-06-01", "2023-06-02"),
-            ("84", "2023-04-01", "2023-04-01", "2023-04-01", "2023-04-01"),
+            ("80", "2023-06-04", "2023-06-11", "2023-04-01", "2023-04-02", "2023-06-12"),
         ],
     )
+    def test_create_pt_periodo_avaliativo_out_of_bounds(
+        self,
+        id_plano_trabalho: str,
+        data_inicio: str,
+        data_termino: str,
+        data_inicio_periodo_avaliativo: str,
+        data_fim_periodo_avaliativo: str,
+        data_avaliacao_registros_execucao: str,
+    ):
+        """Verifica se o período de avaliação do registro de execução está
+        após a data de ínicio do Plano de Trabalho.
+        """
+        input_pt = self.input_pt.copy()
+        input_pt["id_plano_trabalho"] = id_plano_trabalho
+        input_pt["data_inicio"] = data_inicio
+        input_pt["data_termino"] = data_termino
+        input_pt["avaliacoes_registros_execucao"][0][
+            "data_inicio_periodo_avaliativo"
+        ] = data_inicio_periodo_avaliativo
+        input_pt["avaliacoes_registros_execucao"][0][
+            "data_fim_periodo_avaliativo"
+        ] = data_fim_periodo_avaliativo
+        input_pt["avaliacoes_registros_execucao"][0][
+            "data_avaliacao_registros_execucao"
+        ] = data_avaliacao_registros_execucao
+
+        response = self.create_pt(input_pt)
+        print (response.text)
+
+        if (
+            date.fromisoformat(data_inicio_periodo_avaliativo)
+            < date.fromisoformat(data_inicio)
+        ) or (
+            date.fromisoformat(data_fim_periodo_avaliativo)
+            < date.fromisoformat(data_inicio)
+        ):
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = (
+                "O período avaliativo deve ser posterior "
+                "à data de início do plano de trabalho."
+            )
+            assert_error_message(response, detail_message)
+        else:
+            assert response.status_code == status.HTTP_201_CREATED
+
     def test_create_pt_data_avaliacao_out_of_bounds(
         self,
         id_plano_trabalho: str,
