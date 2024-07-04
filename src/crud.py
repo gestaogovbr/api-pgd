@@ -50,7 +50,7 @@ async def check_planos_trabalho_per_period(
     origem_unidade: str,
     cod_unidade_autorizadora: int,
     cod_unidade_executora: int,
-    cpf_participante: str,
+    matricula_siape: str,
     id_plano_trabalho: int,
     data_inicio: date,
     data_termino: date,
@@ -66,7 +66,7 @@ async def check_planos_trabalho_per_period(
         origem_unidade (str): Código do sistema da unidade: “SIAPE” ou “SIORG”
         cod_unidade_autorizadora (int): Código da unidade autorizadora.
         cod_unidade_executora (int): Código da unidade executora.
-        cpf_participante (str): CPF do participante.
+        matricula_siape (str): Matrícula siape do participante.
         id_plano_trabalho (int): id do Plano de Trabalho.
         data_inicio (date): Data de início do Plano de Trabalho.
         data_termino (date): Data de término do Plano de Trabalho.
@@ -81,7 +81,7 @@ async def check_planos_trabalho_per_period(
             .filter_by(origem_unidade=origem_unidade)
             .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
             .filter_by(cod_unidade_executora=cod_unidade_executora)
-            .filter_by(cpf_participante=cpf_participante)
+            .filter_by(matricula_siape=matricula_siape)
             .filter(models.PlanoTrabalho.status != 1)
             .where(
                 and_(
