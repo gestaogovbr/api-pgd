@@ -283,13 +283,30 @@ def example_part(
         headers=header_admin,
     )
 
-
 @pytest.fixture()
-def example_part_unidade_3( 
+def example_part_2(
     client: httpx.Client, input_part: dict, header_admin: dict
 ):
-    """Cria um exemplo de status de participante na unidade 3."""
+    """Cria um exemplo de status de participante com diferente siape e lotação"""
+    input_part["cod_unidade_lotacao"] = 100
+    input_part['matricula_siape'] = "1234567"
+    client.put(
+        f"/organizacao/{input_part['origem_unidade']}"
+        f"/{input_part['cod_unidade_autorizadora']}"
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
+        json=input_part,
+        headers=header_admin,
+    )
+
+
+@pytest.fixture()
+def example_part_unidade_3(
+    client: httpx.Client, input_part: dict, header_admin: dict
+):
+    """Cria um exemplo de status de participante na unidade autorizadora 3."""
     input_part["cod_unidade_autorizadora"] = 3
+    input_part['matricula_siape'] = "1234567"
     client.put(
         f"/organizacao/{input_part['origem_unidade']}"
         f"/{input_part['cod_unidade_autorizadora']}"
