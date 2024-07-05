@@ -373,21 +373,21 @@ class TestCreatePlanoDeTrabalhoPeriodoAvaliativoOverlapping(BasePTTest):
     @pytest.mark.parametrize(
         "id_plano_trabalho, periodo_avaliativo",
         [
-            (101, [("2023-01-01", "2023-01-02")]),  # igual ao exemplo
+            ("101", [("2023-01-01", "2023-01-02")]),  # igual ao exemplo
             (
-                102,
+                "102",
                 [("2023-01-01", "2023-01-07"), ("2023-01-08", "2023-01-15")],
             ),  # sem sobreposição
             (
-                103,
+                "103",
                 [("2023-01-07", "2023-01-15"), ("2023-01-01", "2023-01-07")],
             ),  # sobreposição no início
             (
-                104,
+                "104",
                 [("2023-01-01", "2023-01-08"), ("2023-01-07", "2023-01-15")],
             ),  # sobreposição no fim
             (
-                105,
+                "105",
                 [
                     ("2023-01-01", "2023-01-06"),
                     ("2023-01-06", "2023-01-11"),
@@ -395,11 +395,11 @@ class TestCreatePlanoDeTrabalhoPeriodoAvaliativoOverlapping(BasePTTest):
                 ],
             ),  # sobreposições múltiplas
             (
-                106,
+                "106",
                 [("2023-01-01", "2023-01-14"), ("2023-01-02", "2023-01-13")],
             ),  # contido no período
             (
-                107,
+                "107",
                 [("2023-01-02", "2023-01-14"), ("2023-01-01", "2023-01-15")],
             ),  # contém o período
         ],
@@ -428,6 +428,7 @@ class TestCreatePlanoDeTrabalhoPeriodoAvaliativoOverlapping(BasePTTest):
             avaliacao_template = original_avaliacao.copy()
             avaliacao_template["data_inicio_periodo_avaliativo"] = avaliacao[0]
             avaliacao_template["data_fim_periodo_avaliativo"] = avaliacao[1]
+            avaliacao_template["data_avaliacao_registros_execucao"] = "2024-01-01"
             input_pt["avaliacoes_registros_execucao"].append(avaliacao_template)
 
         response = self.create_pt(input_pt)
