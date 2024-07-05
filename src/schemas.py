@@ -354,24 +354,25 @@ class PlanoTrabalhoSchema(BaseModel):
         avaliacoes: List[List[AvaliacaoRegistrosExecucaoSchema]],
     ):
         """Verifica se há avaliações de execução com sobreposições de datas"""
+        if avaliacoes:
+            periodo_avaliativo = [(avaliacao.data_inicio_periodo_avaliativo,
+                                avaliacao.data_fim_periodo_avaliativo)
+                        for avaliacao in avaliacoes]
 
-        periodo_avaliativo = [(avaliacao.data_inicio_periodo_avaliativo,
-                            avaliacao.data_fim_periodo_avaliativo)
-                    for avaliacao in avaliacoes]
+            periodo_avaliativo.sort(key=lambda avaliacao: avaliacao[0])
 
-        periodo_avaliativo.sort(key=lambda avaliacao: avaliacao[0])
-
-        for avaliacao_1, avaliacao_2 in zip(
-            periodo_avaliativo[:-1], periodo_avaliativo[1:]
-        ):
-            data_fim_periodo_avaliativo_1 = avaliacao_1[1]
-            data_inicio_periodo_avaliativo_2 = avaliacao_2[0]
-            if data_inicio_periodo_avaliativo_2 < data_fim_periodo_avaliativo_1:
-                raise ValueError(
-                    "Uma ou mais avaliações de registros de execução possuem "
-                    "data_inicio_periodo_avaliativo e data_fim_periodo_avaliativo "
-                    "sobrepostas."
-                )
+            for avaliacao_1, avaliacao_2 in zip(
+                periodo_avaliativo[:-1], periodo_avaliativo[1:]
+            ):
+                data_fim_periodo_avaliativo_1 = avaliacao_1[1]
+                data_inicio_periodo_avaliativo_2 = avaliacao_2[0]
+                if data_inicio_periodo_avaliativo_2 < data_fim_periodo_avaliativo_1:
+                    raise ValueError(
+                        "Uma ou mais avaliações de registros de execução possuem "
+                        "data_inicio_periodo_avaliativo e data_fim_periodo_avaliativo "
+                        "sobrepostas."
+                    )
+        return avaliacoes
 class EntregaSchema(BaseModel):
     __doc__ = Entrega.__doc__
     model_config = ConfigDict(from_attributes=True)
