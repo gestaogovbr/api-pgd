@@ -44,6 +44,7 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
     def test_get_pt_different_unit_admin(
         self,
         header_admin: dict,
+        example_part_unidade_3,
         example_pe_unidade_3,  # pylint: disable=unused-argument
         example_pt_unidade_3,  # pylint: disable=unused-argument
     ):
