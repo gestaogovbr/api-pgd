@@ -400,7 +400,7 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
         self.create_pt(self.input_pt)
 
         input_pt = self.input_pt.copy()
-        input_pt["status"] = 1  # Valor era 3
+        input_pt["status"] = 4  # Valor era 3
         input_pt["data_termino"] = "2023-01-31"  # Valor era "2023-01-15"
         response = self.create_pt(input_pt)
         assert response.status_code == status.HTTP_200_OK
