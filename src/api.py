@@ -487,6 +487,7 @@ async def create_or_update_plano_trabalho(
                 db_session=db,
                 plano_trabalho=novo_plano_trabalho,
             )
+            response.status_code = status.HTTP_200_OK
     except IntegrityError as exception:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
