@@ -381,6 +381,7 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
     @pytest.fixture(autouse=True)
     def create_example(
         self,
+        setup,
         example_pt,  # pylint: disable=unused-argument
     ):
         """Configurar o ambiente de teste.
@@ -398,8 +399,6 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
         verifica se a alteração foi persistida.
         """
         # Altera campos do PT e reenvia pra API (update)
-        # TODO: Verifcar porque a fixture não está criando o PT de exemplo
-        self.create_pt(self.input_pt)
 
         input_pt = self.input_pt.copy()
         input_pt["status"] = 4  # Valor era 3
