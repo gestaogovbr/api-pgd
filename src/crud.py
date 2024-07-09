@@ -521,7 +521,7 @@ def truncate_plano_entregas():
     Usado no ambiente de testes de integração contínua.
     """
     with sync_engine.connect() as conn:
-        result = conn.execute(text("TRUNCATE plano_entregas CASCADE;"))
+        result = conn.execute(text("TRUNCATE plano_entregas, entrega CASCADE;"))
         conn.commit()
     return result
 
@@ -531,7 +531,10 @@ def truncate_plano_trabalho():
     Usado no ambiente de testes de integração contínua.
     """
     with sync_engine.connect() as conn:
-        result = conn.execute(text("TRUNCATE plano_trabalho CASCADE;"))
+        result = conn.execute(text(
+            "TRUNCATE avaliacao_registros_execucao, contribuicao, "
+            "plano_trabalho CASCADE;"
+        ))
         conn.commit()
     return result
 
