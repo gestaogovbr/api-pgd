@@ -285,18 +285,6 @@ class PlanoTrabalhoSchema(BaseModel):
         """Valida o CPF do participante."""
         return cpf_validate(cpf_participante)
 
-    @field_validator("contribuicoes")
-    @staticmethod
-    def contribuicoes_not_empty(
-        contribuicoes: List[ContribuicaoSchema],
-    ) -> List[ContribuicaoSchema]:
-        """Verifica se a lista de contribuições não está vazia."""
-        if not contribuicoes:
-            raise ValueError(
-                "O Plano de Trabalho precisa ter pelo menos uma Contribuição."
-            )
-        return contribuicoes
-
     @field_validator("carga_horaria_disponivel")
     @staticmethod
     def validate_carga_horaria_disponivel(carga_horaria_disponivel: int) -> int:
