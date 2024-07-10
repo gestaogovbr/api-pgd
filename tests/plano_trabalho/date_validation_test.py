@@ -207,8 +207,6 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
                 "avaliacao_registros_execucao": 5,
                 "data_avaliacao_registros_execucao": "2023-01-03",
                 "matricula_siape": "1237654",
-                "data_inicio": "2023-01-16",
-                "data_termino": "2023-01-31",
                 "carga_horaria_disponivel": 80,
             }
         ]
