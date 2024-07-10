@@ -602,6 +602,7 @@ def test_create_invalid_cod_unidade(
         ("557", 1, "percentual"),
         ("558", -10, "unidade"),
         ("559", 200, "percentual"),
+        ("560", 0, "unidade"),
     ],
 )
 def test_create_entrega_invalid_percent(
