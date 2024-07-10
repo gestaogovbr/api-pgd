@@ -334,7 +334,6 @@ class PlanoTrabalhoSchema(BaseModel):
             )
         return self
 
-
     @field_validator("avaliacoes_registros_execucao")
     @staticmethod
     def avaliacoes_not_overlapping(
@@ -342,9 +341,13 @@ class PlanoTrabalhoSchema(BaseModel):
     ):
         """Verifica se há avaliações de execução com sobreposições de datas"""
         if avaliacoes:
-            periodo_avaliativo = [(avaliacao.data_inicio_periodo_avaliativo,
-                                avaliacao.data_fim_periodo_avaliativo)
-                        for avaliacao in avaliacoes]
+            periodo_avaliativo = [
+                (
+                    avaliacao.data_inicio_periodo_avaliativo,
+                    avaliacao.data_fim_periodo_avaliativo,
+                )
+                for avaliacao in avaliacoes
+            ]
 
             periodo_avaliativo.sort(key=lambda avaliacao: avaliacao[0])
 
@@ -360,6 +363,8 @@ class PlanoTrabalhoSchema(BaseModel):
                         "sobrepostas."
                     )
         return avaliacoes
+
+
 class EntregaSchema(BaseModel):
     __doc__ = Entrega.__doc__
     model_config = ConfigDict(from_attributes=True)
