@@ -300,8 +300,8 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
-                "O início do período avaliativo deve ser posterior "
-                "à data de início do plano de trabalho."
+                "A data de início do período avaliativo deve ser posterior à "
+                "data de início do Plano de Trabalho."
             )
             assert_error_message(response, detail_message)
         elif (
