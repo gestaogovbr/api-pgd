@@ -504,9 +504,7 @@ class PlanoEntregasSchema(BaseModel):
         if self.data_termino < self.data_inicio:
             raise ValueError("data_termino deve ser maior ou igual que data_inicio.")
         if self.data_avaliacao is not None and self.data_avaliacao < self.data_inicio:
-            raise ValueError(
-                "data_avaliacao deve ser maior ou igual à data_inicio."
-            )
+            raise ValueError("data_avaliacao deve ser maior ou igual à data_inicio.")
         return self
 
     @model_validator(mode="after")
