@@ -64,6 +64,7 @@ FIELDS_AVALIACAO_REGISTROS_EXECUCAO = {
 class BasePTTest:
     """Classe base para testes de Plano de Trabalho."""
 
+    # pylint: disable=too-many-arguments
     @pytest.fixture(autouse=True)
     def setup(
         self,
