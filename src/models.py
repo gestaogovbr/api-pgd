@@ -728,7 +728,8 @@ class Users(Base):
     cod_unidade_autorizadora = Column(
         Integer,
         nullable=False,
-        comment="Em qual unidade autorizadora o usuário está cadastrado",
+        comment="Unidade autorizadora do PGD à qual o usuário "
+        "pertence e está autorizado a enviar e consultar dados.",
     )
     data_atualizacao = Column(
         DateTime,
