@@ -433,9 +433,10 @@ class TestCreatePlanoDeTrabalhoPeriodoAvaliativoOverlapping(BasePTTest):
         input_pt = self.input_pt.copy()
         input_pt["id_plano_trabalho"] = id_plano_trabalho
 
-        input_pt["avaliacao_registros_execucao"] = []
-        for avaliacao in periodo_avaliativo:
+        input_pt["avaliacoes_registros_execucao"] = []
+        for number, avaliacao in enumerate(periodo_avaliativo):
             avaliacao_template = original_avaliacao.copy()
+            avaliacao_template["id_periodo_avaliativo"] = f"{id_plano_trabalho}{number}"
             avaliacao_template["data_inicio_periodo_avaliativo"] = avaliacao[0]
             avaliacao_template["data_fim_periodo_avaliativo"] = avaliacao[1]
             avaliacao_template["data_avaliacao_registros_execucao"] = "2024-01-01"
