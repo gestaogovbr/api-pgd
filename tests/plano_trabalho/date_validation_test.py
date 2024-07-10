@@ -264,19 +264,24 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         "id_plano_trabalho, data_inicio_periodo_avaliativo, "
         "data_fim_periodo_avaliativo",
         [
+            # período inteiro antes da data_inicio do Plano de Trabalho
             ("80", "2022-12-30", "2022-12-31"),
+            # fim antes do início
             ("81", "2022-12-31", "2022-12-30"),
+            # início igual à data_inicio do Plano de Trabalho
             ("82", "2023-01-01", "2023-01-02"),
         ],
     )
-    def test_create_pt_periodo_avaliativo_out_of_bounds(
+    def test_create_pt_invalid_periodo_avaliativo(
         self,
         id_plano_trabalho: str,
         data_inicio_periodo_avaliativo: str,
         data_fim_periodo_avaliativo: str,
     ):
-        """Verifica se o período de avaliação do registro de execução está
-        após a data de ínicio do Plano de Trabalho.
+        """Verifica se o período de avaliação do registro de execução:
+
+        - começa antes de terminar
+        - começa, no mínio, na data de início do Plano de Trabalho.
         """
         input_pt = self.input_pt.copy()
         input_pt["id_plano_trabalho"] = id_plano_trabalho
@@ -292,13 +297,10 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         if (
             date.fromisoformat(data_inicio_periodo_avaliativo)
             < date.fromisoformat(input_pt["data_inicio"])
-        ) or (
-            date.fromisoformat(data_fim_periodo_avaliativo)
-            < date.fromisoformat(input_pt["data_inicio"])
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
-                "O período avaliativo deve ser posterior "
+                "O início do período avaliativo deve ser posterior "
                 "à data de início do plano de trabalho."
             )
             assert_error_message(response, detail_message)
