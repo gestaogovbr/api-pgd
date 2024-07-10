@@ -177,7 +177,7 @@ make up
 O arquivo [docker-compose.yml](docker-compose.yml) descreve a `receita`
 dos contêineres que compõem a solução. Atualmente são utilizados `2 containers`:
 
-* [db](docker-compose.yml#L4); [postgres:15](https://hub.docker.com/_/postgres)
+* [db](docker-compose.yml#L4); [postgres:16](https://hub.docker.com/_/postgres)
 * [api-pgd](docker-compose.yml#L21); [ghcr.io/gestaogovbr/api-pgd:latest](Dockerfile)
 
 
