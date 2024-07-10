@@ -2,7 +2,7 @@ fastapi==0.111.0
 uvicorn[standard] >=0.12.0,<0.23.0
 psycopg[binary]==3.1.9
 sqlalchemy==2.0.31
-pydantic[email]>=2
+pydantic[email]==2.8.2
 pytest==7.4.0
 httpx==0.24.1
 python-jose[cryptography]==3.3.0
