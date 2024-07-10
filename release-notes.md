@@ -1,6 +1,11 @@
 # Release notes
 
 
+## 3.0.0
+
+* Rewrite the API for a completely new data model based on new requisites.
+
+
 ## 2.2.0
 
 * Remove `DELETE` method from the `/user/{email}` endpoint.
