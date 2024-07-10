@@ -409,7 +409,7 @@ class EntregaSchema(BaseModel):
     @staticmethod
     def must_be_positive(meta_entrega: int) -> int:
         if meta_entrega < 0:
-            raise ValueError("Valor meta_entrega deve ser positivo.")
+            raise ValueError("Valor meta_entrega deve ser maior ou igual a 0.")
         return meta_entrega
 
     @model_validator(mode="after")

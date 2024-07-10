@@ -639,7 +639,7 @@ def test_create_entrega_invalid_percent(
     elif tipo_meta == "unidade" and (meta_entrega < 0):
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
-            "Valor meta_entrega deve ser positivo."
+            "Valor meta_entrega deve ser maior ou igual a 0."
         )
         assert any(
             f"Value error, {detail_message}" in error["msg"]
