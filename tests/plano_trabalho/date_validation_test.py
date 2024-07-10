@@ -199,13 +199,13 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
         input_pt2["id_plano_trabalho"] = "556"
         input_pt2["data_inicio"] = "2023-01-16"
         input_pt2["data_termino"] = "2023-01-31"
-        input_pt2["avaliacao_registros_execucao"] = [
+        input_pt2["avaliacoes_registros_execucao"] = [
             {
                 "id_periodo_avaliativo": "string",
                 "data_inicio_periodo_avaliativo": "2023-01-16",
                 "data_fim_periodo_avaliativo": "2023-01-23",
                 "avaliacao_registros_execucao": 5,
-                "data_avaliacao_registros_execucao": "2023-01-03",
+                "data_avaliacao_registros_execucao": "2023-01-23",
                 "matricula_siape": "1237654",
                 "carga_horaria_disponivel": 80,
             }
@@ -219,7 +219,7 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
         input_pt["data_inicio"] = data_inicio
         input_pt["data_termino"] = data_termino
         input_pt["status"] = status_pt
-        input_pt["avaliacao_registros_execucao"] = []
+        input_pt["avaliacoes_registros_execucao"] = []
         response = self.create_pt(input_pt)
 
         if (
