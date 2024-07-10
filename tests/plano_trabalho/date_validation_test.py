@@ -2,7 +2,7 @@
 Trabalho.
 """
 
-from datetime import date
+from datetime import date, timedelta
 
 from fastapi import status
 
@@ -39,6 +39,19 @@ class TestCreatePTInvalidDates(BasePTTest):
         input_pt = self.input_pt.copy()
         input_pt["data_inicio"] = data_inicio
         input_pt["data_termino"] = data_termino
+        # ajusta as datas dos registros de avaliação
+        data_inicio = date.fromisoformat(data_inicio)
+        data_termino = date.fromisoformat(data_termino)
+        input_pt["avaliacoes_registros_execucao"][0][
+            "data_inicio_periodo_avaliativo"
+        ] = data_inicio.isoformat()
+        input_pt["avaliacoes_registros_execucao"][0][
+            "data_fim_periodo_avaliativo"
+        ] = (data_inicio + timedelta(days=1)).isoformat()
+        input_pt["avaliacoes_registros_execucao"][0][
+            "data_avaliacao_registros_execucao"
+        ] = (data_inicio + timedelta(days=1)).isoformat()
+
         input_pt["id_plano_trabalho"] = id_plano_trabalho
 
         # cria o participante com a data_assinatura_tcr informada
@@ -56,7 +69,7 @@ class TestCreatePTInvalidDates(BasePTTest):
 
         # cria o plano_trabalho com a data_inicio informada
         response = self.create_pt(input_pt)
-        if date.fromisoformat(data_inicio) > date.fromisoformat(data_termino):
+        if data_inicio > data_termino:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
                 "data_termino do Plano de Trabalho deve ser maior ou igual "
