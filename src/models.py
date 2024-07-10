@@ -88,8 +88,8 @@ class PlanoEntregas(Base):
             5. Avaliado
 
             **Regras de validação:** a categoria "5" só poderá ser usada se
-            os campos "avaliacao_plano_entregas" e
-            "data_avaliacao_plano_entregas" estiverem preenchidos.
+            os campos "avaliacao" e "data_avaliacao" estiverem
+            preenchidos.
 
             É obrigatório o envio dos planos nos status "3", "4" e "5".
             Os planos nos demais status não precisam necessariamente ser
@@ -103,7 +103,7 @@ class PlanoEntregas(Base):
         Date,
         nullable=False,
         comment="Data de término da vigência do plano de entregas. Deve "
-        "ser depois da “data_inicio_plano_entregas”.",
+        "ser depois da “data_inicio”.",
     )
     avaliacao = Column(
         Integer,
