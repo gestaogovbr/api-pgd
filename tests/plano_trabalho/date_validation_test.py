@@ -307,9 +307,8 @@ class TestCreatePTDataAvaliacao(BasePTTest):
 
         response = self.create_pt(input_pt)
 
-        if (
-            date.fromisoformat(data_fim_periodo_avaliativo)
-            < date.fromisoformat(data_inicio_periodo_avaliativo)
+        if date.fromisoformat(data_fim_periodo_avaliativo) < date.fromisoformat(
+            data_inicio_periodo_avaliativo
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
@@ -317,14 +316,13 @@ class TestCreatePTDataAvaliacao(BasePTTest):
                 "posterior à data de início do período avaliativo."
             )
             assert_error_message(response, detail_message)
-        elif (
-            date.fromisoformat(data_inicio_periodo_avaliativo)
-            < date.fromisoformat(input_pt["data_inicio"])
+        elif date.fromisoformat(data_inicio_periodo_avaliativo) < date.fromisoformat(
+            input_pt["data_inicio"]
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
-                "A data de início do período avaliativo deve ser posterior à "
-                "data de início do Plano de Trabalho."
+                "A data de início do período avaliativo deve ser igual ou "
+                "posterior à data de início do Plano de Trabalho."
             )
             assert_error_message(response, detail_message)
         else:
@@ -362,9 +360,8 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         ] = data_avaliacao_registros_execucao
 
         response = self.create_pt(input_pt)
-        if (
-            date.fromisoformat(data_avaliacao_registros_execucao)
-            < date.fromisoformat(data_inicio_periodo_avaliativo)
+        if date.fromisoformat(data_avaliacao_registros_execucao) < date.fromisoformat(
+            data_inicio_periodo_avaliativo
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
