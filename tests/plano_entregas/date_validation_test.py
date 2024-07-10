@@ -132,7 +132,7 @@ def test_create_pe_invalid_data_avaliacao(
 
     if data_avaliacao < data_inicio:
         assert response.status_code == 422
-        detail_message = "Data de avaliação deve ser maior ou igual à data de início"
+        detail_message = "data_avaliacao deve ser maior ou igual à data_inicio."
         assert any(
             f"Value error, {detail_message}" in error["msg"]
             for error in response.json().get("detail")

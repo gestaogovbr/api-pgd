@@ -487,22 +487,6 @@ class PlanoEntregasSchema(BaseModel):
         return value
 
     @model_validator(mode="after")
-    def validate_data_termino(self) -> "PlanoEntregasSchema":
-        """Valida a data de término do plano de entregas."""
-        if self.data_termino < self.data_inicio:
-            raise ValueError("data_termino deve ser maior ou igual que data_inicio.")
-        return self
-
-    @model_validator(mode="after")
-    def validate_data_avaliacao(self) -> "PlanoEntregasSchema":
-        """Valida a data de avaliação do plano de entregas."""
-        if self.data_avaliacao is not None and self.data_avaliacao < self.data_inicio:
-            raise ValueError(
-                "Data de avaliação deve ser maior ou igual à data de início"
-            )
-        return self
-
-    @model_validator(mode="after")
     def validate_entregas_uniqueness(self) -> "PlanoEntregasSchema":
         """Valida a unicidade das entregas."""
         entregas_ids = [entrega.id_entrega for entrega in self.entregas]
@@ -518,10 +502,10 @@ class PlanoEntregasSchema(BaseModel):
                 "Plano de entregas não pode abranger período maior que 1 ano"
             )
         if self.data_termino < self.data_inicio:
-            raise ValueError("Data de término deve ser maior ou igual à data de início")
+            raise ValueError("data_termino deve ser maior ou igual que data_inicio.")
         if self.data_avaliacao is not None and self.data_avaliacao < self.data_inicio:
             raise ValueError(
-                "Data de avaliação deve ser maior ou igual à data de início"
+                "data_avaliacao deve ser maior ou igual à data_inicio."
             )
         return self
 
