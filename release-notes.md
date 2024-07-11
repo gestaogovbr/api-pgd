@@ -4,6 +4,9 @@
 ## 3.0.0
 
 * Rewrite the API for a completely new data model based on new requisites.
+* Update all dependencies to current versions.
+* Divide and refactor tests into a separate files, folders and classes.
+* Add to documentation an entity diagram of new data model
 
 
 ## 2.2.0
