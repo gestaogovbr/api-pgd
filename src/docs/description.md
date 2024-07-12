@@ -3,7 +3,7 @@ Planos de Entregas e os Planos de Trabalho da sua força de trabalho que
 participa do
 [Programa de Gestão](https://www.gov.br/servidor/pt-br/assuntos/programa-de-gestao).
 Para solicitar credenciais para submissão de dados, entre em contato com
-[pgd@economia.gov.br](mailto:pgd@economia.gov.br)
+[pgd@gestao.gov.br](mailto:pgd@gestao.gov.br)
 
 
 ### Fundamentação legal
