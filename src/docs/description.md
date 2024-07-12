@@ -25,9 +25,8 @@ Para solicitar credenciais para submissão de dados, entre em contato com
 
 ### Esquemas de dados
 
-Explore a seção **Schemas** abaixo nesta documentação para descobrir mais
-detalhes e quais campos são obrigatórios para as Atividades e os Planos
-de Trabalho.
+Explore a seção **Schemas** abaixo nesta documentação para ler as
+descrições dos campos e saber quais são obrigatórios.
 
 -------
 
