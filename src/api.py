@@ -21,10 +21,9 @@ import email_config
 from util import check_permissions
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
-
+IS_PROD_ENVIRONMENT = os.environ.get("IS_PROD_ENVIRONMENT", 'False') == 'True'
 
 # ## INIT --------------------------------------------------
-
 
 with open(
     os.path.join(os.path.dirname(__file__), "docs", "description.md"),
@@ -32,6 +31,16 @@ with open(
     encoding="utf-8",
 ) as f:
     description = f.read()
+
+if not IS_PROD_ENVIRONMENT:
+    with open(
+        os.path.join(os.path.dirname(__file__), "docs", "environment.md"),
+        "r",
+        encoding="utf-8",
+    ) as f:
+        environment_msg = f.read()
+
+    description = environment_msg + description
 
 app = FastAPI(
     title="Plataforma de recebimento de dados do Programa de Gestão - PGD",
