@@ -84,6 +84,7 @@ São definidas no [docker-compose.yml](docker-compose.yml):
     - `SQLALCHEMY_DATABASE_URL`
     - `SECRET`
     - `ACCESS_TOKEN_EXPIRE_MINUTES`
+    - `IS_PROD_ENVIRONMENT`
     - `API_PGD_ADMIN_USER`
     - `API_PGD_ADMIN_PASSWORD`
 
