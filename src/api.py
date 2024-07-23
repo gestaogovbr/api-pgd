@@ -21,7 +21,7 @@ import email_config
 from util import check_permissions
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
-IS_PROD_ENVIRONMENT = os.environ.get("IS_PROD_ENVIRONMENT", 'False') == 'True'
+TEST_ENVIRONMENT = os.environ.get("TEST_ENVIRONMENT", 'False') == 'True'
 
 # ## INIT --------------------------------------------------
 
@@ -32,7 +32,7 @@ with open(
 ) as f:
     description = f.read()
 
-if not IS_PROD_ENVIRONMENT:
+if TEST_ENVIRONMENT:
     with open(
         os.path.join(os.path.dirname(__file__), "docs", "environment.md"),
         "r",
