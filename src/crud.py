@@ -147,7 +147,6 @@ async def create_plano_trabalho(
             select(models.Participante)
             .filter_by(origem_unidade=plano_trabalho.origem_unidade)
             .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
-            .filter_by(cod_unidade_lotacao=plano_trabalho.cod_unidade_executora)
             .filter_by(matricula_siape=plano_trabalho.matricula_siape)
         )
         result = await session.execute(query)
@@ -157,7 +156,6 @@ async def create_plano_trabalho(
                 "Plano de Trabalho faz referência a participante inexistente. "
                 f"origem_unidade: {plano_trabalho.origem_unidade} "
                 f"cod_unidade_autorizadora: {plano_trabalho.cod_unidade_autorizadora} "
-                f"cod_unidade_lotacao: {plano_trabalho.cod_unidade_executora} "
                 f"matricula_siape: {plano_trabalho.matricula_siape}"
             )
         db_plano_trabalho.participante = db_participante
