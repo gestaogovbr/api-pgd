@@ -1,6 +1,16 @@
 # Release notes
 
 
+## 3.0.4
+
+* Updates to documentation
+* Add a warning to Swagger page when `TEST_ENVIRONMENT` environment
+  variable is set to `True`
+* No longer filter `participante` by `cod_unidade_lotacao` when creating
+  a `plano_trabalho`
+* Handle correctly time-aware datetimes passed as input to `participante`
+
+
 ## 3.0.0
 
 * Rewrite the API for a completely new data model based on new requisites.
