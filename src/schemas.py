@@ -6,7 +6,7 @@ Pydantic: https://docs.pydantic.dev/2.0/
 """
 
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from pydantic import model_validator, field_validator
