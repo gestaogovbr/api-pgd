@@ -552,7 +552,7 @@ def test_put_invalid_data_assinatura_tcr(
     [
         -3,  # hora de Brasília
         -5,  # horário de Rio Branco
-        (None),  # sem fuso horário (timezone-naïve)
+        None,  # sem fuso horário (timezone-naïve)
     ],
 )
 def test_put_data_assinatura_tcr_timezone(
