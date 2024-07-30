@@ -266,7 +266,7 @@ def test_put_participante_missing_mandatory_fields(
 ):
     """Tenta submeter participantes faltando campos obrigatórios"""
     matricula_siape = input_part["matricula_siape"]
-    cod_unidade_lotacao = input_part['cod_unidade_lotacao']
+    cod_unidade_lotacao = input_part["cod_unidade_lotacao"]
     offset, field_list = missing_fields
     for field in field_list:
         del input_part[field]
@@ -404,10 +404,7 @@ def test_put_participante_invalid_matricula_siape(
     ]
     received_error = response.json().get("detail")
     if isinstance(received_error, str):
-        assert any(
-            message in received_error
-            for message in detail_messages
-        )
+        assert any(message in received_error for message in detail_messages)
     else:
         assert any(
             f"Value error, {message}" in error["msg"]

@@ -383,7 +383,7 @@ class EntregaSchema(BaseModel):
         description=Entrega.nome_entrega.comment,
         max_length=STR_FIELD_MAX_SIZE,
     )
-    meta_entrega: int = Field(
+    meta_entrega: NonNegativeInt = Field(
         title="Meta estipulada na inclusão no plano",
         description=Entrega.meta_entrega.comment,
     )
@@ -405,13 +405,6 @@ class EntregaSchema(BaseModel):
         description=Entrega.nome_unidade_destinataria.comment,
         max_length=STR_FIELD_MAX_SIZE,
     )
-
-    @field_validator("meta_entrega")
-    @staticmethod
-    def must_be_positive(meta_entrega: int) -> int:
-        if meta_entrega < 0:
-            raise ValueError("Valor meta_entrega deve ser maior ou igual a 0.")
-        return meta_entrega
 
     @model_validator(mode="after")
     def validate_meta_percentual(self) -> "EntregaSchema":
@@ -435,15 +428,15 @@ class PlanoEntregasSchema(BaseModel):
         title="Código do sistema da unidade",
         description=PlanoEntregas.origem_unidade.comment,
     )
-    cod_unidade_autorizadora: int = Field(
+    cod_unidade_autorizadora: PositiveInt = Field(
         title="Código da unidade autorizadora",
         description=PlanoEntregas.cod_unidade_autorizadora.comment,
     )
-    cod_unidade_instituidora: int = Field(
+    cod_unidade_instituidora: PositiveInt = Field(
         title="Código da unidade instituidora",
         description=PlanoEntregas.cod_unidade_instituidora.comment,
     )
-    cod_unidade_executora: int = Field(
+    cod_unidade_executora: PositiveInt = Field(
         title="Código da unidade executora",
         description=PlanoEntregas.cod_unidade_executora.comment,
     )
@@ -476,16 +469,6 @@ class PlanoEntregasSchema(BaseModel):
         title="Entregas",
         description="Lista de entregas associadas ao Plano de Entregas",
     )
-
-    @field_validator(
-        "cod_unidade_autorizadora", "cod_unidade_instituidora", "cod_unidade_executora"
-    )
-    @staticmethod
-    def validate_codigo_unidade(value: int) -> int:
-        """Valida o código da unidade."""
-        if value < 1:
-            raise ValueError(f"Código da unidade inválido: {value}")
-        return value
 
     @model_validator(mode="after")
     def validate_entregas_uniqueness(self) -> "PlanoEntregasSchema":
