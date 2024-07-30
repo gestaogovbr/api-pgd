@@ -5,7 +5,7 @@ A principal ferramenta de validação de dados usada no FastAPI é o
 Pydantic: https://docs.pydantic.dev/2.0/
 """
 
-from datetime import date, datetime
+from datetime import date
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
