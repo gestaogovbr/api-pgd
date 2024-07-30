@@ -9,6 +9,7 @@ from datetime import date
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
+from pydantic import NonNegativeInt, PastDatetime, PositiveInt
 from pydantic import model_validator, field_validator
 
 from models import (
@@ -562,7 +563,7 @@ class ParticipanteSchema(BaseModel):
         title="Modalidade e regime de execução do trabalho",
         description=Participante.modalidade_execucao.comment,
     )
-    data_assinatura_tcr: Optional[datetime] = Field(
+    data_assinatura_tcr: Optional[PastDatetime] = Field(
         title="Data de assinatura do TCR",
         description=Participante.data_assinatura_tcr.comment,
     )
@@ -605,14 +606,6 @@ class ParticipanteSchema(BaseModel):
     def cpf_part_validate(cpf: str) -> str:
         "Valida o CPF do participante."
         return cpf_validate(cpf)
-
-    @field_validator("data_assinatura_tcr")
-    @staticmethod
-    def data_assinatura_tcr_validate(data_assinatura_tcr: datetime) -> datetime:
-        "Valida a data de assinatura do TCR."
-        if data_assinatura_tcr > datetime.now():
-            raise ValueError("A data_assinatura_tcr não pode ser data futura.")
-        return data_assinatura_tcr
 
 
 class Token(BaseModel):

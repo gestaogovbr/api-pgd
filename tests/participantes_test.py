@@ -2,11 +2,11 @@
 Testes relacionados aos status de participantes.
 """
 
-from datetime import date, datetime, timedelta
-
-from httpx import Client
+from datetime import date, datetime, timedelta, timezone
+from typing import Optional
 
 from fastapi import status
+from httpx import Client
 
 import pytest
 
@@ -532,10 +532,7 @@ def test_put_invalid_data_assinatura_tcr(
 ):
     """Tenta criar um participante com data futura do TCR."""
     # data de amanhã
-    input_part["data_assinatura_tcr"] = (
-        (date.today() + timedelta(days=1))
-        .isoformat()
-    )
+    input_part["data_assinatura_tcr"] = (date.today() + timedelta(days=1)).isoformat()
     response = client.put(
         f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
         f"/{input_part['cod_unidade_lotacao']}"
@@ -545,9 +542,44 @@ def test_put_invalid_data_assinatura_tcr(
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_messages = "A data_assinatura_tcr não pode ser data futura."
+    detail_messages = "Input should be in the past"
     assert any(
-        f"Value error, {message}" in error["msg"]
+        message in error["msg"]
         for message in detail_messages
         for error in response.json().get("detail")
     )
+
+
+@pytest.mark.parametrize(
+    "timezone_utc",
+    [
+        -3,  # hora de Brasília
+        -5,  # horário de Rio Branco
+        (None),  # sem fuso horário (timezone-naïve)
+    ],
+)
+def test_put_data_assinatura_tcr_timezone(
+    truncate_participantes,  # pylint: disable=unused-argument
+    input_part: dict,
+    user1_credentials: dict,
+    timezone_utc: Optional[int],
+    header_usr_1: dict,
+    client: Client,
+):
+    """Tenta criar um participante com data futura do TCR."""
+    # data de amanhã
+    input_part["data_assinatura_tcr"] = (
+        datetime.now(
+            **({"tz": timezone(timedelta(hours=timezone_utc))} if timezone_utc else {})
+        )
+        - timedelta(days=1)
+    ).isoformat()
+    response = client.put(
+        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
+        json=input_part,
+        headers=header_usr_1,
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
