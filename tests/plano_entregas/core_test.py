@@ -587,9 +587,9 @@ def test_create_invalid_cod_unidade(
         assert response.status_code == http_status.HTTP_201_CREATED
     else:
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "Código da unidade inválido"
+        detail_message = "Input should be greater than 0"
         assert any(
-            f"Value error, {detail_message}" in error["msg"]
+            detail_message in error["msg"]
             for error in response.json().get("detail")
         )
 
@@ -640,10 +640,10 @@ def test_create_entrega_invalid_percent(
     elif tipo_meta == "unidade" and (meta_entrega < 0):
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
-            "Valor meta_entrega deve ser maior ou igual a 0."
+            "Input should be greater than or equal to 0"
         )
         assert any(
-            f"Value error, {detail_message}" in error["msg"]
+            detail_message in error["msg"]
             for error in response.json().get("detail")
         )
     else:
