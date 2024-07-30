@@ -563,8 +563,8 @@ def test_put_data_assinatura_tcr_timezone(
     header_usr_1: dict,
     client: Client,
 ):
-    """Tenta criar um participante com data futura do TCR."""
-    # data de amanhã
+    """Tenta criar um participante com data de assinatura do TCR em
+    diversos fuso-horários."""
     input_part["data_assinatura_tcr"] = (
         datetime.now(
             **({"tz": timezone(timedelta(hours=timezone_utc))} if timezone_utc else {})
