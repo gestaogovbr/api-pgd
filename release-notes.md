@@ -1,7 +1,7 @@
 # Release notes
 
 
-## 3.0.4
+## 3.0.5
 
 * Updates to documentation
 * Add a warning to Swagger page when `TEST_ENVIRONMENT` environment
@@ -9,6 +9,8 @@
 * No longer filter `participante` by `cod_unidade_lotacao` when creating
   a `plano_trabalho`
 * Handle correctly time-aware datetimes passed as input to `participante`
+* Remove `participante` from the Pydantic schema of `plano_trabalho`
+  (data must be sent through the `participante` endpoint itself)
 
 
 ## 3.0.0
