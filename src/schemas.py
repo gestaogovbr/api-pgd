@@ -274,11 +274,6 @@ class PlanoTrabalhoSchema(BaseModel):
             description="Lista de avaliações de registros de execução do Plano de Trabalho.",
         )
     )
-    participante: Optional["ParticipanteSchema"] = Field(
-        default=None,
-        title="Participante",
-        description="Informações do participante do Plano de Trabalho.",
-    )
 
     @field_validator("cpf_participante")
     @staticmethod
