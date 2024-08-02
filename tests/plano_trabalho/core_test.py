@@ -37,6 +37,8 @@ FIELDS_CONTRIBUICAO = {
     "optional": (
         ["id_plano_entregas"],
         ["id_entrega"],
+        ["contribuicoes"],
+        ["avaliacoes_registros_execucao"],
     ),
     "mandatory": (
         ["id_contribuicao"],
