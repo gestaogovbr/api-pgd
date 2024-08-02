@@ -128,17 +128,17 @@ def delete_user(username: str, password: str, del_user_email: str) -> httpx.Resp
 
 
 def create_user(username: str, password: str, new_user: dict) -> httpx.Response:
-    """_summary_
+    """Cria um novo usuário usando a API.
 
     Args:
-        username (str): username as email (foo@oi.com)
-        password (str): user password
-        new_user (dict): data of the user to be created
+        username (str): O nome de usuário (email) do usuário.
+        password (str): A senha do usuário.
+        new_user (dict): Um dicionário contendo as informações do novo usuário
+            a ser criado, exceto o nome de usuário (email).
 
     Returns:
-        httpx.Response: httpx.Response
+        httpx.Response: A resposta HTTP da requisição de criação do usuário.
     """
-
     headers = prepare_header(username, password)
     new_user_pop = {key: value for key, value in new_user.items() if key != "username"}
     response = httpx.put(
@@ -184,12 +184,24 @@ def fixture_input_part() -> dict:
 
 @pytest.fixture(scope="module", name="client")
 def fixture_client() -> Generator[httpx.Client, None, None]:
+    """Cliente HTTP para ser usado nos testes.
+
+    Returns:
+        Generator[httpx.Client, None, None]: Uma instância de `httpx.Client`
+        que pode ser usada para fazer requisições HTTP nos testes.
+    """
     with TestClient(app) as c:
         yield c
 
 
 @pytest.fixture(scope="module", name="admin_credentials")
 def fixture_admin_credentials() -> dict:
+    """Credenciais do usuário administrador da API.
+
+    Returns:
+        dict: Um dicionário contendo o nome de usuário (username) e a
+            senha (password) do usuário administrador da API.
+    """
     return {
         "username": API_PGD_ADMIN_USER,
         "password": API_PGD_ADMIN_PASSWORD,
@@ -198,11 +210,25 @@ def fixture_admin_credentials() -> dict:
 
 @pytest.fixture(scope="module", name="user1_credentials")
 def fixture_user1_credentials() -> dict:
+    """Credenciais do primeiro usuário de teste.
+
+    Returns:
+        dict: Um dicionário contendo as informações de credenciais do
+            primeiro usuário de teste, incluindo nome de usuário, email,
+            senha, status de administrador, etc.
+    """
     return USERS_CREDENTIALS[0]
 
 
 @pytest.fixture(scope="module", name="user2_credentials")
 def fixture_user2_credentials() -> dict:
+    """Credenciais do segundo usuário de teste.
+
+    Returns:
+        dict: Um dicionário contendo as informações de credenciais do
+            segundo usuário de teste, incluindo nome de usuário, email,
+            senha, status de administrador, etc.
+    """
     return USERS_CREDENTIALS[1]
 
 
@@ -268,10 +294,9 @@ def example_pt_unidade_3(
         headers=header_admin,
     )
 
+
 @pytest.fixture()
-def example_part(
-    client: httpx.Client, input_part: dict, header_admin: dict
-):
+def example_part(client: httpx.Client, input_part: dict, header_admin: dict):
     """Cria um exemplo de status de participante."""
     client.put(
         f"/organizacao/{input_part['origem_unidade']}"
@@ -282,13 +307,12 @@ def example_part(
         headers=header_admin,
     )
 
+
 @pytest.fixture()
-def example_part_2(
-    client: httpx.Client, input_part: dict, header_admin: dict
-):
-    """Cria um exemplo de status de participante com diferente siape e lotação"""
+def example_part_2(client: httpx.Client, input_part: dict, header_admin: dict):
+    """Cria um exemplo de status de participante com diferente SIAPE e lotação"""
     input_part["cod_unidade_lotacao"] = 100
-    input_part['matricula_siape'] = "1234567"
+    input_part["matricula_siape"] = "1234567"
     client.put(
         f"/organizacao/{input_part['origem_unidade']}"
         f"/{input_part['cod_unidade_autorizadora']}"
@@ -300,9 +324,7 @@ def example_part_2(
 
 
 @pytest.fixture()
-def example_part_unidade_3(
-    client: httpx.Client, input_part: dict, header_admin: dict
-):
+def example_part_unidade_3(client: httpx.Client, input_part: dict, header_admin: dict):
     """Cria um exemplo de status de participante na unidade autorizadora 3."""
     input_part["cod_unidade_autorizadora"] = 3
     client.put(
@@ -317,21 +339,25 @@ def example_part_unidade_3(
 
 @pytest.fixture()
 def truncate_pe():
+    """Trunca a tabela de Planos de Entrega."""
     truncate_plano_entregas()
 
 
 @pytest.fixture()
 def truncate_pt():
+    """Trunca a tabela de Planos de Trabalho."""
     truncate_plano_trabalho()
 
 
 @pytest.fixture()
 def truncate_participantes():
+    """Trunca a tabela de Participantes."""
     truncate_participante()
 
 
 @pytest.fixture(scope="module", name="truncate_users")
 def fixture_truncate_users(admin_credentials: dict):  # pylint: disable=unused-argument
+    """Trunca a tabela de usuários e inicializa o usuário administrador."""
     truncate_user()
     asyncio.get_event_loop().run_until_complete(init_user_admin())
 
@@ -342,6 +368,11 @@ def fixture_register_user_1(
     user1_credentials: dict,
     admin_credentials: dict,
 ) -> httpx.Response:
+    """Cria um novo usuário de teste 1 usando a API.
+
+    Returns:
+        httpx.Response: A resposta HTTP da requisição de criação do usuário.
+    """
     response = create_user(
         admin_credentials["username"], admin_credentials["password"], user1_credentials
     )
@@ -356,6 +387,11 @@ def fixture_register_user_2(
     user2_credentials: dict,
     admin_credentials: dict,
 ) -> httpx.Response:
+    """Cria um novo usuário de teste 2 usando a API.
+
+    Retorna:
+        httpx.Response: A resposta HTTP da requisição de criação do usuário.
+    """
     response = create_user(
         admin_credentials["username"], admin_credentials["password"], user2_credentials
     )
@@ -366,6 +402,12 @@ def fixture_register_user_2(
 
 @pytest.fixture(scope="module")
 def header_not_logged_in() -> dict:
+    """Cabeçalho HTTP para requisições sem autenticação.
+
+    Returns:
+        dict: Um dicionário contendo os cabeçalhos HTTP padrão, sem
+            nenhum token de autenticação.
+    """
     return prepare_header(username=None, password=None)
 
 
