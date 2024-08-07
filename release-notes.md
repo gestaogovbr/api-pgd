@@ -1,7 +1,7 @@
 # Release notes
 
 
-## 3.0.5
+## 3.0.6
 
 * Updates to documentation
 * Add a warning to Swagger page when `TEST_ENVIRONMENT` environment
@@ -11,6 +11,8 @@
 * Handle correctly time-aware datetimes passed as input to `participante`
 * Remove `participante` from the Pydantic schema of `plano_trabalho`
   (data must be sent through the `participante` endpoint itself)
+* Update `participante` in the database instead of deleting and
+  re-inserting it
 
 
 ## 3.0.0
