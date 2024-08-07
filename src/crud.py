@@ -498,14 +498,9 @@ async def update_participante(
             .filter_by(matricula_siape=participante.matricula_siape)
         )
         db_participante = result.unique().scalar_one()
-        data_insercao = db_participante.data_insercao
-        await session.delete(db_participante)
-        await session.commit()
-        # create a new
-        db_participante = models.Participante(**participante.model_dump())
-        db_participante.data_insercao = data_insercao
+        for field, value in participante.model_dump().items():
+            setattr(db_participante, field, value)
         db_participante.data_atualizacao = datetime.now()
-        session.add(db_participante)
         await session.commit()
         await session.refresh(db_participante)
     return schemas.ParticipanteSchema.model_validate(db_participante)
