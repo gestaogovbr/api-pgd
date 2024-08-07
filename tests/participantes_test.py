@@ -234,6 +234,28 @@ def test_put_duplicate_participante(
     assert_equal_participante(response.json(), input_part)
 
 
+def test_update_participante_with_existing_pt(
+    truncate_participantes,  # pylint: disable=unused-argument
+    example_part,  # pylint: disable=unused-argument
+    example_pt,  # pylint: disable=unused-argument
+    input_part: dict,
+    header_usr_1: dict,
+    client: Client,
+):
+    """Atualiza um participante existente, sendo que o participante já
+    possui um Plano de Trabalho a ele associado.
+    """
+    response = client.put(
+        f"/organizacao/{input_part['origem_unidade']}"
+        f"/{input_part['cod_unidade_autorizadora']}"
+        f"/{input_part['cod_unidade_lotacao']}"
+        f"/participante/{input_part['matricula_siape']}",
+        json=input_part,
+        headers=header_usr_1,
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+
 def test_create_participante_inconsistent(
     truncate_participantes,  # pylint: disable=unused-argument
     input_part: dict,
