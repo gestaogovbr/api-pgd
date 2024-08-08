@@ -5,7 +5,7 @@ Entregas.
 from httpx import Client
 from fastapi import status as http_status
 
-from .core_test import assert_equal_plano_entregas
+from .core_test import BasePETest
 
 
 def test_get_plano_entregas_different_unit(
@@ -61,4 +61,4 @@ def test_get_plano_entregas_different_unit_admin(
 
     assert response.status_code == http_status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert_equal_plano_entregas(response.json(), input_pe)
+    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)

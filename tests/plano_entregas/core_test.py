@@ -2,7 +2,9 @@
 Testes relacionados ao Plano de Entregas da Unidade
 """
 
-from httpx import Client
+from typing import Optional
+
+from httpx import Client, Response
 from fastapi import status as http_status
 
 import pytest
@@ -47,35 +49,135 @@ FIELDS_ENTREGA = {
 }
 
 
-# Helper functions
+# Classe base de testes
 
 
-def assert_equal_plano_entregas(plano_entregas_1: dict, plano_entregas_2: dict):
-    """Verifica a igualdade de dois planos de entregas, considerando
-    apenas os campos obrigatórios.
-    """
-    # Compara o conteúdo de todos os campos obrigatórios do plano de
-    # entregas, exceto a lista de entregas
-    assert all(
-        plano_entregas_1[attribute] == plano_entregas_2[attribute]
-        for attributes in FIELDS_PLANO_ENTREGAS["mandatory"]
-        for attribute in attributes
-        if attribute not in ("entregas")
-    )
+class BasePETest:
+    """Classe base para testes de Plano de Entregas."""
 
-    # Compara o conteúdo de cada entrega, somente campos obrigatórios
-    first_plan_by_entrega = {
-        entrega["id_entrega"]: entrega for entrega in plano_entregas_1["entregas"]
-    }
-    second_plan_by_entrega = {
-        entrega["id_entrega"]: entrega for entrega in plano_entregas_2["entregas"]
-    }
-    assert all(
-        first_plan_by_entrega[id_entrega][attribute] == entrega[attribute]
-        for attributes in FIELDS_ENTREGA["mandatory"]
-        for attribute in attributes
-        for id_entrega, entrega in second_plan_by_entrega.items()
-    )
+    # pylint: disable=too-many-arguments
+    @pytest.fixture(autouse=True)
+    def setup(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        input_pe: dict,
+        user1_credentials: dict,
+        header_usr_1: dict,
+        client: Client,
+    ):
+        """Configurar o ambiente de teste.
+
+        Args:
+            truncate_pe (callable): Fixture para truncar a tabela de
+                Planos de Entrega (PE).
+            input_pe (dict): Dados usados para criar um PE.
+            user1_credentials (dict): Credenciais do usuário 1.
+            header_usr_1 (dict): Cabeçalhos HTTP para o usuário 1.
+            client (Client): Uma instância do cliente HTTPX.
+        """
+        # pylint: disable=attribute-defined-outside-init
+        self.input_pe = input_pe
+        self.user1_credentials = user1_credentials
+        self.header_usr_1 = header_usr_1
+        self.client = client
+
+    @staticmethod
+    def assert_equal_plano_entregas(plano_entregas_1: dict, plano_entregas_2: dict):
+        """Verifica a igualdade de dois planos de entregas, considerando
+        apenas os campos obrigatórios.
+        """
+        # Compara o conteúdo de todos os campos obrigatórios do plano de
+        # entregas, exceto a lista de entregas
+        assert all(
+            plano_entregas_1[attribute] == plano_entregas_2[attribute]
+            for attributes in FIELDS_PLANO_ENTREGAS["mandatory"]
+            for attribute in attributes
+            if attribute not in ("entregas")
+        )
+
+        # Compara o conteúdo de cada entrega, somente campos obrigatórios
+        first_plan_by_entrega = {
+            entrega["id_entrega"]: entrega for entrega in plano_entregas_1["entregas"]
+        }
+        second_plan_by_entrega = {
+            entrega["id_entrega"]: entrega for entrega in plano_entregas_2["entregas"]
+        }
+        assert all(
+            first_plan_by_entrega[id_entrega][attribute] == entrega[attribute]
+            for attributes in FIELDS_ENTREGA["mandatory"]
+            for attribute in attributes
+            for id_entrega, entrega in second_plan_by_entrega.items()
+        )
+
+    def create_plano_entregas(
+        self,
+        input_pe: dict,
+        id_plano_entregas: Optional[str] = None,
+        origem_unidade: Optional[str] = None,
+        cod_unidade_autorizadora: Optional[int] = None,
+        header_usr: Optional[dict] = None,
+    ) -> Response:
+        """Criar um Plano de Entregas.
+
+        Args:
+            input_pe (dict): O dicionário de entrada do Plano de Entregas.
+            id_plano_entregas (str): O ID do Plano de Entregas.
+            origem_unidade (str): origem do código da unidade.
+            cod_unidade_autorizadora (int): O ID da unidade autorizadora.
+            header_usr (dict): Cabeçalhos HTTP para o usuário.
+
+        Returns:
+            httpx.Response: A resposta da API.
+        """
+        if id_plano_entregas is None:
+            id_plano_entregas = input_pe["id_plano_entregas"]
+        if origem_unidade is None:
+            origem_unidade = input_pe["origem_unidade"]
+        if cod_unidade_autorizadora is None:
+            cod_unidade_autorizadora = self.user1_credentials[
+                "cod_unidade_autorizadora"
+            ]
+        if header_usr is None:
+            header_usr = self.header_usr_1
+
+        response = self.client.put(
+            (
+                f"/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+                f"/plano_entregas/{id_plano_entregas}"
+            ),
+            json=input_pe,
+            headers=header_usr,
+        )
+        return response
+
+    def get_pe(
+        self,
+        id_plano_entregas: str,
+        cod_unidade_autorizadora: int,
+        origem_unidade: Optional[str] = "SIAPE",
+        header_usr: Optional[dict] = None,
+    ) -> Response:
+        """Obter um Plano de Entregas.
+
+        Args:
+            id_plano_entregas (str): O ID do Plano de Entregas.
+            cod_unidade_autorizadora (int): O ID da unidade autorizadora.
+            origem_unidade (str): origem do código da unidade.
+            header_usr (dict): Cabeçalhos HTTP para o usuário.
+
+        Returns:
+            httpx.Response: A resposta da API.
+        """
+        if header_usr is None:
+            header_usr = self.header_usr_1
+        response = self.client.get(
+            (
+                f"/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+                f"/plano_entregas/{id_plano_entregas}"
+            ),
+            headers=header_usr,
+        )
+        return response
 
 
 # Os testes usam muitas fixtures, então necessariamente precisam de
@@ -103,7 +205,7 @@ def test_create_plano_entregas_completo(
 
     assert response.status_code == http_status.HTTP_201_CREATED
     assert response.json().get("detail", None) is None
-    assert_equal_plano_entregas(response.json(), input_pe)
+    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
 
 
 def test_update_plano_entregas(
@@ -169,7 +271,7 @@ def test_create_plano_entregas_entrega_omit_optional_fields(
         headers=header_usr_1,
     )
     assert response.status_code == http_status.HTTP_201_CREATED
-    assert_equal_plano_entregas(response.json(), input_pe)
+    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
 
 
 @pytest.mark.parametrize("nulled_fields", enumerate(FIELDS_ENTREGA["optional"]))
@@ -197,7 +299,7 @@ def test_create_plano_entregas_entrega_null_optional_fields(
         headers=header_usr_1,
     )
     assert response.status_code == http_status.HTTP_201_CREATED
-    assert_equal_plano_entregas(response.json(), input_pe)
+    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
 
 
 @pytest.mark.parametrize(
@@ -265,13 +367,15 @@ def test_create_huge_plano_entregas(
 
     # Compara o conteúdo do plano de entregas, somente campos obrigatórios
     assert response.status_code == http_status.HTTP_201_CREATED
-    assert_equal_plano_entregas(response.json(), input_pe)
+    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
 
     # Compara o conteúdo de cada entrega, somente campos obrigatórios
     response_by_entrega = {
         entrega["id_entrega"]: entrega for entrega in response.json()["entregas"]
     }
-    input_by_entrega = {entrega["id_entrega"]: entrega for entrega in input_pe["entregas"]}
+    input_by_entrega = {
+        entrega["id_entrega"]: entrega for entrega in input_pe["entregas"]
+    }
     assert all(
         response_by_entrega[id_entrega][attribute] == entrega[attribute]
         for attributes in FIELDS_ENTREGA["mandatory"]
@@ -387,7 +491,7 @@ def test_get_plano_entregas(
         headers=header_usr_1,
     )
     assert response.status_code == http_status.HTTP_200_OK
-    assert_equal_plano_entregas(response.json(), input_pe)
+    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
 
 
 def test_get_pe_inexistente(
@@ -409,10 +513,10 @@ def test_get_pe_inexistente(
     "id_plano_entregas, status, avaliacao, data_avaliacao",
     [
         ("78", 5, 2, "2023-06-11"),
-        ("79", 5, 2, None), # falta data_avaliacao
-        ("80", 5, None, "2023-06-11"), # falta avaliacao
-        ("81", 5, None, None), # faltam ambos
-        ("81", 2, None, None), # status não é 5
+        ("79", 5, 2, None),  # falta data_avaliacao
+        ("80", 5, None, "2023-06-11"),  # falta avaliacao
+        ("81", 5, None, None),  # faltam ambos
+        ("81", 2, None, None),  # status não é 5
     ],
 )
 def test_create_pe_status_avaliado(
@@ -527,7 +631,7 @@ def test_create_pe_duplicate_id_plano(
 
     assert response.status_code == http_status.HTTP_200_OK
     assert response.json().get("detail", None) is None
-    assert_equal_plano_entregas(response.json(), input_pe)
+    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
 
 
 def test_create_pe_same_id_plano_different_instituidora(
@@ -589,8 +693,7 @@ def test_create_invalid_cod_unidade(
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "Input should be greater than 0"
         assert any(
-            detail_message in error["msg"]
-            for error in response.json().get("detail")
+            detail_message in error["msg"] for error in response.json().get("detail")
         )
 
 
@@ -639,12 +742,9 @@ def test_create_entrega_invalid_percent(
         )
     elif tipo_meta == "unidade" and (meta_entrega < 0):
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = (
-            "Input should be greater than or equal to 0"
-        )
+        detail_message = "Input should be greater than or equal to 0"
         assert any(
-            detail_message in error["msg"]
-            for error in response.json().get("detail")
+            detail_message in error["msg"] for error in response.json().get("detail")
         )
     else:
         assert response.status_code == http_status.HTTP_201_CREATED
@@ -675,8 +775,7 @@ def test_create_entrega_invalid_tipo_meta(
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = "Input should be 'unidade' or 'percentual'"
         assert any(
-            detail_message in error["msg"]
-            for error in response.json().get("detail")
+            detail_message in error["msg"] for error in response.json().get("detail")
         )
 
 
