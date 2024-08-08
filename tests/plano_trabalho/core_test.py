@@ -5,7 +5,7 @@ participante.
 
 from typing import Optional
 
-from httpx import Client
+from httpx import Client, Response
 from fastapi import status
 
 import pytest
@@ -157,7 +157,7 @@ class BasePTTest:
         origem_unidade: Optional[str] = None,
         cod_unidade_autorizadora: Optional[int] = None,
         header_usr: Optional[dict] = None,
-    ):
+    ) -> Response:
         """Criar um Plano de Trabalho.
 
         Args:
@@ -196,7 +196,7 @@ class BasePTTest:
         cod_unidade_autorizadora: int,
         origem_unidade: Optional[str] = "SIAPE",
         header_usr: Optional[dict] = None,
-    ):
+    ) -> Response:
         """Obter um Plano de Trabalho.
 
         Args:
