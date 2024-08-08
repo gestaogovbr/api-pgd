@@ -10,7 +10,7 @@ from fastapi import status as http_status
 import pytest
 
 from util import over_a_year
-from .core_test import assert_equal_plano_entregas
+from .core_test import BasePETest
 
 
 # Datas básicas
@@ -59,7 +59,7 @@ def test_create_plano_entregas_date_interval_over_a_year(
         )
     else:
         assert response.status_code == http_status.HTTP_201_CREATED
-        assert_equal_plano_entregas(response.json(), input_pe)
+        BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
 
 
 @pytest.mark.parametrize(
@@ -257,7 +257,7 @@ def test_create_plano_entregas_overlapping_date_interval(
     ):
         # um dos planos está cancelado, pode ser criado
         assert response.status_code == http_status.HTTP_201_CREATED
-        assert_equal_plano_entregas(response.json(), input_pe)
+        BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
     else:
         if any(
             (
@@ -279,4 +279,4 @@ def test_create_plano_entregas_overlapping_date_interval(
         else:
             # não há sobreposição de datas
             assert response.status_code == http_status.HTTP_201_CREATED
-            assert_equal_plano_entregas(response.json(), input_pe)
+            BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
