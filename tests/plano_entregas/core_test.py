@@ -188,200 +188,126 @@ class BasePETest:
 # pylint: disable=too-many-arguments
 
 
-def test_create_plano_entregas_completo(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um novo plano de entregas"""
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
+class TestCreatePlanoEntrega(BasePETest):
+    """Testes para a criação de um novo Plano de Entregas."""
+
+    def test_create_plano_entregas_completo(self):
+        """Tenta criar um novo Plano de Entregas."""
+        response = self.create_plano_entregas(self.input_pe)
+        assert response.status_code == http_status.HTTP_201_CREATED
+        assert response.json().get("detail", None) is None
+        self.assert_equal_plano_entregas(response.json(), self.input_pe)
+
+    def test_update_plano_entregas(self, example_pe):
+        """Tenta criar um novo Plano de Entregas e atualizar alguns campos.
+        A fixture example_pe cria um novo Plano de Entregas na API.
+        O teste altera um campo do PE e reenvia pra API (update).
+        """
+        self.input_pe["avaliacao"] = 3
+        self.input_pe["data_avaliacao"] = "2023-08-15"
+        response = self.create_plano_entregas(self.input_pe)
+        assert response.status_code == http_status.HTTP_200_OK
+        assert response.json()["avaliacao"] == 3
+        assert response.json()["data_avaliacao"] == "2023-08-15"
+
+        # Consulta API para conferir se a alteração foi persistida
+        response = self.get_pe(
+            self.input_pe["id_plano_entregas"],
+            self.user1_credentials["cod_unidade_autorizadora"],
+        )
+        assert response.status_code == http_status.HTTP_200_OK
+        assert response.json()["avaliacao"] == 3
+        assert response.json()["data_avaliacao"] == "2023-08-15"
+
+    @pytest.mark.parametrize("omitted_fields", enumerate(FIELDS_ENTREGA["optional"]))
+    def test_create_plano_entregas_entrega_omit_optional_fields(self, omitted_fields):
+        """Tenta criar um novo Plano de Entregas omitindo campos opcionais."""
+        offset, field_list = omitted_fields
+        for field in field_list:
+            for entrega in self.input_pe["entregas"]:
+                if field in entrega:
+                    del entrega[field]
+
+        self.input_pe["id_plano_entregas"] = str(557 + offset)
+        response = self.create_plano_entregas(self.input_pe)
+        assert response.status_code == http_status.HTTP_201_CREATED
+        self.assert_equal_plano_entregas(response.json(), self.input_pe)
+
+    @pytest.mark.parametrize("nulled_fields", enumerate(FIELDS_ENTREGA["optional"]))
+    def test_create_plano_entregas_entrega_null_optional_fields(self, nulled_fields):
+        """Tenta criar um novo Plano de Entregas com o valor null nos campos opcionais."""
+        offset, field_list = nulled_fields
+        for field in field_list:
+            for entrega in self.input_pe["entregas"]:
+                if field in entrega:
+                    entrega[field] = None
+
+        self.input_pe["id_plano_entregas"] = str(557 + offset)
+        response = self.create_plano_entregas(self.input_pe)
+        assert response.status_code == http_status.HTTP_201_CREATED
+        self.assert_equal_plano_entregas(response.json(), self.input_pe)
+
+    @pytest.mark.parametrize(
+        "missing_fields", enumerate(FIELDS_PLANO_ENTREGAS["mandatory"])
     )
+    def test_create_plano_entregas_missing_mandatory_fields(self, missing_fields):
+        """Tenta criar um Plano de Entregas, faltando campos obrigatórios.
+        Na atualização com PUT, ainda assim é necessário informar todos os
+        campos obrigatórios, uma vez que o conteúdo será substituído.
+        """
+        offset, field_list = missing_fields
+        input_pe = self.input_pe.copy()
+        # define um id_plano_entregas diferente para cada teste
+        input_pe["id_plano_entregas"] = 1800 + offset
+        # Estes campos fazem parte da URL e para omiti-los será necessário
+        # inclui-los na chamada do método create_pe
+        fields_in_url = [
+            "origem_unidade",
+            "cod_unidade_autorizadora",
+            "id_plano_entregas",
+        ]
+        placeholder_fields = {}
+        for field in field_list:
+            if field in fields_in_url:
+                placeholder_fields[field] = input_pe[field]
+            del input_pe[field]
 
-    assert response.status_code == http_status.HTTP_201_CREATED
-    assert response.json().get("detail", None) is None
-    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
+        # Act
+        response = self.create_plano_entregas(input_pe, **placeholder_fields)
 
+        # Assert
+        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
 
-def test_update_plano_entregas(
-    truncate_pe,  # pylint: disable=unused-argument
-    example_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um novo plano de entregas e atualizar alguns campos.
-    A fixture example_pe cria um novo Plano de Entregas na API.
-    O teste altera um campo do PE e reenvia pra API (update).
-    """
+    def test_create_huge_plano_entregas(self):
+        """Testa a criação de um Plano de Entregas com grande volume de dados."""
 
-    input_pe["avaliacao"] = 3
-    input_pe["data_avaliacao"] = "2023-08-15"
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
+        def create_huge_entrega(id_entrega: int):
+            new_entrega = self.input_pe["entregas"][0].copy()
+            new_entrega["id_entrega"] = str(3 + id_entrega)
+            new_entrega["nome_entrega"] = "x" * 300  # 300 caracteres
+            new_entrega["nome_unidade_demandante"] = "x" * 300  # 300 caracteres
+            new_entrega["nome_unidade_destinataria"] = "x" * 300  # 300 caracteres
+            return new_entrega
 
-    assert response.status_code == http_status.HTTP_200_OK
-    assert response.json()["avaliacao"] == 3
-    assert response.json()["data_avaliacao"] == "2023-08-15"
+        for id_entrega in range(200):
+            self.input_pe["entregas"].append(create_huge_entrega(id_entrega))
 
-    # Consulta API para conferir se a alteração foi persistida
-    response = client.get(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        headers=header_usr_1,
-    )
+        response = self.create_plano_entregas(self.input_pe)
+        assert response.status_code == http_status.HTTP_201_CREATED
+        self.assert_equal_plano_entregas(response.json(), self.input_pe)
 
-    assert response.status_code == http_status.HTTP_200_OK
-    assert response.json()["avaliacao"] == 3
-    assert response.json()["data_avaliacao"] == "2023-08-15"
-
-
-@pytest.mark.parametrize("omitted_fields", enumerate(FIELDS_ENTREGA["optional"]))
-def test_create_plano_entregas_entrega_omit_optional_fields(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    omitted_fields: list,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um novo plano de entregas omitindo campos opcionais"""
-
-    offset, field_list = omitted_fields
-    for field in field_list:
-        for entrega in input_pe["entregas"]:
-            if field in entrega:
-                del entrega[field]
-
-    input_pe["id_plano_entregas"] = str(557 + offset)
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-    assert response.status_code == http_status.HTTP_201_CREATED
-    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
-
-
-@pytest.mark.parametrize("nulled_fields", enumerate(FIELDS_ENTREGA["optional"]))
-def test_create_plano_entregas_entrega_null_optional_fields(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    nulled_fields: list,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um novo plano de entregas com o valor null nos campos opcionais"""
-
-    offset, field_list = nulled_fields
-    for field in field_list:
-        for entrega in input_pe["entregas"]:
-            if field in entrega:
-                entrega[field] = None
-
-    input_pe["id_plano_entregas"] = str(557 + offset)
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-    assert response.status_code == http_status.HTTP_201_CREATED
-    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
-
-
-@pytest.mark.parametrize(
-    "missing_fields", enumerate(FIELDS_PLANO_ENTREGAS["mandatory"])
-)
-def test_create_plano_entregas_missing_mandatory_fields(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    missing_fields: list,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um plano de entregas, faltando campos obrigatórios.
-    Na atualização com PUT, ainda assim é necessário informar todos os
-    campos obrigatórios, uma vez que o conteúdo será substituído.
-    """
-    offset, field_list = missing_fields
-    for field in field_list:
-        del input_pe[field]
-
-    # para usar na URL, necessário existir caso tenha sido removido
-    # como campo obrigatório
-    id_plano_entregas = 1800 + offset
-    if input_pe.get("id_plano_entregas", None):
-        # Atualiza o id_plano_entrega somente se existir.
-        # Se não existir, é porque foi removido como campo obrigatório.
-        input_pe["id_plano_entregas"] = id_plano_entregas
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{id_plano_entregas}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-    assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-
-
-def test_create_huge_plano_entregas(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Testa a criação de um plano de entregas com grande volume de dados."""
-
-    def create_huge_entrega(id_entrega: int):
-        new_entrega = input_pe["entregas"][0].copy()
-        new_entrega["id_entrega"] = str(3 + id_entrega)
-        new_entrega["nome_entrega"] = "x" * 300  # 300 caracteres
-        new_entrega["nome_unidade_demandante"] = "x" * 300  # 300 caracteres
-        new_entrega["nome_unidade_destinataria"] = "x" * 300  # 300 caracteres
-
-        return new_entrega
-
-    for id_entrega in range(200):
-        input_pe["entregas"].append(create_huge_entrega(id_entrega))
-
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-
-    # Compara o conteúdo do plano de entregas, somente campos obrigatórios
-    assert response.status_code == http_status.HTTP_201_CREATED
-    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
-
-    # Compara o conteúdo de cada entrega, somente campos obrigatórios
-    response_by_entrega = {
-        entrega["id_entrega"]: entrega for entrega in response.json()["entregas"]
-    }
-    input_by_entrega = {
-        entrega["id_entrega"]: entrega for entrega in input_pe["entregas"]
-    }
-    assert all(
-        response_by_entrega[id_entrega][attribute] == entrega[attribute]
-        for attributes in FIELDS_ENTREGA["mandatory"]
-        for attribute in attributes
-        for id_entrega, entrega in input_by_entrega.items()
-    )
+        response_by_entrega = {
+            entrega["id_entrega"]: entrega for entrega in response.json()["entregas"]
+        }
+        input_by_entrega = {
+            entrega["id_entrega"]: entrega for entrega in self.input_pe["entregas"]
+        }
+        assert all(
+            response_by_entrega[id_entrega][attribute] == entrega[attribute]
+            for attributes in FIELDS_ENTREGA["mandatory"]
+            for attribute in attributes
+            for id_entrega, entrega in input_by_entrega.items()
+        )
 
 
 @pytest.mark.parametrize(
