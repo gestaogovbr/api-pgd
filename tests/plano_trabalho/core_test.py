@@ -82,8 +82,10 @@ class BasePTTest:
         """Configurar o ambiente de teste.
 
         Args:
-            truncate_pe (callable): Fixture para truncar a tabela PE.
-            truncate_pt (callable): Fixture para truncar a tabela PT.
+            truncate_pe (callable): Fixture para truncar a tabela de
+                Planos de Entrega.
+            truncate_pt (callable): Fixture para truncar a tabela de
+                Planos de Trabalho.
             example_pe (callable): Fixture que cria exemplo de PE.
             input_pt (dict): Dados usados para ciar um PT
             user1_credentials (dict): Credenciais do usuário 1.
