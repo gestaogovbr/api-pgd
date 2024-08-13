@@ -150,7 +150,7 @@ class BasePTTest:
         )
         assert avaliacao_registros_execucao_1 == avaliacao_registros_execucao_2
 
-    def create_pt(
+    def create_plano_trabalho(
         self,
         input_pt: dict,
         id_plano_trabalho: Optional[str] = None,
@@ -190,7 +190,7 @@ class BasePTTest:
         )
         return response
 
-    def get_pt(
+    def get_plano_trabalho(
         self,
         id_plano_trabalho: str,
         cod_unidade_autorizadora: int,
@@ -227,13 +227,13 @@ class TestCreatePlanoTrabalho(BasePTTest):
         """Cria um novo Plano de Trabalho do Participante, em uma unidade
         na qual ele está autorizado, contendo todos os dados necessários.
         """
-        response = self.create_pt(self.input_pt)
+        response = self.create_plano_trabalho(self.input_pt)
 
         assert response.status_code == status.HTTP_201_CREATED
         self.assert_equal_plano_trabalho(response.json(), self.input_pt)
 
         # Consulta API para conferir se a criação foi persistida
-        response = self.get_pt(
+        response = self.get_plano_trabalho(
             self.input_pt["id_plano_trabalho"],
             self.input_pt["cod_unidade_autorizadora"],
         )
@@ -270,7 +270,7 @@ class TestCreatePlanoTrabalho(BasePTTest):
         input_pt["id_plano_trabalho"] = f"{1800 + offset}"  # precisa ser um novo plano
 
         # Act
-        response = self.create_pt(input_pt, **placeholder_fields)
+        response = self.create_plano_trabalho(input_pt, **placeholder_fields)
 
         # Assert
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -284,7 +284,7 @@ class TestCreatePlanoTrabalho(BasePTTest):
         input_pt["id_plano_trabalho"] = "110"
 
         # Act
-        response = self.create_pt(
+        response = self.create_plano_trabalho(
             input_pt, id_plano_trabalho="111", header_usr=self.header_usr_1
         )
 
@@ -310,7 +310,7 @@ class TestCreatePlanoTrabalho(BasePTTest):
         input_pt["carga_horaria_disponivel"] = carga_horaria_disponivel
 
         # Act
-        response = self.create_pt(input_pt)
+        response = self.create_plano_trabalho(input_pt)
 
         # Assert
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -356,7 +356,7 @@ class TestCreatePlanoTrabalho(BasePTTest):
         input_pt["cpf_participante"] = cpf_participante
 
         # Act
-        response = self.create_pt(input_pt)
+        response = self.create_plano_trabalho(input_pt)
 
         # Assert
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -408,12 +408,12 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
         input_pt = self.input_pt.copy()
         input_pt["status"] = 4  # Valor era 3
         input_pt["data_termino"] = "2023-01-31"  # Valor era "2023-01-15"
-        response = self.create_pt(input_pt)
+        response = self.create_plano_trabalho(input_pt)
         assert response.status_code == status.HTTP_200_OK
         self.assert_equal_plano_trabalho(response.json(), input_pt)
 
         # Consulta API para conferir se a alteração foi persistida
-        response = self.get_pt(
+        response = self.get_plano_trabalho(
             input_pt["id_plano_trabalho"],
             self.user1_credentials["cod_unidade_autorizadora"],
         )
@@ -433,7 +433,7 @@ class TestGetPlanoTrabalho(BasePTTest):
         input_pt["contribuicoes"][1]["id_entrega"] = None
         input_pt["contribuicoes"][1]["descricao_contribuicao"] = None
 
-        response = self.get_pt(
+        response = self.get_plano_trabalho(
             input_pt["id_plano_trabalho"], input_pt["cod_unidade_autorizadora"]
         )
 
@@ -444,7 +444,7 @@ class TestGetPlanoTrabalho(BasePTTest):
         """Tenta acessar um plano de trabalho inexistente."""
         non_existent_id = "888888888"
 
-        response = self.get_pt(
+        response = self.get_plano_trabalho(
             non_existent_id, self.user1_credentials["cod_unidade_autorizadora"]
         )
 

@@ -29,7 +29,7 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
             example_pe_unidade_3: Fixture para criar um PE na unidade 3.
             example_pt_unidade_3: Fixture para criar um PT na unidade 3.
         """
-        response = self.get_pt(
+        response = self.get_plano_trabalho(
             id_plano_trabalho=self.input_pt["id_plano_trabalho"],
             cod_unidade_autorizadora=3,  # Unidade diferente
             header_usr=header_usr_2,
@@ -60,7 +60,7 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
         input_pt = self.input_pt.copy()
 
         # Obter o plano de trabalho de uma unidade diferente
-        response = self.get_pt(
+        response = self.get_plano_trabalho(
             self.input_pt["id_plano_trabalho"], 3, header_usr=header_admin
         )
 
@@ -83,7 +83,7 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
             header_usr_2 (dict): Cabeçalho do usuário na unidade diferente.
         """
         # Criar o Plano de Trabalho em uma unidade diferente
-        response = self.create_pt(
+        response = self.create_plano_trabalho(
             self.input_pt, cod_unidade_autorizadora=3, header_usr=header_usr_2
         )
 
@@ -128,7 +128,7 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
         assert admin_data.get("is_admin", None) is True
 
         # Criar o Plano de Trabalho em uma unidade diferente
-        response = self.create_pt(
+        response = self.create_plano_trabalho(
             input_pt, cod_unidade_autorizadora=3, header_usr=header_admin
         )
 
