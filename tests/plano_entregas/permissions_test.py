@@ -27,6 +27,41 @@ class TestPermissionsPE(BasePETest):
         )
         assert response.status_code == http_status.HTTP_403_FORBIDDEN
 
+    def test_get_plano_entregas_different_unit_admin(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        example_pe_unidade_3,  # pylint: disable=unused-argument
+        header_admin: dict,
+        admin_credentials: dict,
+    ):
+        """Tenta, como administrador, buscar um Plano de Entregas
+        em uma organização diferente da sua própria organização.
+        """
+        input_pe = self.input_pe.copy()
+        input_pe["cod_unidade_autorizadora"] = 3
+
+        response = self.client.get(
+            f"/user/{admin_credentials['username']}",
+            headers=header_admin,
+        )
+
+        # Verifica se o usuário é admin e se está em outra unidade
+        assert response.status_code == http_status.HTTP_200_OK
+        admin_data = response.json()
+        assert (
+            admin_data.get("cod_unidade_autorizadora", None)
+            != input_pe["cod_unidade_autorizadora"]
+        )
+        assert admin_data.get("is_admin", None) is True
+
+        response = self.get_plano_entregas(
+            input_pe["id_plano_entregas"],
+            input_pe["cod_unidade_autorizadora"],
+            header_usr=header_admin,
+        )
+
+        assert response.status_code == http_status.HTTP_200_OK
+
     def test_put_plano_entregas_different_unit_admin(
         self,
         truncate_pe,  # pylint: disable=unused-argument
