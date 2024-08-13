@@ -16,129 +16,111 @@ from .core_test import BasePETest
 # Datas básicas
 
 
-@pytest.mark.parametrize(
-    "data_inicio, data_termino",
-    [
-        ("2023-01-01", "2023-06-30"),  # igual ao exemplo
-        ("2023-01-01", "2024-01-01"),  # um ano
-        ("2023-01-01", "2024-01-02"),  # mais que um ano
-    ],
-)
-def test_create_plano_entregas_date_interval_over_a_year(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    data_inicio: str,
-    data_termino: str,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Plano de Entregas não pode ter vigência superior a um ano."""
-    input_pe["data_inicio"] = data_inicio
-    input_pe["data_termino"] = data_termino
+class TestPlanoDeDatasBasicas(BasePETest):
+    """Testes de Plano de Entregas com datas básicas."""
 
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
+    @pytest.mark.parametrize(
+        "data_inicio, data_termino",
+        [
+            ("2023-01-01", "2023-06-30"),  # igual ao exemplo
+            ("2023-01-01", "2024-01-01"),  # um ano
+            ("2023-01-01", "2024-01-02"),  # mais que um ano
+        ],
     )
-
-    if (
-        over_a_year(
-            date.fromisoformat(data_termino),
-            date.fromisoformat(data_inicio),
-        )
-        == 1
+    def test_create_plano_entregas_date_interval_over_a_year(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        data_inicio: str,
+        data_termino: str,
     ):
-        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "Plano de entregas não pode abranger período maior que 1 ano."
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
-    else:
-        assert response.status_code == http_status.HTTP_201_CREATED
-        BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
+        """Plano de Entregas não pode ter vigência superior a um ano."""
 
+        input_pe = self.input_pe.copy()
+        input_pe["data_inicio"] = data_inicio
+        input_pe["data_termino"] = data_termino
 
-@pytest.mark.parametrize(
-    "data_inicio, data_termino",
-    [
-        ("2020-06-04", "2020-04-01"),
-    ],
-)
-def test_create_pe_invalid_period(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    data_inicio: str,
-    data_termino: str,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um plano de entregas com datas trocadas"""
+        response = self.create_plano_entregas(input_pe)
 
-    input_pe["data_inicio"] = data_inicio
-    input_pe["data_termino"] = data_termino
+        if (
+            over_a_year(
+                date.fromisoformat(data_termino), date.fromisoformat(data_inicio)
+            )
+            == 1
+        ):
+            assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = (
+                "Plano de entregas não pode abranger período maior que 1 ano."
+            )
+            assert any(
+                f"Value error, {detail_message}" in error["msg"]
+                for error in response.json().get("detail")
+            )
+        else:
+            assert response.status_code == http_status.HTTP_201_CREATED
+            self.assert_equal_plano_entregas(response.json(), input_pe)
 
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
+    @pytest.mark.parametrize(
+        "data_inicio, data_termino",
+        [
+            ("2020-06-04", "2020-04-01"),
+        ],
     )
-    if data_inicio > data_termino:
-        assert response.status_code == 422
-        detail_message = "data_termino deve ser maior ou igual que data_inicio."
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
-    else:
-        assert response.status_code == http_status.HTTP_201_CREATED
+    def test_create_pe_invalid_period(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        data_inicio: str,
+        data_termino: str,
+    ):
+        """Tenta criar um plano de entregas com datas trocadas"""
 
+        input_pe = self.input_pe.copy()
+        input_pe["data_inicio"] = data_inicio
+        input_pe["data_termino"] = data_termino
 
-@pytest.mark.parametrize(
-    "id_plano_entregas, data_inicio, data_avaliacao",
-    [
-        ("77", "2020-06-04", "2020-04-01"),
-        ("78", "2020-06-04", "2020-06-11"),
-    ],
-)
-def test_create_pe_invalid_data_avaliacao(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    data_inicio: str,
-    data_avaliacao: str,
-    id_plano_entregas: str,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um Plano de Entregas com datas de avaliação inferior a
-    data de inicio do plano."""
+        response = self.create_plano_entregas(input_pe)
+        if data_inicio > data_termino:
+            assert response.status_code == 422
+            detail_message = "data_termino deve ser maior ou igual que data_inicio."
+            assert any(
+                f"Value error, {detail_message}" in error["msg"]
+                for error in response.json().get("detail")
+            )
+        else:
+            assert response.status_code == http_status.HTTP_201_CREATED
 
-    input_pe["data_inicio"] = data_inicio
-    input_pe["data_avaliacao"] = data_avaliacao
-    input_pe["id_plano_entregas"] = id_plano_entregas
-
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{id_plano_entregas}",
-        json=input_pe,
-        headers=header_usr_1,
+    @pytest.mark.parametrize(
+        "id_plano_entregas, data_inicio, data_avaliacao",
+        [
+            ("77", "2020-06-04", "2020-04-01"),
+            ("78", "2020-06-04", "2020-06-11"),
+        ],
     )
+    def test_create_pe_invalid_data_avaliacao(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        data_inicio: str,
+        data_avaliacao: str,
+        id_plano_entregas: str,
+    ):
+        """Tenta criar um Plano de Entregas com datas de avaliação inferior a
+        data de inicio do plano."""
 
-    if data_avaliacao < data_inicio:
-        assert response.status_code == 422
-        detail_message = "data_avaliacao deve ser maior ou igual à data_inicio."
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
-    else:
-        assert response.status_code == http_status.HTTP_201_CREATED
+        input_pe = self.input_pe.copy()
+        input_pe["data_inicio"] = data_inicio
+        input_pe["data_avaliacao"] = data_avaliacao
+        input_pe["id_plano_entregas"] = id_plano_entregas
+
+        response = self.create_plano_entregas(input_pe)
+
+        if data_avaliacao < data_inicio:
+            assert response.status_code == 422
+            detail_message = "data_avaliacao deve ser maior ou igual à data_inicio."
+            assert any(
+                f"Value error, {detail_message}" in error["msg"]
+                for error in response.json().get("detail")
+            )
+        else:
+            assert response.status_code == http_status.HTTP_201_CREATED
 
 
 # Entregas
