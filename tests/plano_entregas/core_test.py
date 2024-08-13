@@ -198,21 +198,22 @@ class TestCreatePlanoEntrega(BasePETest):
         assert response.json().get("detail", None) is None
         self.assert_equal_plano_entregas(response.json(), self.input_pe)
 
-    def test_update_plano_entregas(self, example_pe):
+    def test_update_plano_entregas(self, example_pe):  # pylint: disable=unused-argument
         """Tenta criar um novo Plano de Entregas e atualizar alguns campos.
         A fixture example_pe cria um novo Plano de Entregas na API.
         O teste altera um campo do PE e reenvia pra API (update).
         """
-        self.input_pe["avaliacao"] = 3
-        self.input_pe["data_avaliacao"] = "2023-08-15"
-        response = self.create_plano_entregas(self.input_pe)
+        input_pe = self.input_pe.copy()
+        input_pe["avaliacao"] = 3
+        input_pe["data_avaliacao"] = "2023-08-15"
+        response = self.create_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_200_OK
         assert response.json()["avaliacao"] == 3
         assert response.json()["data_avaliacao"] == "2023-08-15"
 
         # Consulta API para conferir se a alteração foi persistida
         response = self.get_pe(
-            self.input_pe["id_plano_entregas"],
+            input_pe["id_plano_entregas"],
             self.user1_credentials["cod_unidade_autorizadora"],
         )
         assert response.status_code == http_status.HTTP_200_OK
@@ -222,30 +223,32 @@ class TestCreatePlanoEntrega(BasePETest):
     @pytest.mark.parametrize("omitted_fields", enumerate(FIELDS_ENTREGA["optional"]))
     def test_create_plano_entregas_entrega_omit_optional_fields(self, omitted_fields):
         """Tenta criar um novo Plano de Entregas omitindo campos opcionais."""
+        input_pe = self.input_pe.copy()
         offset, field_list = omitted_fields
         for field in field_list:
-            for entrega in self.input_pe["entregas"]:
+            for entrega in input_pe["entregas"]:
                 if field in entrega:
                     del entrega[field]
 
-        self.input_pe["id_plano_entregas"] = str(557 + offset)
-        response = self.create_plano_entregas(self.input_pe)
+        input_pe["id_plano_entregas"] = str(557 + offset)
+        response = self.create_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
-        self.assert_equal_plano_entregas(response.json(), self.input_pe)
+        self.assert_equal_plano_entregas(response.json(), input_pe)
 
     @pytest.mark.parametrize("nulled_fields", enumerate(FIELDS_ENTREGA["optional"]))
     def test_create_plano_entregas_entrega_null_optional_fields(self, nulled_fields):
         """Tenta criar um novo Plano de Entregas com o valor null nos campos opcionais."""
+        input_pe = self.input_pe.copy()
         offset, field_list = nulled_fields
         for field in field_list:
-            for entrega in self.input_pe["entregas"]:
+            for entrega in input_pe["entregas"]:
                 if field in entrega:
                     entrega[field] = None
 
-        self.input_pe["id_plano_entregas"] = str(557 + offset)
-        response = self.create_plano_entregas(self.input_pe)
+        input_pe["id_plano_entregas"] = str(557 + offset)
+        response = self.create_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
-        self.assert_equal_plano_entregas(response.json(), self.input_pe)
+        self.assert_equal_plano_entregas(response.json(), input_pe)
 
     @pytest.mark.parametrize(
         "missing_fields", enumerate(FIELDS_PLANO_ENTREGAS["mandatory"])
@@ -280,9 +283,10 @@ class TestCreatePlanoEntrega(BasePETest):
 
     def test_create_huge_plano_entregas(self):
         """Testa a criação de um Plano de Entregas com grande volume de dados."""
+        input_pe = self.input_pe.copy()
 
         def create_huge_entrega(id_entrega: int):
-            new_entrega = self.input_pe["entregas"][0].copy()
+            new_entrega = input_pe["entregas"][0].copy()
             new_entrega["id_entrega"] = str(3 + id_entrega)
             new_entrega["nome_entrega"] = "x" * 300  # 300 caracteres
             new_entrega["nome_unidade_demandante"] = "x" * 300  # 300 caracteres
@@ -290,17 +294,17 @@ class TestCreatePlanoEntrega(BasePETest):
             return new_entrega
 
         for id_entrega in range(200):
-            self.input_pe["entregas"].append(create_huge_entrega(id_entrega))
+            input_pe["entregas"].append(create_huge_entrega(id_entrega))
 
-        response = self.create_plano_entregas(self.input_pe)
+        response = self.create_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
-        self.assert_equal_plano_entregas(response.json(), self.input_pe)
+        self.assert_equal_plano_entregas(response.json(), input_pe)
 
         response_by_entrega = {
             entrega["id_entrega"]: entrega for entrega in response.json()["entregas"]
         }
         input_by_entrega = {
-            entrega["id_entrega"]: entrega for entrega in self.input_pe["entregas"]
+            entrega["id_entrega"]: entrega for entrega in input_pe["entregas"]
         }
         assert all(
             response_by_entrega[id_entrega][attribute] == entrega[attribute]
@@ -332,16 +336,17 @@ class TestCreatePEInputValidation(BasePETest):
         """Testa a criação de um plano de entregas excedendo o tamanho
         máximo de cada campo.
         """
-        self.input_pe["id_plano_entregas"] = id_plano_entregas
-        self.input_pe["entregas"][0]["nome_entrega"] = nome_entrega  # 300 caracteres
-        self.input_pe["entregas"][0][
+        input_pe = self.input_pe.copy()
+        input_pe["id_plano_entregas"] = id_plano_entregas
+        input_pe["entregas"][0]["nome_entrega"] = nome_entrega  # 300 caracteres
+        input_pe["entregas"][0][
             "nome_unidade_demandante"
         ] = nome_unidade_demandante  # 300 caracteres
-        self.input_pe["entregas"][0][
+        input_pe["entregas"][0][
             "nome_unidade_destinataria"
         ] = nome_unidade_destinataria  # 300 caracteres
 
-        response = self.create_plano_entregas(self.input_pe)
+        response = self.create_plano_entregas(input_pe)
 
         if any(
             len(campo) > STR_MAX_SIZE
@@ -360,10 +365,9 @@ class TestCreatePEInputValidation(BasePETest):
     def test_create_pe_cod_plano_inconsistent(
         self,
         truncate_pe,  # pylint: disable=unused-argument
-        input_pe: dict,
     ):
         """Tenta criar um plano de entregas com código de plano divergente"""
-
+        input_pe = self.input_pe.copy()
         input_pe["id_plano_entregas"] = "110"
         response = self.create_plano_entregas(
             input_pe, id_plano_entregas="111"  # diferente de 110
@@ -375,9 +379,9 @@ class TestCreatePEInputValidation(BasePETest):
     def test_create_pe_cod_unidade_inconsistent(
         self,
         truncate_pe,  # pylint: disable=unused-argument
-        input_pe: dict,
     ):
         """Tenta criar um plano de entregas com código de unidade divergente"""
+        input_pe = self.input_pe.copy()
         original_input_pe = input_pe.copy()
         input_pe["cod_unidade_autorizadora"] = 999  # era 1
         response = self.create_plano_entregas(
@@ -395,13 +399,13 @@ class TestCreatePEInputValidation(BasePETest):
     def test_create_invalid_cod_unidade(
         self,
         truncate_pe,  # pylint: disable=unused-argument
-        input_pe: dict,
         cod_unidade_executora: int,
     ):
         """Tenta criar uma entrega com código de unidade inválido.
         Por ora não será feita validação no sistema, e sim apenas uma
         verificação de sanidade.
         """
+        input_pe = self.input_pe.copy()
         input_pe["cod_unidade_executora"] = cod_unidade_executora
 
         response = self.create_plano_entregas(input_pe)
@@ -430,12 +434,12 @@ class TestCreatePEInputValidation(BasePETest):
     def test_create_entrega_invalid_percent(
         self,
         truncate_pe,  # pylint: disable=unused-argument
-        input_pe: dict,
         id_plano_entregas: str,
         meta_entrega: int,
         tipo_meta: str,
     ):
         """Tenta criar um Plano de Entregas com entrega com percentuais inválidos"""
+        input_pe = self.input_pe.copy()
         input_pe["id_plano_entregas"] = id_plano_entregas
         input_pe["entregas"][1]["meta_entrega"] = meta_entrega
         input_pe["entregas"][1]["tipo_meta"] = tipo_meta
@@ -466,10 +470,10 @@ class TestCreatePEInputValidation(BasePETest):
     def test_create_entrega_invalid_tipo_meta(
         self,
         truncate_pe,  # pylint: disable=unused-argument
-        input_pe: dict,
         tipo_meta: str,
     ):
         """Tenta criar um Plano de Entregas com tipo de meta inválido"""
+        input_pe = self.input_pe.copy()
         input_pe["entregas"][0]["tipo_meta"] = tipo_meta
 
         response = self.create_plano_entregas(input_pe)
@@ -488,11 +492,10 @@ class TestCreatePEInputValidation(BasePETest):
     def test_create_pe_invalid_avaliacao(
         self,
         truncate_pe,  # pylint: disable=unused-argument
-        input_pe: dict,
         avaliacao: int,
     ):
         """Tenta criar um Plano de Entregas com nota de avaliação inválida"""
-
+        input_pe = self.input_pe.copy()
         input_pe["avaliacao"] = avaliacao
         response = self.create_plano_entregas(input_pe)
 
@@ -530,12 +533,13 @@ class TestCreatePEInputValidation(BasePETest):
         O status 5 só poderá ser usado se os campos "avaliacao" e "data_avaliacao"
         estiverem preenchidos.
         """
-        self.input_pe["status"] = status
-        self.input_pe["avaliacao"] = avaliacao
-        self.input_pe["data_avaliacao"] = data_avaliacao
-        self.input_pe["id_plano_entregas"] = id_plano_entregas
+        input_pe = self.input_pe.copy()
+        input_pe["status"] = status
+        input_pe["avaliacao"] = avaliacao
+        input_pe["data_avaliacao"] = data_avaliacao
+        input_pe["id_plano_entregas"] = id_plano_entregas
 
-        response = self.create_plano_entregas(self.input_pe)
+        response = self.create_plano_entregas(input_pe)
 
         if status == 5 and not (avaliacao and data_avaliacao):
             assert response.status_code == 422
@@ -555,16 +559,15 @@ class TestGetPlanoEntregas(BasePETest):
         self,
         truncate_pe,  # pylint: disable=unused-argument
         example_pe,  # pylint: disable=unused-argument
-        input_pe,
     ):
         """Tenta buscar um plano de entregas existente"""
 
         response = self.get_pe(
-            input_pe["id_plano_entregas"],
+            self.input_pe["id_plano_entregas"],
             self.user1_credentials["cod_unidade_autorizadora"],
         )
         assert response.status_code == http_status.HTTP_200_OK
-        self.assert_equal_plano_entregas(response.json(), input_pe)
+        self.assert_equal_plano_entregas(response.json(), self.input_pe)
 
     def test_get_pe_inexistente(self):
         """Tenta buscar um plano de entregas inexistente"""
