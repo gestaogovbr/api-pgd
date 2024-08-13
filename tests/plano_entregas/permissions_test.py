@@ -27,7 +27,7 @@ class TestPermissionsGetPE(BasePETest):
         )
         assert response.status_code == http_status.HTTP_403_FORBIDDEN
 
-    def test_get_plano_entregas_different_unit_admin(
+    def test_put_plano_entregas_different_unit_admin(
         self,
         truncate_pe,  # pylint: disable=unused-argument
         header_admin: dict,
