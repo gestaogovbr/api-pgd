@@ -126,139 +126,126 @@ class TestPlanoDeDatasBasicas(BasePETest):
 # Entregas
 
 
-@pytest.mark.parametrize(
-    "id_plano_entregas, data_inicio, data_termino, data_entrega",
-    [
-        ("91", "2023-08-01", "2023-09-01", "2023-08-08"),  # dentro
-        ("92", "2023-08-01", "2023-09-01", "2023-07-01"),  # antes do início
-        ("93", "2023-08-01", "2023-09-01", "2023-10-01"),  # depois do fim
-    ],
-)
-def test_create_data_entrega_out_of_bounds(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    id_plano_entregas: str,
-    data_inicio: str,
-    data_termino: str,
-    data_entrega: str,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar uma entrega com data de entrega dentro e fora do
-    intervalo do plano de entregas. Segundo as regras de negócio, essa
-    data pode ser qualquer data e não precisa estar dentro do período
-    entre o início e o fim do plano_entregas.
-    """
-    input_pe["id_plano_entregas"] = id_plano_entregas
-    input_pe["data_inicio"] = data_inicio
-    input_pe["data_termino"] = data_termino
-    for entrega in input_pe["entregas"]:
-        entrega["data_entrega"] = data_entrega
+class TestPlanoDeDatasEntregas(BasePETest):
+    """Testes de Plano de Entregas com datas de entregas."""
 
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{id_plano_entregas}",
-        json=input_pe,
-        headers=header_usr_1,
+    @pytest.mark.parametrize(
+        "id_plano_entregas, data_inicio, data_termino, data_entrega",
+        [
+            ("91", "2023-08-01", "2023-09-01", "2023-08-08"),  # dentro
+            ("92", "2023-08-01", "2023-09-01", "2023-07-01"),  # antes do início
+            ("93", "2023-08-01", "2023-09-01", "2023-10-01"),  # depois do fim
+        ],
     )
-    # Aceitar em todos os casos
-    assert response.status_code == http_status.HTTP_201_CREATED
-
-
-@pytest.mark.parametrize(
-    "id_plano_entregas, cod_unidade_executora, data_inicio, data_termino, status",
-    [
-        ("11", 99, "2023-01-01", "2023-06-30", 4),  # igual ao exemplo
-        ("12", 99, "2024-01-01", "2024-06-30", 4),  # sem sobreposição
-        ("13", 99, "2022-12-01", "2023-01-31", 4),  # sobreposição no início
-        ("14", 99, "2023-12-01", "2024-01-31", 4),  # sobreposição no fim
-        ("15", 99, "2023-02-01", "2023-05-31", 4),  # contido no período
-        ("16", 99, "2022-12-01", "2024-01-31", 4),  # contém o período
-        ("17", 100, "2023-02-01", "2023-05-31", 4),  # outra unidade
-        # sobreposição porém um é cancelado
-        ("18", 99, "2022-12-01", "2023-01-31", 1),
-    ],
-)
-def test_create_plano_entregas_overlapping_date_interval(
-    truncate_pe,  # pylint: disable=unused-argument
-    example_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    id_plano_entregas: str,
-    cod_unidade_executora: int,
-    data_inicio: str,
-    data_termino: str,
-    status: int,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um plano de entregas cujas entregas têm sobreposição
-    de intervalo de data na mesma unidade.
-
-    O Plano de Entregas original é criado e então é testada a criação de
-    cada novo Plano de Entregas, com sobreposição ou não das datas,
-    conforme especificado nos parâmetros de teste.
-    """
-    original_pe = input_pe.copy()
-    input_pe2 = original_pe.copy()
-    input_pe2["id_plano_entregas"] = "2"
-    input_pe2["data_inicio"] = "2023-07-01"
-    input_pe2["data_termino"] = "2023-12-31"
-    for entrega in input_pe2["entregas"]:
-        entrega["data_entrega"] = "2023-12-31"
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe2['id_plano_entregas']}",
-        json=input_pe2,
-        headers=header_usr_1,
-    )
-    assert response.status_code == http_status.HTTP_201_CREATED
-
-    input_pe["id_plano_entregas"] = id_plano_entregas
-    input_pe["cod_unidade_executora"] = cod_unidade_executora
-    input_pe["data_inicio"] = data_inicio
-    input_pe["data_termino"] = data_termino
-    input_pe["status"] = status
-    for entrega in input_pe["entregas"]:
-        entrega["data_entrega"] = data_termino
-    input_pe["avaliacao"] = None
-    input_pe["data_avaliacao"] = None
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-    if (
-        # se algum dos planos estiver cancelado, não há problema em haver
-        # sobreposição
-        input_pe["status"] == 1
-        # se são unidades diferentes, não há problema em haver sobreposição
-        or input_pe["cod_unidade_executora"] != original_pe["cod_unidade_executora"]
+    def test_create_data_entrega_out_of_bounds(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        id_plano_entregas: str,
+        data_inicio: str,
+        data_termino: str,
+        data_entrega: str,
     ):
-        # um dos planos está cancelado, pode ser criado
+        """Tenta criar uma entrega com data de entrega dentro e fora do
+        intervalo do plano de entregas. Segundo as regras de negócio, essa
+        data pode ser qualquer data e não precisa estar dentro do período
+        entre o início e o fim do plano_entregas.
+        """
+        input_pe = self.input_pe.copy()
+        input_pe["id_plano_entregas"] = id_plano_entregas
+        input_pe["data_inicio"] = data_inicio
+        input_pe["data_termino"] = data_termino
+        for entrega in input_pe["entregas"]:
+            entrega["data_entrega"] = data_entrega
+
+        response = self.create_plano_entregas(input_pe)
+        # Aceitar em todos os casos
         assert response.status_code == http_status.HTTP_201_CREATED
-        BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
-    else:
-        if any(
-            (
-                date.fromisoformat(input_pe["data_inicio"])
-                < date.fromisoformat(existing_pe["data_termino"])
-            )
-            and (
-                date.fromisoformat(input_pe["data_termino"])
-                > date.fromisoformat(existing_pe["data_inicio"])
-            )
-            for existing_pe in (original_pe, input_pe2)
+
+    @pytest.mark.parametrize(
+        "id_plano_entregas, cod_unidade_executora, data_inicio, data_termino, status",
+        [
+            ("11", 99, "2023-01-01", "2023-06-30", 4),  # igual ao exemplo
+            ("12", 99, "2024-01-01", "2024-06-30", 4),  # sem sobreposição
+            ("13", 99, "2022-12-01", "2023-01-31", 4),  # sobreposição no início
+            ("14", 99, "2023-12-01", "2024-01-31", 4),  # sobreposição no fim
+            ("15", 99, "2023-02-01", "2023-05-31", 4),  # contido no período
+            ("16", 99, "2022-12-01", "2024-01-31", 4),  # contém o período
+            ("17", 100, "2023-02-01", "2023-05-31", 4),  # outra unidade
+            # sobreposição porém um é cancelado
+            ("18", 99, "2022-12-01", "2023-01-31", 1),
+        ],
+    )
+    def test_create_plano_entregas_overlapping_date_interval(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        example_pe,  # pylint: disable=unused-argument
+        id_plano_entregas: str,
+        cod_unidade_executora: int,
+        data_inicio: str,
+        data_termino: str,
+        status: int,
+    ):
+        """Tenta criar um plano de entregas cujas entregas têm sobreposição
+        de intervalo de data na mesma unidade.
+
+        O Plano de Entregas original é criado e então é testada a criação de
+        cada novo Plano de Entregas, com sobreposição ou não das datas,
+        conforme especificado nos parâmetros de teste.
+        """
+        original_pe = self.input_pe.copy()
+        input_pe2 = original_pe.copy()
+        input_pe2["id_plano_entregas"] = "2"
+        input_pe2["data_inicio"] = "2023-07-01"
+        input_pe2["data_termino"] = "2023-12-31"
+        for entrega in input_pe2["entregas"]:
+            entrega["data_entrega"] = "2023-12-31"
+        response = self.create_plano_entregas(
+            input_pe2,
+            cod_unidade_autorizadora=self.user1_credentials["cod_unidade_autorizadora"],
+            id_plano_entregas=input_pe2["id_plano_entregas"],
+        )
+        assert response.status_code == http_status.HTTP_201_CREATED
+
+        input_pe = original_pe.copy()
+        input_pe["id_plano_entregas"] = id_plano_entregas
+        input_pe["cod_unidade_executora"] = cod_unidade_executora
+        input_pe["data_inicio"] = data_inicio
+        input_pe["data_termino"] = data_termino
+        input_pe["status"] = status
+        for entrega in input_pe["entregas"]:
+            entrega["data_entrega"] = data_termino
+        input_pe["avaliacao"] = None
+        input_pe["data_avaliacao"] = None
+        response = self.create_plano_entregas(input_pe)
+        if (
+            # se algum dos planos estiver cancelado, não há problema em haver
+            # sobreposição
+            input_pe["status"] == 1
+            # se são unidades diferentes, não há problema em haver sobreposição
+            or input_pe["cod_unidade_executora"] != original_pe["cod_unidade_executora"]
         ):
-            assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_msg = (
-                "Já existe um plano de entregas para este "
-                "cod_unidade_executora no período informado."
-            )
-            assert response.json().get("detail", None) == detail_msg
-        else:
-            # não há sobreposição de datas
+            # um dos planos está cancelado, pode ser criado
             assert response.status_code == http_status.HTTP_201_CREATED
-            BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
+            self.assert_equal_plano_entregas(response.json(), input_pe)
+        else:
+            if any(
+                (
+                    date.fromisoformat(input_pe["data_inicio"])
+                    < date.fromisoformat(existing_pe["data_termino"])
+                )
+                and (
+                    date.fromisoformat(input_pe["data_termino"])
+                    > date.fromisoformat(existing_pe["data_inicio"])
+                )
+                for existing_pe in (original_pe, input_pe2)
+            ):
+                assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
+                detail_msg = (
+                    "Já existe um plano de entregas para este "
+                    "cod_unidade_executora no período informado."
+                )
+                assert response.json().get("detail", None) == detail_msg
+            else:
+                # não há sobreposição de datas
+                assert response.status_code == http_status.HTTP_201_CREATED
+                self.assert_equal_plano_entregas(response.json(), input_pe)
