@@ -506,6 +506,47 @@ class TestCreatePEInputValidation(BasePETest):
                 for error in response.json().get("detail")
             )
 
+    @pytest.mark.parametrize(
+        "id_plano_entregas, status, avaliacao, data_avaliacao",
+        [
+            ("78", 5, 2, "2023-06-11"),
+            ("79", 5, 2, None),  # falta data_avaliacao
+            ("80", 5, None, "2023-06-11"),  # falta avaliacao
+            ("81", 5, None, None),  # faltam ambos
+            ("81", 2, None, None),  # status não é 5
+        ],
+    )
+    def test_create_pe_status_avaliado(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        id_plano_entregas: str,
+        status: int,
+        avaliacao: int,
+        data_avaliacao: str,
+    ):
+        """Tenta criar um plano de entregas com datas de avaliação omitidas
+        ou preenchidas, a depender do status.
+
+        O status 5 só poderá ser usado se os campos "avaliacao" e "data_avaliacao"
+        estiverem preenchidos.
+        """
+        self.input_pe["status"] = status
+        self.input_pe["avaliacao"] = avaliacao
+        self.input_pe["data_avaliacao"] = data_avaliacao
+        self.input_pe["id_plano_entregas"] = id_plano_entregas
+
+        response = self.create_plano_entregas(self.input_pe)
+
+        if status == 5 and not (avaliacao and data_avaliacao):
+            assert response.status_code == 422
+            detail_message = (
+                "O status 5 só poderá ser usado se os campos avaliacao e "
+                "data_avaliacao estiverem preenchidos."
+            )
+            assert_error_message(response, detail_message)
+        else:
+            assert response.status_code == http_status.HTTP_201_CREATED
+
 
 class TestGetPlanoEntregas(BasePETest):
     """Testes para a busca de Planos de Entregas."""
@@ -534,57 +575,6 @@ class TestGetPlanoEntregas(BasePETest):
         )
         assert response.status_code == http_status.HTTP_404_NOT_FOUND
         assert response.json().get("detail", None) == "Plano de entregas não encontrado"
-
-
-@pytest.mark.parametrize(
-    "id_plano_entregas, status, avaliacao, data_avaliacao",
-    [
-        ("78", 5, 2, "2023-06-11"),
-        ("79", 5, 2, None),  # falta data_avaliacao
-        ("80", 5, None, "2023-06-11"),  # falta avaliacao
-        ("81", 5, None, None),  # faltam ambos
-        ("81", 2, None, None),  # status não é 5
-    ],
-)
-def test_create_pe_status_avaliado(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    status: int,
-    avaliacao: int,
-    data_avaliacao: str,
-    id_plano_entregas: str,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um plano de entregas com datas de avaliação omitidas
-    ou preenchidas, a depender do status.
-
-    O status 5 só poderá ser usado se os campos “avaliacao” e “data_avaliacao”
-    estiverem preenchidos.
-    """
-
-    input_pe["status"] = status
-    input_pe["avaliacao"] = avaliacao
-    input_pe["data_avaliacao"] = data_avaliacao
-    input_pe["id_plano_entregas"] = id_plano_entregas
-
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{id_plano_entregas}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-
-    if status == 5 and not (avaliacao and data_avaliacao):
-        assert response.status_code == 422
-        detail_message = (
-            "O status 5 só poderá ser usado se os campos avaliacao e "
-            "data_avaliacao estiverem preenchidos."
-        )
-        assert_error_message(response, detail_message)
-    else:
-        assert response.status_code == http_status.HTTP_201_CREATED
 
 
 @pytest.mark.parametrize(
