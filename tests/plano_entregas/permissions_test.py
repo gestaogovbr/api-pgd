@@ -7,7 +7,7 @@ from fastapi import status as http_status
 from .core_test import BasePETest
 
 
-class TestPermissionsGetPE(BasePETest):
+class TestPermissionsPE(BasePETest):
     """Testes relacionados a permissões e acesso ao Plano de Entregas de diferentes unidades."""
 
     def test_get_plano_entregas_different_unit(
