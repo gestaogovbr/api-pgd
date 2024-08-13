@@ -192,7 +192,12 @@ class TestCreatePlanoEntrega(BasePETest):
     """Testes para a criação de um novo Plano de Entregas."""
 
     def test_create_plano_entregas_completo(self):
-        """Tenta criar um novo Plano de Entregas."""
+        """Testa a criação de um Plano de Entregas completo.
+
+        Verifica se a API retorna um status 201 Created quando um novo Plano de Entregas
+        é criado com sucesso, se a resposta não contém uma mensagem de erro e se o
+        Plano de Entregas criado é igual ao Plano de Entregas enviado na requisição.
+        """
 
         response = self.create_plano_entregas(self.input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
@@ -201,7 +206,7 @@ class TestCreatePlanoEntrega(BasePETest):
 
     def test_update_plano_entregas(self, example_pe):  # pylint: disable=unused-argument
         """Tenta criar um novo Plano de Entregas e atualizar alguns campos.
-        A fixture example_pe cria um novo Plano de Entregas na API.
+        A fixture example_pe cria um Plano de Entregas de exemplo usando a API.
         O teste altera um campo do PE e reenvia pra API (update).
         """
 
@@ -224,7 +229,11 @@ class TestCreatePlanoEntrega(BasePETest):
 
     @pytest.mark.parametrize("omitted_fields", enumerate(FIELDS_ENTREGA["optional"]))
     def test_create_plano_entregas_entrega_omit_optional_fields(self, omitted_fields):
-        """Tenta criar um novo Plano de Entregas omitindo campos opcionais."""
+        """Tenta criar um novo Plano de Entregas omitindo campos opcionais.
+
+        Verifica se a API retorna um status 201 Created, o que indica ter sido
+        criado com sucesso.
+        """
 
         input_pe = self.input_pe.copy()
         offset, field_list = omitted_fields
@@ -240,7 +249,11 @@ class TestCreatePlanoEntrega(BasePETest):
 
     @pytest.mark.parametrize("nulled_fields", enumerate(FIELDS_ENTREGA["optional"]))
     def test_create_plano_entregas_entrega_null_optional_fields(self, nulled_fields):
-        """Tenta criar um novo Plano de Entregas com o valor null nos campos opcionais."""
+        """Tenta criar um novo Plano de Entregas, preenchendo com o valor null
+        os campos opcionais.
+
+        Verifica se a API retorna um status 201 Created, o que indica ter sido
+        criado com sucesso."""
 
         input_pe = self.input_pe.copy()
         offset, field_list = nulled_fields
@@ -261,6 +274,9 @@ class TestCreatePlanoEntrega(BasePETest):
         """Tenta criar um Plano de Entregas, faltando campos obrigatórios.
         Na atualização com PUT, ainda assim é necessário informar todos os
         campos obrigatórios, uma vez que o conteúdo será substituído.
+
+        Verifica se a API retorna um status 422 Unprocessable Entity, o que
+        indica que a entrada foi rejeitada, conforme o esperado.
         """
 
         offset, field_list = missing_fields
@@ -287,10 +303,22 @@ class TestCreatePlanoEntrega(BasePETest):
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
 
     def test_create_huge_plano_entregas(self):
-        """Testa a criação de um Plano de Entregas com grande volume de dados."""
+        """Testa a criação de um Plano de Entregas com grande volume de dados.
+        Os campos que aceitam entrada livre de texto são preenchidos com textos
+        longos.
+        """
+
         input_pe = self.input_pe.copy()
 
-        def create_huge_entrega(id_entrega: int):
+        def create_huge_entrega(id_entrega: int) -> dict:
+            """Cria uma Entrega que ocupa bastante espaço de dados.
+
+            Args:
+                id_entrega (int): o id da Entrega.
+
+            Returns:
+                dict: os dados da Entrega.
+            """
             new_entrega = input_pe["entregas"][0].copy()
             new_entrega["id_entrega"] = str(3 + id_entrega)
             new_entrega["nome_entrega"] = "x" * 300  # 300 caracteres
