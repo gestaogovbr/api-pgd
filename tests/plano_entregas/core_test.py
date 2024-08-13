@@ -580,106 +580,80 @@ class TestGetPlanoEntregas(BasePETest):
         assert response.json().get("detail", None) == "Plano de entregas não encontrado"
 
 
-@pytest.mark.parametrize(
-    "id_plano_entregas, id_entrega_1, id_entrega_2",
-    [
-        ("90", "401", "402"),
-        ("91", "403", "403"),  # <<<< IGUAIS
-        ("92", "404", "404"),  # <<<< IGUAIS
-        ("93", "405", "406"),
-    ],
-)
-def test_create_pe_duplicate_entrega(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    id_plano_entregas: str,
-    id_entrega_1: str,
-    id_entrega_2: str,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um plano de entregas com entregas com id_entrega duplicados"""
+class TestCreatePEDuplicateData(BasePETest):
+    """Testes para a criação de um Plano de Entregas com dados duplicados."""
 
-    input_pe["id_plano_entregas"] = id_plano_entregas
-    input_pe["entregas"][0]["id_entrega"] = id_entrega_1
-    input_pe["entregas"][1]["id_entrega"] = id_entrega_2
-
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{id_plano_entregas}",
-        json=input_pe,
-        headers=header_usr_1,
+    @pytest.mark.parametrize(
+        "id_plano_entregas, id_entrega_1, id_entrega_2",
+        [
+            ("90", "401", "402"),
+            ("91", "403", "403"),  # <<<< IGUAIS
+            ("92", "404", "404"),  # <<<< IGUAIS
+            ("93", "405", "406"),
+        ],
     )
-    if id_entrega_1 == id_entrega_2:
-        assert response.status_code == 422
-        detail_message = "Entregas devem possuir id_entrega diferentes"
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
-    else:
+    def test_create_pe_duplicate_entrega(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        id_plano_entregas: str,
+        id_entrega_1: str,
+        id_entrega_2: str,
+    ):
+        """Tenta criar um plano de entregas com entregas com id_entrega duplicados"""
+
+        input_pe = self.input_pe.copy()
+        input_pe["id_plano_entregas"] = id_plano_entregas
+        input_pe["entregas"][0]["id_entrega"] = id_entrega_1
+        input_pe["entregas"][1]["id_entrega"] = id_entrega_2
+
+        response = self.create_plano_entregas(input_pe)
+        if id_entrega_1 == id_entrega_2:
+            assert response.status_code == 422
+            detail_message = "Entregas devem possuir id_entrega diferentes"
+            assert any(
+                f"Value error, {detail_message}" in error["msg"]
+                for error in response.json().get("detail")
+            )
+        else:
+            assert response.status_code == http_status.HTTP_201_CREATED
+
+    def test_create_pe_duplicate_id_plano(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        input_pe: dict,
+    ):
+        """Tenta criar um plano de entregas duplicado. O envio do mesmo
+        plano de entregas pela segunda vez deve substituir o primeiro.
+        """
+
+        response = self.create_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
 
+        response = self.create_plano_entregas(input_pe)
+        assert response.status_code == http_status.HTTP_200_OK
+        assert response.json().get("detail", None) is None
+        self.assert_equal_plano_entregas(response.json(), input_pe)
 
-def test_create_pe_duplicate_id_plano(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um plano de entregas duplicado. O envio do mesmo
-    plano de entregas pela segunda vez deve substituir o primeiro.
-    """
+    def test_create_pe_same_id_plano_different_instituidora(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        input_pe: dict,
+        user2_credentials: dict,
+        header_usr_2: dict,
+    ):
+        """Tenta criar um plano de entregas duplicado. O envio do mesmo
+        plano de entregas pela segunda vez deve substituir o primeiro.
+        """
 
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
+        response = self.create_plano_entregas(input_pe)
+        assert response.status_code == http_status.HTTP_201_CREATED
 
-    assert response.status_code == http_status.HTTP_201_CREATED
-
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-
-    assert response.status_code == http_status.HTTP_200_OK
-    assert response.json().get("detail", None) is None
-    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
-
-
-def test_create_pe_same_id_plano_different_instituidora(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    user1_credentials: dict,
-    user2_credentials: dict,
-    header_usr_1: dict,
-    header_usr_2: dict,
-    client: Client,
-):
-    """Tenta criar um plano de entregas duplicado. O envio do mesmo
-    plano de entregas pela segunda vez deve substituir o primeiro.
-    """
-
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-    assert response.status_code == http_status.HTTP_201_CREATED
-
-    input_pe["cod_unidade_autorizadora"] = user2_credentials["cod_unidade_autorizadora"]
-    response = client.put(
-        f"/organizacao/SIAPE/{user2_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_2,
-    )
-    assert response.status_code == http_status.HTTP_201_CREATED
+        input_pe["cod_unidade_autorizadora"] = user2_credentials[
+            "cod_unidade_autorizadora"
+        ]
+        response = self.create_plano_entregas(
+            input_pe,
+            cod_unidade_autorizadora=user2_credentials["cod_unidade_autorizadora"],
+            header_usr=header_usr_2,
+        )
+        assert response.status_code == http_status.HTTP_201_CREATED
