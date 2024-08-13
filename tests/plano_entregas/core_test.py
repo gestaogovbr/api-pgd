@@ -150,7 +150,7 @@ class BasePETest:
         )
         return response
 
-    def get_pe(
+    def get_plano_entregas(
         self,
         id_plano_entregas: str,
         cod_unidade_autorizadora: int,
@@ -212,7 +212,7 @@ class TestCreatePlanoEntrega(BasePETest):
         assert response.json()["data_avaliacao"] == "2023-08-15"
 
         # Consulta API para conferir se a alteração foi persistida
-        response = self.get_pe(
+        response = self.get_plano_entregas(
             input_pe["id_plano_entregas"],
             self.user1_credentials["cod_unidade_autorizadora"],
         )
@@ -562,7 +562,7 @@ class TestGetPlanoEntregas(BasePETest):
     ):
         """Tenta buscar um plano de entregas existente"""
 
-        response = self.get_pe(
+        response = self.get_plano_entregas(
             self.input_pe["id_plano_entregas"],
             self.user1_credentials["cod_unidade_autorizadora"],
         )
@@ -572,7 +572,7 @@ class TestGetPlanoEntregas(BasePETest):
     def test_get_pe_inexistente(self):
         """Tenta buscar um plano de entregas inexistente"""
 
-        response = self.get_pe(
+        response = self.get_plano_entregas(
             "888888888",
             self.user1_credentials["cod_unidade_autorizadora"],
         )
