@@ -484,6 +484,28 @@ class TestCreatePEInputValidation(BasePETest):
                 for error in response.json().get("detail")
             )
 
+    @pytest.mark.parametrize("avaliacao", [-1, 0, 1, 6])
+    def test_create_pe_invalid_avaliacao(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        input_pe: dict,
+        avaliacao: int,
+    ):
+        """Tenta criar um Plano de Entregas com nota de avaliação inválida"""
+
+        input_pe["avaliacao"] = avaliacao
+        response = self.create_plano_entregas(input_pe)
+
+        if avaliacao in range(1, 6):
+            assert response.status_code == http_status.HTTP_201_CREATED
+        else:
+            assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
+            assert any(
+                f"Value error, {detail_message}" in error["msg"]
+                for error in response.json().get("detail")
+            )
+
 
 class TestGetPlanoEntregas(BasePETest):
     """Testes para a busca de Planos de Entregas."""
@@ -668,33 +690,3 @@ def test_create_pe_same_id_plano_different_instituidora(
         headers=header_usr_2,
     )
     assert response.status_code == http_status.HTTP_201_CREATED
-
-
-@pytest.mark.parametrize("avaliacao", [-1, 0, 1, 6])
-def test_create_pe_invalid_avaliacao(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    avaliacao: int,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um Plano de Entregas com nota de avaliação inválida"""
-
-    input_pe["avaliacao"] = avaliacao
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-
-    if avaliacao in range(1, 6):
-        assert response.status_code == http_status.HTTP_201_CREATED
-    else:
-        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
-        assert any(
-            f"Value error, {detail_message}" in error["msg"]
-            for error in response.json().get("detail")
-        )
