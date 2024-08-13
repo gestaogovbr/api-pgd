@@ -4,7 +4,6 @@ Entregas.
 
 from datetime import date
 
-from httpx import Client
 from fastapi import status as http_status
 
 import pytest
