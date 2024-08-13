@@ -9,7 +9,7 @@ from fastapi import status as http_status
 
 import pytest
 
-from util import over_a_year, assert_error_message
+from util import assert_error_message
 
 # constantes
 
