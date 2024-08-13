@@ -462,6 +462,28 @@ class TestCreatePEInputValidation(BasePETest):
         else:
             assert response.status_code == http_status.HTTP_201_CREATED
 
+    @pytest.mark.parametrize("tipo_meta", ["unidade", "percentual", "invalid"])
+    def test_create_entrega_invalid_tipo_meta(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        input_pe: dict,
+        tipo_meta: str,
+    ):
+        """Tenta criar um Plano de Entregas com tipo de meta inválido"""
+        input_pe["entregas"][0]["tipo_meta"] = tipo_meta
+
+        response = self.create_plano_entregas(input_pe)
+
+        if tipo_meta in ("unidade", "percentual"):
+            assert response.status_code == http_status.HTTP_201_CREATED
+        else:
+            assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = "Input should be 'unidade' or 'percentual'"
+            assert any(
+                detail_message in error["msg"]
+                for error in response.json().get("detail")
+            )
+
 
 class TestGetPlanoEntregas(BasePETest):
     """Testes para a busca de Planos de Entregas."""
@@ -646,35 +668,6 @@ def test_create_pe_same_id_plano_different_instituidora(
         headers=header_usr_2,
     )
     assert response.status_code == http_status.HTTP_201_CREATED
-
-
-@pytest.mark.parametrize("tipo_meta", ["unidade", "percentual", "invalid"])
-def test_create_entrega_invalid_tipo_meta(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    tipo_meta: str,
-    client: Client,
-):
-    """Tenta criar um Plano de Entregas com tipo de meta inválido"""
-    input_pe["entregas"][0]["tipo_meta"] = tipo_meta
-
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-
-    if tipo_meta in ("unidade", "percentual"):
-        assert response.status_code == http_status.HTTP_201_CREATED
-    else:
-        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "Input should be 'unidade' or 'percentual'"
-        assert any(
-            detail_message in error["msg"] for error in response.json().get("detail")
-        )
 
 
 @pytest.mark.parametrize("avaliacao", [-1, 0, 1, 6])
