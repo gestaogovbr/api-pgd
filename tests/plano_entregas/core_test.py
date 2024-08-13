@@ -193,6 +193,7 @@ class TestCreatePlanoEntrega(BasePETest):
 
     def test_create_plano_entregas_completo(self):
         """Tenta criar um novo Plano de Entregas."""
+
         response = self.create_plano_entregas(self.input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
         assert response.json().get("detail", None) is None
@@ -203,6 +204,7 @@ class TestCreatePlanoEntrega(BasePETest):
         A fixture example_pe cria um novo Plano de Entregas na API.
         O teste altera um campo do PE e reenvia pra API (update).
         """
+
         input_pe = self.input_pe.copy()
         input_pe["avaliacao"] = 3
         input_pe["data_avaliacao"] = "2023-08-15"
@@ -223,6 +225,7 @@ class TestCreatePlanoEntrega(BasePETest):
     @pytest.mark.parametrize("omitted_fields", enumerate(FIELDS_ENTREGA["optional"]))
     def test_create_plano_entregas_entrega_omit_optional_fields(self, omitted_fields):
         """Tenta criar um novo Plano de Entregas omitindo campos opcionais."""
+
         input_pe = self.input_pe.copy()
         offset, field_list = omitted_fields
         for field in field_list:
@@ -238,6 +241,7 @@ class TestCreatePlanoEntrega(BasePETest):
     @pytest.mark.parametrize("nulled_fields", enumerate(FIELDS_ENTREGA["optional"]))
     def test_create_plano_entregas_entrega_null_optional_fields(self, nulled_fields):
         """Tenta criar um novo Plano de Entregas com o valor null nos campos opcionais."""
+
         input_pe = self.input_pe.copy()
         offset, field_list = nulled_fields
         for field in field_list:
@@ -258,6 +262,7 @@ class TestCreatePlanoEntrega(BasePETest):
         Na atualização com PUT, ainda assim é necessário informar todos os
         campos obrigatórios, uma vez que o conteúdo será substituído.
         """
+
         offset, field_list = missing_fields
         input_pe = self.input_pe.copy()
         # define um id_plano_entregas diferente para cada teste
@@ -336,6 +341,7 @@ class TestCreatePEInputValidation(BasePETest):
         """Testa a criação de um plano de entregas excedendo o tamanho
         máximo de cada campo.
         """
+
         input_pe = self.input_pe.copy()
         input_pe["id_plano_entregas"] = id_plano_entregas
         input_pe["entregas"][0]["nome_entrega"] = nome_entrega  # 300 caracteres
@@ -367,6 +373,7 @@ class TestCreatePEInputValidation(BasePETest):
         truncate_pe,  # pylint: disable=unused-argument
     ):
         """Tenta criar um plano de entregas com código de plano divergente"""
+
         input_pe = self.input_pe.copy()
         input_pe["id_plano_entregas"] = "110"
         response = self.create_plano_entregas(
@@ -381,6 +388,7 @@ class TestCreatePEInputValidation(BasePETest):
         truncate_pe,  # pylint: disable=unused-argument
     ):
         """Tenta criar um plano de entregas com código de unidade divergente"""
+
         input_pe = self.input_pe.copy()
         original_input_pe = input_pe.copy()
         input_pe["cod_unidade_autorizadora"] = 999  # era 1
@@ -405,6 +413,7 @@ class TestCreatePEInputValidation(BasePETest):
         Por ora não será feita validação no sistema, e sim apenas uma
         verificação de sanidade.
         """
+
         input_pe = self.input_pe.copy()
         input_pe["cod_unidade_executora"] = cod_unidade_executora
 
@@ -439,6 +448,7 @@ class TestCreatePEInputValidation(BasePETest):
         tipo_meta: str,
     ):
         """Tenta criar um Plano de Entregas com entrega com percentuais inválidos"""
+
         input_pe = self.input_pe.copy()
         input_pe["id_plano_entregas"] = id_plano_entregas
         input_pe["entregas"][1]["meta_entrega"] = meta_entrega
@@ -473,6 +483,7 @@ class TestCreatePEInputValidation(BasePETest):
         tipo_meta: str,
     ):
         """Tenta criar um Plano de Entregas com tipo de meta inválido"""
+
         input_pe = self.input_pe.copy()
         input_pe["entregas"][0]["tipo_meta"] = tipo_meta
 
@@ -495,6 +506,7 @@ class TestCreatePEInputValidation(BasePETest):
         avaliacao: int,
     ):
         """Tenta criar um Plano de Entregas com nota de avaliação inválida"""
+
         input_pe = self.input_pe.copy()
         input_pe["avaliacao"] = avaliacao
         response = self.create_plano_entregas(input_pe)
@@ -533,6 +545,7 @@ class TestCreatePEInputValidation(BasePETest):
         O status 5 só poderá ser usado se os campos "avaliacao" e "data_avaliacao"
         estiverem preenchidos.
         """
+
         input_pe = self.input_pe.copy()
         input_pe["status"] = status
         input_pe["avaliacao"] = avaliacao
