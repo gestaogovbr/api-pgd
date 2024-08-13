@@ -310,95 +310,86 @@ class TestCreatePlanoEntrega(BasePETest):
         )
 
 
-@pytest.mark.parametrize(
-    "id_plano_entregas, nome_entrega, nome_unidade_demandante, nome_unidade_destinataria",
-    [
-        ("1", "x" * 301, "string", "string"),
-        ("2", "string", "x" * 301, "string"),
-        ("3", "string", "string", "x" * 301),
-        ("4", "x" * 300, "x" * 300, "x" * 300),
-    ],
-)
-def test_create_pe_exceed_string_max_size(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    id_plano_entregas: str,
-    nome_entrega: str,  # 300 caracteres
-    nome_unidade_demandante: str,  # 300 caracteres
-    nome_unidade_destinataria: str,  # 300 caracteres
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Testa a criação de um plano de entregas excedendo o tamanho
-    máximo de cada campo"""
+class TestCreatePEInputValidation(BasePETest):
+    """Testes para a validação de entrada na criação de um Plano de Entregas."""
 
-    input_pe["id_plano_entregas"] = id_plano_entregas
-    input_pe["entregas"][0]["nome_entrega"] = nome_entrega  # 300 caracteres
-    input_pe["entregas"][0][
-        "nome_unidade_demandante"
-    ] = nome_unidade_demandante  # 300 caracteres
-    input_pe["entregas"][0][
-        "nome_unidade_destinataria"
-    ] = nome_unidade_destinataria  # 300 caracteres
-
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
+    @pytest.mark.parametrize(
+        "id_plano_entregas, nome_entrega, nome_unidade_demandante, nome_unidade_destinataria",
+        [
+            ("1", "x" * 301, "string", "string"),
+            ("2", "string", "x" * 301, "string"),
+            ("3", "string", "string", "x" * 301),
+            ("4", "x" * 300, "x" * 300, "x" * 300),
+        ],
     )
-
-    if any(
-        len(campo) > STR_MAX_SIZE
-        for campo in (nome_entrega, nome_unidade_demandante, nome_unidade_destinataria)
+    def test_create_pe_exceed_string_max_size(
+        self,
+        id_plano_entregas: str,
+        nome_entrega: str,  # 300 caracteres
+        nome_unidade_demandante: str,  # 300 caracteres
+        nome_unidade_destinataria: str,  # 300 caracteres
     ):
+        """Testa a criação de um plano de entregas excedendo o tamanho
+        máximo de cada campo.
+        """
+        self.input_pe["id_plano_entregas"] = id_plano_entregas
+        self.input_pe["entregas"][0]["nome_entrega"] = nome_entrega  # 300 caracteres
+        self.input_pe["entregas"][0][
+            "nome_unidade_demandante"
+        ] = nome_unidade_demandante  # 300 caracteres
+        self.input_pe["entregas"][0][
+            "nome_unidade_destinataria"
+        ] = nome_unidade_destinataria  # 300 caracteres
+
+        response = self.create_plano_entregas(self.input_pe)
+
+        if any(
+            len(campo) > STR_MAX_SIZE
+            for campo in (
+                nome_entrega,
+                nome_unidade_demandante,
+                nome_unidade_destinataria,
+            )
+        ):
+            assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = "String should have at most 300 characters"
+            assert response.json().get("detail")[0]["msg"] == detail_message
+        else:
+            assert response.status_code == http_status.HTTP_201_CREATED
+
+    def test_create_pe_cod_plano_inconsistent(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        input_pe: dict,
+    ):
+        """Tenta criar um plano de entregas com código de plano divergente"""
+
+        input_pe["id_plano_entregas"] = "110"
+        response = self.create_plano_entregas(
+            input_pe, id_plano_entregas="111"  # diferente de 110
+        )
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "String should have at most 300 characters"
-        assert response.json().get("detail")[0]["msg"] == detail_message
-    else:
-        assert response.status_code == http_status.HTTP_201_CREATED
+        detail_msg = "Parâmetro id_plano_entregas na URL e no JSON devem ser iguais"
+        assert response.json().get("detail", None) == detail_msg
 
-
-def test_create_pe_cod_plano_inconsistent(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um plano de entregas com código de plano divergente"""
-
-    input_pe["id_plano_entregas"] = "110"
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/111",  # diferente de 110
-        json=input_pe,
-        headers=header_usr_1,
-    )
-    assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro id_plano_entregas na URL e no JSON devem ser iguais"
-    assert response.json().get("detail", None) == detail_msg
-
-
-def test_create_pe_cod_unidade_inconsistent(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar um plano de entregas com código de unidade divergente"""
-    original_input_pe = input_pe.copy()
-    input_pe["cod_unidade_autorizadora"] = 999  # era 1
-    response = client.put(
-        f"/organizacao/SIAPE/{original_input_pe['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{original_input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-    assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-    detail_msg = "Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais"
-    assert response.json().get("detail", None) == detail_msg
+    def test_create_pe_cod_unidade_inconsistent(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        input_pe: dict,
+    ):
+        """Tenta criar um plano de entregas com código de unidade divergente"""
+        original_input_pe = input_pe.copy()
+        input_pe["cod_unidade_autorizadora"] = 999  # era 1
+        response = self.create_plano_entregas(
+            input_pe,
+            cod_unidade_autorizadora=original_input_pe["cod_unidade_autorizadora"],
+            id_plano_entregas=original_input_pe["id_plano_entregas"],
+        )
+        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_msg = (
+            "Parâmetro cod_unidade_autorizadora na URL e no JSON devem ser iguais"
+        )
+        assert response.json().get("detail", None) == detail_msg
 
 
 def test_get_plano_entregas(
