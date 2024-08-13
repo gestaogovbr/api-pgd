@@ -392,38 +392,33 @@ class TestCreatePEInputValidation(BasePETest):
         assert response.json().get("detail", None) == detail_msg
 
 
-def test_get_plano_entregas(
-    truncate_pe,  # pylint: disable=unused-argument
-    example_pe,  # pylint: disable=unused-argument
-    user1_credentials: dict,
-    header_usr_1: dict,
-    input_pe,
-    client: Client,
-):
-    """Tenta buscar um plano de entregas existente"""
+class TestGetPlanoEntregas(BasePETest):
+    """Testes para a busca de Planos de Entregas."""
 
-    response = client.get(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        headers=header_usr_1,
-    )
-    assert response.status_code == http_status.HTTP_200_OK
-    BasePETest.assert_equal_plano_entregas(response.json(), input_pe)
+    def test_get_plano_entregas(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        example_pe,  # pylint: disable=unused-argument
+        input_pe,
+    ):
+        """Tenta buscar um plano de entregas existente"""
 
+        response = self.get_pe(
+            input_pe["id_plano_entregas"],
+            self.user1_credentials["cod_unidade_autorizadora"],
+        )
+        assert response.status_code == http_status.HTTP_200_OK
+        self.assert_equal_plano_entregas(response.json(), input_pe)
 
-def test_get_pe_inexistente(
-    user1_credentials: dict, header_usr_1: dict, client: Client
-):
-    """Tenta buscar um plano de entregas inexistente"""
+    def test_get_pe_inexistente(self):
+        """Tenta buscar um plano de entregas inexistente"""
 
-    response = client.get(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        "/plano_entregas/888888888",
-        headers=header_usr_1,
-    )
-    assert response.status_code == http_status.HTTP_404_NOT_FOUND
-
-    assert response.json().get("detail", None) == "Plano de entregas não encontrado"
+        response = self.get_pe(
+            "888888888",
+            self.user1_credentials["cod_unidade_autorizadora"],
+        )
+        assert response.status_code == http_status.HTTP_404_NOT_FOUND
+        assert response.json().get("detail", None) == "Plano de entregas não encontrado"
 
 
 @pytest.mark.parametrize(
