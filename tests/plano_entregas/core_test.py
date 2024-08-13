@@ -570,10 +570,15 @@ class TestGetPlanoEntregas(BasePETest):
 
     def test_get_plano_entregas(
         self,
-        truncate_pe,  # pylint: disable=unused-argument
-        example_pe,  # pylint: disable=unused-argument
+        # pylint: disable=unused-argument
+        truncate_pe,  # limpa a base de Planos de Entregas
+        example_pe,  # cria um Plano de Entregas de exemplo
     ):
-        """Tenta buscar um plano de entregas existente"""
+        """Testa a busca de um Plano de Entregas existente.
+
+        Verifica se a API retorna um status 200 OK e se o Plano de Entregas
+        retornado é igual ao Plano de Entregas criado.
+        """
 
         response = self.get_plano_entregas(
             self.input_pe["id_plano_entregas"],
@@ -583,7 +588,11 @@ class TestGetPlanoEntregas(BasePETest):
         self.assert_equal_plano_entregas(response.json(), self.input_pe)
 
     def test_get_pe_inexistente(self):
-        """Tenta buscar um plano de entregas inexistente"""
+        """Testa a busca de um Plano de Entregas inexistente.
+
+        Verifica se a API retorna um status 404 Not Found e a mensagem
+        de erro "Plano de entregas não encontrado".
+        """
 
         response = self.get_plano_entregas(
             "888888888",
@@ -612,7 +621,14 @@ class TestCreatePEDuplicateData(BasePETest):
         id_entrega_1: str,
         id_entrega_2: str,
     ):
-        """Tenta criar um plano de entregas com entregas com id_entrega duplicados"""
+        """Testa a criação de um Plano de Entregas com entregas duplicadas.
+
+        Verifica se:
+        - a API retorna um erro 422 Unprocessable Entity quando as entregas
+          possuem o mesmo id_entrega; e
+        - se retorna um status 201 Created quando as entregas possuem ids
+          diferentes.
+        """
 
         input_pe = self.input_pe.copy()
         input_pe["id_plano_entregas"] = id_plano_entregas
@@ -633,12 +649,18 @@ class TestCreatePEDuplicateData(BasePETest):
     def test_create_pe_duplicate_id_plano(
         self,
         truncate_pe,  # pylint: disable=unused-argument
-        input_pe: dict,
     ):
-        """Tenta criar um plano de entregas duplicado. O envio do mesmo
-        plano de entregas pela segunda vez deve substituir o primeiro.
+        """Testa o envio, mais de uma vez, de Planos de Entregas com o
+        mesmo id_plano_entregas.
+
+        Verifica se a API:
+        - retorna um status 201 Created quando o Plano de Entregas é criado
+          pela primeira vez; e
+        - um status 200 OK quando o mesmo Plano de Entregas é enviado
+          novamente, substituindo o anterior.
         """
 
+        input_pe = self.input_pe.copy()
         response = self.create_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
 
@@ -650,14 +672,18 @@ class TestCreatePEDuplicateData(BasePETest):
     def test_create_pe_same_id_plano_different_instituidora(
         self,
         truncate_pe,  # pylint: disable=unused-argument
-        input_pe: dict,
         user2_credentials: dict,
         header_usr_2: dict,
     ):
-        """Tenta criar um plano de entregas duplicado. O envio do mesmo
-        plano de entregas pela segunda vez deve substituir o primeiro.
+        """Testa a criação de Planos de Entregas com o mesmo
+        id_plano_entregas, mas com diferentes unidades autorizadoras.
+
+        Uma vez que tratam-se de unidades autorizadoras diferentes, a API
+        deve considerá-los como Planos de Entrega diferentes. Por isso,
+        deve retornar o status 201 Created em ambos os casos.
         """
 
+        input_pe = self.input_pe.copy()
         response = self.create_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
 
