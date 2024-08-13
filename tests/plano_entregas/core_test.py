@@ -391,6 +391,31 @@ class TestCreatePEInputValidation(BasePETest):
         )
         assert response.json().get("detail", None) == detail_msg
 
+    @pytest.mark.parametrize("cod_unidade_executora", [99, 0, -1])
+    def test_create_invalid_cod_unidade(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        input_pe: dict,
+        cod_unidade_executora: int,
+    ):
+        """Tenta criar uma entrega com código de unidade inválido.
+        Por ora não será feita validação no sistema, e sim apenas uma
+        verificação de sanidade.
+        """
+        input_pe["cod_unidade_executora"] = cod_unidade_executora
+
+        response = self.create_plano_entregas(input_pe)
+
+        if cod_unidade_executora > 0:
+            assert response.status_code == http_status.HTTP_201_CREATED
+        else:
+            assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = "Input should be greater than 0"
+            assert any(
+                detail_message in error["msg"]
+                for error in response.json().get("detail")
+            )
+
 
 class TestGetPlanoEntregas(BasePETest):
     """Testes para a busca de Planos de Entregas."""
@@ -575,38 +600,6 @@ def test_create_pe_same_id_plano_different_instituidora(
         headers=header_usr_2,
     )
     assert response.status_code == http_status.HTTP_201_CREATED
-
-
-@pytest.mark.parametrize("cod_unidade_executora", [99, 0, -1])
-def test_create_invalid_cod_unidade(
-    truncate_pe,  # pylint: disable=unused-argument
-    input_pe: dict,
-    cod_unidade_executora: int,
-    user1_credentials: dict,
-    header_usr_1: dict,
-    client: Client,
-):
-    """Tenta criar uma entrega com código de unidade inválido.
-    Por ora não será feita validação no sistema, e sim apenas uma
-    verificação de sanidade.
-    """
-    input_pe["cod_unidade_executora"] = cod_unidade_executora
-
-    response = client.put(
-        f"/organizacao/SIAPE/{user1_credentials['cod_unidade_autorizadora']}"
-        f"/plano_entregas/{input_pe['id_plano_entregas']}",
-        json=input_pe,
-        headers=header_usr_1,
-    )
-
-    if cod_unidade_executora > 0:
-        assert response.status_code == http_status.HTTP_201_CREATED
-    else:
-        assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = "Input should be greater than 0"
-        assert any(
-            detail_message in error["msg"] for error in response.json().get("detail")
-        )
 
 
 @pytest.mark.parametrize(
