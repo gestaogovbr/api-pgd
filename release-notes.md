@@ -1,7 +1,7 @@
 # Release notes
 
 
-## 3.0.6
+## 3.0.7
 
 * Updates to documentation
 * Add a warning to Swagger page when `TEST_ENVIRONMENT` environment
@@ -13,6 +13,10 @@
   (data must be sent through the `participante` endpoint itself)
 * Update `participante` in the database instead of deleting and
   re-inserting it
+* Refactor tests for Plano de Trabalho and Participante to use pytest
+  classes
+* Allow `data_avaliacao_registros_execucao` to be the same as
+  `data_inicio_periodo_avaliativo`
 
 
 ## 3.0.0
