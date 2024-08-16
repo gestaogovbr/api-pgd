@@ -38,7 +38,7 @@ class TestPlanoDeDatasBasicas(BasePETest):
         input_pe["data_inicio"] = data_inicio
         input_pe["data_termino"] = data_termino
 
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
 
         if (
             over_a_year(
@@ -76,7 +76,7 @@ class TestPlanoDeDatasBasicas(BasePETest):
         input_pe["data_inicio"] = data_inicio
         input_pe["data_termino"] = data_termino
 
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
         if data_inicio > data_termino:
             assert response.status_code == 422
             detail_message = "data_termino deve ser maior ou igual que data_inicio."
@@ -109,7 +109,7 @@ class TestPlanoDeDatasBasicas(BasePETest):
         input_pe["data_avaliacao"] = data_avaliacao
         input_pe["id_plano_entregas"] = id_plano_entregas
 
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
 
         if data_avaliacao < data_inicio:
             assert response.status_code == 422
@@ -156,7 +156,7 @@ class TestPlanoDeDatasEntregas(BasePETest):
         for entrega in input_pe["entregas"]:
             entrega["data_entrega"] = data_entrega
 
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
         # Aceitar em todos os casos
         assert response.status_code == http_status.HTTP_201_CREATED
 
@@ -198,7 +198,7 @@ class TestPlanoDeDatasEntregas(BasePETest):
         input_pe2["data_termino"] = "2023-12-31"
         for entrega in input_pe2["entregas"]:
             entrega["data_entrega"] = "2023-12-31"
-        response = self.create_plano_entregas(
+        response = self.put_plano_entregas(
             input_pe2,
             cod_unidade_autorizadora=self.user1_credentials["cod_unidade_autorizadora"],
             id_plano_entregas=input_pe2["id_plano_entregas"],
@@ -215,7 +215,7 @@ class TestPlanoDeDatasEntregas(BasePETest):
             entrega["data_entrega"] = data_termino
         input_pe["avaliacao"] = None
         input_pe["data_avaliacao"] = None
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
         if (
             # se algum dos planos estiver cancelado, não há problema em haver
             # sobreposição

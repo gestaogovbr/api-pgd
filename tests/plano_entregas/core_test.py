@@ -109,7 +109,7 @@ class BasePETest:
             for id_entrega, entrega in second_plan_by_entrega.items()
         )
 
-    def create_plano_entregas(
+    def put_plano_entregas(
         self,
         input_pe: dict,
         id_plano_entregas: Optional[str] = None,
@@ -117,7 +117,8 @@ class BasePETest:
         cod_unidade_autorizadora: Optional[int] = None,
         header_usr: Optional[dict] = None,
     ) -> Response:
-        """Criar um Plano de Entregas.
+        """Cria ou atualiza um Plano de Entregas pela API, usando o método
+        PUT.
 
         Args:
             input_pe (dict): O dicionário de entrada do Plano de Entregas.
@@ -157,7 +158,7 @@ class BasePETest:
         origem_unidade: Optional[str] = "SIAPE",
         header_usr: Optional[dict] = None,
     ) -> Response:
-        """Obter um Plano de Entregas.
+        """Obtém um Plano de Entregas pela API, usando o verbo GET.
 
         Args:
             id_plano_entregas (str): O ID do Plano de Entregas.
@@ -199,7 +200,7 @@ class TestCreatePlanoEntrega(BasePETest):
         Plano de Entregas criado é igual ao Plano de Entregas enviado na requisição.
         """
 
-        response = self.create_plano_entregas(self.input_pe)
+        response = self.put_plano_entregas(self.input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
         assert response.json().get("detail", None) is None
         self.assert_equal_plano_entregas(response.json(), self.input_pe)
@@ -213,7 +214,7 @@ class TestCreatePlanoEntrega(BasePETest):
         input_pe = self.input_pe.copy()
         input_pe["avaliacao"] = 3
         input_pe["data_avaliacao"] = "2023-08-15"
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_200_OK
         assert response.json()["avaliacao"] == 3
         assert response.json()["data_avaliacao"] == "2023-08-15"
@@ -243,7 +244,7 @@ class TestCreatePlanoEntrega(BasePETest):
                     del entrega[field]
 
         input_pe["id_plano_entregas"] = str(557 + offset)
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
         self.assert_equal_plano_entregas(response.json(), input_pe)
 
@@ -263,7 +264,7 @@ class TestCreatePlanoEntrega(BasePETest):
                     entrega[field] = None
 
         input_pe["id_plano_entregas"] = str(557 + offset)
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
         self.assert_equal_plano_entregas(response.json(), input_pe)
 
@@ -297,7 +298,7 @@ class TestCreatePlanoEntrega(BasePETest):
             del input_pe[field]
 
         # Act
-        response = self.create_plano_entregas(input_pe, **placeholder_fields)
+        response = self.put_plano_entregas(input_pe, **placeholder_fields)
 
         # Assert
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -329,7 +330,7 @@ class TestCreatePlanoEntrega(BasePETest):
         for id_entrega in range(200):
             input_pe["entregas"].append(create_huge_entrega(id_entrega))
 
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
         self.assert_equal_plano_entregas(response.json(), input_pe)
 
@@ -380,7 +381,7 @@ class TestCreatePEInputValidation(BasePETest):
             "nome_unidade_destinataria"
         ] = nome_unidade_destinataria  # 300 caracteres
 
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
 
         if any(
             len(campo) > STR_MAX_SIZE
@@ -404,7 +405,7 @@ class TestCreatePEInputValidation(BasePETest):
 
         input_pe = self.input_pe.copy()
         input_pe["id_plano_entregas"] = "110"
-        response = self.create_plano_entregas(
+        response = self.put_plano_entregas(
             input_pe, id_plano_entregas="111"  # diferente de 110
         )
         assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -420,7 +421,7 @@ class TestCreatePEInputValidation(BasePETest):
         input_pe = self.input_pe.copy()
         original_input_pe = input_pe.copy()
         input_pe["cod_unidade_autorizadora"] = 999  # era 1
-        response = self.create_plano_entregas(
+        response = self.put_plano_entregas(
             input_pe,
             cod_unidade_autorizadora=original_input_pe["cod_unidade_autorizadora"],
             id_plano_entregas=original_input_pe["id_plano_entregas"],
@@ -445,7 +446,7 @@ class TestCreatePEInputValidation(BasePETest):
         input_pe = self.input_pe.copy()
         input_pe["cod_unidade_executora"] = cod_unidade_executora
 
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
 
         if cod_unidade_executora > 0:
             assert response.status_code == http_status.HTTP_201_CREATED
@@ -482,7 +483,7 @@ class TestCreatePEInputValidation(BasePETest):
         input_pe["entregas"][1]["meta_entrega"] = meta_entrega
         input_pe["entregas"][1]["tipo_meta"] = tipo_meta
 
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
 
         if tipo_meta == "percentual" and (meta_entrega < 0 or meta_entrega > 100):
             assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -515,7 +516,7 @@ class TestCreatePEInputValidation(BasePETest):
         input_pe = self.input_pe.copy()
         input_pe["entregas"][0]["tipo_meta"] = tipo_meta
 
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
 
         if tipo_meta in ("unidade", "percentual"):
             assert response.status_code == http_status.HTTP_201_CREATED
@@ -537,7 +538,7 @@ class TestCreatePEInputValidation(BasePETest):
 
         input_pe = self.input_pe.copy()
         input_pe["avaliacao"] = avaliacao
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
 
         if avaliacao in range(1, 6):
             assert response.status_code == http_status.HTTP_201_CREATED
@@ -580,7 +581,7 @@ class TestCreatePEInputValidation(BasePETest):
         input_pe["data_avaliacao"] = data_avaliacao
         input_pe["id_plano_entregas"] = id_plano_entregas
 
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
 
         if status == 5 and not (avaliacao and data_avaliacao):
             assert response.status_code == 422
@@ -663,7 +664,7 @@ class TestCreatePEDuplicateData(BasePETest):
         input_pe["entregas"][0]["id_entrega"] = id_entrega_1
         input_pe["entregas"][1]["id_entrega"] = id_entrega_2
 
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
         if id_entrega_1 == id_entrega_2:
             assert response.status_code == 422
             detail_message = "Entregas devem possuir id_entrega diferentes"
@@ -689,10 +690,10 @@ class TestCreatePEDuplicateData(BasePETest):
         """
 
         input_pe = self.input_pe.copy()
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
 
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_200_OK
         assert response.json().get("detail", None) is None
         self.assert_equal_plano_entregas(response.json(), input_pe)
@@ -712,13 +713,13 @@ class TestCreatePEDuplicateData(BasePETest):
         """
 
         input_pe = self.input_pe.copy()
-        response = self.create_plano_entregas(input_pe)
+        response = self.put_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
 
         input_pe["cod_unidade_autorizadora"] = user2_credentials[
             "cod_unidade_autorizadora"
         ]
-        response = self.create_plano_entregas(
+        response = self.put_plano_entregas(
             input_pe,
             cod_unidade_autorizadora=user2_credentials["cod_unidade_autorizadora"],
             header_usr=header_usr_2,

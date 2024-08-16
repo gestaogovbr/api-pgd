@@ -68,7 +68,7 @@ class TestCreatePTInvalidDates(BasePTTest):
         assert response.status_code in (status.HTTP_200_OK, status.HTTP_201_CREATED)
 
         # cria o plano_trabalho com a data_inicio informada
-        response = self.create_plano_trabalho(input_pt)
+        response = self.put_plano_trabalho(input_pt)
         if data_inicio > data_termino:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
@@ -100,7 +100,7 @@ class TestCreatePTDateIntervalOverAYear(BasePTTest):
         input_pt["data_inicio"] = data_inicio
         input_pt["data_termino"] = data_termino
 
-        response = self.create_plano_trabalho(input_pt)
+        response = self.put_plano_trabalho(input_pt)
 
         if (
             over_a_year(
@@ -210,7 +210,7 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
                 "carga_horaria_disponivel": 80,
             }
         ]
-        response = self.create_plano_trabalho(input_pt2)
+        response = self.put_plano_trabalho(input_pt2)
         assert response.status_code == status.HTTP_201_CREATED
 
         input_pt["id_plano_trabalho"] = id_plano_trabalho
@@ -220,7 +220,7 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
         input_pt["data_termino"] = data_termino
         input_pt["status"] = status_pt
         input_pt["avaliacoes_registros_execucao"] = []
-        response = self.create_plano_trabalho(input_pt)
+        response = self.put_plano_trabalho(input_pt)
 
         if (
             # se algum dos planos estiver cancelado, não há problema em haver
@@ -303,7 +303,7 @@ class TestCreatePTDataAvaliacao(BasePTTest):
             "data_fim_periodo_avaliativo"
         ] = data_fim_periodo_avaliativo
 
-        response = self.create_plano_trabalho(input_pt)
+        response = self.put_plano_trabalho(input_pt)
 
         if date.fromisoformat(data_fim_periodo_avaliativo) < date.fromisoformat(
             data_inicio_periodo_avaliativo
@@ -357,7 +357,7 @@ class TestCreatePTDataAvaliacao(BasePTTest):
             "data_avaliacao_registros_execucao"
         ] = data_avaliacao_registros_execucao
 
-        response = self.create_plano_trabalho(input_pt)
+        response = self.put_plano_trabalho(input_pt)
         if date.fromisoformat(data_avaliacao_registros_execucao) < date.fromisoformat(
             data_inicio_periodo_avaliativo
         ):
@@ -442,7 +442,7 @@ class TestCreatePlanoDeTrabalhoPeriodoAvaliativoOverlapping(BasePTTest):
             avaliacao_template["data_avaliacao_registros_execucao"] = "2024-01-01"
             input_pt["avaliacoes_registros_execucao"].append(avaliacao_template)
 
-        response = self.create_plano_trabalho(input_pt)
+        response = self.put_plano_trabalho(input_pt)
 
         periodo_avaliativo.sort(key=lambda avaliacao: avaliacao[0])
         for avaliacao_1, avaliacao_2 in zip(

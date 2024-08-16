@@ -45,7 +45,7 @@ class TestCreatePTMissingMandatoryFieldsContribuicoes(BasePTTest):
             "percentual_contribuicao"
         ] = percentual_contribuicao
 
-        response = self.create_plano_trabalho(input_pt)
+        response = self.put_plano_trabalho(input_pt)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
@@ -70,7 +70,7 @@ class TestCreatePTInvalidTipoContribuicao(BasePTTest):
         input_pt = self.input_pt.copy()
         input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
 
-        response = self.create_plano_trabalho(input_pt)
+        response = self.put_plano_trabalho(input_pt)
 
         if tipo_contribuicao in [1, 2, 3]:
             assert response.status_code == status.HTTP_201_CREATED
@@ -105,7 +105,7 @@ class TestPercentualContribuicao(BasePTTest):
             "percentual_contribuicao"
         ] = percentual_contribuicao
 
-        response = self.create_plano_trabalho(input_pt, header_usr=self.header_usr_1)
+        response = self.put_plano_trabalho(input_pt, header_usr=self.header_usr_1)
 
         if 0 <= percentual_contribuicao <= 100:
             assert response.status_code == status.HTTP_201_CREATED
@@ -142,7 +142,7 @@ class TestCreatePTOmitOptionalFields(BasePTTest):
                     del contribuicao[field]
 
         partial_input_pt["id_plano_trabalho"] = str(557 + offset)
-        response = self.create_plano_trabalho(partial_input_pt)
+        response = self.put_plano_trabalho(partial_input_pt)
         assert response.status_code == status.HTTP_201_CREATED
 
 
@@ -173,7 +173,7 @@ class TestCreatePTNullOptionalFields(BasePTTest):
                     contribuicao[field] = None
 
         partial_input_pt["id_plano_trabalho"] = str(557 + offset)
-        response = self.create_plano_trabalho(partial_input_pt)
+        response = self.put_plano_trabalho(partial_input_pt)
         assert response.status_code == status.HTTP_201_CREATED
 
 
@@ -223,7 +223,7 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
         contribuicao["tipo_contribuicao"] = tipo_contribuicao
         contribuicao["id_plano_entregas"] = id_plano_entregas
         contribuicao["id_entrega"] = id_entrega
-        response = self.create_plano_trabalho(input_pt, header_usr=self.header_usr_1)
+        response = self.put_plano_trabalho(input_pt, header_usr=self.header_usr_1)
 
         error_messages = []
         if tipo_contribuicao == 1:
@@ -263,7 +263,7 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
         contribuicao["id_plano_entregas"] = id_plano_entregas
         contribuicao["id_entrega"] = id_entrega
 
-        response = self.create_plano_trabalho(input_pt, header_usr=self.header_usr_1)
+        response = self.put_plano_trabalho(input_pt, header_usr=self.header_usr_1)
 
         if id_plano_entregas == input_pe["id_plano_entregas"] and \
             id_entrega in [entrega["id_entrega"] for entrega in input_pe["entregas"]]:

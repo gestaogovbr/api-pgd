@@ -36,7 +36,7 @@ class TestCreatePTMissingMandatoryFieldsAvaliacaoRegistrosExecucao(BasePTTest):
             input_pt["avaliacoes_registros_execucao"][0][field] = None
 
         input_pt["id_plano_trabalho"] = "111222333"
-        response = self.create_plano_trabalho(input_pt)
+        response = self.put_plano_trabalho(input_pt)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
@@ -70,7 +70,7 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucao(BasePTTest):
             "avaliacao_registros_execucao"
         ] = avaliacao_registros_execucao
 
-        response = self.create_plano_trabalho(input_pt)
+        response = self.put_plano_trabalho(input_pt)
 
         if avaliacao_registros_execucao in range(1, 6):
             assert response.status_code == status.HTTP_201_CREATED
@@ -208,7 +208,7 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucaoDates(BasePTTest):
             "data_avaliacao_registros_execucao"
         ] = data_avaliacao_registros_execucao
 
-        response = self.create_plano_trabalho(input_pt)
+        response = self.put_plano_trabalho(input_pt)
 
         if date.fromisoformat(data_avaliacao_registros_execucao) > date.fromisoformat(
             data_inicio_periodo_avaliativo

@@ -83,7 +83,7 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
             header_usr_2 (dict): Cabeçalho do usuário na unidade diferente.
         """
         # Criar o Plano de Trabalho em uma unidade diferente
-        response = self.create_plano_trabalho(
+        response = self.put_plano_trabalho(
             self.input_pt, cod_unidade_autorizadora=3, header_usr=header_usr_2
         )
 
@@ -128,7 +128,7 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
         assert admin_data.get("is_admin", None) is True
 
         # Criar o Plano de Trabalho em uma unidade diferente
-        response = self.create_plano_trabalho(
+        response = self.put_plano_trabalho(
             input_pt, cod_unidade_autorizadora=3, header_usr=header_admin
         )
 

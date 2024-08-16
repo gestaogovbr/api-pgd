@@ -88,7 +88,7 @@ class TestPermissionsPE(BasePETest):
         )
         assert admin_data.get("is_admin", None) is True
 
-        response = self.create_plano_entregas(
+        response = self.put_plano_entregas(
             input_pe,
             cod_unidade_autorizadora=input_pe["cod_unidade_autorizadora"],
             id_plano_entregas=input_pe["id_plano_entregas"],
