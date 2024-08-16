@@ -210,14 +210,14 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucaoDates(BasePTTest):
 
         response = self.put_plano_trabalho(input_pt)
 
-        if date.fromisoformat(data_avaliacao_registros_execucao) > date.fromisoformat(
+        if date.fromisoformat(data_avaliacao_registros_execucao) >= date.fromisoformat(
             data_inicio_periodo_avaliativo
         ):
             assert response.status_code == status.HTTP_201_CREATED
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
-                "A data de avaliação de registros de execução "
-                "deve ser posterior à data de início do período avaliativo."
+                "A data de avaliação de registros de execução deve ser "
+                "igual ou posterior à data de início do período avaliativo."
             )
             assert_error_message(response, detail_message)

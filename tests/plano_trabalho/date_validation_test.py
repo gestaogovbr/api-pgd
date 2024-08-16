@@ -330,9 +330,10 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         "id_plano_trabalho, data_inicio_periodo_avaliativo, "
         "data_fim_periodo_avaliativo, data_avaliacao_registros_execucao",
         [
-            ("80", "2023-04-01", "2023-04-10", "2023-03-31"),
-            ("81", "2023-04-01", "2023-04-10", "2023-04-05"),
-            ("82", "2023-04-01", "2023-04-10", "2023-04-15"),
+            ("80", "2023-04-01", "2023-04-10", "2023-03-31"),  # antes do início
+            ("81", "2023-04-01", "2023-04-10", "2023-04-01"),  # igual ao início
+            ("82", "2023-04-01", "2023-04-10", "2023-04-05"),  # depois do início
+            ("83", "2023-04-01", "2023-04-10", "2023-04-15"),  # depois do fim
         ],
     )
     def test_create_pt_data_avaliacao_out_of_bounds(
@@ -363,8 +364,8 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
-                "A data de avaliação de registros de execução deve ser posterior "
-                "à data de início do período avaliativo."
+                "A data de avaliação de registros de execução deve ser igual ou "
+                "posterior à data de início do período avaliativo."
             )
             assert_error_message(response, detail_message)
         else:
