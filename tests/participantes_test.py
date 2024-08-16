@@ -98,7 +98,7 @@ class BaseParticipanteTest:
             BaseParticipanteTest.remove_null_optional_fields(participante_2.copy())
         )
 
-    def create_participante(
+    def put_participante(
         self,
         input_part: dict,
         cod_unidade_autorizadora: Optional[int] = None,
@@ -106,7 +106,7 @@ class BaseParticipanteTest:
         matricula_siape: Optional[str] = None,
         header_usr: Optional[dict] = None,
     ) -> Response:
-        """Criar um Participante.
+        """Cria ou atualiza um Participante pela API, usando o verbo PUT.
 
         Args:
             input_part (dict): O dicionário de entrada do Participante.
@@ -144,7 +144,7 @@ class BaseParticipanteTest:
         cod_unidade_lotacao: int,
         header_usr: Optional[dict] = None,
     ) -> Response:
-        """Obter um Participante.
+        """Obtém um Participante pela API, usando o verbo GET.
 
         Args:
             matricula_siape (str): A matrícula SIAPE do Participante.
@@ -173,7 +173,7 @@ class TestCreateParticipante(BaseParticipanteTest):
         """Cria um novo Participante, em uma unidade na qual o usuário
         está autorizado, contendo todos os dados necessários.
         """
-        response = self.create_participante(
+        response = self.put_participante(
             self.input_part,
         )
 
@@ -185,7 +185,7 @@ class TestCreateParticipante(BaseParticipanteTest):
         """Tenta submeter um participante em outra unidade autorizadora
         (user não é admin)
         """
-        response = self.create_participante(
+        response = self.put_participante(
             self.input_part,
             cod_unidade_autorizadora=3,  # unidade diferente
             header_usr=self.header_usr_2,
@@ -216,7 +216,7 @@ class TestCreateParticipante(BaseParticipanteTest):
         )
         assert admin_data.get("is_admin", None) is True
 
-        response = self.create_participante(
+        response = self.put_participante(
             self.input_part,
             header_usr=self.header_admin,
         )
@@ -239,7 +239,7 @@ class TestUpdateParticipante(BaseParticipanteTest):
         possui um Plano de Trabalho a ele associado.
         """
         input_part = self.input_part.copy()
-        response = self.create_participante(input_part)
+        response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_200_OK
 
     def test_update_participante(
@@ -247,11 +247,11 @@ class TestUpdateParticipante(BaseParticipanteTest):
     ):
         """Atualiza um participante existente."""
         input_part = self.input_part.copy()
-        response = self.create_participante(input_part)
+        response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_201_CREATED
 
         input_part["modalidade_execucao"] = 2
-        response = self.create_participante(input_part)
+        response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["modalidade_execucao"] == 2
 
@@ -296,7 +296,7 @@ class TestUpdateParticipante(BaseParticipanteTest):
         input_part["cod_unidade_autorizadora"] = cod_unidade_autorizadora_1
         input_part["cod_unidade_lotacao"] = cod_unidade_lotacao_1
         input_part["matricula_siape"] = matricula_siape_1
-        response = self.create_participante(
+        response = self.put_participante(
             input_part,
             cod_unidade_autorizadora=cod_unidade_autorizadora_1,
             cod_unidade_lotacao=cod_unidade_lotacao_1,
@@ -318,7 +318,7 @@ class TestUpdateParticipante(BaseParticipanteTest):
         input_part["cod_unidade_autorizadora"] = cod_unidade_autorizadora_2
         input_part["cod_unidade_lotacao"] = cod_unidade_lotacao_2
         input_part["matricula_siape"] = matricula_siape_2
-        response = self.create_participante(
+        response = self.put_participante(
             input_part,
             cod_unidade_autorizadora=cod_unidade_autorizadora_2,
             cod_unidade_lotacao=cod_unidade_lotacao_2,
@@ -348,7 +348,7 @@ class TestCreateParticipanteInconsistentURLData(BaseParticipanteTest):
     ):
         """Tenta submeter participante inconsistente (URL difere do JSON)"""
         nova_matricula = "3311776"
-        response = self.create_participante(
+        response = self.put_participante(
             input_part=self.input_part,
             matricula_siape=nova_matricula,
         )
@@ -375,7 +375,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
         """Tenta submeter um participante com matricula_siape inválida."""
         input_part = self.input_part.copy()
         input_part["matricula_siape"] = matricula_siape
-        response = self.create_participante(
+        response = self.put_participante(
             input_part,
             matricula_siape=input_part["matricula_siape"],
         )
@@ -411,7 +411,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
         """Tenta submeter um participante com cpf inválido."""
         input_part = self.input_part.copy()
         input_part["cpf"] = cpf_participante
-        response = self.create_participante(input_part)
+        response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_messages = [
             "Dígitos verificadores do CPF inválidos.",
@@ -440,7 +440,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
         input_part["matricula_siape"] = (
             f"{1800000 + offset}"  # precisa ser um novo participante
         )
-        response = self.create_participante(
+        response = self.put_participante(
             input_part,
             cod_unidade_autorizadora=self.user1_credentials["cod_unidade_autorizadora"],
             cod_unidade_lotacao=cod_unidade_lotacao,
@@ -460,7 +460,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
         com valor inválido."""
         input_part = self.input_part.copy()
         input_part["situacao"] = situacao
-        response = self.create_participante(input_part)
+        response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_messages = "Valor do campo 'situacao' inválido; permitido: 0, 1"
         assert any(
@@ -476,7 +476,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
         """Tenta submeter um participante com modalidade de execução inválida"""
         input_part = self.input_part.copy()
         input_part["modalidade_execucao"] = modalidade_execucao
-        response = self.create_participante(input_part)
+        response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_messages = "Modalidade de execução inválida; permitido: 1, 2, 3, 4, 5"
         assert any(
@@ -555,7 +555,7 @@ class TestCreateParticipanteDateValidation(BaseParticipanteTest):
         input_part["data_assinatura_tcr"] = (
             date.today() + timedelta(days=1)
         ).isoformat()
-        response = self.create_participante(input_part)
+        response = self.put_participante(input_part)
 
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_messages = "Input should be in the past"
@@ -591,6 +591,6 @@ class TestCreateParticipanteDateValidation(BaseParticipanteTest):
             )
             - timedelta(days=1)
         ).isoformat()
-        response = self.create_participante(input_part)
+        response = self.put_participante(input_part)
 
         assert response.status_code == status.HTTP_201_CREATED
