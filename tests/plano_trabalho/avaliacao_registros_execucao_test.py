@@ -2,8 +2,6 @@
 Plano de Trabalho.
 """
 
-from datetime import date
-
 import pytest
 from fastapi import status
 

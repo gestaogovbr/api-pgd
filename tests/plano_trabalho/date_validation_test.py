@@ -10,7 +10,6 @@ import pytest
 
 from util import over_a_year, assert_error_message
 from .core_test import BasePTTest
-from httpx import Client
 
 # Datas básicas
 
@@ -45,9 +44,9 @@ class TestCreatePTInvalidDates(BasePTTest):
         input_pt["avaliacoes_registros_execucao"][0][
             "data_inicio_periodo_avaliativo"
         ] = data_inicio.isoformat()
-        input_pt["avaliacoes_registros_execucao"][0][
-            "data_fim_periodo_avaliativo"
-        ] = (data_inicio + timedelta(days=1)).isoformat()
+        input_pt["avaliacoes_registros_execucao"][0]["data_fim_periodo_avaliativo"] = (
+            data_inicio + timedelta(days=1)
+        ).isoformat()
         input_pt["avaliacoes_registros_execucao"][0][
             "data_avaliacao_registros_execucao"
         ] = (data_inicio + timedelta(days=1)).isoformat()
