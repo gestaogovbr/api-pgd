@@ -1,7 +1,7 @@
 # Release notes
 
 
-## 3.0.8
+## 3.0.9
 
 * Updates to documentation
 * Add a warning to Swagger page when `TEST_ENVIRONMENT` environment
