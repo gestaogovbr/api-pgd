@@ -383,18 +383,6 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
     de dados modificados.
     """
 
-    @pytest.fixture(autouse=True)
-    def create_example(
-        self,
-        setup,
-        example_pt,  # pylint: disable=unused-argument
-    ):
-        """Configurar o ambiente de teste.
-
-        Args:
-            example_pt (callable): Fixture que cria exemplo de PT.
-        """
-
     def test_update_plano_trabalho(self):
         """Atualiza um Plano de Trabalho existente usando o método HTTP
         PUT. Como o Plano de Trabalho já existe, o código HTTP retornado
