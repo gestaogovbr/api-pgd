@@ -383,7 +383,7 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
     de dados modificados.
     """
 
-    def test_update_plano_trabalho(self):
+    def test_update_plano_trabalho(self, example_pt): # pylint: disable=unused-argument
         """Atualiza um Plano de Trabalho existente usando o método HTTP
         PUT. Como o Plano de Trabalho já existe, o código HTTP retornado
         deve ser 200 OK, em vez de 201 Created.
@@ -391,7 +391,8 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
         Além disso, obtém os dados novamente por método HTTP GET e
         verifica se a alteração foi persistida.
         """
-        # Altera campos do PT e reenvia pra API (update)
+        # Altera campos do PT preexistente ciado pela fixture example_pt
+        # e envia para a API (update) uma versão modificada.
 
         input_pt = self.input_pt.copy()
         input_pt["status"] = 4  # Valor era 3
