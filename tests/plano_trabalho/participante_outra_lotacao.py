@@ -17,7 +17,7 @@ class TestCreatePlanoTrabalhoParticipanteOutraUnidade(BasePTTest):
     Segundo regra de negócio, um Participante pode ser lotado em uma
     unidade e executar um Plano de Trabalho em outra unidade.
     """
-    def test_create_plano_trabalho_participante_outra_unidade(self, input_part):
+    def test_create_plano_trabalho_participante_outra_unidade(self):
         """Cria um Participante, e então cria um Plano de Trabalho
         vinculado a ele em outra unidade. Usa cod_unidade_lotacao
         diferente do cod_unidade_executora. Verifica se o Plano de Trabalho
