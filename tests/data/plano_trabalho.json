@@ -6,6 +6,7 @@
     "cod_unidade_executora": 99,
     "cpf_participante": "64635210600",
     "matricula_siape": "1237654",
+    "cod_unidade_lotacao_participante": 99,
     "data_inicio": "2023-01-01",
     "data_termino": "2023-01-15",
     "carga_horaria_disponivel": 80,

@@ -27,6 +27,7 @@ FIELDS_PLANO_TRABALHO = {
         ["cod_unidade_executora"],
         ["cpf_participante"],
         ["matricula_siape"],
+        ["cod_unidade_lotacao_participante"],
         ["data_inicio"],
         ["data_termino"],
         ["carga_horaria_disponivel"],

@@ -249,6 +249,10 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Matrícula SIAPE do participante",
         description=PlanoTrabalho.matricula_siape.comment,
     )
+    cod_unidade_lotacao_participante: int = Field(
+        title="Código da unidade lotacao participante",
+        description=PlanoTrabalho.cod_unidade_lotacao_participante.comment,
+    )
     data_inicio: date = Field(
         title="Data de início do plano de trabalho",
         description=PlanoTrabalho.data_inicio.comment,
