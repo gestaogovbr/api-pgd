@@ -36,7 +36,7 @@ class TestCreatePlanoTrabalhoParticipanteOutraUnidade(BasePTTest):
 
         assert response.status_code == status.HTTP_201_CREATED
         response_data = response.json()
-        self.assert_equal_plano_trabalho(response_data, self.input_pt)
+        self.assert_equal_plano_trabalho(response_data, input_pt)
         # verifica se a resposta veio com o cod_unidade_executora esperado
         assert response_data['cod_unidade_executora'] == 101
 
@@ -50,6 +50,6 @@ class TestCreatePlanoTrabalhoParticipanteOutraUnidade(BasePTTest):
         response_data = response.json()
 
         # verifica se os dados gravados são iguais aos informados
-        self.assert_equal_plano_trabalho(response_data, self.input_pt)
+        self.assert_equal_plano_trabalho(response_data, input_pt)
         # verifica o cod_unidade_executora
         assert response_data['cod_unidade_executora'] == 101
