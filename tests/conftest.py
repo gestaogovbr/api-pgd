@@ -311,7 +311,7 @@ def example_part(client: httpx.Client, input_part: dict, header_admin: dict):
 @pytest.fixture()
 def example_part_2(client: httpx.Client, input_part: dict, header_admin: dict):
     """Cria um exemplo de status de participante com diferente SIAPE e lotação"""
-    input_part["cod_unidade_lotacao"] = 100
+    input_part["cod_unidade_lotacao"] = 99
     input_part["matricula_siape"] = "1234567"
     client.put(
         f"/organizacao/{input_part['origem_unidade']}"

@@ -332,6 +332,15 @@ class PlanoTrabalho(Base):
         comment="Número da matrícula do participante no Sistema Integrado de "
         "Administração de Recursos Humanos (SIAPE).",
     )
+    cod_unidade_lotacao_participante = Column(
+        Integer,
+        nullable=False,
+        comment="Código da unidade organizacional (UORG) no Sistema Integrado de "
+        "Administração de Recursos Humanos (SIAPE) corresponde à unidade de "
+        "lotação do participante.\n\n"
+        "Obs: (1) A instituição que não esteja no SIAPE pode usar o código SIORG.\n"
+        "Obs: (2) Pode ser o mesmo ou diferente do `cod_unidade_executora`.",
+    )
     data_inicio = Column(
         Date,
         nullable=False,
@@ -378,14 +387,14 @@ class PlanoTrabalho(Base):
             [
                 origem_unidade,
                 cod_unidade_autorizadora,
-                cod_unidade_executora,
                 matricula_siape,
+                cod_unidade_lotacao_participante
             ],
             [
                 "participante.origem_unidade",
                 "participante.cod_unidade_autorizadora",
-                "participante.cod_unidade_lotacao",
                 "participante.matricula_siape",
+                "participante.cod_unidade_lotacao"
             ],
         ),
         UniqueConstraint(
