@@ -1,6 +1,15 @@
 # Release notes
 
 
+## 3.1.0
+
+* Solve interference of Participante's `cod_unidade_lotacao` in
+  in Plano de Trabalho `cod_unidade_executora`, in corner cases when they're
+  not the same
+* Add mandatory field `cod_unidade_lotacao_participante` to Plano de
+  Trabalho
+
+
 ## 3.0.9
 
 * Updates to documentation
