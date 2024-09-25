@@ -153,7 +153,7 @@ async def create_or_update_user(
     user: schemas.UsersSchema,
     email: str,
     db: DbContextManager = Depends(DbContextManager),
-) -> dict:
+) -> JSONResponse:
     """Cria um usuário da API ou atualiza os seus dados cadastrais."""
 
     # Validações
@@ -177,6 +177,7 @@ async def create_or_update_user(
         ) from exception
 
     # Call
+    response_status = status.HTTP_200_OK
     try:
         # update
         if await crud_auth.get_user(db, user.email):
@@ -184,13 +185,16 @@ async def create_or_update_user(
         # create
         else:
             await crud_auth.create_user(db, user)
+            response_status = status.HTTP_201_CREATED
     except IntegrityError as exception:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"IntegrityError: {str(exception)}",
         ) from exception
 
-    return user.dict(exclude=["password"])
+    return JSONResponse(
+        content=user.dict(exclude=["password"]), status_code=response_status
+    )
 
 
 @app.get(
