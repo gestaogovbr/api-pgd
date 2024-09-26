@@ -148,7 +148,7 @@ def test_create_user_logged_in_admin(
     response = client.put(
         f"/user/{USERS_TEST[0]['email']}", headers=header_usr_1, json=USERS_TEST[0]
     )
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
 
 
 def test_create_user_without_required_fields(
