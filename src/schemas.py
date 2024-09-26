@@ -206,10 +206,7 @@ class AvaliacaoRegistrosExecucaoSchema(BaseModel):
     ) -> "AvaliacaoRegistrosExecucaoSchema":
         """Valida se a data de avaliação dos registros de execução é
         posterior à data de início do período avaliativo."""
-        if (
-            self.data_avaliacao_registros_execucao
-            < self.data_inicio_periodo_avaliativo
-        ):
+        if self.data_avaliacao_registros_execucao < self.data_inicio_periodo_avaliativo:
             raise ValueError(
                 "A data de avaliação de registros de execução deve ser "
                 "igual ou posterior à data de início do período avaliativo."
