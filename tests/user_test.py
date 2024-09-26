@@ -71,7 +71,7 @@ def test_get_all_users_not_logged_in(client: Client, header_not_logged_in: dict)
 
 def test_get_all_users_logged_in_not_admin(client: Client, header_usr_2: dict):
     response = client.get("/users", headers=header_usr_2)
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_get_all_users_logged_in_admin(client: Client, header_usr_1: dict):
@@ -89,7 +89,7 @@ def test_get_user_logged_in_not_admin(
     client: Client, user2_credentials: dict, header_usr_2: dict  # user is_admin=False
 ):
     response = client.get(f"/user/{user2_credentials['email']}", headers=header_usr_2)
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_get_user_as_admin(
@@ -139,7 +139,7 @@ def test_create_user_logged_in_not_admin(
     response = client.put(
         f"/user/{USERS_TEST[0]['email']}", headers=header_usr_2, json=USERS_TEST[0]
     )
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 def test_create_user_logged_in_admin(
