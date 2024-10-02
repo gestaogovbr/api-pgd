@@ -92,8 +92,54 @@ async def docs_redirect(
 @app.post(
     "/token",
     summary="Autentica na API.",
-    response_model=schemas.Token,
     tags=["Auth"],
+    response_model=schemas.Token,
+    responses={
+        status.HTTP_200_OK: {
+            "model": schemas.Token,
+            "description": "Successful authentication",
+        },
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {
+            "model": response_schemas.ValidationErrorResponse,
+            "description": response_schemas.ValidationErrorResponse.get_title(),
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "Invalid email format": {
+                            "value": response_schemas.ValidationErrorResponse(
+                                detail=[
+                                    response_schemas.ValidationError(
+                                        type="value_error",
+                                        loc=["email"],
+                                        msg="value is not a valid email address: "
+                                        "An email address must have an @-sign.",
+                                        input="my_username",
+                                        ctx={
+                                            "reason": "An email address must have an @-sign."
+                                        },
+                                        url="https://errors.pydantic.dev/2.8/v/value_error",
+                                    )
+                                ]
+                            ).json()
+                        }
+                    }
+                }
+            },
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "model": response_schemas.UnauthorizedErrorResponse,
+            "description": response_schemas.UnauthorizedErrorResponse.get_title(),
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "Invalid credentials": {
+                            "value": {"detail": "Username ou password incorretos"}
+                        }
+                    }
+                }
+            },
+        },
+    },
 )
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -130,6 +176,25 @@ async def login_for_access_token(
     "/users",
     summary="Lista usuários da API.",
     tags=["Auth"],
+    response_model=list[schemas.UsersGetSchema],
+    responses={
+        status.HTTP_200_OK: {
+            "model": list[schemas.UsersGetSchema],
+            "description": "Successful list of users",
+        },
+        status.HTTP_401_UNAUTHORIZED: {
+            "description": "Unauthorized access",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "Invalid credentials": {
+                            "value": {"detail": "Not authenticated"}
+                        }
+                    }
+                }
+            },
+        },
+    },
 )
 async def get_users(
     user_logged: Annotated[  # pylint: disable=unused-argument
