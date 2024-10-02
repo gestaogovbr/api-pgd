@@ -634,6 +634,10 @@ class UsersGetSchema(UsersInputSchema):
         title="Código da organização que autorizou o PGD",
         description=Users.cod_unidade_autorizadora.comment,
     )
+    sistema_gerador: str = Field(
+        title="sistema gerador dos dados",
+        description=Users.sistema_gerador.comment,
+    )
 
 
 class UsersSchema(UsersGetSchema):

@@ -160,6 +160,7 @@ async def init_user_admin():
             is_admin=True,
             origem_unidade="SIAPE",
             cod_unidade_autorizadora=1,
+            sistema_gerador=f"API PGD {os.getenv('TAG_NAME', 'dev-build') or 'dev-build'}",
         )
 
         async with db_session as session:

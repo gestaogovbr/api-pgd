@@ -20,6 +20,26 @@ participa do
 > Conjunta.
 
 
+### Identificação do sistema gerador
+
+O sistema de informações que opera o Programa de Gestão no órgão, bem
+como a sua versão, devem ser informados de duas maneiras:
+
+1. No cadastro do usuário da API, no campo `sistema_gerador`, informar
+   nome e versão. Ver seção "**0. Auth**", abaixo.
+2. No cabeçalho `User-Agent` da requisição feita pelo sistema ao acessar
+   a API, informar sequência de texto (string) padronizada, contendo:
+   - nome do sistema
+   - versão do sistema
+   - url onde se pode obter uma descrição ou informações gerais sobre o
+     sistema.
+
+   A string deve seguir o formato: `Nome do sistema/versão (+url)`.
+   Exemplo:
+
+   `User-Agent: Petrvs/2.1 (https://www.gov.br/servidor/pt-br/assuntos/programa-de-gestao/sistemas-e-api-de-dados/sistema-pgd-petrvs)`.
+
+
 ### Esquemas de dados
 
 Explore a seção **Schemas** abaixo nesta documentação para ler as
@@ -61,7 +81,9 @@ Campos utilizados:
 * `origem_unidade`: O nome do sistema de unidades utilizado nos campos que
   se referem a unidades (SIAPE ou SIORG);
 * `cod_unidade_autorizadora`: Unidade autorizadora do PGD à qual o usuário
-  pertence e está autorizado a enviar e consultar dados.
+  pertence e está autorizado a enviar e consultar dados;
+* `sistema_gerador`: Nome e versão do software utilizado para operar o
+  Programa de Gestão e gerar os dados enviados. Exemplo: "Petrvs 2.1".
 
 
 ### 0.1. Permissões
