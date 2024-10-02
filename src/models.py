@@ -740,6 +740,12 @@ class Users(Base):
         comment="Unidade autorizadora do PGD à qual o usuário "
         "pertence e está autorizado a enviar e consultar dados.",
     )
+    sistema_gerador = Column(
+        String,
+        nullable=False,
+        comment="Nome e versão do software utilizado para operar o Programa "
+        'de Gestão e gerar os dados enviados. Exemplo: "Petrvs 2.1".',
+    )
     data_atualizacao = Column(
         DateTime,
         onupdate=now(),
