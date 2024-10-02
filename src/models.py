@@ -684,7 +684,7 @@ class Participante(Base):
     )
     data_assinatura_tcr = Column(
         Date,
-        nullable=False,
+        nullable=True,
         comment="Data de assinatura do Termo de Ciência e Responsabilidade (TCR) "
         "referente ao previsto no inciso IV do art. 11 do Decreto 11.072/2022.",
     )
