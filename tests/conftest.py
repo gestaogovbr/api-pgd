@@ -32,6 +32,7 @@ USERS_CREDENTIALS = [
         "disabled": False,
         "origem_unidade": "SIAPE",
         "cod_unidade_autorizadora": 1,
+        "sistema_gerador": "API PGD CI Tests",
     },
     {
         "username": "test2@api.com",
@@ -41,6 +42,7 @@ USERS_CREDENTIALS = [
         # "disabled": False, # defaults set to False
         "origem_unidade": "SIAPE",
         "cod_unidade_autorizadora": 2,
+        "sistema_gerador": "API PGD CI Tests",
     },
 ]
 

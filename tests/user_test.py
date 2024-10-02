@@ -24,6 +24,7 @@ USERS_TEST = [
         "disabled": False,
         "origem_unidade": "SIAPE",
         "cod_unidade_autorizadora": 1,
+        "sistema_gerador": "API PGD CI Test",
     },
     # to get and delete (not created)
     {
@@ -33,6 +34,7 @@ USERS_TEST = [
         "disabled": False,
         "origem_unidade": "SIAPE",
         "cod_unidade_autorizadora": 1,
+        "sistema_gerador": "API PGD CI Test",
     },
     # to get without one of required fields (email, password, cod_unidade_autorizadora)
     {
@@ -48,6 +50,7 @@ USERS_TEST = [
         # "disabled": False, # defaults do False
         "origem_unidade": "SIAPE",
         "cod_unidade_autorizadora": 1,
+        "sistema_gerador": "API PGD CI Test",
     },
 ]
 
