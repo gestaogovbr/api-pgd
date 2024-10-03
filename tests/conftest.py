@@ -51,6 +51,8 @@ API_PGD_ADMIN_PASSWORD = os.environ.get("API_PGD_ADMIN_PASSWORD")
 
 API_BASE_URL = "http://localhost:5057"
 
+TEST_USER_AGENT = "API PGD CI Test (+https://github.com/gestaogovbr/api-pgd)"
+
 
 def get_bearer_token(username: str, password: str) -> str:
     """Login on api-pgd and returns token to nexts authenticaded calls.
@@ -81,7 +83,11 @@ def get_bearer_token(username: str, password: str) -> str:
 
 def prepare_header(username: Optional[str], password: Optional[str]) -> dict:
     """Prepara o cabeçalho para ser utilizado em requisições."""
-    headers = {"accept": "application/json", "Content-Type": "application/json"}
+    headers = {
+        "accept": "application/json",
+        "Content-Type": "application/json",
+        "User-Agent": TEST_USER_AGENT,
+    }
 
     if username and password:
         user_token = get_bearer_token(username, password)
