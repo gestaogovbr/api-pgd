@@ -51,11 +51,7 @@ def test_user_agent_header(
 ):
     """Testa efetuar requisições com e sem o cabeçalho user-agent."""
     headers = header_usr_1.copy()
-    if user_agent:
-        headers["User-Agent"] = user_agent
-    else:
-        if "User-Agent" in headers:
-            del headers["User-Agent"]
+    user_agent = headers["User-Agent"] or ""
 
     response = client.get(
         f"/organizacao/SIAPE/{input_part['cod_unidade_autorizadora']}"
