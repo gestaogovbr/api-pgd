@@ -64,3 +64,4 @@ def test_user_agent_header(
         assert response.status_code == status.HTTP_200_OK
     else:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.json()["detail"] == "User-Agent header is required"
