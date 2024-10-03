@@ -388,13 +388,13 @@ class PlanoTrabalho(Base):
                 origem_unidade,
                 cod_unidade_autorizadora,
                 matricula_siape,
-                cod_unidade_lotacao_participante
+                cod_unidade_lotacao_participante,
             ],
             [
                 "participante.origem_unidade",
                 "participante.cod_unidade_autorizadora",
                 "participante.matricula_siape",
-                "participante.cod_unidade_lotacao"
+                "participante.cod_unidade_lotacao",
             ],
         ),
         UniqueConstraint(
