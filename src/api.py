@@ -6,9 +6,9 @@ import json
 import os
 from typing import Annotated, Union
 
-from fastapi import Depends, FastAPI, HTTPException, status, Header, Response
+from fastapi import Depends, FastAPI, HTTPException, status, Header, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.exc import IntegrityError
 
 
@@ -20,7 +20,7 @@ import schemas
 from util import check_permissions
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
-TEST_ENVIRONMENT = os.environ.get("TEST_ENVIRONMENT", 'False') == 'True'
+TEST_ENVIRONMENT = os.environ.get("TEST_ENVIRONMENT", "False") == "True"
 
 # ## INIT --------------------------------------------------
 
@@ -53,6 +53,18 @@ async def on_startup():
     """Executa as rotinas de inicialização da API."""
     await create_db_and_tables()
     await crud_auth.init_user_admin()
+
+
+@app.middleware("http")
+async def check_user_agent(request: Request, call_next):
+    user_agent = request.headers.get("User-Agent", None)
+
+    if not user_agent:
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "User-Agent header is required"},
+        )
+    return await call_next(request)
 
 
 @app.get("/", include_in_schema=False)
