@@ -95,10 +95,6 @@ async def docs_redirect(
     tags=["Auth"],
     response_model=schemas.Token,
     responses={
-        status.HTTP_200_OK: {
-            "model": schemas.Token,
-            "description": "Successful authentication",
-        },
         status.HTTP_422_UNPROCESSABLE_ENTITY: {
             "model": response_schemas.ValidationErrorResponse,
             "description": response_schemas.ValidationErrorResponse.get_title(),
@@ -178,10 +174,6 @@ async def login_for_access_token(
     tags=["Auth"],
     response_model=list[schemas.UsersGetSchema],
     responses={
-        status.HTTP_200_OK: {
-            "model": list[schemas.UsersGetSchema],
-            "description": "Successful list of users",
-        },
         status.HTTP_401_UNAUTHORIZED: {
             "description": "Unauthorized access",
             "content": {
