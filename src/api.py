@@ -2,10 +2,9 @@
 """
 
 from datetime import timedelta
-from typing import Annotated
-import os
-from typing import Union
 import json
+import os
+from typing import Annotated, Union
 
 from fastapi import Depends, FastAPI, HTTPException, status, Header, Response
 from fastapi.security import OAuth2PasswordRequestForm
@@ -13,11 +12,11 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.exc import IntegrityError
 
 
-import schemas
 import crud
-from db_config import DbContextManager, create_db_and_tables
 import crud_auth
 import email_config
+from db_config import DbContextManager, create_db_and_tables
+import schemas
 from util import check_permissions
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
