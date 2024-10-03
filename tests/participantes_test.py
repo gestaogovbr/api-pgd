@@ -485,6 +485,19 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
             for error in response.json().get("detail")
         )
 
+    def test_create_participante_data_assinatura_tcr_not_null(self):
+        """Tenta criar um participante com valor nulo para o campo
+        data_assinatura_tcr.
+        """
+        input_part = self.input_part.copy()
+        input_part["data_assinatura_tcr"] = None
+        response = self.put_participante(input_part)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert any(
+            "Input should be a valid datetime" in error["msg"]
+            for error in response.json().get("detail", [])
+        )
+
 
 class TestGetParticipante(BaseParticipanteTest):
     """Testes para a leitura de Participantes."""
