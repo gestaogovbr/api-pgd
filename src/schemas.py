@@ -6,6 +6,7 @@ Pydantic: https://docs.pydantic.dev/2.0/
 """
 
 from datetime import date
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
@@ -67,6 +68,11 @@ def cpf_validate(input_cpf: str) -> str:
             raise ValueError("Dígitos verificadores do CPF inválidos.")
 
     return input_cpf
+
+
+class OrigemUnidadeEnum(str, Enum):
+    siape = "SIAPE"
+    siorg = "SIORG"
 
 
 class ContribuicaoSchema(BaseModel):
@@ -218,7 +224,7 @@ class PlanoTrabalhoSchema(BaseModel):
     __doc__ = PlanoTrabalho.__doc__
     model_config = ConfigDict(from_attributes=True)
 
-    origem_unidade: str = Field(
+    origem_unidade: OrigemUnidadeEnum = Field(
         title="Origem da unidade",
         description=PlanoTrabalho.origem_unidade.comment,
     )
@@ -420,7 +426,7 @@ class EntregaSchema(BaseModel):
 class PlanoEntregasSchema(BaseModel):
     __doc__ = PlanoEntregas.__doc__
     model_config = ConfigDict(from_attributes=True)
-    origem_unidade: str = Field(
+    origem_unidade: OrigemUnidadeEnum = Field(
         title="Código do sistema da unidade",
         description=PlanoEntregas.origem_unidade.comment,
     )
@@ -511,7 +517,7 @@ class PlanoEntregasSchema(BaseModel):
 class ParticipanteSchema(BaseModel):
     __doc__ = Participante.__doc__
     model_config = ConfigDict(from_attributes=True)
-    origem_unidade: str = Field(
+    origem_unidade: OrigemUnidadeEnum = Field(
         title="Código do sistema da unidade (SIAPE ou SIORG)",
         description=Participante.origem_unidade.comment,
     )
@@ -623,7 +629,7 @@ class UsersGetSchema(UsersInputSchema):
         default=False,
         description=Users.disabled.comment,
     )
-    origem_unidade: str = Field(
+    origem_unidade: OrigemUnidadeEnum = Field(
         title="Código do sistema da unidade (SIAPE ou SIORG)",
         description=Users.origem_unidade.comment,
     )
