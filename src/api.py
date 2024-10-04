@@ -95,46 +95,8 @@ async def docs_redirect(
     tags=["Auth"],
     response_model=schemas.Token,
     responses={
-        status.HTTP_422_UNPROCESSABLE_ENTITY: {
-            "model": response_schemas.ValidationErrorResponse,
-            "description": response_schemas.ValidationErrorResponse.get_title(),
-            "content": {
-                "application/json": {
-                    "examples": {
-                        "Invalid email format": {
-                            "value": response_schemas.ValidationErrorResponse(
-                                detail=[
-                                    response_schemas.ValidationError(
-                                        type="value_error",
-                                        loc=["email"],
-                                        msg="value is not a valid email address: "
-                                        "An email address must have an @-sign.",
-                                        input="my_username",
-                                        ctx={
-                                            "reason": "An email address must have an @-sign."
-                                        },
-                                        url="https://errors.pydantic.dev/2.8/v/value_error",
-                                    )
-                                ]
-                            ).json()
-                        }
-                    }
-                }
-            },
-        },
-        status.HTTP_401_UNAUTHORIZED: {
-            "model": response_schemas.UnauthorizedErrorResponse,
-            "description": response_schemas.UnauthorizedErrorResponse.get_title(),
-            "content": {
-                "application/json": {
-                    "examples": {
-                        "Invalid credentials": {
-                            "value": {"detail": "Username ou password incorretos"}
-                        }
-                    }
-                }
-            },
-        },
+        **response_schemas.email_validation_error,
+        401: response_schemas.UnauthorizedErrorResponse.docs(),
     },
 )
 async def login_for_access_token(
@@ -173,20 +135,7 @@ async def login_for_access_token(
     summary="Lista usuários da API.",
     tags=["Auth"],
     response_model=list[schemas.UsersGetSchema],
-    responses={
-        status.HTTP_401_UNAUTHORIZED: {
-            "description": "Unauthorized access",
-            "content": {
-                "application/json": {
-                    "examples": {
-                        "Invalid credentials": {
-                            "value": {"detail": "Not authenticated"}
-                        }
-                    }
-                }
-            },
-        },
-    },
+    responses=response_schemas.not_admin_error,
 )
 async def get_users(
     user_logged: Annotated[  # pylint: disable=unused-argument
@@ -203,6 +152,15 @@ async def get_users(
     "/user/{email}",
     summary="Cria ou altera usuário na API.",
     tags=["Auth"],
+    response_model=schemas.UsersGetSchema,
+    responses={
+        **response_schemas.not_admin_error,
+        422: response_schemas.ValidationErrorResponse.docs(
+            examples=response_schemas.value_response_example(
+                "email deve ser igual na url e no json"
+            )
+        ),
+    },
 )
 async def create_or_update_user(
     user_logged: Annotated[  # pylint: disable=unused-argument
@@ -259,6 +217,15 @@ async def create_or_update_user(
     "/user/{email}",
     summary="Consulta um usuário da API.",
     tags=["Auth"],
+    response_model=schemas.UsersGetSchema,
+    responses={
+        **response_schemas.not_admin_error,
+        404: response_schemas.NotFoundErrorResponse.docs(
+            examples=response_schemas.value_response_example(
+                "Usuário `user1@example.com` não existe"
+            )
+        ),
+    },
 )
 async def get_user(
     user_logged: Annotated[  # pylint: disable=unused-argument
@@ -285,6 +252,23 @@ async def get_user(
     "/user/forgot_password/{email}",
     summary="Solicita recuperação de acesso à API.",
     tags=["Auth"],
+    responses={
+        **response_schemas.email_validation_error,
+        200: response_schemas.OKMessageResponse.docs(
+            examples={
+                "OK": {
+                    "value": response_schemas.OKMessageResponse(
+                        message="Email enviado!"
+                    ).json(),
+                },
+            }
+        ),
+        404: response_schemas.NotFoundErrorResponse.docs(
+            examples=response_schemas.value_response_example(
+                "Usuário `user1@example.com` não existe"
+            )
+        ),
+    },
 )
 async def forgot_password(
     email: str,
@@ -312,6 +296,18 @@ async def forgot_password(
     "/user/reset_password/",
     summary="Criar nova senha a partir do token de acesso.",
     tags=["Auth"],
+    responses={
+        200: response_schemas.OKMessageResponse.docs(
+            examples={
+                "OK": {
+                    "value": response_schemas.OKMessageResponse(
+                        message="Senha do Usuário `user1@example.com` atualizada"
+                    ).json(),
+                },
+            }
+        ),
+        400: response_schemas.BadRequestErrorResponse.docs(),
+    },
 )
 async def reset_password(
     access_token: str,
@@ -336,8 +332,16 @@ async def reset_password(
     "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
     "/plano_entregas/{id_plano_entregas}",
     summary="Consulta plano de entregas",
-    response_model=schemas.PlanoEntregasSchema,
     tags=["plano de entregas"],
+    response_model=schemas.PlanoEntregasSchema,
+    responses={
+        **response_schemas.outra_unidade_error,
+        404: response_schemas.NotFoundErrorResponse.docs(
+            examples=response_schemas.value_response_example(
+                "Plano de entregas não encontrado"
+            )
+        ),
+    },
 )
 async def get_plano_entrega(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
@@ -369,8 +373,9 @@ async def get_plano_entrega(
     "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
     "/plano_entregas/{id_plano_entregas}",
     summary="Cria ou substitui plano de entregas",
-    response_model=schemas.PlanoEntregasSchema,
     tags=["plano de entregas"],
+    response_model=schemas.PlanoEntregasSchema,
+    responses=response_schemas.outra_unidade_error,
 )
 async def create_or_update_plano_entregas(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
@@ -458,8 +463,16 @@ async def create_or_update_plano_entregas(
     "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
     "/plano_trabalho/{id_plano_trabalho}",
     summary="Consulta plano de trabalho",
-    response_model=schemas.PlanoTrabalhoSchema,
     tags=["plano de trabalho"],
+    response_model=schemas.PlanoTrabalhoSchema,
+    responses={
+        **response_schemas.outra_unidade_error,
+        404: response_schemas.NotFoundErrorResponse.docs(
+            examples=response_schemas.value_response_example(
+                "Plano de trabalho não encontrado"
+            )
+        ),
+    },
 )
 async def get_plano_trabalho(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
@@ -491,8 +504,9 @@ async def get_plano_trabalho(
     "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
     "/plano_trabalho/{id_plano_trabalho}",
     summary="Cria ou substitui plano de trabalho",
-    response_model=schemas.PlanoTrabalhoSchema,
     tags=["plano de trabalho"],
+    response_model=schemas.PlanoTrabalhoSchema,
+    responses=response_schemas.outra_unidade_error,
 )
 async def create_or_update_plano_trabalho(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
@@ -589,8 +603,16 @@ async def create_or_update_plano_trabalho(
     "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
     "/{cod_unidade_lotacao}/participante/{matricula_siape}",
     summary="Consulta um Participante",
-    response_model=schemas.ParticipanteSchema,
     tags=["participante"],
+    response_model=schemas.ParticipanteSchema,
+    responses={
+        **response_schemas.outra_unidade_error,
+        404: response_schemas.NotFoundErrorResponse.docs(
+            examples=response_schemas.value_response_example(
+                "Participante não encontrado"
+            )
+        ),
+    },
 )
 async def get_participante(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
@@ -624,8 +646,9 @@ async def get_participante(
     "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
     "/{cod_unidade_lotacao}/participante/{matricula_siape}",
     summary="Envia um participante",
-    response_model=schemas.ParticipanteSchema,
     tags=["participante"],
+    response_model=schemas.ParticipanteSchema,
+    responses=response_schemas.outra_unidade_error,
 )
 async def create_or_update_participante(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
