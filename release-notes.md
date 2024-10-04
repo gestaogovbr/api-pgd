@@ -1,6 +1,15 @@
 # Release notes
 
 
+## 3.2.0
+
+* Make `data_assinatura_tcr` not nullable
+* Add new field and instructions in docs to inform system of origin
+* Fix OpenAPI documentation to show the HTTP status codes that can actually be returned.
+* Change data type of origem_unidade in Pydantic to Enum
+* Use lifespan instead of event handler to remove deprecation warning
+
+
 ## 3.1.0
 
 * Solve interference of Participante's `cod_unidade_lotacao` in
