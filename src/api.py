@@ -1,6 +1,7 @@
 """Definição das rotas, endpoints e seu comportamento na API.
 """
 
+from contextlib import asynccontextmanager
 from datetime import timedelta
 import json
 import os
@@ -42,19 +43,19 @@ if TEST_ENVIRONMENT:
 
     description = environment_msg + description
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Executa as rotinas de inicialização da API."""
+    await create_db_and_tables()
+    await crud_auth.init_user_admin()
+    yield
+
 app = FastAPI(
     title="Plataforma de recebimento de dados do Programa de Gestão - PGD",
     description=description,
     version=os.getenv("TAG_NAME", "dev-build") or "dev-build",
+    lifespan=lifespan,
 )
-
-
-@app.on_event("startup")
-async def on_startup():
-    """Executa as rotinas de inicialização da API."""
-    await create_db_and_tables()
-    await crud_auth.init_user_admin()
-
 
 @app.middleware("http")
 async def check_user_agent(request: Request, call_next):
