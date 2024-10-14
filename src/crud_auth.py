@@ -20,6 +20,20 @@ API_PGD_ADMIN_PASSWORD = os.environ.get("API_PGD_ADMIN_PASSWORD")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+# Exceções
+
+
+class InvalidCredentialsError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
+class DisabledUserError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
 
 # ## Funções auxiliares
 
