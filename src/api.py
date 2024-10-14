@@ -43,6 +43,7 @@ if TEST_ENVIRONMENT:
 
     description = environment_msg + description
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Executa as rotinas de inicialização da API."""
@@ -50,12 +51,14 @@ async def lifespan(app: FastAPI):
     await crud_auth.init_user_admin()
     yield
 
+
 app = FastAPI(
     title="Plataforma de recebimento de dados do Programa de Gestão - PGD",
     description=description,
     version=os.getenv("TAG_NAME", "dev-build") or "dev-build",
     lifespan=lifespan,
 )
+
 
 @app.middleware("http")
 async def check_user_agent(request: Request, call_next):
