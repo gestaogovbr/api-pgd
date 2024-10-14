@@ -102,7 +102,10 @@ termos de SIAPE, geralmente é o código Uorg Lv1. O próprio Decreto,
 contudo, indica que tal autoridade poderá ser delegada a dois níveis
 hierárquicos imediatamente inferiores, ou seja, para Uorg Lv2 e Uorg Lv3.
 Haverá situações, portanto, em que uma unidade do Uorg Lv1 de nível 2 ou
-3 poderá enviar dados diretamente para API.
+3 poderá enviar dados diretamente para API. Deve corresponder à
+instituição com poder de autorização. Ou seja, ainda que tenha optado por
+usar antigas portarias ministeriais de autorização, é hoje a UORG
+responsável pelo envio dos dados.
 
 Exemplo: "Ministério da Gestão e da Inovação em Serviços Públicos" ou
 "Conselho de Controle de Atividades Financeiras"
