@@ -13,7 +13,10 @@ import re
 from typing import Generator
 
 from httpx import Client
-from fastapi import status
+from fastapi import status, HTTPException
+import pytest
+
+from .conftest import get_bearer_token
 
 
 USERS_TEST = [
@@ -62,6 +65,30 @@ TOKEN_IN_MESSAGE = re.compile(r"<code>([^<]+)</code>")
 def test_authenticate(header_usr_1: dict):
     token = header_usr_1.get("Authorization")
     assert isinstance(token, str)
+
+
+def test_attempt_log_in_disabled_user(
+    truncate_users,  # pylint: disable=unused-argument
+    register_user_1: dict,  # pylint: disable=unused-argument
+    header_admin: dict,  # pylint: disable=unused-argument
+    client: Client,
+    user1_credentials: dict,
+):
+    """Cria um novo usuário, o desabilita e tenta logar com esse usuário."""
+    user1_data = user1_credentials.copy()
+
+    # update user 1 and disable it
+    user1_data["disabled"] = True
+    response = client.put(
+        f"/user/{user1_data['email']}",
+        headers=header_admin,
+        json=user1_data,
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    # try to log in as user 1
+    with pytest.raises(HTTPException, match="Usuário desabilitado"):
+        get_bearer_token(username=user1_data["email"], password=user1_data["password"])
 
 
 # get /users
