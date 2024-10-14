@@ -12,8 +12,8 @@ import email
 import re
 from typing import Generator
 
-from httpx import Client
-from fastapi import status, HTTPException
+from httpx import Client, HTTPStatusError
+from fastapi import status
 import pytest
 
 from .conftest import get_bearer_token
@@ -87,7 +87,7 @@ def test_attempt_log_in_disabled_user(
     assert response.status_code == status.HTTP_200_OK
 
     # try to log in as user 1
-    with pytest.raises(HTTPException, match="Usuário desabilitado"):
+    with pytest.raises(HTTPStatusError):
         get_bearer_token(username=user1_data["email"], password=user1_data["password"])
 
 
