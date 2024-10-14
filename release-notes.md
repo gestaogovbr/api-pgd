@@ -1,6 +1,12 @@
 # Release notes
 
 
+## 3.2.1
+
+* Add additional explanation about cod_unidade_autorizadora in the
+  documentation.
+
+
 ## 3.2.0
 
 * Make `data_assinatura_tcr` not nullable
