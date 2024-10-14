@@ -84,14 +84,38 @@ async def get_user(
     return None
 
 
-async def authenticate_user(db, username: str, password: str):
+async def authenticate_user(
+    db: DbContextManager, username: str, password: str
+) -> schemas.UsersSchema:
+    """Acessa o banco de dados e verifica se o usuário existe, não está
+    desabilitado e se as credenciais de acesso estão corretas. Caso tudo
+    esteja certo, retorna os detalhes do usuário.
+
+    Args:
+        db (DbContextManager): Context manager contendo as informações
+            necessárias para acesso ao banco de dados.
+        username (str): Nome do usuário.
+        password (str): Senha do usuário.
+
+    Raises:
+        InvalidCredentialsError: Caso o usuário não exista ou a senha
+            esteja incorreta.
+        DisabledUserError: Caso o usuário esteja desabilitado.
+
+    Returns:
+        schemas.UsersSchema: Detalhes do usuário presentes no banco de
+            dados.
+    """
     user = await get_user(db_session=db, email=username)
 
     if not user:
         return False
 
     if not verify_password(password, user.password):
-        return False
+        raise InvalidCredentialsError("Username ou password incorretos")
+
+    if user.disabled:
+        raise DisabledUserError("Usuário desabilitado")
 
     return user
 

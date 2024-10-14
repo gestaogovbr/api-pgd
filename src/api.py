@@ -119,13 +119,19 @@ async def login_for_access_token(
             status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
         ) from exception
 
-    user = await crud_auth.authenticate_user(db, form_data.username, form_data.password)
-    if not user:
+    try:
+        user = await crud_auth.authenticate_user(
+            db, form_data.username, form_data.password
+        )
+    except (
+        crud_auth.InvalidCredentialsError,
+        crud_auth.DisabledUserError,
+    ) as exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Username ou password incorretos",
+            detail=exception.message,
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from exception
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = crud_auth.create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
