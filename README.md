@@ -1,5 +1,5 @@
 API integradora de dados de sistemas do Programa de Gestão, usado para
-o teletrabalho na administração pública federal.
+o teletrabalho na administração pública federal do Brasil.
 
 [![Docker Image Build & CI Tests](https://github.com/gestaogovbr/api-pgd/actions/workflows/ci_tests.yml/badge.svg)](https://github.com/gestaogovbr/api-pgd/actions/workflows/ci_tests.yml)
 
