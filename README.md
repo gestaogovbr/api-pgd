@@ -130,10 +130,11 @@ make tests
 ### 3.2. Selecionado
 
 Para rodar uma bateria de testes específica, especifique o arquivo que
-contém os testes desejados. Por exemplo, os testes sobre atividades:
+contém os testes desejados. Por exemplo, os testes sobre um plano de
+entregas com muitas entregas relacionadas:
 
 ```bash
-make test TEST_FILTER=test_create_huge_plano_trabalho
+make test TEST_FILTER=test_create_huge_plano_entregas
 ```
 
 ---
