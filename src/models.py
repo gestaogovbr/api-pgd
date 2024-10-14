@@ -628,7 +628,10 @@ class Participante(Base):
         "indica que tal autoridade poderá ser delegada a dois níveis "
         "hierárquicos imediatamente inferiores, ou seja, para Uorg Lv2 e Uorg "
         "Lv3. Haverá situações, portanto, em que uma unidade do Uorg Lv1 de "
-        "nível 2 ou 3 poderá enviar dados diretamente para API.\n\n"
+        "nível 2 ou 3 poderá enviar dados diretamente para API. Deve "
+        "corresponder à instituição com poder de autorização. Ou seja, ainda "
+        "que tenha optado por usar antigas portarias ministeriais de "
+        "autorização, é hoje a UORG responsável pelo envio dos dados.\n\n"
         'Exemplo: "Ministério da Gestão e da Inovação em Serviços Públicos" '
         'ou "Conselho de Controle de Atividades Financeiras"\n\n'
         "Obs: A instituição que não esteja no SIAPE pode usar o código SIORG.",
