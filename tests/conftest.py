@@ -55,7 +55,7 @@ TEST_USER_AGENT = "API PGD CI Test (+https://github.com/gestaogovbr/api-pgd)"
 
 
 def get_bearer_token(username: str, password: str) -> str:
-    """Login on api-pgd and returns token to nexts authenticaded calls.
+    """Login on api-pgd and returns token to next authenticated calls.
 
     Args:
         username (str): username as email (foo@oi.com)
