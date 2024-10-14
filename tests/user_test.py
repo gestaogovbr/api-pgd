@@ -5,6 +5,7 @@ Disclaimer:
     * header_usr_1: dict is_admin=True
     * header_usr_2: dict is_admin=True
 """
+
 from datetime import datetime
 from imaplib import IMAP4
 import email
@@ -113,10 +114,7 @@ def test_get_user_self_logged_in(
     assert data.get("email", None) == user1_credentials["email"]
     assert data.get("is_admin", None) == user1_credentials["is_admin"]
     assert data.get("disabled", None) == user1_credentials["disabled"]
-    assert (
-        data.get("origem_unidade", None)
-        == user1_credentials["origem_unidade"]
-    )
+    assert data.get("origem_unidade", None) == user1_credentials["origem_unidade"]
     assert (
         data.get("cod_unidade_autorizadora", None)
         == user1_credentials["cod_unidade_autorizadora"]
