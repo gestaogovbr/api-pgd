@@ -48,7 +48,7 @@ class BaseParticipanteTest:
         """Configurar o ambiente de teste.
 
         Args:
-                Participantes.
+            truncate_participantes (fixture): Limpa a tabela Participante.
             input_part (dict): Dados usados para criar um Participante.
             user1_credentials (dict): Credenciais do usuário 1.
             header_usr_2 (dict): Cabeçalhos HTTP para o usuário 2.
