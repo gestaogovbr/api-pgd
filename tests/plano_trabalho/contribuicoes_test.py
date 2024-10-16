@@ -265,11 +265,13 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
 
         response = self.put_plano_trabalho(input_pt, header_usr=self.header_usr_1)
 
-        if id_plano_entregas == input_pe["id_plano_entregas"] and \
-            id_entrega in [entrega["id_entrega"] for entrega in input_pe["entregas"]]:
+        if id_plano_entregas == input_pe["id_plano_entregas"] and id_entrega in [
+            entrega["id_entrega"] for entrega in input_pe["entregas"]
+        ]:
             assert response.status_code == status.HTTP_201_CREATED
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             assert_error_message(
-                response, "Contribuição do Plano de Trabalho faz referência a entrega inexistente"
+                response,
+                "Contribuição do Plano de Trabalho faz referência a entrega inexistente",
             )
