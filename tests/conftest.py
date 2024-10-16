@@ -10,6 +10,7 @@ from typing import Generator, Optional
 import asyncio
 
 import httpx
+from fastapi import status
 from fastapi.testclient import TestClient
 import pytest
 
