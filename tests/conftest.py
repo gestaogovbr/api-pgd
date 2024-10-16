@@ -160,6 +160,123 @@ def create_user(username: str, password: str, new_user: dict) -> httpx.Response:
 # Fixtures
 
 
+@pytest.fixture(scope="session", name="truncate_users")
+def fixture_truncate_users(admin_credentials: dict):  # pylint: disable=unused-argument
+    """Trunca a tabela de usuários e inicializa o usuário administrador."""
+    truncate_user()
+    asyncio.get_event_loop().run_until_complete(init_user_admin())
+
+
+@pytest.fixture(scope="session", name="register_user_1")
+def fixture_register_user_1(
+    truncate_users,  # pylint: disable=unused-argument
+    user1_credentials: dict,
+    admin_credentials: dict,
+) -> httpx.Response:
+    """Cria um novo usuário de teste 1 usando a API.
+
+    Returns:
+        httpx.Response: A resposta HTTP da requisição de criação do usuário.
+    """
+    response = create_user(
+        admin_credentials["username"], admin_credentials["password"], user1_credentials
+    )
+    response.raise_for_status()
+
+    return response
+
+
+@pytest.fixture(scope="session", name="register_user_2")
+def fixture_register_user_2(
+    truncate_users,  # pylint: disable=unused-argument
+    user2_credentials: dict,
+    admin_credentials: dict,
+) -> httpx.Response:
+    """Cria um novo usuário de teste 2 usando a API.
+
+    Retorna:
+        httpx.Response: A resposta HTTP da requisição de criação do usuário.
+    """
+    response = create_user(
+        admin_credentials["username"], admin_credentials["password"], user2_credentials
+    )
+    response.raise_for_status()
+
+    return response
+
+
+@pytest.fixture()
+def disabled_user_1(
+    header_admin: dict,  # pylint: disable=unused-argument
+    user1_credentials: dict,
+    client: TestClient,
+) -> Generator[dict, None, None]:
+    """Desabilitar o usuário 1, fornecer seus dados e retornar ao estado
+    anterior."""
+    # update user 1 and disable it
+    user1_data = deepcopy(user1_credentials)
+    user1_data["disabled"] = True
+    response = client.put(
+        f"/user/{user1_data['email']}",
+        headers=header_admin,
+        json=user1_data,
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    yield user1_data
+
+    response = client.put(
+        f"/user/{user1_credentials['email']}",
+        headers=header_admin,
+        json=user1_credentials,
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.fixture(scope="session")
+def header_not_logged_in() -> dict:
+    """Cabeçalho HTTP para requisições sem autenticação.
+
+    Returns:
+        dict: Um dicionário contendo os cabeçalhos HTTP padrão, sem
+            nenhum token de autenticação.
+    """
+    return prepare_header(username=None, password=None)
+
+
+@pytest.fixture(scope="session", name="header_admin")
+def fixture_header_admin(
+    admin_credentials: dict,  # pylint: disable=unused-argument
+) -> dict:
+    """Authenticate in the API as an admin and return a dict with bearer
+    header parameter to be passed to API's requests."""
+    return prepare_header(
+        username=admin_credentials["username"], password=admin_credentials["password"]
+    )
+
+
+@pytest.fixture(scope="session", name="header_usr_1")
+def fixture_header_usr_1(
+    register_user_1, user1_credentials: dict  # pylint: disable=unused-argument
+) -> dict:
+    """Authenticate in the API as user1 and return a dict with bearer
+    header parameter to be passed to API's requests."""
+    return prepare_header(
+        username=user1_credentials["email"], password=user1_credentials["password"]
+    )
+
+
+@pytest.fixture(scope="session", name="header_usr_2")
+def fixture_header_usr_2(
+    register_user_2, user2_credentials: dict  # pylint: disable=unused-argument
+) -> dict:
+    """Authenticate in the API as user2 and return a dict with bearer
+    header parameter to be passed to API's requests."""
+    return prepare_header(
+        username=user2_credentials["email"], password=user2_credentials["password"]
+    )
+
+
 @pytest.fixture(scope="function", name="input_pe")
 def fixture_input_pe() -> dict:
     """Template de Plano de Entregas da Unidade.
@@ -361,92 +478,3 @@ def truncate_pt():
 def truncate_participantes():
     """Trunca a tabela de Participantes."""
     truncate_participante()
-
-
-@pytest.fixture(scope="module", name="truncate_users")
-def fixture_truncate_users(admin_credentials: dict):  # pylint: disable=unused-argument
-    """Trunca a tabela de usuários e inicializa o usuário administrador."""
-    truncate_user()
-    asyncio.get_event_loop().run_until_complete(init_user_admin())
-
-
-@pytest.fixture(scope="module", name="register_user_1")
-def fixture_register_user_1(
-    truncate_users,  # pylint: disable=unused-argument
-    user1_credentials: dict,
-    admin_credentials: dict,
-) -> httpx.Response:
-    """Cria um novo usuário de teste 1 usando a API.
-
-    Returns:
-        httpx.Response: A resposta HTTP da requisição de criação do usuário.
-    """
-    response = create_user(
-        admin_credentials["username"], admin_credentials["password"], user1_credentials
-    )
-    response.raise_for_status()
-
-    return response
-
-
-@pytest.fixture(scope="module", name="register_user_2")
-def fixture_register_user_2(
-    truncate_users,  # pylint: disable=unused-argument
-    user2_credentials: dict,
-    admin_credentials: dict,
-) -> httpx.Response:
-    """Cria um novo usuário de teste 2 usando a API.
-
-    Retorna:
-        httpx.Response: A resposta HTTP da requisição de criação do usuário.
-    """
-    response = create_user(
-        admin_credentials["username"], admin_credentials["password"], user2_credentials
-    )
-    response.raise_for_status()
-
-    return response
-
-
-@pytest.fixture(scope="module")
-def header_not_logged_in() -> dict:
-    """Cabeçalho HTTP para requisições sem autenticação.
-
-    Returns:
-        dict: Um dicionário contendo os cabeçalhos HTTP padrão, sem
-            nenhum token de autenticação.
-    """
-    return prepare_header(username=None, password=None)
-
-
-@pytest.fixture(scope="module", name="header_admin")
-def fixture_header_admin(
-    admin_credentials: dict,  # pylint: disable=unused-argument
-) -> dict:
-    """Authenticate in the API as an admin and return a dict with bearer
-    header parameter to be passed to API's requests."""
-    return prepare_header(
-        username=admin_credentials["username"], password=admin_credentials["password"]
-    )
-
-
-@pytest.fixture(scope="module", name="header_usr_1")
-def fixture_header_usr_1(
-    register_user_1, user1_credentials: dict  # pylint: disable=unused-argument
-) -> dict:
-    """Authenticate in the API as user1 and return a dict with bearer
-    header parameter to be passed to API's requests."""
-    return prepare_header(
-        username=user1_credentials["email"], password=user1_credentials["password"]
-    )
-
-
-@pytest.fixture(scope="module", name="header_usr_2")
-def fixture_header_usr_2(
-    register_user_2, user2_credentials: dict  # pylint: disable=unused-argument
-) -> dict:
-    """Authenticate in the API as user2 and return a dict with bearer
-    header parameter to be passed to API's requests."""
-    return prepare_header(
-        username=user2_credentials["email"], password=user2_credentials["password"]
-    )
