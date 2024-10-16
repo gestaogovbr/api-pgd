@@ -309,7 +309,7 @@ def fixture_input_part() -> dict:
     return json.load(open("data/participante.json", "r", encoding="utf-8"))
 
 
-@pytest.fixture(scope="module", name="client")
+@pytest.fixture(scope="session", name="client")
 def fixture_client() -> Generator[httpx.Client, None, None]:
     """Cliente HTTP para ser usado nos testes.
 
@@ -321,7 +321,7 @@ def fixture_client() -> Generator[httpx.Client, None, None]:
         yield c
 
 
-@pytest.fixture(scope="module", name="admin_credentials")
+@pytest.fixture(scope="session", name="admin_credentials")
 def fixture_admin_credentials() -> dict:
     """Credenciais do usuário administrador da API.
 
@@ -335,7 +335,7 @@ def fixture_admin_credentials() -> dict:
     }
 
 
-@pytest.fixture(scope="module", name="user1_credentials")
+@pytest.fixture(scope="session", name="user1_credentials")
 def fixture_user1_credentials() -> dict:
     """Credenciais do primeiro usuário de teste.
 
@@ -347,7 +347,7 @@ def fixture_user1_credentials() -> dict:
     return USERS_CREDENTIALS[0]
 
 
-@pytest.fixture(scope="module", name="user2_credentials")
+@pytest.fixture(scope="session", name="user2_credentials")
 def fixture_user2_credentials() -> dict:
     """Credenciais do segundo usuário de teste.
 
