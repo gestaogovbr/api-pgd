@@ -5,6 +5,9 @@
 
 * Add additional explanation about cod_unidade_autorizadora in the
   documentation.
+* Speed up test suite by changing the scope of fixtures
+* Use deep copy in tests to avoid interference in other tests
+* Block users that have been disabled from logging in
 
 
 ## 3.2.0
