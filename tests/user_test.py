@@ -12,8 +12,9 @@ import email
 import re
 from typing import Generator
 
-from httpx import Client, HTTPStatusError, Response
+from httpx import HTTPStatusError, Response
 from fastapi import status
+from fastapi.testclient import TestClient
 import pytest
 
 from .conftest import get_bearer_token
@@ -76,7 +77,7 @@ class BaseUserTest:
         header_usr_1: dict,
         header_usr_2: dict,
         header_admin: dict,
-        client: Client,
+        client: TestClient,
     ):
         """Configura o ambiente de testes.
 
@@ -182,34 +183,19 @@ class TestUserAuthentication(BaseUserTest):
         self,
         truncate_users,  # pylint: disable=unused-argument
         register_user_1: dict,  # pylint: disable=unused-argument
-        header_admin: dict,  # pylint: disable=unused-argument
-        client: Client,
-        user1_credentials: dict,
+        disabled_user_1: dict,  # pylint: disable=unused-argument
     ):
         """Cria um novo usuário, o desabilita e tenta logar com esse usuário.
 
         Args:
             truncate_users (fixture): Trunca a tabela de usuários.
             register_user_1 (dict): Dados do usuário 1.
-            header_admin (dict): Cabeçalhos HTTP para o usuário admin.
-            client (Client): Uma instância do cliente HTTPX.
-            user1_credentials (dict): Credenciais do usuário 1.
+            disabled_user_1 (dict): Dados do usuário 1 desabilitado.
         """
-        user1_data = user1_credentials.copy()
-
-        # update user 1 and disable it
-        user1_data["disabled"] = True
-        response = client.put(
-            f"/user/{user1_data['email']}",
-            headers=header_admin,
-            json=user1_data,
-        )
-        assert response.status_code == status.HTTP_200_OK
-
         # try to log in as user 1
         with pytest.raises(HTTPStatusError):
             self.get_bearer_token(
-                username=user1_data["email"], password=user1_data["password"]
+                username=disabled_user_1["email"], password=disabled_user_1["password"]
             )
 
 
