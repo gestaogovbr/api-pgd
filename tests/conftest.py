@@ -2,6 +2,7 @@
 Funções auxiliares e fixtures dos testes.
 """
 
+from copy import deepcopy
 import os
 import sys
 import json
@@ -379,7 +380,7 @@ def example_pe_unidade_3(
     header_usr_1: dict,
 ):
     """Cria um Plano de Entrega como exemplo."""
-    input_pe_3 = input_pe.copy()
+    input_pe_3 = deepcopy(input_pe)
     input_pe_3["cod_unidade_autorizadora"] = 3
     client.put(
         f"/organizacao/SIAPE/{input_pe_3['cod_unidade_autorizadora']}"
@@ -409,7 +410,7 @@ def example_pt_unidade_3(
     header_admin: dict,
 ):
     """Cria um Plano de Trabalho do Participante como exemplo."""
-    input_pt_3 = input_pt.copy()
+    input_pt_3 = deepcopy(input_pt)
     input_pt_3["cod_unidade_autorizadora"] = 3
     client.put(
         f"/organizacao/{input_pt_3['origem_unidade']}"
@@ -436,14 +437,15 @@ def example_part(client: httpx.Client, input_part: dict, header_admin: dict):
 @pytest.fixture()
 def example_part_2(client: httpx.Client, input_part: dict, header_admin: dict):
     """Cria um exemplo de status de participante com diferente SIAPE e lotação"""
-    input_part["cod_unidade_lotacao"] = 99
-    input_part["matricula_siape"] = "1234567"
+    input_part_1 = deepcopy(input_part)
+    input_part_1["cod_unidade_lotacao"] = 99
+    input_part_1["matricula_siape"] = "1234567"
     client.put(
-        f"/organizacao/{input_part['origem_unidade']}"
-        f"/{input_part['cod_unidade_autorizadora']}"
-        f"/{input_part['cod_unidade_lotacao']}"
-        f"/participante/{input_part['matricula_siape']}",
-        json=input_part,
+        f"/organizacao/{input_part_1['origem_unidade']}"
+        f"/{input_part_1['cod_unidade_autorizadora']}"
+        f"/{input_part_1['cod_unidade_lotacao']}"
+        f"/participante/{input_part_1['matricula_siape']}",
+        json=input_part_1,
         headers=header_admin,
     )
 
@@ -451,13 +453,14 @@ def example_part_2(client: httpx.Client, input_part: dict, header_admin: dict):
 @pytest.fixture()
 def example_part_unidade_3(client: httpx.Client, input_part: dict, header_admin: dict):
     """Cria um exemplo de status de participante na unidade autorizadora 3."""
-    input_part["cod_unidade_autorizadora"] = 3
+    input_part_1 = deepcopy(input_part)
+    input_part_1["cod_unidade_autorizadora"] = 3
     client.put(
-        f"/organizacao/{input_part['origem_unidade']}"
-        f"/{input_part['cod_unidade_autorizadora']}"
-        f"/{input_part['cod_unidade_lotacao']}"
-        f"/participante/{input_part['matricula_siape']}",
-        json=input_part,
+        f"/organizacao/{input_part_1['origem_unidade']}"
+        f"/{input_part_1['cod_unidade_autorizadora']}"
+        f"/{input_part_1['cod_unidade_lotacao']}"
+        f"/participante/{input_part_1['matricula_siape']}",
+        json=input_part_1,
         headers=header_admin,
     )
 

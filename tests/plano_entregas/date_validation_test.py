@@ -2,6 +2,7 @@
 Entregas.
 """
 
+from copy import deepcopy
 from datetime import date
 
 from fastapi import status as http_status
@@ -34,7 +35,7 @@ class TestPlanoDeDatasBasicas(BasePETest):
     ):
         """Plano de Entregas não pode ter vigência superior a um ano."""
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["data_inicio"] = data_inicio
         input_pe["data_termino"] = data_termino
 
@@ -72,7 +73,7 @@ class TestPlanoDeDatasBasicas(BasePETest):
     ):
         """Tenta criar um plano de entregas com datas trocadas"""
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["data_inicio"] = data_inicio
         input_pe["data_termino"] = data_termino
 
@@ -104,7 +105,7 @@ class TestPlanoDeDatasBasicas(BasePETest):
         """Tenta criar um Plano de Entregas com datas de avaliação inferior a
         data de inicio do plano."""
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["data_inicio"] = data_inicio
         input_pe["data_avaliacao"] = data_avaliacao
         input_pe["id_plano_entregas"] = id_plano_entregas
@@ -149,7 +150,7 @@ class TestPlanoDeDatasEntregas(BasePETest):
         data pode ser qualquer data e não precisa estar dentro do período
         entre o início e o fim do plano_entregas.
         """
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["id_plano_entregas"] = id_plano_entregas
         input_pe["data_inicio"] = data_inicio
         input_pe["data_termino"] = data_termino

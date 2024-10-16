@@ -2,6 +2,7 @@
 Testes relacionados aos status de participantes.
 """
 
+from copy import deepcopy
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
@@ -238,7 +239,7 @@ class TestUpdateParticipante(BaseParticipanteTest):
         """Atualiza um participante existente, sendo que o participante já
         possui um Plano de Trabalho a ele associado.
         """
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_200_OK
 
@@ -246,7 +247,7 @@ class TestUpdateParticipante(BaseParticipanteTest):
         self,
     ):
         """Atualiza um participante existente."""
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_201_CREATED
 
@@ -292,7 +293,7 @@ class TestUpdateParticipante(BaseParticipanteTest):
         Se a unidade e/ou a matrícula forem diferentes, entende-se que será
         criado um novo registro e será retornado o código HTTP 201 Created.
         """
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         input_part["cod_unidade_autorizadora"] = cod_unidade_autorizadora_1
         input_part["cod_unidade_lotacao"] = cod_unidade_lotacao_1
         input_part["matricula_siape"] = matricula_siape_1
@@ -373,7 +374,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
     )
     def test_create_participante_invalid_matricula_siape(self, matricula_siape: str):
         """Tenta submeter um participante com matricula_siape inválida."""
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         input_part["matricula_siape"] = matricula_siape
         response = self.put_participante(
             input_part,
@@ -409,7 +410,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
     )
     def test_create_participante_invalid_cpf(self, cpf_participante: str):
         """Tenta submeter um participante com cpf inválido."""
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         input_part["cpf"] = cpf_participante
         response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -430,7 +431,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
     )
     def test_create_participante_missing_mandatory_fields(self, missing_fields: list):
         """Tenta submeter participantes faltando campos obrigatórios"""
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         cod_unidade_lotacao = input_part["cod_unidade_lotacao"]
         matricula_siape = input_part["matricula_siape"]
         offset, field_list = missing_fields
@@ -458,7 +459,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
     def test_create_participante_invalid_status(self, situacao: int):
         """Tenta criar um participante com flag participante
         com valor inválido."""
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         input_part["situacao"] = situacao
         response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -474,7 +475,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
         self, modalidade_execucao: int
     ):
         """Tenta submeter um participante com modalidade de execução inválida"""
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         input_part["modalidade_execucao"] = modalidade_execucao
         response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -489,7 +490,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
         """Tenta criar um participante com valor nulo para o campo
         data_assinatura_tcr.
         """
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         input_part["data_assinatura_tcr"] = None
         response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -527,7 +528,7 @@ class TestGetParticipante(BaseParticipanteTest):
     ):
         """Testa ler um participante em outra unidade autorizadora
         (usuário não é admin)"""
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         input_part["cod_unidade_autorizadora"] = 3
 
         response = self.get_participante(
@@ -545,7 +546,7 @@ class TestGetParticipante(BaseParticipanteTest):
     ):
         """Testa ler um participante em outra unidade autorizadora
         (usuário é admin)"""
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         input_part["cod_unidade_autorizadora"] = 3
 
         response = self.get_participante(
@@ -563,7 +564,7 @@ class TestCreateParticipanteDateValidation(BaseParticipanteTest):
 
     def test_create_participante_invalid_data_assinatura_tcr(self):
         """Tenta criar um participante com data futura de assinatura do TCR."""
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         # data de amanhã
         input_part["data_assinatura_tcr"] = (
             date.today() + timedelta(days=1)
@@ -593,7 +594,7 @@ class TestCreateParticipanteDateValidation(BaseParticipanteTest):
         """Tenta criar um participante com data de assinatura do TCR em
         diversos fuso-horários (chamado "timezone-aware"), ou sem
         definição de fuso-horário (chamado "timezone-naïve")."""
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         input_part["data_assinatura_tcr"] = (
             datetime.now(  # horário de agora
                 **(

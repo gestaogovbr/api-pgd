@@ -2,6 +2,7 @@
 Entregas.
 """
 
+from copy import deepcopy
 from fastapi import status as http_status
 
 from .core_test import BasePETest
@@ -19,7 +20,7 @@ class TestPermissionsPE(BasePETest):
         """Tenta buscar um plano de entregas existente em uma unidade diferente,
         à qual o usuário não tem acesso.
         """
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         response = self.get_plano_entregas(
             input_pe["id_plano_entregas"],
             3,  # Sem autorização nesta unidade
@@ -37,7 +38,7 @@ class TestPermissionsPE(BasePETest):
         """Tenta, como administrador, buscar um Plano de Entregas
         em uma organização diferente da sua própria organização.
         """
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["cod_unidade_autorizadora"] = 3
 
         response = self.client.get(
@@ -71,7 +72,7 @@ class TestPermissionsPE(BasePETest):
         """Tenta, como administrador, criar um novo Plano de Entregas
         em uma organização diferente da sua própria organização.
         """
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["cod_unidade_autorizadora"] = 3  # Unidade diferente
 
         response = self.client.get(

@@ -2,6 +2,7 @@
 Testes relacionados ao Plano de Entregas da Unidade
 """
 
+from copy import deepcopy
 from typing import Optional
 
 from httpx import Client, Response
@@ -211,7 +212,7 @@ class TestCreatePlanoEntrega(BasePETest):
         O teste altera um campo do PE e reenvia pra API (update).
         """
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["avaliacao"] = 3
         input_pe["data_avaliacao"] = "2023-08-15"
         response = self.put_plano_entregas(input_pe)
@@ -236,7 +237,7 @@ class TestCreatePlanoEntrega(BasePETest):
         criado com sucesso.
         """
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         offset, field_list = omitted_fields
         for field in field_list:
             for entrega in input_pe["entregas"]:
@@ -256,7 +257,7 @@ class TestCreatePlanoEntrega(BasePETest):
         Verifica se a API retorna um status 201 Created, o que indica ter sido
         criado com sucesso."""
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         offset, field_list = nulled_fields
         for field in field_list:
             for entrega in input_pe["entregas"]:
@@ -281,7 +282,7 @@ class TestCreatePlanoEntrega(BasePETest):
         """
 
         offset, field_list = missing_fields
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         # define um id_plano_entregas diferente para cada teste
         input_pe["id_plano_entregas"] = 1800 + offset
         # Estes campos fazem parte da URL e para omiti-los será necessário
@@ -309,7 +310,7 @@ class TestCreatePlanoEntrega(BasePETest):
         longos.
         """
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
 
         def create_huge_entrega(id_entrega: int) -> dict:
             """Cria uma Entrega que ocupa bastante espaço de dados.
@@ -371,7 +372,7 @@ class TestCreatePEInputValidation(BasePETest):
         máximo de cada campo.
         """
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["id_plano_entregas"] = id_plano_entregas
         input_pe["entregas"][0]["nome_entrega"] = nome_entrega  # 300 caracteres
         input_pe["entregas"][0][
@@ -403,7 +404,7 @@ class TestCreatePEInputValidation(BasePETest):
     ):
         """Tenta criar um plano de entregas com código de plano divergente"""
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["id_plano_entregas"] = "110"
         response = self.put_plano_entregas(
             input_pe, id_plano_entregas="111"  # diferente de 110
@@ -418,7 +419,7 @@ class TestCreatePEInputValidation(BasePETest):
     ):
         """Tenta criar um plano de entregas com código de unidade divergente"""
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         original_input_pe = input_pe.copy()
         input_pe["cod_unidade_autorizadora"] = 999  # era 1
         response = self.put_plano_entregas(
@@ -443,7 +444,7 @@ class TestCreatePEInputValidation(BasePETest):
         verificação de sanidade.
         """
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["cod_unidade_executora"] = cod_unidade_executora
 
         response = self.put_plano_entregas(input_pe)
@@ -478,7 +479,7 @@ class TestCreatePEInputValidation(BasePETest):
     ):
         """Tenta criar um Plano de Entregas com entrega com percentuais inválidos"""
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["id_plano_entregas"] = id_plano_entregas
         input_pe["entregas"][1]["meta_entrega"] = meta_entrega
         input_pe["entregas"][1]["tipo_meta"] = tipo_meta
@@ -513,7 +514,7 @@ class TestCreatePEInputValidation(BasePETest):
     ):
         """Tenta criar um Plano de Entregas com tipo de meta inválido"""
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["entregas"][0]["tipo_meta"] = tipo_meta
 
         response = self.put_plano_entregas(input_pe)
@@ -536,7 +537,7 @@ class TestCreatePEInputValidation(BasePETest):
     ):
         """Tenta criar um Plano de Entregas com nota de avaliação inválida"""
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["avaliacao"] = avaliacao
         response = self.put_plano_entregas(input_pe)
 
@@ -575,7 +576,7 @@ class TestCreatePEInputValidation(BasePETest):
         estiverem preenchidos.
         """
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["status"] = status
         input_pe["avaliacao"] = avaliacao
         input_pe["data_avaliacao"] = data_avaliacao
@@ -659,7 +660,7 @@ class TestCreatePEDuplicateData(BasePETest):
           diferentes.
         """
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         input_pe["id_plano_entregas"] = id_plano_entregas
         input_pe["entregas"][0]["id_entrega"] = id_entrega_1
         input_pe["entregas"][1]["id_entrega"] = id_entrega_2
@@ -689,7 +690,7 @@ class TestCreatePEDuplicateData(BasePETest):
           novamente, substituindo o anterior.
         """
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         response = self.put_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
 
@@ -712,7 +713,7 @@ class TestCreatePEDuplicateData(BasePETest):
         deve retornar o status 201 Created em ambos os casos.
         """
 
-        input_pe = self.input_pe.copy()
+        input_pe = deepcopy(self.input_pe)
         response = self.put_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_201_CREATED
 

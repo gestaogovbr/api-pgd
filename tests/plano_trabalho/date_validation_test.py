@@ -2,6 +2,7 @@
 Trabalho.
 """
 
+from copy import deepcopy
 from datetime import date, timedelta
 
 from fastapi import status
@@ -35,7 +36,7 @@ class TestCreatePTInvalidDates(BasePTTest):
     ):
         """Verifica se a data_termino_plano é maior ou igual à data_inicio_plano."""
         input_part["data_assinatura_tcr"] = data_assinatura_tcr
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["data_inicio"] = data_inicio
         input_pt["data_termino"] = data_termino
         # ajusta as datas dos registros de avaliação
@@ -95,7 +96,7 @@ class TestCreatePTDateIntervalOverAYear(BasePTTest):
         self, data_inicio: str, data_termino: str
     ):
         """Plano de Entregas não pode ter vigência superior a um ano."""
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["data_inicio"] = data_inicio
         input_pt["data_termino"] = data_termino
 
@@ -192,7 +193,7 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
         da mesma ou outra unidade, de mesmo ou outro participante, conforme
         especificado nos parâmetros de teste.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         original_pt = input_pt.copy()
         input_pt2 = original_pt.copy()
         input_pt2["id_plano_trabalho"] = "556"
@@ -293,7 +294,7 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         - começa antes de terminar
         - começa, no mínio, na data de início do Plano de Trabalho.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["id_plano_trabalho"] = id_plano_trabalho
         input_pt["avaliacoes_registros_execucao"][0][
             "data_inicio_periodo_avaliativo"
@@ -345,7 +346,7 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         """Verifica se a data de avaliação do registro de execução está
         dentro do período avaliativo.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["id_plano_trabalho"] = id_plano_trabalho
         input_pt["avaliacoes_registros_execucao"][0][
             "data_inicio_periodo_avaliativo"
@@ -430,7 +431,7 @@ class TestCreatePlanoDeTrabalhoPeriodoAvaliativoOverlapping(BasePTTest):
         """
         original_avaliacao = self.input_pt["avaliacoes_registros_execucao"][0].copy()
 
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["id_plano_trabalho"] = id_plano_trabalho
 
         input_pt["avaliacoes_registros_execucao"] = []

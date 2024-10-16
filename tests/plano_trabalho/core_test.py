@@ -3,6 +3,7 @@ Testes relacionados às funcionalidades básicas do plano de trabalho do
 participante.
 """
 
+from copy import deepcopy
 from typing import Optional
 
 from httpx import Client, Response
@@ -254,7 +255,7 @@ class TestCreatePlanoTrabalho(BasePTTest):
         """
         # Arrange
         offset, field_list = missing_fields
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         # Estes campos fazem parte da URL e para omiti-los será necessário
         # inclui-los na chamada do método create_pt
         fields_in_url = [
@@ -281,7 +282,7 @@ class TestCreatePlanoTrabalho(BasePTTest):
         informados na URL e no campo id_plano_trabalho do JSON.
         """
         # Arrange
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["id_plano_trabalho"] = "110"
 
         # Act
@@ -307,7 +308,7 @@ class TestCreatePlanoTrabalho(BasePTTest):
         maior ou igual a zero" esteja presente na resposta.
         """
         # Arrange
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["carga_horaria_disponivel"] = carga_horaria_disponivel
 
         # Act
@@ -353,7 +354,7 @@ class TestCreatePlanoTrabalho(BasePTTest):
         - "CPF deve conter apenas dígitos."
         """
         # Arrange
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["cpf_participante"] = cpf_participante
 
         # Act
@@ -384,7 +385,7 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
     de dados modificados.
     """
 
-    def test_update_plano_trabalho(self, example_pt): # pylint: disable=unused-argument
+    def test_update_plano_trabalho(self, example_pt):  # pylint: disable=unused-argument
         """Atualiza um Plano de Trabalho existente usando o método HTTP
         PUT. Como o Plano de Trabalho já existe, o código HTTP retornado
         deve ser 200 OK, em vez de 201 Created.
@@ -395,7 +396,7 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
         # Altera campos do PT preexistente ciado pela fixture example_pt
         # e envia para a API (update) uma versão modificada.
 
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["status"] = 4  # Valor era 3
         input_pt["data_termino"] = "2023-01-31"  # Valor era "2023-01-15"
         response = self.put_plano_trabalho(input_pt)
@@ -418,7 +419,7 @@ class TestGetPlanoTrabalho(BasePTTest):
     def test_get_plano_trabalho(self, example_pt):  # pylint: disable=unused-argument
         """Consulta um plano de trabalho existente."""
         # Inclui os campos de resposta do json que não estavam no template
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["cancelado"] = False
         input_pt["contribuicoes"][1]["id_entrega"] = None
         input_pt["contribuicoes"][1]["descricao_contribuicao"] = None
