@@ -2,6 +2,8 @@
 Plano de Trabalho.
 """
 
+from copy import deepcopy
+
 import pytest
 from fastapi import status
 
@@ -28,7 +30,7 @@ class TestCreatePTMissingMandatoryFieldsAvaliacaoRegistrosExecucao(BasePTTest):
         requisição quando algum campo obrigatório da avaliação de
         registros de execução está faltando.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         _, field_list = omitted_fields
         for field in field_list:
             input_pt["avaliacoes_registros_execucao"][0][field] = None
@@ -60,7 +62,7 @@ class TestCreatePTInvalidAvaliacaoRegistrosExecucao(BasePTTest):
         """Testa a criação de um plano de trabalho com um valor inválido para
         o campo avaliacao_registros_execucao.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["avaliacoes_registros_execucao"][0]["id_periodo_avaliativo"] = str(
             10 + avaliacao_registros_execucao
         )

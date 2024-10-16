@@ -1,3 +1,9 @@
+"""Testes de permissões para acesso aos endpoints relacionados ao
+Plano de Trabalho.
+"""
+
+from copy import deepcopy
+
 from fastapi import status
 
 from .core_test import BasePTTest
@@ -57,7 +63,7 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
             example_pe_unidade_3: Fixture para criar um PE na unidade 3.
             example_pt_unidade_3: Fixture para criar um PT na unidade 3.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
 
         # Obter o plano de trabalho de uma unidade diferente
         response = self.get_plano_trabalho(
@@ -108,7 +114,7 @@ class TestPlanoDeTrabalhoDiferenteUnidade(BasePTTest):
             header_admin (dict): Cabeçalho HTTP do usuário logado como admin.
             admin_credentials (dict): Credenciais do usuário admin.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["cod_unidade_autorizadora"] = 3  # unidade diferente
         for contribuicao in input_pt["contribuicoes"]:
             if contribuicao["tipo_contribuicao"] in (1, 3):

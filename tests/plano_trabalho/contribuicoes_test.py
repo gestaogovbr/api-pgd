@@ -1,6 +1,7 @@
 """Testes para validar uma Contribuição do Plano de Trabalho.
 """
 
+from copy import deepcopy
 from typing import Optional
 
 import pytest
@@ -38,7 +39,7 @@ class TestCreatePTMissingMandatoryFieldsContribuicoes(BasePTTest):
         requisição quando algum campo obrigatório da contribuição está
         faltando.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["id_plano_trabalho"] = "111222333"
         input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
         input_pt["contribuicoes"][0][
@@ -67,7 +68,7 @@ class TestCreatePTInvalidTipoContribuicao(BasePTTest):
         Verifica se o endpoint de criação de Plano de Trabalho rejeita a
         requisição quando o tipo de contribuição é inválido.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
 
         response = self.put_plano_trabalho(input_pt)
@@ -97,7 +98,7 @@ class TestPercentualContribuicao(BasePTTest):
             percentual_contribuicao (int): Valor do percentual de
                 contribuição a ser testado.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         input_pt["contribuicoes"][0][
             "percentual_contribuicao"
         ] = percentual_contribuicao
@@ -132,7 +133,7 @@ class TestCreatePTOmitOptionalFields(BasePTTest):
         omitted_fields: list,
     ):
         """Tenta criar um novo plano de trabalho omitindo campos opcionais"""
-        partial_input_pt = self.input_pt.copy()
+        partial_input_pt = deepcopy(self.input_pt)
         offset, field_list = omitted_fields
         for field in field_list:
             for contribuicao in partial_input_pt["contribuicoes"]:
@@ -163,7 +164,7 @@ class TestCreatePTNullOptionalFields(BasePTTest):
         nulled_fields: list,
     ):
         """Tenta criar um novo plano de trabalho enviando null nos campos opcionais"""
-        partial_input_pt = self.input_pt.copy()
+        partial_input_pt = deepcopy(self.input_pt)
         offset, field_list = nulled_fields
         for field in field_list:
             for contribuicao in partial_input_pt["contribuicoes"]:
@@ -218,7 +219,7 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
         Created ou 422 Unprocessable Entity) e se as mensagens de erro
         esperadas estão presentes na resposta.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         contribuicao = input_pt["contribuicoes"][0]
         contribuicao["tipo_contribuicao"] = tipo_contribuicao
         contribuicao["id_plano_entregas"] = id_plano_entregas
@@ -256,7 +257,7 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
         """Verifica se a referência feita à Entrega é uma entrega que existe,
         quando tipo_contribuicao==1. Se ela não existir, deve retornar erro.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         id_plano_entregas = "1"
         contribuicao = input_pt["contribuicoes"][0]
         contribuicao["tipo_contribuicao"] = 1

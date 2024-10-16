@@ -3,6 +3,8 @@ Testes relacionados à vinculação do Plano de Trabalho a um Participante
 que tem um cod_unidade_lotacao diferente do seu cod_unidade_executora.
 """
 
+from copy import deepcopy
+
 from fastapi import status
 
 from util import assert_error_message
@@ -25,7 +27,7 @@ class TestCreatePlanoTrabalhoParticipanteOutraUnidade(BasePTTest):
         diferente do cod_unidade_executora. Verifica se o Plano de Trabalho
         criado possui os dados informados para sua criação.
         """
-        input_pt = self.input_pt.copy()
+        input_pt = deepcopy(self.input_pt)
         # cod_unidade_lotacao do Participante criado pela fixture example_part
         # é 99
         # cod_unidade_executora original do input_part é 99
