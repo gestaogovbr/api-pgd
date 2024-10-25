@@ -1,6 +1,11 @@
 # Release notes
 
 
+## 3.2.2
+
+* Handle error when attempting to log in with a non-existing user
+
+
 ## 3.2.1
 
 * Add additional explanation about cod_unidade_autorizadora in the
