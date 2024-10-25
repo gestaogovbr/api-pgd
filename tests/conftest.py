@@ -208,6 +208,12 @@ def fixture_register_user_2(
 
 
 @pytest.fixture()
+def non_existing_user_credentials() -> dict:
+    """Retorna pseudo credenciais de um usuário não existente."""
+    return {"email": "naoexiste@naoexiste.com", "password": "inexistente"}
+
+
+@pytest.fixture()
 def disabled_user_1(
     header_admin: dict,  # pylint: disable=unused-argument
     user1_credentials: dict,

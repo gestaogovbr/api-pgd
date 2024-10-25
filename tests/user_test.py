@@ -179,6 +179,24 @@ class TestUserAuthentication(BaseUserTest):
         token = header_usr_1.get("Authorization")
         assert isinstance(token, str)
 
+    def test_attempt_log_in_non_existent_user(
+        self,
+        truncate_users,  # pylint: disable=unused-argument
+        non_existing_user_credentials: dict,
+    ):
+        """Tenta fazer login com um usuário que não existe.
+
+        Args:
+            truncate_users (fixture): Trunca a tabela de usuários.
+            non_existing_user_credentials (dict): Credenciais do usuário 1.
+        """
+        # Faz login com um usuário que não existe.
+        with pytest.raises(HTTPStatusError):
+            self.get_bearer_token(
+                username=non_existing_user_credentials["email"],
+                password=non_existing_user_credentials["password"],
+            )
+
     def test_attempt_log_in_disabled_user(
         self,
         truncate_users,  # pylint: disable=unused-argument
