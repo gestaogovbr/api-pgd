@@ -108,10 +108,7 @@ async def authenticate_user(
     """
     user = await get_user(db_session=db, email=username)
 
-    if not user:
-        return False
-
-    if not verify_password(password, user.password):
+    if not user or not verify_password(password, user.password):
         raise InvalidCredentialsError("Username ou password incorretos")
 
     if user.disabled:
