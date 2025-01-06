@@ -468,6 +468,52 @@ async def create_or_update_plano_entregas(
         ) from exception
 
 
+@app.delete(
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+    "/plano_entregas/{id_plano_entregas}",
+    summary="Exclui um plano de entregas",
+    tags=["plano de entregas"],
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=response_schemas.outra_unidade_error,
+)
+
+async def delete_plano_entregas(
+    user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    id_plano_entregas: str,
+    db: DbContextManager = Depends(DbContextManager),
+) -> Response:
+    """Exclui um plano de entregas."""
+
+    # Validações de permissão
+    check_permissions(origem_unidade, cod_unidade_autorizadora, user)
+
+    # Verifica se existe
+    db_plano_entregas = await crud.get_plano_entregas(
+        db_session=db,
+        origem_unidade=origem_unidade,
+        cod_unidade_autorizadora=cod_unidade_autorizadora,
+        id_plano_entregas=id_plano_entregas,
+    )
+
+    try:
+        if not db_plano_entregas:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND, detail="Plano de entrega não encontrado"
+            )
+        else:
+            await crud.delete_plano_entregas(
+                db_session=db,
+                plano_entregas=db_plano_entregas,
+            )
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except IntegrityError as exception:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"IntegrityError: {str(exception)}",
+        ) from exception
+
 # ### Plano Trabalho ---------------------------------------
 @app.get(
     "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
@@ -608,6 +654,52 @@ async def create_or_update_plano_trabalho(
     return novo_plano_trabalho
 
 
+@app.delete(
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+    "/plano_trabalho/{id_plano_trabalho}",
+    summary="Exclui um plano de trabalho",
+    tags=["plano de trabalho"],
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=response_schemas.outra_unidade_error,
+)
+async def delete_plano_trabalho(
+    user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    id_plano_trabalho: str,
+    db: DbContextManager = Depends(DbContextManager),
+) -> Response:
+    """Exclui um plano de trabalho."""
+
+    # Validações de permissão
+    check_permissions(origem_unidade, cod_unidade_autorizadora, user)
+
+    # Verifica se existe
+    db_plano_trabalho = await crud.get_plano_trabalho(
+        db_session=db,
+        origem_unidade=origem_unidade,
+        cod_unidade_autorizadora=cod_unidade_autorizadora,
+        id_plano_trabalho=id_plano_trabalho,
+    )
+
+    try:
+        if not db_plano_trabalho:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND, detail="Plano de trabalho não encontrado"
+            )
+        else:
+            await crud.delete_plano_trabalho(
+                db_session=db,
+                plano_trabalho=db_plano_trabalho,
+            )
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except IntegrityError as exception:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"IntegrityError: {str(exception)}",
+        ) from exception
+
+
 # ### Participante ---------------------------------------
 @app.get(
     "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
@@ -731,3 +823,95 @@ async def create_or_update_participante(
     participante_gravado = schemas.ParticipanteSchema.model_validate(novo_participante)
 
     return participante_gravado
+
+
+@app.delete(
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+    "/{cod_unidade_lotacao}/participante/{matricula_siape}",
+    summary="Exclui um participante",
+    tags=["participante"],
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=response_schemas.outra_unidade_error,
+)
+async def delete_participante(
+    user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    cod_unidade_lotacao: int,
+    matricula_siape: str,
+    db: DbContextManager = Depends(DbContextManager),
+) -> Response:
+    """Exclui um participante do PGD."""
+
+    # Validações de permissão
+    check_permissions(origem_unidade, cod_unidade_autorizadora, user)
+
+    # Verifica se existe
+    db_participante = await crud.get_participante(
+        db_session=db,
+        origem_unidade=origem_unidade,
+        cod_unidade_autorizadora=cod_unidade_autorizadora,
+        cod_unidade_lotacao=cod_unidade_lotacao,
+        matricula_siape=matricula_siape,
+    )
+
+    try:
+        if not db_participante:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND, detail="Participante não encontrado"
+            )
+        else:
+            db_all_plano_trabalho = await crud.get_all_plano_trabalho_by_participante(
+                db_session=db,
+                origem_unidade=db_participante.origem_unidade,
+                cod_unidade_autorizadora=db_participante.cod_unidade_autorizadora,
+                cod_unidade_lotacao=db_participante.cod_unidade_lotacao,
+                matricula_siape=db_participante.matricula_siape
+            )
+            if db_all_plano_trabalho:
+                raise HTTPException(
+                    status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="Existe um ou mais planos de trabalho associados a este participante",
+                )
+            await crud.delete_participante(
+                db_session=db,
+                participante=db_participante,
+            )
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except IntegrityError as exception:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"IntegrityError: {str(exception)}",
+        ) from exception
+
+
+@app.delete(
+    "/organizacao/{origem_unidade}/{cod_unidade_autorizadora}/limpar-migracao",
+    summary="Limpa todos os registros enviados pela instituição",
+    tags=["migracao"],
+    status_code=status.HTTP_204_NO_CONTENT
+)
+
+async def delete_all(
+    user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    db: DbContextManager = Depends(DbContextManager),
+) -> Response:
+    """Exclui um plano de entregas."""
+
+    # Validações de permissão
+    check_permissions(origem_unidade, cod_unidade_autorizadora, user)
+
+    try:
+        await crud.delete_all_per_organizacao(
+            db_session=db,
+            origem_unidade=origem_unidade,
+            cod_unidade_autorizadora=cod_unidade_autorizadora
+        )
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except IntegrityError as exception:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"IntegrityError: {str(exception)}",
+        ) from exception

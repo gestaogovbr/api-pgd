@@ -4,7 +4,7 @@
 from datetime import datetime, date
 from typing import Optional
 
-from sqlalchemy import select, and_, func
+from sqlalchemy import select, and_, func, delete
 from sqlalchemy.sql import text
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
@@ -43,6 +43,44 @@ async def get_plano_trabalho(
     if db_plano_trabalho:
         return schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho)
     return None
+
+async def get_all_plano_trabalho_by_participante(
+    db_session: DbContextManager,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int,
+    cod_unidade_lotacao: int,
+    matricula_siape: str,
+) -> list[schemas.PlanoTrabalhoSchema]:
+    """Traz um plano de trabalho a partir do banco de dados, consultando
+    a partir dos parâmetros informados do participante.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão async
+            do SQL Alchemy.
+        origem_unidade (str): Código do sistema da unidade: “SIAPE” ou “SIORG”
+        cod_unidade_autorizadora (int): Código da unidade autorizadora.
+        cod_unidade_lotacao (int): Código da unidade de lotação.
+        matricula_siape (str): Matrícula SIAPE do participante.
+    Returns:
+        Optional[schemas.PlanoTrabalhoSchema]: Esquema Pydantic do Plano
+            de Trabalho encontrado ou None.
+    """
+    async with db_session as session:
+        result = await session.execute(
+            select(models.PlanoTrabalho)
+            .filter_by(origem_unidade=origem_unidade)
+            .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
+            .filter_by(cod_unidade_lotacao_participante=cod_unidade_lotacao)
+            .filter_by(matricula_siape=matricula_siape)
+        )
+        db_all_plano_trabalho = result.unique().scalars().all()
+
+        return [
+            schemas.PlanoTrabalhoSchema(
+                **schemas.PlanoTrabalhoSchema.model_validate(plano_trabalho).model_dump()
+            )
+            for plano_trabalho in db_all_plano_trabalho
+        ]
 
 
 async def check_planos_trabalho_per_period(
@@ -246,6 +284,37 @@ async def update_plano_trabalho(
     return await create_plano_trabalho(db_session, plano_trabalho)
 
 
+async def delete_plano_trabalho(
+    db_session: DbContextManager,
+    plano_trabalho: schemas.PlanoTrabalhoSchema,
+) -> None:
+    """Exclui um plano de trabalho conforme os dados recebidos no
+    esquema Pydantic em plano_trabalho.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão
+            async do SQL Alchemy.
+        plano_trabalho (schemas.PlanoTrabalhoSchema): Dados do plano
+            de trabalho como um esquema Pydantic.
+
+    Returns:
+        None: Não retorna nada
+    """
+    async with db_session as session:
+        result = await session.execute(
+            select(models.PlanoTrabalho)
+            .filter_by(origem_unidade=plano_trabalho.origem_unidade)
+            .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
+            .filter_by(
+                id_plano_trabalho=plano_trabalho.id_plano_trabalho
+            )
+        )
+        db_plano_trabalho = result.unique().scalar_one()
+        await session.delete(db_plano_trabalho)
+        await session.commit()
+    return None
+
+
 async def get_plano_entregas(
     db_session: DbContextManager,
     origem_unidade: str,
@@ -403,6 +472,32 @@ async def update_plano_entregas(
     return await create_plano_entregas(db_session, plano_entregas)
 
 
+async def delete_plano_entregas(
+    db_session: DbContextManager,
+    plano_entregas: schemas.PlanoEntregasSchema,
+) -> None:
+    """Exclui um plano de entregas conforme
+    Args:
+        db_session (DbContextManager): Context manager para a sessão
+            async do SQL Alchemy.
+        plano_entregas (schemas.PlanoEntregasSchema): Dados do plano
+            de entregas como um esquema Pydantic.
+
+    Returns:
+        None: Não retorna nada
+    """
+    async with db_session as session:
+        result = await session.execute(
+            select(models.PlanoEntregas)
+            .filter_by(origem_unidade=plano_entregas.origem_unidade)
+            .filter_by(cod_unidade_autorizadora=plano_entregas.cod_unidade_autorizadora)
+            .filter_by(id_plano_entregas=plano_entregas.id_plano_entregas)
+        )
+        db_plano_entregas = result.unique().scalar_one()
+        await session.delete(db_plano_entregas)
+        await session.commit()
+    return None
+
 async def get_participante(
     db_session: DbContextManager,
     origem_unidade: str,
@@ -506,6 +601,78 @@ async def update_participante(
         await session.commit()
         await session.refresh(db_participante)
     return schemas.ParticipanteSchema.model_validate(db_participante)
+
+
+async def delete_participante(
+    db_session: DbContextManager,
+    participante: schemas.ParticipanteSchema,
+) -> None:
+    """Exclui um participante conforme os dados recebidos no
+    esquema Pydantic em participante.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão
+            async do SQL Alchemy.
+        participante (schemas.ParticipanteSchema): Dados do participante como um esquema Pydantic.
+
+    Returns:
+        None: Não retorna nada
+    """
+    async with db_session as session:
+        # find and delete
+        result = await session.execute(
+            select(models.Participante)
+            .filter_by(origem_unidade=participante.origem_unidade)
+            .filter_by(cod_unidade_autorizadora=participante.cod_unidade_autorizadora)
+            .filter_by(cod_unidade_lotacao=participante.cod_unidade_lotacao)
+            .filter_by(matricula_siape=participante.matricula_siape)
+        )
+
+        db_participante = result.unique().scalar_one()
+        await session.delete(db_participante)
+        await session.commit()
+    return None
+
+
+async def delete_all_per_organizacao(
+    db_session: DbContextManager,
+    origem_unidade: str,
+    cod_unidade_autorizadora: int
+) -> None:
+    """Exclui todos os registros de migração de uma instituição.
+
+    Args:
+        db_session (DbContextManager): Context manager para a sessão
+            async do SQL Alchemy.
+        origem_unidade (str): Origem do sistema da unidade: "SIAPE" ou
+            "SIORG"
+        cod_unidade_autorizadora (int): Código da unidade autorizadora.
+
+    Returns:
+        None: Não retorna nada
+    """
+    async with db_session as session:
+        await session.execute(
+            delete(models.PlanoTrabalho).where(
+                models.PlanoTrabalho.origem_unidade == origem_unidade,
+                models.PlanoTrabalho.cod_unidade_autorizadora == cod_unidade_autorizadora
+            )
+        )
+        await session.execute(
+            delete(models.PlanoEntregas).where(
+            models.PlanoEntregas.origem_unidade == origem_unidade,
+            models.PlanoEntregas.cod_unidade_autorizadora == cod_unidade_autorizadora
+            )
+        )
+        await session.execute(
+            delete(models.Participante).where(
+                models.Participante.origem_unidade == origem_unidade,
+                models.Participante.cod_unidade_autorizadora == cod_unidade_autorizadora
+
+            )
+        )
+        await session.commit()
+    return None
 
 
 # The following methods are only for test in CI/CD environment

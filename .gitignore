@@ -10,3 +10,4 @@ mnt/
 .pyenv
 .pytest_cache
 .DS_Store
+.idea
