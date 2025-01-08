@@ -634,7 +634,7 @@ async def delete_participante(
     return None
 
 
-async def delete_all_per_organizacao(
+async def delete_all_per_unidade_autorizadora(
     db_session: DbContextManager,
     origem_unidade: str,
     cod_unidade_autorizadora: int

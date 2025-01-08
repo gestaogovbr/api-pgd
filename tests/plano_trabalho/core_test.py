@@ -79,6 +79,7 @@ class BasePTTest:
         input_pt: dict,
         user1_credentials: dict,
         header_usr_1: dict,
+        header_usr_2: dict,
         client: Client,
     ):
         """Configurar o ambiente de teste.
@@ -92,12 +93,14 @@ class BasePTTest:
             input_pt (dict): Dados usados para ciar um PT
             user1_credentials (dict): Credenciais do usuário 1.
             header_usr_1 (dict): Cabeçalhos HTTP para o usuário 1.
+            header_usr_2 (dict): Cabeçalhos HTTP para o usuário 2.
             client (Client): Uma instância do cliente HTTPX.
         """
         # pylint: disable=attribute-defined-outside-init
         self.input_pt = input_pt
         self.user1_credentials = user1_credentials
         self.header_usr_1 = header_usr_1
+        self.header_usr_2 = header_usr_2
         self.client = client
 
     @staticmethod
@@ -221,6 +224,34 @@ class BasePTTest:
         )
         return response
 
+    def delete_plano_trabalho(
+        self,
+        id_plano_trabalho: str,
+        cod_unidade_autorizadora: int,
+        origem_unidade: Optional[str] = "SIAPE",
+        header_usr: Optional[dict] = None,
+    ) -> Response:
+        """Exclui um Plano de Trabalho pela API, usando o verbo DELETE.
+
+        Args:
+            id_plano_trabalho (str): O ID do Plano de Trabalho.
+            cod_unidade_autorizadora (int): O ID da unidade autorizadora.
+            origem_unidade (str): origem do código da unidade.
+            header_usr (dict): Cabeçalhos HTTP para o usuário.
+
+        Returns:
+            httpx.Response: A resposta da API.
+        """
+        if header_usr is None:
+            header_usr = self.header_usr_1
+        response = self.client.delete(
+            (
+                f"/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+                f"/plano_trabalho/{id_plano_trabalho}"
+            ),
+            headers=header_usr,
+        )
+        return response
 
 class TestCreatePlanoTrabalho(BasePTTest):
     """Testes para criação de Plano de Trabalho."""
@@ -441,3 +472,53 @@ class TestGetPlanoTrabalho(BasePTTest):
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
+
+class TestDeletePlanoTrabalho(BasePTTest):
+    """Testes para excluir um Plano de Trabalho."""
+
+    def test_delete_plano_trabalho_success(self, example_pt):  # pylint: disable=unused-argument
+        """Exclui um plano de trabalho existente."""
+        # Inclui os campos de resposta do json que não estavam no template
+        input_pt = deepcopy(self.input_pt)
+        input_pt["cancelado"] = False
+        input_pt["contribuicoes"][1]["id_entrega"] = None
+        input_pt["contribuicoes"][1]["descricao_contribuicao"] = None
+
+        response = self.get_plano_trabalho(
+            input_pt["id_plano_trabalho"], input_pt["cod_unidade_autorizadora"]
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+        response = self.delete_plano_trabalho(
+            input_pt["id_plano_trabalho"], input_pt["cod_unidade_autorizadora"]
+        )
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+        response = self.get_plano_trabalho(
+            input_pt["id_plano_trabalho"], input_pt["cod_unidade_autorizadora"]
+        )
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_delete_plano_trabalho_fail_when_not_found(self):
+        """Tenta excluir um plano de trabalho inexistente."""
+        non_existent_id = "888888888"
+
+        response = self.delete_plano_trabalho(
+            non_existent_id, self.user1_credentials["cod_unidade_autorizadora"]
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.json().get("detail", None) == "Plano de trabalho não encontrado"
+
+    def test_delete_participante_fail_when_different_unit(self):
+        input_pt = deepcopy(self.input_pt)
+        input_pt["cod_unidade_autorizadora"] = 3
+
+        response = self.delete_plano_trabalho(
+            input_pt["id_plano_trabalho"],
+            input_pt["cod_unidade_autorizadora"],
+            header_usr=self.header_usr_2,
+        )
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        detail_msg = "Usuário não tem permissão na cod_unidade_autorizadora informada"
+        assert response.json().get("detail", None) == detail_msg

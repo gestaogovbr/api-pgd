@@ -892,19 +892,19 @@ async def delete_participante(
     status_code=status.HTTP_204_NO_CONTENT
 )
 
-async def delete_all(
+async def delete_all_migration(
     user: Annotated[schemas.UsersSchema, Depends(crud_auth.get_current_active_user)],
     origem_unidade: str,
     cod_unidade_autorizadora: int,
     db: DbContextManager = Depends(DbContextManager),
 ) -> Response:
-    """Exclui um plano de entregas."""
+    """Exclui Todas as migrações de uma unidade autorizadora"""
 
     # Validações de permissão
     check_permissions(origem_unidade, cod_unidade_autorizadora, user)
 
     try:
-        await crud.delete_all_per_organizacao(
+        await crud.delete_all_per_unidade_autorizadora(
             db_session=db,
             origem_unidade=origem_unidade,
             cod_unidade_autorizadora=cod_unidade_autorizadora
