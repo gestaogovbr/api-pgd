@@ -166,6 +166,33 @@ class BaseParticipanteTest:
         )
         return response
 
+    def delete_participante(
+        self,
+        matricula_siape: str,
+        cod_unidade_autorizadora: int,
+        cod_unidade_lotacao: int,
+        header_usr: Optional[dict] = None,
+    ) -> Response:
+        """Obtém um Participante pela API, usando o verbo GET.
+
+        Args:
+            matricula_siape (str): A matrícula SIAPE do Participante.
+            cod_unidade_autorizadora (int): O ID da unidade autorizadora.
+            cod_unidade_lotacao (int): O ID da unidade de lotação.
+            header_usr (dict): Cabeçalhos HTTP para o usuário.
+
+        Returns:
+            httpx.Response: A resposta da API.
+        """
+        if header_usr is None:
+            header_usr = self.header_usr_1
+        response = self.client.delete(
+            f"/organizacao/SIAPE/{cod_unidade_autorizadora}"
+            f"/{cod_unidade_lotacao}"
+            f"/participante/{matricula_siape}",
+            headers=header_usr,
+        )
+        return response
 
 class TestCreateParticipante(BaseParticipanteTest):
     """Testes para criação de Participante."""
@@ -608,3 +635,47 @@ class TestCreateParticipanteDateValidation(BaseParticipanteTest):
         response = self.put_participante(input_part)
 
         assert response.status_code == status.HTTP_201_CREATED
+
+class TestDeleteParticipante(BaseParticipanteTest):
+    """Testes para a exclusão de Participantes."""
+
+    def test_delete_participante(self, example_part):  # pylint: disable=unused-argument
+        response = self.delete_participante(
+            matricula_siape=self.input_part["matricula_siape"],
+            cod_unidade_autorizadora=self.input_part["cod_unidade_autorizadora"],
+            cod_unidade_lotacao=self.input_part["cod_unidade_lotacao"],
+        )
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    def test_delete_participante_not_found(self):
+        response = self.delete_participante(
+            matricula_siape=3311776,
+            cod_unidade_autorizadora=self.user1_credentials["cod_unidade_autorizadora"],
+            cod_unidade_lotacao=1,
+        )
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.json().get("detail", None) == "Participante não encontrado"
+
+    def test_delete_participante_with_plano_trabalho(self, example_part: dict, example_pt: dict):
+        response = self.delete_participante(
+            matricula_siape=self.input_part["matricula_siape"],
+            cod_unidade_autorizadora=self.input_part["cod_unidade_autorizadora"],
+            cod_unidade_lotacao=self.input_part["cod_unidade_lotacao"])
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.json().get("detail", None) == "Existe um ou mais planos de trabalho associados a este participante"
+
+    def test_delete_participante_in_different_unit(
+            self, example_part_unidade_3: dict  # pylint: disable=unused-argument
+    ):
+        input_part = deepcopy(self.input_part)
+        input_part["cod_unidade_autorizadora"] = 3
+
+        response = self.delete_participante(
+            matricula_siape=input_part["matricula_siape"],
+            cod_unidade_autorizadora=input_part["cod_unidade_autorizadora"],
+            cod_unidade_lotacao=input_part["cod_unidade_lotacao"],
+            header_usr=self.header_usr_2,
+        )
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        detail_msg = "Usuário não tem permissão na cod_unidade_autorizadora informada"
+        assert response.json().get("detail", None) == detail_msg
