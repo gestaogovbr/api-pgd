@@ -500,7 +500,7 @@ async def delete_plano_entregas(
     try:
         if not db_plano_entregas:
             raise HTTPException(
-                status.HTTP_404_NOT_FOUND, detail="Plano de entrega não encontrado"
+                status.HTTP_404_NOT_FOUND, detail="Plano de entregas não encontrado"
             )
         else:
             await crud.delete_plano_entregas(

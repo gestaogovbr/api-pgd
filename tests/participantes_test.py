@@ -639,7 +639,13 @@ class TestCreateParticipanteDateValidation(BaseParticipanteTest):
 class TestDeleteParticipante(BaseParticipanteTest):
     """Testes para a exclusão de Participantes."""
 
-    def test_delete_participante(self, example_part):  # pylint: disable=unused-argument
+    def test_delete_participante_success(self, example_part):  # pylint: disable=unused-argument
+        response = self.get_participante(
+            matricula_siape=self.input_part["matricula_siape"],
+            cod_unidade_autorizadora=self.input_part["cod_unidade_autorizadora"],
+            cod_unidade_lotacao=self.input_part["cod_unidade_lotacao"])
+        assert response.status_code == status.HTTP_200_OK
+
         response = self.delete_participante(
             matricula_siape=self.input_part["matricula_siape"],
             cod_unidade_autorizadora=self.input_part["cod_unidade_autorizadora"],
@@ -647,7 +653,13 @@ class TestDeleteParticipante(BaseParticipanteTest):
         )
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
-    def test_delete_participante_not_found(self):
+        response = self.get_participante(
+            matricula_siape=self.input_part["matricula_siape"],
+            cod_unidade_autorizadora=self.input_part["cod_unidade_autorizadora"],
+            cod_unidade_lotacao=self.input_part["cod_unidade_lotacao"])
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_delete_participante_fail_when_not_found(self):
         response = self.delete_participante(
             matricula_siape=3311776,
             cod_unidade_autorizadora=self.user1_credentials["cod_unidade_autorizadora"],
@@ -656,7 +668,7 @@ class TestDeleteParticipante(BaseParticipanteTest):
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert response.json().get("detail", None) == "Participante não encontrado"
 
-    def test_delete_participante_with_plano_trabalho(self, example_part: dict, example_pt: dict):
+    def test_delete_participante_fail_with_plano_trabalho(self, example_part: dict, example_pt: dict):
         response = self.delete_participante(
             matricula_siape=self.input_part["matricula_siape"],
             cod_unidade_autorizadora=self.input_part["cod_unidade_autorizadora"],
@@ -664,7 +676,7 @@ class TestDeleteParticipante(BaseParticipanteTest):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert response.json().get("detail", None) == "Existe um ou mais planos de trabalho associados a este participante"
 
-    def test_delete_participante_in_different_unit(
+    def test_delete_participante_fail_when_different_unit(
             self, example_part_unidade_3: dict  # pylint: disable=unused-argument
     ):
         input_part = deepcopy(self.input_part)

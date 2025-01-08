@@ -64,6 +64,7 @@ class BasePETest:
         input_pe: dict,
         user1_credentials: dict,
         header_usr_1: dict,
+        header_usr_2: dict,
         client: Client,
     ):
         """Configurar o ambiente de teste.
@@ -74,12 +75,14 @@ class BasePETest:
             input_pe (dict): Dados usados para criar um PE.
             user1_credentials (dict): Credenciais do usuário 1.
             header_usr_1 (dict): Cabeçalhos HTTP para o usuário 1.
+            header_usr_2 (dict): Cabeçalhos HTTP para o usuário 2.
             client (Client): Uma instância do cliente HTTPX.
         """
         # pylint: disable=attribute-defined-outside-init
         self.input_pe = input_pe
         self.user1_credentials = user1_credentials
         self.header_usr_1 = header_usr_1
+        self.header_usr_2 = header_usr_2
         self.client = client
 
     @staticmethod
@@ -181,6 +184,34 @@ class BasePETest:
         )
         return response
 
+    def delete_plano_entregas(
+        self,
+        id_plano_entregas: str,
+        cod_unidade_autorizadora: int,
+        origem_unidade: Optional[str] = "SIAPE",
+        header_usr: Optional[dict] = None,
+    ) -> Response:
+        """Exclui um Plano de Entregas pela API, usando o verbo DELETE.
+
+        Args:
+            id_plano_entregas (str): O ID do Plano de Entregas.
+            cod_unidade_autorizadora (int): O ID da unidade autorizadora.
+            origem_unidade (str): origem do código da unidade.
+            header_usr (dict): Cabeçalhos HTTP para o usuário.
+
+        Returns:
+            httpx.Response: A resposta da API.
+        """
+        if header_usr is None:
+            header_usr = self.header_usr_1
+        response = self.client.delete(
+            (
+                f"/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
+                f"/plano_entregas/{id_plano_entregas}"
+            ),
+            headers=header_usr,
+        )
+        return response
 
 # Os testes usam muitas fixtures, então necessariamente precisam de
 # muitos argumentos. Além disso, algumas fixtures não retornam um valor
@@ -726,3 +757,66 @@ class TestCreatePEDuplicateData(BasePETest):
             header_usr=header_usr_2,
         )
         assert response.status_code == http_status.HTTP_201_CREATED
+
+
+class TestDeletePlanoEntregas(BasePETest):
+    """Testes para a exclusão de Planos de Entregas."""
+
+    def test_delete_plano_entregas_success(
+        self,
+        # pylint: disable=unused-argument
+        truncate_pe,  # limpa a base de Planos de Entregas
+        example_pe,  # cria um Plano de Entregas de exemplo
+    ):
+        """Testa a busca de um Plano de Entregas existente.
+
+        Verifica se a API retorna um status 200 OK e se o Plano de Entregas
+        retornado é igual ao Plano de Entregas criado.
+        """
+
+        response = self.get_plano_entregas(
+            self.input_pe["id_plano_entregas"],
+            self.user1_credentials["cod_unidade_autorizadora"],
+        )
+        assert response.status_code == http_status.HTTP_200_OK
+
+        response = self.delete_plano_entregas(
+            self.input_pe["id_plano_entregas"],
+            self.user1_credentials["cod_unidade_autorizadora"],
+        )
+        assert response.status_code == http_status.HTTP_204_NO_CONTENT
+
+        response = self.get_plano_entregas(
+            self.input_pe["id_plano_entregas"],
+            self.user1_credentials["cod_unidade_autorizadora"],
+        )
+        assert response.status_code == http_status.HTTP_404_NOT_FOUND
+
+    def test_delete_plano_entregas_fail_when_not_found(self):
+        """Testa a busca de um Plano de Entregas inexistente.
+
+        Verifica se a API retorna um status 404 Not Found e a mensagem
+        de erro "Plano de entregas não encontrado".
+        """
+
+        response = self.delete_plano_entregas(
+            "888888888",
+            self.user1_credentials["cod_unidade_autorizadora"],
+        )
+        assert response.status_code == http_status.HTTP_404_NOT_FOUND
+        assert response.json().get("detail", None) == "Plano de entregas não encontrado"
+
+    def test_delete_plano_entregas_fail_when_different_unit(
+        self, example_pe: dict  # pylint: disable=unused-argument
+    ):
+        input_pe = deepcopy(self.input_pe)
+        input_pe["cod_unidade_autorizadora"] = 3000
+
+        response = self.delete_plano_entregas(
+            input_pe["id_plano_entregas"],
+            input_pe["cod_unidade_autorizadora"],
+            header_usr=self.header_usr_2,
+        )
+        assert response.status_code == http_status.HTTP_403_FORBIDDEN
+        detail_msg = "Usuário não tem permissão na cod_unidade_autorizadora informada"
+        assert response.json().get("detail", None) == detail_msg
