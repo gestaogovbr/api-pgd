@@ -246,7 +246,9 @@ class TestCreatePlanoTrabalho(BasePTTest):
     @pytest.mark.parametrize(
         "missing_fields", enumerate(FIELDS_PLANO_TRABALHO["mandatory"])
     )
-    def test_create_plano_trabalho_missing_mandatory_fields(self, missing_fields):
+    def test_create_plano_trabalho_missing_mandatory_fields(
+        self, missing_fields: tuple[int, list[str]]
+    ):
         """Tenta criar um plano de trabalho, faltando campos obrigatórios.
         Tem que ser um plano de trabalho novo, pois na atualização de um
         plano de trabalho existente, o campo que ficar faltando será
