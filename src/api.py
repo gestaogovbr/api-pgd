@@ -1,25 +1,28 @@
 """Definição das rotas, endpoints e seu comportamento na API.
 """
 
+import json
+import logging
+import os
 from contextlib import asynccontextmanager
 from datetime import timedelta
-import json
-import os
 from typing import Annotated, Union
 
 from fastapi import Depends, FastAPI, HTTPException, status, Header, Request, Response
-from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import IntegrityError
-
 
 import crud
 import crud_auth
-from db_config import DbContextManager, create_db_and_tables
 import email_config
 import response_schemas
 import schemas
+from db_config import DbContextManager, create_db_and_tables
 from util import check_permissions
+
+LOGGER = logging.getLogger(__name__)
+
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
 TEST_ENVIRONMENT = os.environ.get("TEST_ENVIRONMENT", "False") == "True"
@@ -911,6 +914,7 @@ async def delete_all_migration(
         )
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     except IntegrityError as exception:
+        LOGGER.error(exception)
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"IntegrityError: {str(exception)}",

@@ -6,10 +6,9 @@ from copy import deepcopy
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
+import pytest
 from fastapi import status
 from httpx import Client, Response
-
-import pytest
 
 # Relação de campos obrigatórios para testar sua ausência:
 FIELDS_PARTICIPANTES = {

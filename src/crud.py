@@ -4,12 +4,13 @@
 from datetime import datetime, date
 from typing import Optional
 
-from sqlalchemy import select, and_, func, delete
-from sqlalchemy.sql import text
-from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
+from sqlalchemy import select, and_, func
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql import text
 
-import models, schemas
+import models
+import schemas
 from db_config import DbContextManager, sync_engine
 
 
@@ -652,25 +653,30 @@ async def delete_all_per_unidade_autorizadora(
         None: Não retorna nada
     """
     async with db_session as session:
-        await session.execute(
-            delete(models.PlanoTrabalho).where(
-                models.PlanoTrabalho.origem_unidade == origem_unidade,
-                models.PlanoTrabalho.cod_unidade_autorizadora == cod_unidade_autorizadora
-            )
+        to_del_pt = await session.execute(
+            select(models.PlanoTrabalho)
+            .filter_by(origem_unidade=origem_unidade)
+            .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
         )
-        await session.execute(
-            delete(models.PlanoEntregas).where(
-            models.PlanoEntregas.origem_unidade == origem_unidade,
-            models.PlanoEntregas.cod_unidade_autorizadora == cod_unidade_autorizadora
-            )
-        )
-        await session.execute(
-            delete(models.Participante).where(
-                models.Participante.origem_unidade == origem_unidade,
-                models.Participante.cod_unidade_autorizadora == cod_unidade_autorizadora
+        for pt in to_del_pt.unique().scalars().all():
+            session.delete(pt)
 
-            )
+        to_del_pe = await session.execute(
+            select(models.PlanoEntregas)
+            .filter_by(origem_unidade=origem_unidade)
+            .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
         )
+        for pe in to_del_pe.unique().scalars().all():
+            session.delete(pe)
+
+        to_del_part = await session.execute(
+            select(models.Participante)
+            .filter_by(origem_unidade=origem_unidade)
+            .filter_by(cod_unidade_autorizadora=cod_unidade_autorizadora)
+        )
+        for part in to_del_part.unique().scalars().all():
+            session.delete(part)
+
         await session.commit()
     return None
 

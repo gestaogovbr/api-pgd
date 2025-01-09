@@ -6,11 +6,9 @@ participante.
 from copy import deepcopy
 from typing import Optional
 
-from httpx import Client, Response
-from fastapi import status
-
 import pytest
-
+from fastapi import status
+from httpx import Client, Response
 from util import assert_error_message
 
 # grupos de campos opcionais e obrigatórios a testar

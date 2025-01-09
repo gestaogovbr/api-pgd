@@ -5,11 +5,9 @@ Testes relacionados ao Plano de Entregas da Unidade
 from copy import deepcopy
 from typing import Optional
 
-from httpx import Client, Response
-from fastapi import status as http_status
-
 import pytest
-
+from fastapi import status as http_status
+from httpx import Client, Response
 from util import assert_error_message
 
 # constantes
