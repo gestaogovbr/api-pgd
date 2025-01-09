@@ -148,7 +148,9 @@ async def create_plano_trabalho(
             .filter_by(origem_unidade=plano_trabalho.origem_unidade)
             .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
             .filter_by(matricula_siape=plano_trabalho.matricula_siape)
-            .filter_by(cod_unidade_lotacao=plano_trabalho.cod_unidade_lotacao_participante)
+            .filter_by(
+                cod_unidade_lotacao=plano_trabalho.cod_unidade_lotacao_participante
+            )
         )
         result = await session.execute(query)
         db_participante = result.scalars().unique().one_or_none()
@@ -236,9 +238,7 @@ async def update_plano_trabalho(
             select(models.PlanoTrabalho)
             .filter_by(origem_unidade=plano_trabalho.origem_unidade)
             .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
-            .filter_by(
-                id_plano_trabalho=plano_trabalho.id_plano_trabalho
-            )
+            .filter_by(id_plano_trabalho=plano_trabalho.id_plano_trabalho)
         )
         db_plano_trabalho = result.unique().scalar_one()
         await session.delete(db_plano_trabalho)
@@ -526,10 +526,12 @@ def truncate_plano_trabalho():
     Usado no ambiente de testes de integração contínua.
     """
     with sync_engine.connect() as conn:
-        result = conn.execute(text(
-            "TRUNCATE avaliacao_registros_execucao, contribuicao, "
-            "plano_trabalho CASCADE;"
-        ))
+        result = conn.execute(
+            text(
+                "TRUNCATE avaliacao_registros_execucao, contribuicao, "
+                "plano_trabalho CASCADE;"
+            )
+        )
         conn.commit()
     return result
 
