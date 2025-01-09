@@ -4,8 +4,8 @@
 ## 3.2.3
 
 * Handle error when submitting a PUT for plano_trabalho with a json
-  value of null for the contribuicoes field. It is now allowed and
-  handled properly (optional field)
+  value of null in the optional fields that are lists. It is now allowed
+  and handled properly
 
 
 ## 3.2.2
