@@ -1,6 +1,13 @@
 # Release notes
 
 
+## 3.2.3
+
+* Handle error when submitting a PUT for plano_trabalho with a json
+  value of null for the contribuicoes field. It is now allowed and
+  handled properly (optional field)
+
+
 ## 3.2.2
 
 * Handle error when attempting to log in with a non-existing user
