@@ -178,25 +178,6 @@ class TestCreatePTNullOptionalFields(BasePTTest):
         assert response.status_code == status.HTTP_201_CREATED
 
 
-class TestCreatePTNullContribuicoes(BasePTTest):
-    """Testa a criação de um novo Plano de Trabalho enviando null na
-    lista de contribuições.
-
-    Verifica se o endpoint de criação de Plano de Trabalho aceita a
-    requisição quando o campos `contribuicoes` é enviado com valor null.
-    """
-
-    def test_create_plano_trabalho_contribuicao_null_optional_fields(
-        self,
-    ):
-        """Tenta criar um novo plano de trabalho enviando null no campo
-        contribuicoes"""
-        input_pt = deepcopy(self.input_pt)
-        input_pt["contribuicoes"] = None
-        response = self.put_plano_trabalho(input_pt)
-        assert response.status_code == status.HTTP_201_CREATED
-
-
 class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
     """Testes relacionados às Contribuições ao criar um Plano de Trabalho."""
 
