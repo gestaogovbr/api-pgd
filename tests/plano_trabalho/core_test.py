@@ -283,6 +283,29 @@ class TestCreatePlanoTrabalho(BasePTTest):
         # Assert
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
+    @pytest.mark.parametrize(
+        "null_fields", enumerate(FIELDS_PLANO_TRABALHO["optional"])
+    )
+    def test_create_plano_trabalho_null_optional_fields(
+        self, null_fields: tuple[int, list[str]]
+    ):
+        """Tenta criar um plano de trabalho com valores json null nos
+        campos opcionais.
+        """
+        # Arrange
+        offset, field_list = null_fields
+        input_pt = deepcopy(self.input_pt)
+        for field in field_list:
+            input_pt[field] = None
+        input_pt["id_plano_trabalho"] = f"{1900 + offset}"  # precisa ser um novo plano
+
+        # Act
+        response = self.put_plano_trabalho(input_pt)
+
+        # Assert
+        assert response.status_code == status.HTTP_201_CREATED
+        self.assert_equal_plano_trabalho(response.json(), input_pt)
+
     def test_create_pt_cod_plano_inconsistent(self):
         """Tenta criar um plano de trabalho com um códigos diferentes
         informados na URL e no campo id_plano_trabalho do JSON.
