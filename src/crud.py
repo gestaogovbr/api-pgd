@@ -121,15 +121,19 @@ async def create_plano_trabalho(
             com os dados que foram gravados no banco.
     """
     creation_timestamp = datetime.now()
-    contribuicoes = [
-        models.Contribuicao(
-            origem_unidade_pt=plano_trabalho.origem_unidade,
-            cod_unidade_autorizadora_pt=plano_trabalho.cod_unidade_autorizadora,
-            id_plano_trabalho=plano_trabalho.id_plano_trabalho,
-            **contribuicao.model_dump(),
-        )
-        for contribuicao in plano_trabalho.contribuicoes
-    ]
+    contribuicoes = (
+        [
+            models.Contribuicao(
+                origem_unidade_pt=plano_trabalho.origem_unidade,
+                cod_unidade_autorizadora_pt=plano_trabalho.cod_unidade_autorizadora,
+                id_plano_trabalho=plano_trabalho.id_plano_trabalho,
+                **contribuicao.model_dump(),
+            )
+            for contribuicao in plano_trabalho.contribuicoes
+        ]
+        if plano_trabalho.contribuicoes
+        else []
+    )
 
     avaliacoes_registros_execucao = [
         models.AvaliacaoRegistrosExecucao(**avaliacao_registros_execucao.model_dump())
