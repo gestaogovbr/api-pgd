@@ -250,7 +250,7 @@ class TestCreateParticipante(BaseParticipanteTest):
         """Testa a criação e um participante usando valores de unidade
         fora dos limites estabelecidos.
         """
-        input_part = self.input_part.copy()
+        input_part = deepcopy(self.input_part)
         input_part["cod_unidade_autorizadora"] = cod_unidade_autorizadora
         input_part["cod_unidade_instituidora"] = cod_unidade_instituidora
         input_part["cod_unidade_lotacao"] = cod_unidade_lotacao
@@ -268,6 +268,7 @@ class TestCreateParticipante(BaseParticipanteTest):
             )
         ):
             assert response.status_code == status.HTTP_201_CREATED
+            self.assert_equal_participante(response.json(), input_part)
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
