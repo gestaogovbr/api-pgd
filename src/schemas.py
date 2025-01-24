@@ -10,7 +10,7 @@ from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
-from pydantic import NonNegativeInt, PastDatetime, PositiveInt
+from pydantic import NonNegativeInt, PastDatetime, PositiveInt, conint
 from pydantic import model_validator, field_validator
 
 from models import (
@@ -28,6 +28,7 @@ from models import (
 from util import over_a_year
 
 STR_FIELD_MAX_SIZE = 300
+INT4 = conint(gt=0, le=(2**31)-1)
 
 
 # Função para validar CPF
@@ -521,11 +522,11 @@ class ParticipanteSchema(BaseModel):
         title="Código do sistema da unidade (SIAPE ou SIORG)",
         description=Participante.origem_unidade.comment,
     )
-    cod_unidade_autorizadora: int = Field(
+    cod_unidade_autorizadora: INT4 = Field(
         title="Código da unidade organizacional autorizadora do PGD",
         description=Participante.cod_unidade_autorizadora.comment,
     )
-    cod_unidade_lotacao: int = Field(
+    cod_unidade_lotacao: INT4 = Field(
         title="Código da unidade organizacional de lotação do participante",
         description=Participante.cod_unidade_lotacao.comment,
     )
@@ -533,7 +534,7 @@ class ParticipanteSchema(BaseModel):
         title="Número da matrícula do participante no SIAPE",
         description=Participante.matricula_siape.comment,
     )
-    cod_unidade_instituidora: int = Field(
+    cod_unidade_instituidora: INT4 = Field(
         title="Código da unidade organizacional instituidora do PGD",
         description=Participante.cod_unidade_instituidora.comment,
     )
