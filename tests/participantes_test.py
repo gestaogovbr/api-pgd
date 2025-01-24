@@ -8,8 +8,9 @@ from typing import Optional
 
 from fastapi import status
 from httpx import Client, Response
-
 import pytest
+
+from .conftest import MAX_INT
 
 # Relação de campos obrigatórios para testar sua ausência:
 FIELDS_PARTICIPANTES = {
@@ -225,6 +226,50 @@ class TestCreateParticipante(BaseParticipanteTest):
         assert response.status_code == status.HTTP_201_CREATED
         assert response.json().get("detail", None) is None
         self.assert_equal_participante(response.json(), self.input_part)
+
+    @pytest.mark.parametrize(
+        "cod_unidade_autorizadora, cod_unidade_instituidora, cod_unidade_lotacao",
+        [
+            (-1, 1, 99),  # cod_unidade_autorizadora negativo
+            (1, -1, 99),  # cod_unidade_instituidora negativo
+            (1, 1, -1),  # cod_unidade_lotacao negativo
+            (MAX_INT + 1, 1, 99),  # cod_unidade_autorizadora maior que MAX_INT
+            (1, MAX_INT + 1, 99),  # cod_unidade_instituidora maior que MAX_INT
+            (1, 1, MAX_INT + 1),  # cod_unidade_lotacao maior que MAX_INT
+            (MAX_INT, 1, 99),  # cod_unidade_autorizadora igual a MAX_INT
+            (1, MAX_INT, 99),  # cod_unidade_instituidora igual a MAX_INT
+            (1, 1, MAX_INT),  # cod_unidade_lotacao igual a MAX_INT
+        ],
+    )
+    def test_create_participante_unit_out_of_range(
+        self,
+        cod_unidade_autorizadora: int,
+        cod_unidade_instituidora: int,
+        cod_unidade_lotacao: int,
+    ):
+        """Testa a criação e um participante usando valores de unidade
+        fora dos limites estabelecidos.
+        """
+        input_part = self.input_part.copy()
+        input_part["cod_unidade_autorizadora"] = cod_unidade_autorizadora
+        input_part["cod_unidade_instituidora"] = cod_unidade_instituidora
+        input_part["cod_unidade_lotacao"] = cod_unidade_lotacao
+
+        response = self.put_participante(input_part)
+
+        if all(
+            (
+                (0 < input_part.get(field) <= MAX_INT)
+                for field in (
+                    "cod_unidade_autorizadora",
+                    "cod_unidade_instituidora",
+                    "cod_unidade_lotacao",
+                )
+            )
+        ):
+            assert response.status_code == status.HTTP_201_CREATED
+        else:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 class TestUpdateParticipante(BaseParticipanteTest):

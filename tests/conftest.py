@@ -55,6 +55,8 @@ API_BASE_URL = "http://localhost:5057"
 
 TEST_USER_AGENT = "API PGD CI Test (+https://github.com/gestaogovbr/api-pgd)"
 
+MAX_INT = (2**31) - 1
+
 
 def get_bearer_token(username: str, password: str) -> str:
     """Login on api-pgd and returns token to next authenticated calls.
