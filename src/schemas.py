@@ -238,7 +238,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Identificador único do plano de trabalho",
         description=PlanoTrabalho.id_plano_trabalho.comment,
     )
-    status: int = Field(
+    status: NON_NEGATIVE_INT4 = Field(
         title="Status do plano de trabalho",
         description=PlanoTrabalho.status.comment,
     )
