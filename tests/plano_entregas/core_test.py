@@ -11,6 +11,7 @@ from fastapi import status as http_status
 import pytest
 
 from util import assert_error_message
+from ..conftest import MAX_INT
 
 # constantes
 
@@ -545,10 +546,14 @@ class TestCreatePEInputValidation(BasePETest):
             assert response.status_code == http_status.HTTP_201_CREATED
         else:
             assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_message = "Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5"
+            detail_messages = [
+                "Input should be greater than or equal to 1",
+                "Input should be less than or equal to 5",
+            ]
             assert any(
-                f"Value error, {detail_message}" in error["msg"]
-                for error in response.json().get("detail")
+                detail_message == error["msg"]
+                for error in response.json().get("detail", {})
+                for detail_message in detail_messages
             )
 
     @pytest.mark.parametrize(
@@ -593,6 +598,56 @@ class TestCreatePEInputValidation(BasePETest):
             assert_error_message(response, detail_message)
         else:
             assert response.status_code == http_status.HTTP_201_CREATED
+
+    @pytest.mark.parametrize(
+        (
+            "cod_unidade_autorizadora, cod_unidade_instituidora, "
+            "cod_unidade_executora"
+        ),
+        [
+            (-1, 99, 99),  # cod_unidade_autorizadora negativo
+            (1, -1, 99),  # cod_unidade_instituidora negativo
+            (1, 99, -1),  # cod_unidade_executora negativo
+            (MAX_INT, 99, 99),  # cod_unidade_autorizadora igual a MAX_INT
+            (1, MAX_INT, 99),  # cod_unidade_instituidora igual a MAX_INT
+            (1, 99, MAX_INT),  # cod_unidade_executora igual a MAX_INT
+            (MAX_INT + 1, 99, 99),  # cod_unidade_autorizadora maior que MAX_INT
+            (1, MAX_INT + 1, 99),  # cod_unidade_instituidora maior que MAX_INT
+            (1, 99, MAX_INT + 1),  # cod_unidade_executora maior que MAX_INT
+        ],
+    )
+    def test_create_plano_entregas_int_out_of_range(
+        self,
+        cod_unidade_autorizadora: int,
+        cod_unidade_instituidora: int,
+        cod_unidade_executora: int,
+    ):
+        """Testa a criação e um participante usando valores de unidade
+        fora dos limites estabelecidos.
+        """
+        input_pe = deepcopy(self.input_pe)
+        input_pe["cod_unidade_autorizadora"] = cod_unidade_autorizadora
+        input_pe["cod_unidade_instituidora"] = cod_unidade_instituidora
+        input_pe["cod_unidade_executora"] = cod_unidade_executora
+
+        response = self.put_plano_entregas(
+            input_pe, cod_unidade_autorizadora=cod_unidade_autorizadora
+        )
+
+        if all(
+            (
+                (0 < input_pe.get(field) <= MAX_INT)
+                for field in (
+                    "cod_unidade_autorizadora",
+                    "cod_unidade_instituidora",
+                    "cod_unidade_executora",
+                )
+            )
+        ):
+            print("response.json()", response.json())
+            assert response.status_code == http_status.HTTP_201_CREATED
+        else:
+            assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 class TestGetPlanoEntregas(BasePETest):
