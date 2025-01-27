@@ -28,7 +28,8 @@ from models import (
 from util import over_a_year
 
 STR_FIELD_MAX_SIZE = 300
-INT4 = conint(gt=0, le=(2**31)-1)
+NON_NEGATIVE_INT4 = conint(ge=0, le=(2**31)-1)
+POSITIVE_INT4 = conint(gt=0, le=(2**31)-1)
 
 
 # Função para validar CPF
@@ -229,7 +230,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Origem da unidade",
         description=PlanoTrabalho.origem_unidade.comment,
     )
-    cod_unidade_autorizadora: int = Field(
+    cod_unidade_autorizadora: POSITIVE_INT4 = Field(
         title="Código da unidade autorizadora",
         description=PlanoTrabalho.cod_unidade_autorizadora.comment,
     )
@@ -241,7 +242,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Status do plano de trabalho",
         description=PlanoTrabalho.status.comment,
     )
-    cod_unidade_executora: int = Field(
+    cod_unidade_executora: POSITIVE_INT4 = Field(
         title="Código da unidade executora",
         description=PlanoTrabalho.cod_unidade_executora.comment,
     )
@@ -253,7 +254,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Matrícula SIAPE do participante",
         description=PlanoTrabalho.matricula_siape.comment,
     )
-    cod_unidade_lotacao_participante: int = Field(
+    cod_unidade_lotacao_participante: POSITIVE_INT4 = Field(
         title="Código da unidade lotacao participante",
         description=PlanoTrabalho.cod_unidade_lotacao_participante.comment,
     )
@@ -265,7 +266,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Data de término do plano de trabalho",
         description=PlanoTrabalho.data_termino.comment,
     )
-    carga_horaria_disponivel: int = Field(
+    carga_horaria_disponivel: NON_NEGATIVE_INT4 = Field(
         title="Carga horária disponível do participante",
         description=PlanoTrabalho.carga_horaria_disponivel.comment,
     )
@@ -288,18 +289,6 @@ class PlanoTrabalhoSchema(BaseModel):
     def cpf_part_validate(cpf_participante: str) -> str:
         """Valida o CPF do participante."""
         return cpf_validate(cpf_participante)
-
-    @field_validator("carga_horaria_disponivel")
-    @staticmethod
-    def validate_carga_horaria_disponivel(carga_horaria_disponivel: int) -> int:
-        """Valida o valor do campo carga_horaria_disponivel."""
-        if carga_horaria_disponivel < 0:
-            raise ValueError(
-                "Valor de carga_horaria_disponivel deve ser maior ou igual a "
-                "zero. Valor informado: "
-                f"carga_horaria_disponivel == {carga_horaria_disponivel}"
-            )
-        return carga_horaria_disponivel
 
     @model_validator(mode="after")
     def year_interval(self) -> "PlanoTrabalhoSchema":
@@ -522,11 +511,11 @@ class ParticipanteSchema(BaseModel):
         title="Código do sistema da unidade (SIAPE ou SIORG)",
         description=Participante.origem_unidade.comment,
     )
-    cod_unidade_autorizadora: INT4 = Field(
+    cod_unidade_autorizadora: NON_NEGATIVE_INT4 = Field(
         title="Código da unidade organizacional autorizadora do PGD",
         description=Participante.cod_unidade_autorizadora.comment,
     )
-    cod_unidade_lotacao: INT4 = Field(
+    cod_unidade_lotacao: NON_NEGATIVE_INT4 = Field(
         title="Código da unidade organizacional de lotação do participante",
         description=Participante.cod_unidade_lotacao.comment,
     )
@@ -534,7 +523,7 @@ class ParticipanteSchema(BaseModel):
         title="Número da matrícula do participante no SIAPE",
         description=Participante.matricula_siape.comment,
     )
-    cod_unidade_instituidora: INT4 = Field(
+    cod_unidade_instituidora: NON_NEGATIVE_INT4 = Field(
         title="Código da unidade organizacional instituidora do PGD",
         description=Participante.cod_unidade_instituidora.comment,
     )
