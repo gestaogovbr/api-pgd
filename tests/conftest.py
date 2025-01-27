@@ -400,6 +400,23 @@ def example_pe_unidade_3(
 
 
 @pytest.fixture()
+def example_pe_max_int(
+    client: httpx.Client,
+    input_pe: dict,
+    header_usr_1: dict,
+):
+    """Cria um Plano de Entrega como exemplo."""
+    new_input_pe = deepcopy(input_pe)
+    new_input_pe["cod_unidade_autorizadora"] = MAX_INT
+    client.put(
+        f"/organizacao/SIAPE/{new_input_pe['cod_unidade_autorizadora']}"
+        f"/plano_entregas/{new_input_pe['id_plano_entregas']}",
+        json=new_input_pe,
+        headers=header_usr_1,
+    )
+
+
+@pytest.fixture()
 def example_pt(
     client: httpx.Client, input_pt: dict, user1_credentials: dict, header_usr_1: dict
 ):
@@ -455,6 +472,31 @@ def example_part_2(client: httpx.Client, input_part: dict, header_admin: dict):
         f"/{input_part_1['cod_unidade_lotacao']}"
         f"/participante/{input_part_1['matricula_siape']}",
         json=input_part_1,
+        headers=header_admin,
+    )
+
+
+@pytest.fixture()
+def example_part_max_int(client: httpx.Client, input_part: dict, header_admin: dict):
+    """Cria um exemplo de status de participante com diferente SIAPE e lotação"""
+    new_input_part = deepcopy(input_part)
+    new_input_part["cod_unidade_lotacao"] = MAX_INT
+    client.put(
+        f"/organizacao/{new_input_part['origem_unidade']}"
+        f"/{new_input_part['cod_unidade_autorizadora']}"
+        f"/{new_input_part['cod_unidade_lotacao']}"
+        f"/participante/{new_input_part['matricula_siape']}",
+        json=new_input_part,
+        headers=header_admin,
+    )
+    new_input_part["cod_unidade_lotacao"] = input_part["cod_unidade_lotacao"]
+    new_input_part["cod_unidade_autorizadora"] = MAX_INT
+    client.put(
+        f"/organizacao/{new_input_part['origem_unidade']}"
+        f"/{new_input_part['cod_unidade_autorizadora']}"
+        f"/{new_input_part['cod_unidade_lotacao']}"
+        f"/participante/{new_input_part['matricula_siape']}",
+        json=new_input_part,
         headers=header_admin,
     )
 
