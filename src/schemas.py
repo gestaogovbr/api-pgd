@@ -28,8 +28,8 @@ from models import (
 from util import over_a_year
 
 STR_FIELD_MAX_SIZE = 300
-NON_NEGATIVE_INT4 = conint(ge=0, le=(2**31)-1)
-POSITIVE_INT4 = conint(gt=0, le=(2**31)-1)
+NON_NEGATIVE_INT4 = conint(ge=0, le=(2**31) - 1)
+POSITIVE_INT4 = conint(gt=0, le=(2**31) - 1)
 
 
 # Função para validar CPF
@@ -420,15 +420,15 @@ class PlanoEntregasSchema(BaseModel):
         title="Código do sistema da unidade",
         description=PlanoEntregas.origem_unidade.comment,
     )
-    cod_unidade_autorizadora: PositiveInt = Field(
+    cod_unidade_autorizadora: POSITIVE_INT4 = Field(
         title="Código da unidade autorizadora",
         description=PlanoEntregas.cod_unidade_autorizadora.comment,
     )
-    cod_unidade_instituidora: PositiveInt = Field(
+    cod_unidade_instituidora: POSITIVE_INT4 = Field(
         title="Código da unidade instituidora",
         description=PlanoEntregas.cod_unidade_instituidora.comment,
     )
-    cod_unidade_executora: PositiveInt = Field(
+    cod_unidade_executora: POSITIVE_INT4 = Field(
         title="Código da unidade executora",
         description=PlanoEntregas.cod_unidade_executora.comment,
     )
@@ -436,7 +436,7 @@ class PlanoEntregasSchema(BaseModel):
         title="Identificador único do plano de entregas",
         description=PlanoEntregas.id_plano_entregas.comment,
     )
-    status: int = Field(
+    status: conint(ge=1, le=5) = Field(
         title="Status do plano de entregas",
         description=PlanoEntregas.status.comment,
     )
@@ -448,7 +448,7 @@ class PlanoEntregasSchema(BaseModel):
         title="Data de término do plano de entregas",
         description=PlanoEntregas.data_termino.comment,
     )
-    avaliacao: Optional[int] = Field(
+    avaliacao: Optional[conint(ge=1, le=5)] = Field(
         title="Avaliação do plano de entregas",
         description=PlanoEntregas.avaliacao.comment,
     )
@@ -486,22 +486,12 @@ class PlanoEntregasSchema(BaseModel):
     @model_validator(mode="after")
     def validate_status(self) -> "PlanoEntregasSchema":
         """Verifica se o status possui valor válido."""
-        if self.status not in range(1, 6):
-            raise ValueError("Status inválido; permitido: 1, 2, 3, 4, 5")
         if self.status == 5 and (self.avaliacao is None or self.data_avaliacao is None):
             raise ValueError(
                 "O status 5 só poderá ser usado se os campos avaliacao e "
                 "data_avaliacao estiverem preenchidos."
             )
         return self
-
-    @field_validator("avaliacao")
-    @staticmethod
-    def validate_avaliacao(value: int) -> int:
-        """Verifica se a avaliação possui um valor válido."""
-        if value is not None and value not in range(1, 6):
-            raise ValueError("Nota de avaliação inválida; permitido: 1, 2, 3, 4, 5")
-        return value
 
 
 class ParticipanteSchema(BaseModel):
