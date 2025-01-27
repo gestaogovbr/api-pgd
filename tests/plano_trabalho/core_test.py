@@ -346,7 +346,7 @@ class TestCreatePlanoTrabalho(BasePTTest):
         # Assert
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_message = (
-            "Valor de carga_horaria_disponivel deve ser maior ou igual a zero"
+            "Input should be greater than or equal to 0"
         )
         assert_error_message(response, detail_message)
 
