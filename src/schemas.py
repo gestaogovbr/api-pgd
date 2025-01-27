@@ -465,7 +465,7 @@ class PlanoEntregasSchema(BaseModel):
     @model_validator(mode="after")
     def validate_entregas_uniqueness(self) -> "PlanoEntregasSchema":
         """Valida a unicidade das entregas."""
-        entregas_ids = [entrega.id_entrega for entrega in self.entregas]
+        entregas_ids = [entrega.id_entrega for entrega in (self.entregas or [])]
         if len(entregas_ids) != len(set(entregas_ids)):
             raise ValueError("Entregas devem possuir id_entrega diferentes")
         return self
