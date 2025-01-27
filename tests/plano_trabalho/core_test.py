@@ -12,6 +12,8 @@ from fastapi import status
 import pytest
 
 from util import assert_error_message
+from ..conftest import MAX_INT
+
 
 # grupos de campos opcionais e obrigatórios a testar
 
@@ -402,6 +404,62 @@ class TestCreatePlanoTrabalho(BasePTTest):
             for message in detail_messages
             for error in response.json().get("detail")
         )
+
+    @pytest.mark.parametrize(
+        (
+            "cod_unidade_autorizadora, cod_unidade_executora, "
+            "cod_unidade_lotacao_participante, carga_horaria_disponivel"
+        ),
+        [
+            (-1, 99, 99, 80),  # cod_unidade_autorizadora negativo
+            (1, -1, 99, 80),  # cod_unidade_executora negativo
+            (1, 99, -1, 80),  # cod_unidade_lotacao_participante negativo
+            (1, 99, 99, -80),  # carga_horaria_disponivel negativo
+            (MAX_INT + 1, 1, 99, 80),  # cod_unidade_autorizadora maior que MAX_INT
+            (1, MAX_INT + 1, 99, 80),  # cod_unidade_instituidora maior que MAX_INT
+            (1, 99, MAX_INT + 1, 80),  # cod_unidade_lotacao maior que MAX_INT
+            (1, 99, 99, MAX_INT + 1),  # carga_horaria_disponivel maior que MAX_INT
+            (MAX_INT, 1, 99, 80),  # cod_unidade_autorizadora igual a MAX_INT
+            (1, MAX_INT, 99, 80),  # cod_unidade_instituidora igual a MAX_INT
+            (1, 99, MAX_INT, 80),  # cod_unidade_lotacao igual a MAX_INT
+            (1, 99, 99, MAX_INT),  # carga_horaria_disponivel igual a MAX_INT
+        ],
+    )
+    def test_create_plano_trabalho_int_out_of_range(
+        self,
+        example_part_max_int: dict,  # pylint: disable=unused-variable
+        example_pe_max_int: dict,  # pylint: disable=unused-variable
+        cod_unidade_autorizadora: int,
+        cod_unidade_executora: int,
+        cod_unidade_lotacao_participante: int,
+        carga_horaria_disponivel: int,
+    ):
+        """Testa a criação e um participante usando valores de unidade
+        fora dos limites estabelecidos.
+        """
+        input_pt = deepcopy(self.input_pt)
+        input_pt["cod_unidade_autorizadora"] = cod_unidade_autorizadora
+        input_pt["cod_unidade_executora"] = cod_unidade_executora
+        input_pt["cod_unidade_lotacao_participante"] = cod_unidade_lotacao_participante
+        input_pt["carga_horaria_disponivel"] = carga_horaria_disponivel
+
+        response = self.put_plano_trabalho(input_pt)
+
+        if all(
+            (
+                (0 < input_pt.get(field) <= MAX_INT)
+                for field in (
+                    "cod_unidade_autorizadora",
+                    "cod_unidade_executora",
+                    "cod_unidade_lotacao_participante",
+                    "carga_horaria_disponivel",
+                )
+            )
+        ):
+            print("response.json()", response.json())
+            assert response.status_code == status.HTTP_201_CREATED
+        else:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 class TestUpdatePlanoDeTrabalho(BasePTTest):
