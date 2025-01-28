@@ -9,8 +9,7 @@ from datetime import date
 from enum import Enum
 from typing import Annotated, List, Optional
 
-from pydantic import BaseModel, ConfigDict
-from pydantic import Field, EmailStr
+from pydantic import BaseModel, ConfigDict, Field, EmailStr
 from pydantic import NonNegativeInt, PastDatetime, PositiveInt
 from pydantic import model_validator, field_validator
 
