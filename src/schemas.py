@@ -7,10 +7,11 @@ Pydantic: https://docs.pydantic.dev/2.0/
 
 from datetime import date
 from enum import Enum
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, EmailStr
-from pydantic import NonNegativeInt, PastDatetime, PositiveInt, conint
+from pydantic import BaseModel, ConfigDict
+from pydantic import Field, EmailStr
+from pydantic import NonNegativeInt, PastDatetime, PositiveInt
 from pydantic import model_validator, field_validator
 
 from models import (
@@ -28,8 +29,8 @@ from models import (
 from util import over_a_year
 
 STR_FIELD_MAX_SIZE = 300
-NON_NEGATIVE_INT4 = conint(ge=0, le=(2**31) - 1)
-POSITIVE_INT4 = conint(gt=0, le=(2**31) - 1)
+NON_NEGATIVE_INT4 = Annotated[NonNegativeInt, Field(le=(2**31) - 1)]
+POSITIVE_INT4 = Annotated[PositiveInt, Field(le=(2**31) - 1)]
 
 
 # Função para validar CPF
@@ -436,7 +437,7 @@ class PlanoEntregasSchema(BaseModel):
         title="Identificador único do plano de entregas",
         description=PlanoEntregas.id_plano_entregas.comment,
     )
-    status: conint(ge=1, le=5) = Field(
+    status: Annotated[PositiveInt, Field(le=5)] = Field(
         title="Status do plano de entregas",
         description=PlanoEntregas.status.comment,
     )
@@ -448,7 +449,7 @@ class PlanoEntregasSchema(BaseModel):
         title="Data de término do plano de entregas",
         description=PlanoEntregas.data_termino.comment,
     )
-    avaliacao: Optional[conint(ge=1, le=5)] = Field(
+    avaliacao: Optional[Annotated[PositiveInt, Field(le=5)]] = Field(
         title="Avaliação do plano de entregas",
         description=PlanoEntregas.avaliacao.comment,
     )
