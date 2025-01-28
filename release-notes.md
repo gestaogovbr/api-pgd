@@ -1,6 +1,12 @@
 # Release notes
 
 
+## 3.2.4
+
+* Check input of participante, plano_entregas and plano_trabalho for
+  possible integers out of allowed range in the database type
+
+
 ## 3.2.3
 
 * Handle error when submitting a PUT for plano_trabalho with a json
