@@ -547,7 +547,7 @@ class TestCreatePEInputValidation(BasePETest):
         else:
             assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_messages = [
-                "Input should be greater than or equal to 1",
+                "Input should be greater than 0",
                 "Input should be less than or equal to 5",
             ]
             assert any(
