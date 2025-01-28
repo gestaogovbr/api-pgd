@@ -405,7 +405,8 @@ def example_pe_max_int(
     input_pe: dict,
     header_usr_1: dict,
 ):
-    """Cria um Plano de Entrega como exemplo."""
+    """Cria um Plano de Entrega como exemplo usando o valor máximo
+    permitido para cod_unidade_autorizadora."""
     new_input_pe = deepcopy(input_pe)
     new_input_pe["cod_unidade_autorizadora"] = MAX_INT
     client.put(
@@ -478,7 +479,8 @@ def example_part_2(client: httpx.Client, input_part: dict, header_admin: dict):
 
 @pytest.fixture()
 def example_part_max_int(client: httpx.Client, input_part: dict, header_admin: dict):
-    """Cria um exemplo de status de participante com diferente SIAPE e lotação"""
+    """Cria exemplos de participantes com as combinações de códigos de
+    unidade usando os inteiros máximos permitidos para os tipos de campo."""
     new_input_part = deepcopy(input_part)
     new_input_part["cod_unidade_lotacao"] = MAX_INT
     client.put(
