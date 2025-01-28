@@ -5,6 +5,7 @@
 
 * Check input of participante, plano_entregas and plano_trabalho for
   possible integers out of allowed range in the database type
+* Restrict the status of plano_trabalho to 1, 2, 3 or 4, as in the docs
 
 
 ## 3.2.3
