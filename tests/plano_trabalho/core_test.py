@@ -462,7 +462,6 @@ class TestCreatePlanoTrabalho(BasePTTest):
                 )
             )
         ):
-            print("response.json()", response.json())
             assert response.status_code == status.HTTP_201_CREATED
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
