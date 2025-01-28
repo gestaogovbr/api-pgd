@@ -347,9 +347,7 @@ class TestCreatePlanoTrabalho(BasePTTest):
 
         # Assert
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_message = (
-            "Input should be greater than or equal to 0"
-        )
+        detail_message = "Input should be greater than or equal to 0"
         assert_error_message(response, detail_message)
 
     @pytest.mark.parametrize(
