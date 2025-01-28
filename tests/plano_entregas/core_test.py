@@ -644,7 +644,6 @@ class TestCreatePEInputValidation(BasePETest):
                 )
             )
         ):
-            print("response.json()", response.json())
             assert response.status_code == http_status.HTTP_201_CREATED
         else:
             assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
