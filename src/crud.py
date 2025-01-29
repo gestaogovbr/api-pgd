@@ -164,7 +164,8 @@ async def create_plano_trabalho(
                 f"matricula_siape: {plano_trabalho.matricula_siape} "
                 f"cod_unidade_lotacao: {plano_trabalho.cod_unidade_lotacao_participante}"
             )
-        db_plano_trabalho.participante = db_participante
+        session.add(db_participante)
+        db_participante.planos_trabalho.append(db_plano_trabalho)
 
         # Relacionamento com Contribuicao
         for contribuicao in contribuicoes:
