@@ -509,10 +509,8 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
         input_part["situacao"] = situacao
         response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_messages = "Valor do campo 'situacao' inválido; permitido: 0, 1"
         assert any(
-            f"Value error, {message}" in error["msg"]
-            for message in detail_messages
+            error["msg"] == "Input should be 0 or 1"
             for error in response.json().get("detail")
         )
 
@@ -525,10 +523,8 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
         input_part["modalidade_execucao"] = modalidade_execucao
         response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-        detail_messages = "Modalidade de execução inválida; permitido: 1, 2, 3, 4, 5"
         assert any(
-            f"Value error, {message}" in error["msg"]
-            for message in detail_messages
+            error["msg"] == "Input should be 1, 2, 3, 4 or 5"
             for error in response.json().get("detail")
         )
 
