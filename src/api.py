@@ -219,7 +219,7 @@ async def create_or_update_user(
         ) from exception
 
     return JSONResponse(
-        content=user.dict(exclude=["password"]), status_code=response_status
+        content=user.model_dump(exclude=["password"]), status_code=response_status
     )
 
 
@@ -251,7 +251,7 @@ async def get_user(
     user = await crud_auth.get_user(db, email)
 
     if user:
-        return user.dict(exclude=["password"])
+        return user.model_dump(exclude=["password"])
     else:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND, detail=f"Usuário `{email}` não existe"
