@@ -288,6 +288,7 @@ class TestUpdateParticipante(BaseParticipanteTest):
         input_part = deepcopy(self.input_part)
         response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_200_OK
+        self.assert_equal_participante(response.json(), input_part)
 
     def test_update_participante(
         self,
