@@ -597,14 +597,6 @@ class AvaliacaoRegistrosExecucao(Base):
     )
 
 
-class ModalidadesExecucao(enum.IntEnum):
-    presencial = 1
-    teletrabalho_parcial = 2
-    teletrabalho_integral = 3
-    teletrabalho_no_exterior_inc7 = 4
-    teletrabalho_no_exterior_par7 = 5
-
-
 class Participante(Base):
     "Participante"
     __tablename__ = "participante"
