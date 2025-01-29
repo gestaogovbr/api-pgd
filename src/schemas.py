@@ -22,7 +22,6 @@ from models import (
     TipoContribuicao,
     AvaliacaoRegistrosExecucao,
     Participante,
-    ModalidadesExecucao,
     Users,
 )
 from util import over_a_year
@@ -75,6 +74,18 @@ def cpf_validate(input_cpf: str) -> str:
 class OrigemUnidadeEnum(str, Enum):
     siape = "SIAPE"
     siorg = "SIORG"
+
+class ModalidadesExecucao(IntEnum):
+    """Modalidade e regime de execução do trabalho do participante."""
+
+    presencial = 1
+    teletrabalho_parcial = 2
+    teletrabalho_integral = 3
+    teletrabalho_no_exterior_inc7 = 4
+    teletrabalho_no_exterior_par7 = 5
+
+
+# Classes de esquemas Pydantic
 
 
 class ContribuicaoSchema(BaseModel):
