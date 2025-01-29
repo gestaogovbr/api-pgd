@@ -561,14 +561,6 @@ class ParticipanteSchema(BaseModel):
         description=Participante.data_assinatura_tcr.comment,
     )
 
-    @field_validator("situacao")
-    @staticmethod
-    def validate_situacao(value):
-        "Verifica se o campo 'situacao' tem um dos valores permitidos"
-        if value not in [0, 1]:
-            raise ValueError("Valor do campo 'situacao' inválido; permitido: 0, 1")
-        return value
-
     @field_validator("matricula_siape")
     @staticmethod
     def matricula_siape_validate(matricula_siape: str) -> str:
