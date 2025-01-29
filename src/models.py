@@ -678,12 +678,12 @@ class Participante(Base):
         nullable=False,
         comment="Modalidade e regime de execução do trabalho do participante, "
         "restrito a uma das cinco opções:\n\n"
-        "1 - Presencial\n"
-        "2 - Teletrabalho parcial\n"
-        "3 - Teletrabalho integral\n"
-        "4 - Teletrabalho com residência no exterior (Dec.11.072/2022, art. 12, VIII)\n"
-        "5 - Teletrabalho com residência no exterior (Dec.11.072/2022, art. 12, §7°)\n\n"
-        "Regras de validação: Só é possível a escolha de uma das cinco opções.",
+        "1. Presencial\n"
+        "2. Teletrabalho parcial\n"
+        "3. Teletrabalho integral\n"
+        "4. Teletrabalho com residência no exterior (Dec.11.072/2022, art. 12, VIII)\n"
+        "5. Teletrabalho com residência no exterior (Dec.11.072/2022, art. 12, §7°)\n\n"
+        "**Regras de validação:** Só é possível a escolha de uma das cinco opções.",
     )
     data_assinatura_tcr = Column(
         Date,
