@@ -6,7 +6,7 @@ Pydantic: https://docs.pydantic.dev/2.0/
 """
 
 from datetime import date
-from enum import Enum
+from enum import Enum, IntEnum
 from typing import Annotated, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, EmailStr
@@ -30,8 +30,9 @@ STR_FIELD_MAX_SIZE = 300
 NON_NEGATIVE_INT4 = Annotated[NonNegativeInt, Field(le=(2**31) - 1)]
 POSITIVE_INT4 = Annotated[PositiveInt, Field(le=(2**31) - 1)]
 
+# Funções auxiliares
 
-# Função para validar CPF
+
 def cpf_validate(input_cpf: str) -> str:
     """Verifica se um número de CPF em forma de string tem o formato
     esperado e também os dígitos verificadores.
@@ -71,9 +72,25 @@ def cpf_validate(input_cpf: str) -> str:
     return input_cpf
 
 
+# Domínios definidos por Enum
+
+
 class OrigemUnidadeEnum(str, Enum):
+    """Valores permitidos para origem de uma unidade. Determina como
+    devem ser interpretados os códigos de unidades. Representa o sistema
+    de origem do código.
+    """
+
     siape = "SIAPE"
     siorg = "SIORG"
+
+
+class SituacaoParticipanteEnum(IntEnum):
+    """Valores permitidos para situação de um participante."""
+
+    inativo = 0
+    ativo = 1
+
 
 class ModalidadesExecucao(IntEnum):
     """Modalidade e regime de execução do trabalho do participante."""
@@ -531,11 +548,11 @@ class ParticipanteSchema(BaseModel):
     cpf: str = Field(
         title="Número do CPF do agente público", description=Participante.cpf.comment
     )
-    situacao: int = Field(
+    situacao: SituacaoParticipanteEnum = Field(
         title="Situação do agente público no PGD",
         description=Participante.situacao.comment,
     )
-    modalidade_execucao: int = Field(
+    modalidade_execucao: ModalidadesExecucao = Field(
         title="Modalidade e regime de execução do trabalho",
         description=Participante.modalidade_execucao.comment,
     )
@@ -550,19 +567,6 @@ class ParticipanteSchema(BaseModel):
         "Verifica se o campo 'situacao' tem um dos valores permitidos"
         if value not in [0, 1]:
             raise ValueError("Valor do campo 'situacao' inválido; permitido: 0, 1")
-        return value
-
-    @field_validator("modalidade_execucao")
-    @staticmethod
-    def validate_modalidade_execucao(value):
-        "Verifica se o campo 'modalidade_execucao' tem um dos valores permitidos"
-        if value not in set(ModalidadesExecucao):
-            raise ValueError(
-                "Modalidade de execução inválida; permitido: "
-                + ", ".join(
-                    [str(modalidade.value) for modalidade in ModalidadesExecucao]
-                )
-            )
         return value
 
     @field_validator("matricula_siape")
