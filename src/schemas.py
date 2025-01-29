@@ -278,6 +278,9 @@ class PlanoTrabalhoSchema(BaseModel):
     matricula_siape: str = Field(
         title="Matrícula SIAPE do participante",
         description=PlanoTrabalho.matricula_siape.comment,
+        min_length=7,
+        max_length=7,
+        pattern=r"\d{7}",
     )
     cod_unidade_lotacao_participante: POSITIVE_INT4 = Field(
         title="Código da unidade lotacao participante",
