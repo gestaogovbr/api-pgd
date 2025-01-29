@@ -392,13 +392,14 @@ class TestCreatePlanoTrabalho(BasePTTest):
         # Assert
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_messages = [
+            "String should match pattern",
+            "String should have at least",
+            "String should have at most",
             "Dígitos verificadores do CPF inválidos.",
             "CPF inválido.",
-            "CPF precisa ter 11 dígitos.",
-            "CPF deve conter apenas dígitos.",
         ]
         assert any(
-            f"Value error, {message}" in error["msg"]
+            message in error["msg"]
             for message in detail_messages
             for error in response.json().get("detail")
         )

@@ -49,13 +49,7 @@ def cpf_validate(input_cpf: str) -> str:
     Returns:
         str: O mesmo que a entrada, se for validado.
     """
-    if not input_cpf.isdigit():
-        raise ValueError("CPF deve conter apenas dígitos.")
-
     cpf = [int(char) for char in input_cpf if char.isdigit()]
-    #  Verifica se o CPF tem 11 dígitos
-    if len(cpf) != 11:
-        raise ValueError("CPF precisa ter 11 dígitos.")
 
     #  Verifica se o CPF tem todos os números iguais, ex: 111.111.111-11
     #  Esses CPFs são considerados inválidos mas passam na validação dos dígitos
@@ -277,6 +271,9 @@ class PlanoTrabalhoSchema(BaseModel):
     cpf_participante: str = Field(
         title="CPF do participante",
         description=PlanoTrabalho.cpf_participante.comment,
+        min_length=11,
+        max_length=11,
+        pattern=r"\d{11}",
     )
     matricula_siape: str = Field(
         title="Matrícula SIAPE do participante",
@@ -540,13 +537,20 @@ class ParticipanteSchema(BaseModel):
     matricula_siape: str = Field(
         title="Número da matrícula do participante no SIAPE",
         description=Participante.matricula_siape.comment,
+        min_length=7,
+        max_length=7,
+        pattern=r"\d{7}",
     )
     cod_unidade_instituidora: NON_NEGATIVE_INT4 = Field(
         title="Código da unidade organizacional instituidora do PGD",
         description=Participante.cod_unidade_instituidora.comment,
     )
     cpf: str = Field(
-        title="Número do CPF do agente público", description=Participante.cpf.comment
+        title="Número do CPF do agente público",
+        description=Participante.cpf.comment,
+        min_length=11,
+        max_length=11,
+        pattern=r"\d{11}",
     )
     situacao: SituacaoParticipanteEnum = Field(
         title="Situação do agente público no PGD",
@@ -565,10 +569,6 @@ class ParticipanteSchema(BaseModel):
     @staticmethod
     def matricula_siape_validate(matricula_siape: str) -> str:
         "Valida a matrícula SIAPE do participante."
-        if len(matricula_siape) != 7:
-            raise ValueError("Matrícula SIAPE deve ter 7 dígitos.")
-        if not matricula_siape.isdecimal():
-            raise ValueError("Matricula SIAPE deve ser numérica.")
         if len(set(matricula_siape)) < 2:
             raise ValueError("Matricula SIAPE inválida.")
         return matricula_siape

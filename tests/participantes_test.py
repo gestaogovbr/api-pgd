@@ -428,8 +428,9 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
         )
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_messages = [
-            "Matricula SIAPE deve ser numérica.",
-            "Matrícula SIAPE deve ter 7 dígitos.",
+            "String should match pattern",
+            "String should have at least",
+            "String should have at most",
             "Matricula SIAPE inválida.",
         ]
         received_error = response.json().get("detail")
@@ -437,7 +438,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
             assert any(message in received_error for message in detail_messages)
         else:
             assert any(
-                f"Value error, {message}" in error["msg"]
+                message in error["msg"]
                 for message in detail_messages
                 for error in received_error
             )
@@ -461,13 +462,14 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
         response = self.put_participante(input_part)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         detail_messages = [
+            "String should match pattern",
+            "String should have at least",
+            "String should have at most",
             "Dígitos verificadores do CPF inválidos.",
             "CPF inválido.",
-            "CPF precisa ter 11 dígitos.",
-            "CPF deve conter apenas dígitos.",
         ]
         assert any(
-            f"Value error, {message}" in error["msg"]
+            message in error["msg"]
             for message in detail_messages
             for error in response.json().get("detail")
         )
