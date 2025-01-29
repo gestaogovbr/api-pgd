@@ -81,7 +81,9 @@ class ValidationError(BaseModel):
     type: str
     loc: list[str]
     msg: str
+    input: str
     ctx: dict
+    url: str
 
 
 class ValidationErrorResponse(ResponseData):
