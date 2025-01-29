@@ -7,6 +7,8 @@
   possible integers out of allowed range in the database type
 * Restrict the status of plano_trabalho to 1, 2, 3 or 4, as in the docs
 * Simplify validation of domain based integers
+* Solve pydantic's warnings about deprecated use of methods .json and
+  .dict
 
 
 ## 3.2.3
