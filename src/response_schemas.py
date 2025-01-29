@@ -139,7 +139,7 @@ email_validation_error = {
                             url="https://errors.pydantic.dev/2.8/v/value_error",
                         )
                     ]
-                ).json()
+                ).model_dump_json()
             }
         }
     )

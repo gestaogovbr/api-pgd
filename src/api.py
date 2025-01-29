@@ -269,7 +269,7 @@ async def get_user(
                 "OK": {
                     "value": response_schemas.OKMessageResponse(
                         message="Email enviado!"
-                    ).json(),
+                    ).model_dump_json(),
                 },
             }
         ),
@@ -312,7 +312,7 @@ async def forgot_password(
                 "OK": {
                     "value": response_schemas.OKMessageResponse(
                         message="Senha do Usuário `user1@example.com` atualizada"
-                    ).json(),
+                    ).model_dump_json(),
                 },
             }
         ),
