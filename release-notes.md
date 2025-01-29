@@ -9,6 +9,8 @@
 * Simplify validation of domain based integers
 * Solve pydantic's warnings about deprecated use of methods .json and
   .dict
+* Solve SQL Alchemy's warnings about absence of PlanoTrabalho in session,
+  in context of the relationship with Participante
 
 
 ## 3.2.3
