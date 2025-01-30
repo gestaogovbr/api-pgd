@@ -681,7 +681,14 @@ class Participante(Base):
         Date,
         nullable=False,
         comment="Data de assinatura do Termo de Ciência e Responsabilidade (TCR) "
-        "referente ao previsto no inciso IV do art. 11 do Decreto 11.072/2022.",
+        "referente ao previsto no inciso IV do art. 11 do Decreto 11.072/2022.\n\n"
+        "**Regras de validação:** A data não pode ser futura. São aceitos tanto o "
+        "formato `date` (YYYY-MM-DD) quanto no formato `datetime` "
+        "(YYYY-MM-DDTHH:MM:SS), segundo o padrão ISO 8601. Porém, **recomenda-se "
+        "enviar `date`**, uma vez que *a hora é ignorada* e não é armazenada. O "
+        "formato `datetime`é aceito apenas por compatibilidade com versões "
+        "anteriores da API, que o aceitavam. Em versões futuras essa "
+        "flexibilidade será retirada."
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
