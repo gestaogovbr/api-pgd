@@ -2,13 +2,15 @@ name: cicd tests
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
     paths-ignore:
         - 'docs/**'
         - '**.md'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+        - 'docs/**'
+        - '**.md'
 
 jobs:
   build:
