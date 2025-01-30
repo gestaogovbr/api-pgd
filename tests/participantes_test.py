@@ -272,6 +272,46 @@ class TestCreateParticipante(BaseParticipanteTest):
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
+    @pytest.mark.parametrize(
+        "data_assinatura_tcr",
+        [
+            ("2023-06-01"),
+            ("01-06-2023"),  # formatação errada
+            ("2523-06-01"),  # data futura
+            ("2023-06-01T03:00:00"),  # data e hora sem fuso horário
+            ("2023-06-01T00:00:00-03:00"),  # data e hora com fuso horário
+        ],
+    )
+    def test_create_participante_data_assinatura_tcr_date_format(
+        self, data_assinatura_tcr: str
+    ):
+        """Testa criar participantes com diferentes tipos de formatação
+        de data e data/hora para o campo data_assinatura_tcr.
+        """
+        input_part = deepcopy(self.input_part)
+        input_part["data_assinatura_tcr"] = data_assinatura_tcr
+
+        response = self.put_participante(input_part)
+
+        try:
+            input_date = date.fromisoformat(data_assinatura_tcr)
+        except ValueError:
+            try:
+                datetime.fromisoformat(data_assinatura_tcr)
+            except ValueError:
+                # não é nem date, nem datetime
+                assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+                return
+            # é um datetime
+            assert response.status_code == status.HTTP_201_CREATED
+            return
+        # é um date
+        if input_date > date.today():
+            # é uma data futura
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        else:
+            assert response.status_code == status.HTTP_201_CREATED
+
 
 class TestUpdateParticipante(BaseParticipanteTest):
     """Testes para atualização de um Participante."""
