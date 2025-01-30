@@ -1,4 +1,4 @@
-name: Build and Deploy v0.1.x Docker Image
+name: Build and Deploy Docker Image
 
 on:
   push:
@@ -44,4 +44,3 @@ jobs:
         run: |
           docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
-
