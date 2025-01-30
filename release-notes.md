@@ -13,6 +13,7 @@
   in context of the relationship with Participante
 * Better explain validation of data_assinatura_tcr
 * Update allowed values for modalidade_execucao in the docs
+* Fix API usage examples in the docs
 
 
 ## 3.2.3
