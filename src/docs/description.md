@@ -126,8 +126,10 @@ Nesse caso, utilizar o valor "SIORG" no campo `origem_unidade`.
   * `1`: Presencial;
   * `2`: Teletrabalho Parcial;
   * `3`: Teletrabalho Integral;
-  * `4`: Teletrabalho com Residência no Exterior.
-* A `data_assinatura_tcr` não pode ser data futura.
+  * `4`: Teletrabalho com Residência no Exterior (Dec.11.072/2022, art. 12, VIII)
+  * `5`: Teletrabalho com Residência no Exterior (Dec.11.072/2022, art. 12, §7°)
+* A `data_assinatura_tcr` não pode ser data futura. Recomenda-se enviar
+  no formato ISO 8601 para datas (YYYY-MM-DD).
 
 **Atenção:** os Participantes devem ser enviados antes dos Planos de
 Trabalho.
