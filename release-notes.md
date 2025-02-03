@@ -1,6 +1,11 @@
 # Release notes
 
 
+## 3.2.5
+
+* Set default access token expiration time to 30 minutes
+
+
 ## 3.2.4
 
 * Check input of participante, plano_entregas and plano_trabalho for
