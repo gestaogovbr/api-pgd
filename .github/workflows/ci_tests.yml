@@ -2,6 +2,7 @@ name: cicd tests
 
 on:
   push:
+    branches: [ main ]
     paths-ignore:
         - 'docs/**'
         - '**.md'
