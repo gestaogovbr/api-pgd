@@ -21,7 +21,10 @@ import response_schemas
 import schemas
 from util import check_permissions
 
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES"))
+DEFAULT_TOKEN_EXPIRE_MINS = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = int(
+    os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", DEFAULT_TOKEN_EXPIRE_MINS)
+)
 TEST_ENVIRONMENT = os.environ.get("TEST_ENVIRONMENT", "False") == "True"
 
 # ## INIT --------------------------------------------------
