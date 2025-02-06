@@ -165,7 +165,7 @@ class Entrega(Base):
         String,
         index=True,
         nullable=False,
-        comment="Identificador único da entrega",
+        comment="Identificador da entrega",
     )
     entrega_cancelada = Column(
         Boolean,
