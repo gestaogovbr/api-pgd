@@ -183,7 +183,7 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
         data_termino: str,
         status_pt: int,
         example_pt,
-        example_part_2,
+        example_part_lotacao_99,
     ):
         """Tenta criar um plano de trabalho com sobreposição de intervalo de
         data na mesma unidade para o mesmo participante.
