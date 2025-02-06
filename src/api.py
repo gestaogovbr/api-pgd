@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from datetime import timedelta
 import json
 import os
-from typing import Annotated, Union
+from typing import Annotated, Awaitable, Callable, Union
 
 from fastapi import Depends, FastAPI, HTTPException, status, Header, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
@@ -64,7 +64,19 @@ app = FastAPI(
 
 
 @app.middleware("http")
-async def check_user_agent(request: Request, call_next):
+async def check_user_agent(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
+    """Verifica se o cabeçalho User-Agent está presente na requisição.
+
+    Args:
+        request (Request): Requisição HTTP.
+        call_next (Callable[[Request], Awaitable[Response]]): próximo
+            callable do middelware.
+
+    Returns:
+        Response: Resposta HTTP.
+    """
     user_agent = request.headers.get("User-Agent", None)
 
     if not user_agent:
