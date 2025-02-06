@@ -64,6 +64,26 @@ app = FastAPI(
 
 
 @app.middleware("http")
+async def add_csp_header(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
+    response: Response = await call_next(request)
+    if request.url.path.startswith("/docs") or request.url.path.startswith("/redoc"):
+        response.headers["Content-Security-Policy"] = "; ".join(
+            [
+                "default-src 'self'",
+                "font-src 'self' fonts.gstatic.com",
+                "media-src 'self' data:",
+                "img-src 'self' data: fastapi.tiangolo.com raw.githubusercontent.com cdn.redoc.ly",
+                "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net",
+                "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net fonts.googleapis.com",
+                "worker-src 'self' blob:",
+            ]
+        )
+    return response
+
+
+@app.middleware("http")
 async def check_user_agent(
     request: Request, call_next: Callable[[Request], Awaitable[Response]]
 ) -> Response:
