@@ -76,76 +76,9 @@ class TestCreatePTContribuicaoMandatoryFields(BasePTTest):
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
-class TestCreatePTInvalidTipoContribuicao(BasePTTest):
-    """Testes para verificar a rejeição da criação de Plano de Trabalho
-    quando uma de suas contribuições contém um campo tipo_contribuição
-    com valor inválido.
-    """
-
-    @pytest.mark.parametrize(
-        "tipo_contribuicao",
-        [(-2), (0), (4)],
-    )
-    def test_create_pt_invalid_tipo_contribuicao(
-        self,
-        tipo_contribuicao: int,
-    ):
-        """
-        Verifica se o endpoint de criação de Plano de Trabalho rejeita a
-        requisição quando o tipo de contribuição é inválido.
-        """
-        input_pt = deepcopy(self.input_pt)
-        input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
-
-        response = self.put_plano_trabalho(input_pt)
-
-        if tipo_contribuicao in [1, 2, 3]:
-            assert response.status_code == status.HTTP_201_CREATED
-        else:
-            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_message = "Input should be 1, 2 or 3"
-            assert_error_message(response, detail_message)
-
-
-class TestPercentualContribuicao(BasePTTest):
-    """Testes para verificar a validação do percentual de contribuição no
-    Plano de Trabalho.
-    """
-
-    @pytest.mark.parametrize("percentual_contribuicao", [-10, 0, 50, 100, 110])
-    def test_create_plano_trabalho_percentual_contribuicao(
-        self,
-        percentual_contribuicao: int,
-    ):
-        """Testa a criação de um Plano de Trabalho com diferentes valores
-        de percentual de contribuição.
-
-        Args:
-            percentual_contribuicao (int): Valor do percentual de
-                contribuição a ser testado.
-        """
-        input_pt = deepcopy(self.input_pt)
-        input_pt["contribuicoes"][0][
-            "percentual_contribuicao"
-        ] = percentual_contribuicao
-        input_pt["contribuicoes"][1][
-            "percentual_contribuicao"
-        ] = percentual_contribuicao
-
-        response = self.put_plano_trabalho(input_pt, header_usr=self.header_usr_1)
-
-        if 0 <= percentual_contribuicao <= 100:
-            assert response.status_code == status.HTTP_201_CREATED
-        else:
-            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            assert_error_message(
-                response, "O percentual de contribuição deve estar entre 0 e 100."
-            )
-
-
-class TestCreatePTOmitOptionalFields(BasePTTest):
-    """Testa a criação de um novo Plano de Trabalho omitindo campos
-    opcionais da contribuição.
+class TestCreatePTContribuicaoOptionalFields(BasePTTest):
+    """Testa a criação de um novo Plano de Trabalho, em várias situações
+    relacionadas aos campos opcionais da contribuição.
 
     Verifica se o endpoint de criação de Plano de Trabalho aceita a
     requisição quando campos opcionais da contribuição são omitidos.
@@ -172,16 +105,6 @@ class TestCreatePTOmitOptionalFields(BasePTTest):
         response = self.put_plano_trabalho(partial_input_pt)
         assert response.status_code == status.HTTP_201_CREATED
 
-
-class TestCreatePTNullOptionalFields(BasePTTest):
-    """Testa a criação de um novo Plano de Trabalho enviando null nos
-    campos opcionais da contribuição.
-
-    Verifica se o endpoint de criação de Plano de Trabalho aceita a
-    requisição quando campos opcionais da contribuição são enviados com
-    valor null.
-    """
-
     @pytest.mark.parametrize(
         "nulled_fields", enumerate(FIELDS_CONTRIBUICAO["optional"])
     )
@@ -204,8 +127,34 @@ class TestCreatePTNullOptionalFields(BasePTTest):
         assert response.status_code == status.HTTP_201_CREATED
 
 
-class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
-    """Testes relacionados às Contribuições ao criar um Plano de Trabalho."""
+class TestCreatePTContribuicaoTipo(BasePTTest):
+    """Testes para verificar, quando da criação de um Plano de Trabalho,
+    diversas situações relacionadas ao campo tipo_contribuição.
+    """
+
+    @pytest.mark.parametrize(
+        "tipo_contribuicao",
+        [(-2), (0), (4)],
+    )
+    def test_create_pt_invalid_tipo_contribuicao(
+        self,
+        tipo_contribuicao: int,
+    ):
+        """
+        Verifica se o endpoint de criação de Plano de Trabalho rejeita a
+        requisição quando o tipo de contribuição é inválido.
+        """
+        input_pt = deepcopy(self.input_pt)
+        input_pt["contribuicoes"][0]["tipo_contribuicao"] = tipo_contribuicao
+
+        response = self.put_plano_trabalho(input_pt)
+
+        if tipo_contribuicao in [1, 2, 3]:
+            assert response.status_code == status.HTTP_201_CREATED
+        else:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = "Input should be 1, 2 or 3"
+            assert_error_message(response, detail_message)
 
     @pytest.mark.parametrize(
         "tipo_contribuicao, id_plano_entregas, id_entrega",
@@ -271,6 +220,48 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
         else:
             assert response.status_code == status.HTTP_201_CREATED
 
+
+class TestCreatePTContribuicaoPercentual(BasePTTest):
+    """Testes para verificar a validação do percentual de contribuição no
+    Plano de Trabalho.
+    """
+
+    @pytest.mark.parametrize("percentual_contribuicao", [-10, 0, 50, 100, 110])
+    def test_create_plano_trabalho_percentual_contribuicao(
+        self,
+        percentual_contribuicao: int,
+    ):
+        """Testa a criação de um Plano de Trabalho com diferentes valores
+        de percentual de contribuição.
+
+        Args:
+            percentual_contribuicao (int): Valor do percentual de
+                contribuição a ser testado.
+        """
+        input_pt = deepcopy(self.input_pt)
+        input_pt["contribuicoes"][0][
+            "percentual_contribuicao"
+        ] = percentual_contribuicao
+        input_pt["contribuicoes"][1][
+            "percentual_contribuicao"
+        ] = percentual_contribuicao
+
+        response = self.put_plano_trabalho(input_pt, header_usr=self.header_usr_1)
+
+        if 0 <= percentual_contribuicao <= 100:
+            assert response.status_code == status.HTTP_201_CREATED
+        else:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            assert_error_message(
+                response, "O percentual de contribuição deve estar entre 0 e 100."
+            )
+
+
+class TestCreatePTContribuicoesReferencias(BasePTTest):
+    """Testes, quando da criação de um Plano de Trabalho, relacionados à
+    verificação de referências das Contribuições a outras tabelas.
+    """
+
     @pytest.mark.parametrize(
         "id_entrega",
         ("1", "10"),
@@ -302,3 +293,182 @@ class TestCreatePlanoTrabalhoContribuicoes(BasePTTest):
                 response,
                 "Contribuição do Plano de Trabalho faz referência a entrega inexistente",
             )
+
+    def test_duplicate_id(self, example_pt):  # pylint: disable=unused-argument
+        """Atualiza um Plano de Trabalho existente usando o método HTTP
+        PUT, contendo ids duplicados na lista de contribuicoes.
+
+        A chave opcional "id", existente até a versão 3.2.4, não deve ser
+        informada; informá-la causa a recusa do envio, em caso de conflitos
+        de id.
+
+        O Pydantic, por padrão, ignora campos desconhecidos no schema.
+        A partir da versão 3.2.5, o campo "id" foi retirado do schema e,
+        por isso, é ignorado.
+
+        O teste abaixo gera propositalmente um conflito no campo "id".
+        """
+
+        input_pt = deepcopy(self.input_pt)
+        input_pt["contribuicoes"] = [
+            {
+                "id": 55501,
+                "id_contribuicao": "55501",
+                "tipo_contribuicao": 1,
+                "id_plano_entregas": "1",
+                "id_entrega": "1",
+                "percentual_contribuicao": 40,
+            },
+            {
+                "id": 55501,  # conflito com o id do item anterior
+                "id_contribuicao": "55503",
+                "tipo_contribuicao": 2,
+                "id_plano_entregas": None,
+                "id_entrega": None,
+                "percentual_contribuicao": 30,
+            },
+            {
+                "id": 55504,
+                "id_contribuicao": "55504",
+                "tipo_contribuicao": 1,
+                "id_plano_entregas": "1",
+                "id_entrega": "2",
+                "percentual_contribuicao": 10,
+            },
+        ]
+
+        response = self.put_plano_trabalho(input_pt)
+        # o conflito no campo inexistente "id" deve ser ignorado
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_equal_plano_trabalho(response.json(), input_pt)
+
+    def test_duplicate_id_contribuicao(
+        self, example_pt
+    ):  # pylint: disable=unused-argument
+        """Atualiza um Plano de Trabalho existente usando o método HTTP
+        PUT, contendo valores de id_contribuicao duplicados na lista de
+        contribuicoes.
+        """
+
+        input_pt = deepcopy(self.input_pt)
+        input_pt["contribuicoes"] = [
+            {
+                "id_contribuicao": "55501",
+                "tipo_contribuicao": 1,
+                "id_plano_entregas": "1",
+                "id_entrega": "1",
+                "percentual_contribuicao": 40,
+            },
+            {
+                "id_contribuicao": "55501",
+                "tipo_contribuicao": 2,
+                "id_plano_entregas": None,
+                "id_entrega": None,
+                "percentual_contribuicao": 30,
+            },
+            {
+                "id_contribuicao": "55504",
+                "tipo_contribuicao": 1,
+                "id_plano_entregas": "1",
+                "id_entrega": "2",
+                "percentual_contribuicao": 10,
+            },
+        ]
+
+        response = self.put_plano_trabalho(input_pt)
+        if response.status_code != status.HTTP_200_OK:
+            print("response.json()", response.json())
+        assert response.status_code == status.HTTP_200_OK
+        self.assert_equal_plano_trabalho(response.json(), input_pt)
+
+
+class TestUpdatePTContribuicoesReferencias(BasePTTest):
+    """Testes, quando da atualização de um Plano de Trabalho,
+    relacionados à verificação de referências das Contribuições a outras
+    tabelas.
+    """
+
+    def test_update_contribuicoes_outra_unidade_nao_permitida(
+        self,
+        example_pt,  # pylint: disable=unused-argument
+        example_part_autorizadora_2,  # pylint: disable=unused-argument
+        header_usr_2: dict,
+    ):
+        """Tenta atualizar um Plano de Trabalho com uma Contribuicao
+        contendo id de uma outra unidade autorizadora e verifica se a
+        Contribuicao original não foi, de fato, alterada.
+
+        Args:
+            example_pt: fixture que cria um Plano de Trabalho de exemplo
+                na unidade autorizadora 1.
+            example_part_autorizadora_2: fixture que cria um Participante
+                de exemplo na unidade autorizadora 2.
+            header_usr_2 (dict): Cabeçalho do usuário cadastrado em uma
+                unidade autorizadora 2, diferente do exemplo.
+        """
+        # Passo 1 (fixtures example_pt e example_part_autorizadora_2):
+        # - criar um Plano de Trabalho padrão na unidade 1
+        # - criar um Participante na unidade 2
+        # - consultar e guardar o id interno original da Contribucao que tem
+        #   id_contribuicao == self.input_pt["contribuicoes"][0]["id"]
+        response = self.get_plano_trabalho(
+            cod_unidade_autorizadora=self.input_pt["cod_unidade_autorizadora"],
+            id_plano_trabalho=self.input_pt["id_plano_trabalho"],
+        )
+        pt_original = response.json()
+        lista_contribuicao_original = [
+            item
+            for item in pt_original["contribuicoes"]
+            if item["id_contribuicao"]
+            == self.input_pt["contribuicoes"][0]["id_contribuicao"]
+        ]
+        assert len(lista_contribuicao_original) == 1
+        id_interno_original = lista_contribuicao_original[0].get("id", None)
+        if id_interno_original is None:
+            # O id interno não está sendo exposto, esse é o comportamento
+            # correto. Desnecessário continuar testando.
+            return
+        tipo_contribuicao_original = lista_contribuicao_original[0]["tipo_contribuicao"]
+
+        # Passo 2:
+        # - criar, usando o usuário da unidade 2, um Plano de Trabalho
+        #   na unidade 2, contendo uma Contribuicao com o mesmo id do
+        #   plano de trabalho na unidade 1
+        input_pt = deepcopy(self.input_pt)
+        input_pt["cod_unidade_autorizadora"] = 2
+        input_pt["matricula_siape"] = "1234567"
+        input_pt["contribuicoes"] = [
+            {
+                "id": id_interno_original,
+                "id_contribuicao": str(id_interno_original),
+                "tipo_contribuicao": 2,
+                "id_plano_entregas": None,
+                "id_entrega": None,
+                "percentual_contribuicao": 40,
+            }
+        ]
+        response = self.put_plano_trabalho(input_pt, header_usr=header_usr_2)
+
+        # Verifica se a alteração foi, de fato, rejeitada, pois alteraria
+        # uma contribuicao de outra unidade
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_message = "Alteração rejeitada por violar regras de integridade"
+        assert detail_message in response.json().get("detail")
+
+        # Passo 3:
+        # - verificar se o Plano de Trabalho na unidade 1, criado
+        #   originalmente, permanece com a sua contribuicao inalterada
+        response = self.get_plano_trabalho(
+            cod_unidade_autorizadora=self.input_pt["cod_unidade_autorizadora"],
+            id_plano_trabalho=self.input_pt["id_plano_trabalho"],
+        )
+        assert response.status_code == status.HTTP_200_OK
+        lista_contribuicao_original = [
+            item
+            for item in response.json()["contribuicoes"]
+            if item["id_contribuicao"]
+            == self.input_pt["contribuicoes"][0]["id_contribuicao"]
+        ]
+        assert len(lista_contribuicao_original) == 1
+        tipo_contribuicao_atual = lista_contribuicao_original[0]["tipo_contribuicao"]
+        assert tipo_contribuicao_atual == tipo_contribuicao_original
