@@ -436,7 +436,7 @@ def example_pt_unidade_3(
     input_pt: dict,
     header_admin: dict,
 ):
-    """Cria um Plano de Trabalho do Participante como exemplo."""
+    """Cria na unidade 3 um Plano de Trabalho do Participante como exemplo."""
     input_pt_3 = deepcopy(input_pt)
     input_pt_3["cod_unidade_autorizadora"] = 3
     client.put(
@@ -462,7 +462,23 @@ def example_part(client: httpx.Client, input_part: dict, header_admin: dict):
 
 
 @pytest.fixture()
-def example_part_2(client: httpx.Client, input_part: dict, header_admin: dict):
+def example_part_autorizadora_2(client: httpx.Client, input_part: dict, header_admin: dict):
+    """Cria um exemplo de status de participante com diferente SIAPE e lotação"""
+    input_part_1 = deepcopy(input_part)
+    input_part_1["cod_unidade_autorizadora"] = 2
+    input_part_1["matricula_siape"] = "1234567"
+    client.put(
+        f"/organizacao/{input_part_1['origem_unidade']}"
+        f"/{input_part_1['cod_unidade_autorizadora']}"
+        f"/{input_part_1['cod_unidade_lotacao']}"
+        f"/participante/{input_part_1['matricula_siape']}",
+        json=input_part_1,
+        headers=header_admin,
+    )
+
+
+@pytest.fixture()
+def example_part_lotacao_99(client: httpx.Client, input_part: dict, header_admin: dict):
     """Cria um exemplo de status de participante com diferente SIAPE e lotação"""
     input_part_1 = deepcopy(input_part)
     input_part_1["cod_unidade_lotacao"] = 99
