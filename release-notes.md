@@ -4,6 +4,8 @@
 ## 3.2.5
 
 * Set default access token expiration time to 30 minutes
+* Remove "id" field from Contribuicao's Pydantic schema (there is already
+  an "id_contribuicao" field)
 
 
 ## 3.2.4
