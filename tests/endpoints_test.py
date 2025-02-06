@@ -31,7 +31,7 @@ def test_redirect_to_entrypoint_json(client: Client):
     assert response.headers["Location"] == "/openapi.json"
 
 
-# Teste de cabeçalho User-Agent
+# Teste de cabeçalhos
 
 
 @pytest.mark.parametrize(
@@ -65,3 +65,23 @@ def test_user_agent_header(
     else:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.json()["detail"] == "User-Agent header is required"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/docs",
+        "/redoc",
+    ],
+)
+def test_docs_csp_header(client: Client, path: str):
+    """Testa a presença do cabeçalho Content-Security-Policy.
+
+    Args:
+        client (Client): fixture do cliente http.
+        path (str): caminho da URL a testar.
+    """
+    response = client.get(path, headers={"Accept": "text/html"})
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.headers.get("Content-Security-Policy", None) is not None
