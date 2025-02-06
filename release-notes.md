@@ -6,6 +6,8 @@
 * Set default access token expiration time to 30 minutes
 * Remove "id" field from Contribuicao's Pydantic schema (there is already
   an "id_contribuicao" field)
+* Add Content-Security-Policy header to API documentation pages (/docs for
+  Swagger UI and /redoc for Redoc)
 
 
 ## 3.2.4
