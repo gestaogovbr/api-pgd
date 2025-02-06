@@ -210,7 +210,7 @@ async def create_plano_trabalho(
             await session.commit()
         except IntegrityError as e:
             raise HTTPException(
-                status_code=422, detail="Referência a tabela entrega não encontrada"
+                status_code=422, detail="Alteração rejeitada por violar regras de integridade"
             ) from e
         await session.refresh(db_plano_trabalho)
     return schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho)
