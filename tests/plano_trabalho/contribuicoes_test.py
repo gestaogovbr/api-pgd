@@ -15,7 +15,33 @@ from .core_test import BasePTTest, FIELDS_CONTRIBUICAO
 # Contribuições
 
 
-class TestCreatePTMissingMandatoryFieldsContribuicoes(BasePTTest):
+class TestGetPTContribuicao(BasePTTest):
+    """Testes para verificar os dados retornados ao consultar um
+    Plano de Trabalho, em relação às suas contribuições.
+    """
+
+    def test_get_contribuicoes_sem_id(
+        self,
+        example_pt,  # pylint: disable=unused-argument
+    ):
+        """Verifica se as contribuições não estão aparecendo com o campo
+        id, mas somente o campo id_contribuicao.
+        """
+        response = self.get_plano_trabalho(
+            cod_unidade_autorizadora=self.input_pt["cod_unidade_autorizadora"],
+            id_plano_trabalho=self.input_pt["id_plano_trabalho"],
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+        contribuicoes = response.json()["contribuicoes"]
+        assert len(contribuicoes) > 0
+
+        assert all(
+            contribuicao.get("id", None) is None for contribuicao in contribuicoes
+        )
+
+
+class TestCreatePTContribuicaoMandatoryFields(BasePTTest):
     """Testes para verificar a rejeição da criação de Plano de Trabalho
     quando campos obrigatórios da contribuição estão faltando.
     """
