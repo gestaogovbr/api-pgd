@@ -158,7 +158,9 @@ class TipoMeta(str, enum.Enum):
 class Entrega(Base):
     "Entrega"
     __tablename__ = "entrega"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer, primary_key=True, index=True, autoincrement=True, nullable=False
+    )
     id_entrega = Column(
         String,
         index=True,
