@@ -103,11 +103,6 @@ class ContribuicaoSchema(BaseModel):
     __doc__ = Contribuicao.__doc__
     model_config = ConfigDict(from_attributes=True)
 
-    id: Optional[int] = Field(
-        default=None,
-        title="ID da Contribuição",
-        description=Contribuicao.id.comment,
-    )
     id_contribuicao: str = Field(
         title="Identificador único da contribuição",
         description=Contribuicao.id_contribuicao.comment,
