@@ -67,6 +67,13 @@ app = FastAPI(
 async def add_csp_header(
     request: Request, call_next: Callable[[Request], Awaitable[Response]]
 ) -> Response:
+    """Adiciona cabeçalho Content-Security-Policy (CSP), definindo de
+    onde os recursos podem ser carregados pelo navegador, às páginas
+    de documentação (/docs na Swagger UI e /redoc na ReDoc).
+
+    As demais rotas não são feitas para ser acessadas por navegadores e por
+    isso não faz diferença existir CSP.
+    """
     response: Response = await call_next(request)
     if request.url.path.startswith("/docs") or request.url.path.startswith("/redoc"):
         response.headers["Content-Security-Policy"] = "; ".join(
