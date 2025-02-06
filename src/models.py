@@ -424,13 +424,6 @@ class Contribuicao(Base):
         nullable=False,
         comment="Identificador único da contribuição.",
     )
-    # cod_unidade_instituidora = Column(
-    #     Integer,
-    #     nullable=False,
-    #     comment="Código da unidade organizacional (UORG) no Sistema Integrado "
-    #     "de Administração de Recursos Humanos (SIAPE) corresponde à Unidade "
-    #     "de Instituição.",
-    # )
     tipo_contribuicao = Column(
         Integer,
         nullable=False,
