@@ -424,7 +424,7 @@ class Contribuicao(Base):
     id_contribuicao = Column(
         String,
         nullable=False,
-        comment="Identificador único da contribuição.",
+        comment="Identificador da contribuição.",
     )
     tipo_contribuicao = Column(
         Integer,
