@@ -441,7 +441,7 @@ class TestUpdatePTContribuicoesReferencias(BasePTTest):
             {
                 "id": id_interno_original,
                 "id_contribuicao": str(id_interno_original),
-                "tipo_contribuicao": 2,
+                "tipo_contribuicao": 2,  # diferente do original na unidade 1
                 "id_plano_entregas": None,
                 "id_entrega": None,
                 "percentual_contribuicao": 40,
