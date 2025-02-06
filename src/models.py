@@ -688,7 +688,7 @@ class Participante(Base):
         "enviar `date`**, uma vez que *a hora é ignorada* e não é armazenada. O "
         "formato `datetime`é aceito apenas por compatibilidade com versões "
         "anteriores da API, que o aceitavam. Em versões futuras essa "
-        "flexibilidade será retirada."
+        "flexibilidade será retirada.",
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
