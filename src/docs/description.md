@@ -3,6 +3,13 @@ Planos de Entregas e os Planos de Trabalho da sua força de trabalho que
 participa do
 [Programa de Gestão](https://www.gov.br/servidor/pt-br/assuntos/programa-de-gestao).
 
+Esta documentação está disponível em duas formatações distintas, mas com
+o mesmo conteúdo:
+
+* [Swagger UI](/docs)
+* [Redoc](/redoc)
+
+
 ### Fundamentação legal
 
 > #### Instrução Normativa Conjunta SEGES-SGPRT n.º 24, de 28 de julho de 2023

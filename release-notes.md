@@ -8,6 +8,8 @@
   an "id_contribuicao" field)
 * Add Content-Security-Policy header to API documentation pages (/docs for
   Swagger UI and /redoc for Redoc)
+* Add links to Swagger UI and Redoc versions of the API documentation in
+  the API description
 
 
 ## 3.2.4
