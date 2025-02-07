@@ -6,7 +6,7 @@ participa do
 Esta documentação está disponível em duas formatações distintas, mas com
 o mesmo conteúdo:
 
-* [Swagger UI](/docs/)
+* [Swagger UI](/docs)
 * [Redoc](/redoc)
 
 
