@@ -295,13 +295,13 @@ class PlanoTrabalhoSchema(BaseModel):
     )
 
     contribuicoes: Optional[List[ContribuicaoSchema]] = Field(
-        default=[],
+        default_factory=list,
         title="Contribuições",
         description="Lista de Contribuições planejadas para o Plano de Trabalho.",
     )
     avaliacoes_registros_execucao: Optional[List[AvaliacaoRegistrosExecucaoSchema]] = (
         Field(
-            default=[],
+            default_factory=list,
             title="Avaliações de registros de execução",
             description="Lista de avaliações de registros de execução do Plano de Trabalho.",
         )
@@ -480,7 +480,7 @@ class PlanoEntregasSchema(BaseModel):
         description=PlanoEntregas.data_avaliacao.comment,
     )
     entregas: List[EntregaSchema] = Field(
-        default=[],
+        default_factory=list,
         title="Entregas",
         description="Lista de entregas associadas ao Plano de Entregas",
     )
