@@ -1,6 +1,12 @@
 # Release notes
 
 
+## 3.2.6
+
+* Allow user to GET their own user data
+* Add a robots.txt file and allow indexing only of documentation
+
+
 ## 3.2.5
 
 * Set default access token expiration time to 30 minutes
