@@ -4,6 +4,7 @@
 from contextlib import asynccontextmanager
 from datetime import timedelta
 import json
+import logging
 import os
 from textwrap import dedent
 from typing import Annotated, Awaitable, Callable, Union
@@ -11,7 +12,7 @@ from typing import Annotated, Awaitable, Callable, Union
 from fastapi import Depends, FastAPI, HTTPException, status, Header, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse, RedirectResponse
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 
 
 import crud
@@ -49,10 +50,14 @@ if TEST_ENVIRONMENT:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(application: FastAPI):  # pylint: disable=unused-argument
     """Executa as rotinas de inicialização da API."""
-    await create_db_and_tables()
-    await crud_auth.init_user_admin()
+    try:
+        await create_db_and_tables()
+        await crud_auth.init_user_admin()
+    except OperationalError as exception:
+        logging.error("A inicialização do banco de dados falhou: %s", exception)
+        raise exception
     yield
 
 
