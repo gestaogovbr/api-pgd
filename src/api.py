@@ -156,7 +156,7 @@ async def login_for_access_token(
     except Exception as exception:
         message = getattr(exception, "message", str(exception))
         if getattr(exception, "json", None):
-            message = exception.json()
+            message = exception.json()  # type: ignore
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_ENTITY, detail=message
         ) from exception
