@@ -85,3 +85,18 @@ def test_docs_csp_header(client: Client, path: str):
 
     assert response.status_code == status.HTTP_200_OK
     assert response.headers.get("Content-Security-Policy", None) is not None
+
+
+def test_robots_txt(client: Client):
+    """Testa a presença do arquivo robots.txt
+
+    Args:
+        client (Client): fixture do cliente http.
+    """
+    response = client.get("/robots.txt", headers={"Accept": "text/plain"})
+    content = response.text
+
+    assert response.status_code == status.HTTP_200_OK
+    assert "Allow: /docs$" in content
+    assert "Allow: /redoc$" in content
+    assert "Disallow: /\n" in content

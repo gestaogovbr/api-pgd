@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from datetime import timedelta
 import json
 import os
+from textwrap import dedent
 from typing import Annotated, Awaitable, Callable, Union
 
 from fastapi import Depends, FastAPI, HTTPException, status, Header, Request, Response
@@ -118,9 +119,7 @@ async def check_user_agent(
 async def docs_redirect(
     accept: Union[str, None] = Header(default="text/html")
 ) -> RedirectResponse:
-    """
-    Redireciona para a documentação da API.
-    """
+    """Redireciona para a documentação da API."""
 
     if accept == "application/json":
         location = "/openapi.json"
@@ -129,6 +128,24 @@ async def docs_redirect(
 
     return RedirectResponse(
         url=location, status_code=status.HTTP_307_TEMPORARY_REDIRECT
+    )
+
+
+@app.get("/robots.txt", include_in_schema=False)
+async def robots_txt() -> Response:
+    """Retorna um arquivo robots.txt para orientar crawlers e permitir
+    indexação somente dos caminhos de documentação.
+    """
+    return Response(
+        dedent(
+            """
+        User-agent: *
+        Allow: /docs$
+        Allow: /redoc$
+        Disallow: /
+        """
+        ).lstrip(),
+        media_type="text/plain",
     )
 
 
