@@ -144,7 +144,7 @@ async def db_exception_handler(
         exception (OperationalError): Erro operacional do banco de dados.
 
     Returns:
-        Response: Erro HTTP.
+        Response: Resposta HTTP informando o erro.
     """
     logger.error("Erro operacional do banco de dados em %s: %s", request.url, exception)
     return JSONResponse(
