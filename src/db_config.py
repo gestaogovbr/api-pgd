@@ -7,6 +7,7 @@ from typing import AsyncGenerator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.sql import text
 
 SQLALCHEMY_DATABASE_URL = os.environ.get("SQLALCHEMY_DATABASE_URL")
 
@@ -35,8 +36,14 @@ async def get_db():
     db = get_async_session()
     try:
         yield db
-    finally:
-        db.aclose()
+
+
+async def check_db_connection(db: AsyncSession):
+    """Verifica a conectividade com o banco de dados usando uma query
+    leve.
+    """
+    result = await db.execute(text("SELECT 1"))
+    _ = result.scalar_one_or_none()
 
 
 class DbContextManager:
