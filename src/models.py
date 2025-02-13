@@ -10,7 +10,6 @@ from sqlalchemy import (
     Column,
     Date,
     DateTime,
-    Enum,
     ForeignKeyConstraint,
     Integer,
     String,
