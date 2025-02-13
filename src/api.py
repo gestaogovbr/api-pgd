@@ -13,11 +13,17 @@ from fastapi import Depends, FastAPI, HTTPException, status, Header, Request, Re
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 import crud
 import crud_auth
-from db_config import DbContextManager, create_db_and_tables
+from db_config import (
+    check_db_connection,
+    create_db_and_tables,
+    DbContextManager,
+    get_db,
+)
 import email_config
 import response_schemas
 import schemas
@@ -172,6 +178,21 @@ async def docs_redirect(
     return RedirectResponse(
         url=location, status_code=status.HTTP_307_TEMPORARY_REDIRECT
     )
+
+
+@app.get("/health", include_in_schema=False)
+async def health_check(db: AsyncSession = Depends(get_db)):
+    """Verifica se o banco de dados está disponível."""
+    try:
+        # Executa uma query leve para verificar a conectividade com
+        # o banco de dados
+        await check_db_connection(db)
+    except OperationalError as exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Banco de dados indisponível",
+        ) from exception
+    return {"status": "ok"}
 
 
 @app.get("/robots.txt", include_in_schema=False)
