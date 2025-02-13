@@ -282,22 +282,32 @@ async def create_or_update_user(
 async def get_user(
     user_logged: Annotated[  # pylint: disable=unused-argument
         schemas.UsersSchema,
-        Depends(crud_auth.get_current_admin_user),
+        Depends(crud_auth.get_current_active_user),
     ],
     email: str,
     db: DbContextManager = Depends(DbContextManager),
 ) -> schemas.UsersGetSchema:
     """Retorna os dados cadastrais do usuário da API especificado pelo
-    e-mail informado."""
+    e-mail informado.
 
+    O usuário com perfil comum só pode consultar os dados do seu próprio
+    usuário. O usuário com perfil admin pode consultar qualquer usuário.
+    """
+    # verifica permissões
+    if not user_logged.is_admin and email != user_logged.email:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="Usuário não tem permissões de administrador.",
+        )
+
+    # verifica se o usuário existe
     user = await crud_auth.get_user(db, email)
 
     if user:
         return user.model_dump(exclude=["password"])
-    else:
-        raise HTTPException(
-            status.HTTP_404_NOT_FOUND, detail=f"Usuário `{email}` não existe"
-        )
+    raise HTTPException(
+        status.HTTP_404_NOT_FOUND, detail=f"Usuário `{email}` não existe"
+    )
 
 
 @app.post(
