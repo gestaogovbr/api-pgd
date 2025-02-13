@@ -75,6 +75,9 @@ app = FastAPI(
 )
 
 
+# Middleware
+
+
 @app.middleware("http")
 async def add_csp_header(
     request: Request, call_next: Callable[[Request], Awaitable[Response]]
@@ -124,6 +127,23 @@ async def check_user_agent(
             content={"detail": "User-Agent header is required"},
         )
     return await call_next(request)
+
+
+# Tratadores de exceções
+
+
+@app.exception_handler(OperationalError)
+async def db_exception_handler(request: Request, exception: OperationalError):
+    logger.error("Erro operacional do banco de dados em %s: %s", request.url, exception)
+    return JSONResponse(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        content={
+            "detail": "Banco de dados indisponível. Por favor tente novamente mais tarde."
+        },
+    )
+
+
+# Endpoints
 
 
 @app.get("/", include_in_schema=False)
