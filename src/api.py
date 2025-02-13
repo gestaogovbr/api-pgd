@@ -48,6 +48,12 @@ if TEST_ENVIRONMENT:
 
     description = environment_msg + description
 
+# Configura o logger
+
+logger = logging.getLogger("uvicorn.error")
+
+# Inicialização da API
+
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):  # pylint: disable=unused-argument
@@ -56,7 +62,7 @@ async def lifespan(application: FastAPI):  # pylint: disable=unused-argument
         await create_db_and_tables()
         await crud_auth.init_user_admin()
     except OperationalError as exception:
-        logging.error("A inicialização do banco de dados falhou: %s", exception)
+        logger.error("A inicialização do banco de dados falhou: %s", exception)
         raise exception
     yield
 
