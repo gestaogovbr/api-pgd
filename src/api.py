@@ -133,7 +133,19 @@ async def check_user_agent(
 
 
 @app.exception_handler(OperationalError)
-async def db_exception_handler(request: Request, exception: OperationalError):
+async def db_exception_handler(
+    request: Request, exception: OperationalError
+) -> JSONResponse:
+    """Trata a exceção de erro operacional do banco de dados, retornando
+    erro 503 Service Unavailable para qualquer endpoint.
+
+    Args:
+        request (Request): Requisição HTTP.
+        exception (OperationalError): Erro operacional do banco de dados.
+
+    Returns:
+        Response: Erro HTTP.
+    """
     logger.error("Erro operacional do banco de dados em %s: %s", request.url, exception)
     return JSONResponse(
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
