@@ -5,6 +5,8 @@
 
 * Allow user to GET their own user data
 * Add a robots.txt file and allow indexing only of documentation
+* Change mutable list defaults in Pydantic to default factory lists
+* Add tests for empty entregas lists
 
 
 ## 3.2.5
