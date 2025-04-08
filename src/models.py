@@ -6,6 +6,7 @@ import enum
 from textwrap import dedent
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     Column,
     Date,
@@ -32,7 +33,7 @@ class PlanoEntregas(Base):
         comment="Código do sistema da unidade: “SIAPE” ou “SIORG”",
     )
     cod_unidade_autorizadora = Column(
-        Integer,
+        BigInteger,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema "
         "Integrado de Administração de Recursos Humanos (SIAPE) "
@@ -50,7 +51,7 @@ class PlanoEntregas(Base):
         "para API.",
     )
     cod_unidade_instituidora = Column(
-        Integer,
+        BigInteger,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema "
         "Integrado de Administração de Recursos Humanos (SIAPE) "
@@ -61,7 +62,7 @@ class PlanoEntregas(Base):
         "unidade de autorização.",
     )
     cod_unidade_executora = Column(
-        Integer,
+        BigInteger,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema "
         "Integrado de Administração de Recursos Humanos (SIAPE) "
@@ -263,7 +264,7 @@ class PlanoTrabalho(Base):
         comment='Código do sistema da unidade: "SIAPE" ou "SIORG".',
     )
     cod_unidade_autorizadora = Column(
-        Integer,
+        BigInteger,
         primary_key=True,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema "
@@ -314,7 +315,7 @@ class PlanoTrabalho(Base):
         ),
     )
     cod_unidade_executora = Column(
-        Integer,
+        BigInteger,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema "
         "Integrado de Administração de Recursos Humanos (SIAPE) "
@@ -601,7 +602,7 @@ class Participante(Base):
         comment='Código do sistema da unidade: "SIAPE" ou "SIORG".',
     )
     cod_unidade_autorizadora = Column(
-        Integer,
+        BigInteger,
         primary_key=True,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema Integrado de "
@@ -623,7 +624,7 @@ class Participante(Base):
         "Obs: A instituição que não esteja no SIAPE pode usar o código SIORG.",
     )
     cod_unidade_lotacao = Column(
-        Integer,
+        BigInteger,
         primary_key=True,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema Integrado de "
@@ -639,7 +640,7 @@ class Participante(Base):
         "Administração de Recursos Humanos (SIAPE).",
     )
     cod_unidade_instituidora = Column(
-        Integer,
+        BigInteger,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema Integrado de "
         "Administração de Recursos Humanos (SIAPE) corresponde à Unidade de "
@@ -731,7 +732,7 @@ class Users(Base):
         comment="Código do sistema da unidade: “SIAPE” ou “SIORG”.",
     )
     cod_unidade_autorizadora = Column(
-        Integer,
+        BigInteger,
         nullable=False,
         comment="Unidade autorizadora do PGD à qual o usuário "
         "pertence e está autorizado a enviar e consultar dados.",
