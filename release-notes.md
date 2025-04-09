@@ -1,6 +1,11 @@
 # Release notes
 
 
+## 3.2.7
+
+* Change data type of all columns about units to BigInteger
+
+
 ## 3.2.6
 
 * Allow user to GET their own user data
