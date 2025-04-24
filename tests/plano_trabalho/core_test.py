@@ -472,7 +472,7 @@ class TestCreatePlanoTrabalho(BasePTTest):
 
         if all(
             (
-                (0 < input_pt.get(field) <= MAX_INT)
+                (0 < input_pt.get(field, 0) <= MAX_INT)
                 for field in (
                     "cod_unidade_autorizadora",
                     "cod_unidade_executora",
