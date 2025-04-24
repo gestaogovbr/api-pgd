@@ -158,11 +158,18 @@ async def create_plano_trabalho(
         db_participante = result.scalars().unique().one_or_none()
         if db_participante is None:
             raise ValueError(
-                "Plano de Trabalho faz referência a participante inexistente. "
-                f"origem_unidade: {plano_trabalho.origem_unidade} "
-                f"cod_unidade_autorizadora: {plano_trabalho.cod_unidade_autorizadora} "
-                f"matricula_siape: {plano_trabalho.matricula_siape} "
-                f"cod_unidade_lotacao: {plano_trabalho.cod_unidade_lotacao_participante}"
+                "Plano de Trabalho faz referência a participante inexistente.\n"
+                f" origem_unidade: {plano_trabalho.origem_unidade}\n"
+                f" cod_unidade_autorizadora: {plano_trabalho.cod_unidade_autorizadora}\n"
+                f" matricula_siape: {plano_trabalho.matricula_siape}\n"
+                f" cod_unidade_lotacao: {plano_trabalho.cod_unidade_lotacao_participante}"
+            )
+        if plano_trabalho.data_inicio < db_participante.data_assinatura_tcr:
+            raise ValueError(
+                "data_inicio do Plano de Trabalho deve ser maior ou igual à "
+                "data_assinatura_tcr do Participante.\n"
+                f" data_inicio: {plano_trabalho.data_inicio}\n"
+                f" data_assinatura_tcr: {db_participante.data_assinatura_tcr}"
             )
         session.add(db_participante)
         db_participante.planos_trabalho.append(db_plano_trabalho)
