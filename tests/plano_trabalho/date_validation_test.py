@@ -76,9 +76,9 @@ class TestCreatePTDateIntervalOverAYear(BasePTTest):
     @pytest.mark.parametrize(
         "data_inicio, data_termino",
         [
-            ("2023-01-01", "2023-06-30"),  # igual ao exemplo
-            ("2023-01-01", "2024-01-01"),  # um ano
-            ("2023-01-01", "2024-01-02"),  # mais que um ano
+            ("2023-06-01", "2023-06-30"),  # igual ao exemplo
+            ("2023-06-01", "2024-06-01"),  # um ano
+            ("2023-06-01", "2024-06-02"),  # mais que um ano
         ],
     )
     def test_create_plano_trabalho_date_interval_over_a_year(
@@ -120,7 +120,7 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
                 "101",
                 99,
                 "1237654",
-                "2023-06-01",
+                "2023-06-08",
                 "2023-06-15",
                 2,
             ),  # igual ao exemplo
@@ -133,26 +133,26 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
                 2,
             ),  # sem sobreposição
             # sobreposição no início
-            ("103", 99, "1237654", "2022-12-01", "2023-06-08", 2),
+            ("103", 99, "1237654", "2023-06-01", "2023-06-08", 2),
             # sobreposição no fim
-            ("104", 99, "1237654", "2023-06-30", "2023-07-15", 2),
+            ("104", 99, "1237654", "2023-06-15", "2023-07-15", 2),
             (
                 "105",
                 99,
                 "1237654",
-                "2023-06-02",
-                "2023-06-08",
+                "2023-06-09",
+                "2023-06-10",
                 2,
             ),  # contido no período
             (
                 "106",
                 99,
                 "1237654",
-                "2022-12-31",
+                "2023-06-07",
                 "2023-06-16",
                 2,
             ),  # contém o período
-            ("107", 99, "1237654", "2022-12-01", "2023-06-08", 1),  # cancelado
+            ("107", 99, "1237654", "2023-06-01", "2023-06-30", 1),  # cancelado
             (
                 "109",
                 100,
@@ -183,6 +183,7 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
         especificado nos parâmetros de teste.
         """
         input_pt = deepcopy(self.input_pt)
+        input_pt["data_inicio"] = "2023-06-08"
         original_pt = input_pt.copy()
         input_pt2 = original_pt.copy()
         input_pt2["id_plano_trabalho"] = "556"
@@ -265,11 +266,11 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         "data_fim_periodo_avaliativo",
         [
             # período inteiro antes da data_inicio do Plano de Trabalho
-            ("80", "2022-12-30", "2022-12-31"),
+            ("80", "2023-06-01", "2023-06-07"),
             # fim antes do início
-            ("81", "2022-12-31", "2022-12-30"),
+            ("81", "2023-06-11", "2022-06-10"),
             # início igual à data_inicio do Plano de Trabalho
-            ("82", "2023-01-01", "2023-01-02"),
+            ("82", "2023-06-08", "2023-06-09"),
         ],
     )
     def test_create_pt_invalid_periodo_avaliativo(
@@ -284,6 +285,7 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         - começa, no mínio, na data de início do Plano de Trabalho.
         """
         input_pt = deepcopy(self.input_pt)
+        input_pt["data_inicio"] = "2023-06-08"
         input_pt["id_plano_trabalho"] = id_plano_trabalho
         input_pt["avaliacoes_registros_execucao"][0][
             "data_inicio_periodo_avaliativo"
