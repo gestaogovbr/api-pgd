@@ -347,8 +347,8 @@ class PlanoTrabalho(Base):
         Date,
         nullable=False,
         comment="Data de início do plano de trabalho do participante. "
-        "\n\n**Regras de validação:** deve ser posterior à “data_assinatura_tcr”"
-        "e à “data_inicio” do “plano_entregas”.",
+        "\n\n**Regras de validação:** deve ser igual ou posterior à "
+        "“data_assinatura_tcr” e à “data_inicio” do “plano_entregas”.",
     )
     data_termino = Column(
         Date,
@@ -683,7 +683,9 @@ class Participante(Base):
         "enviar `date`**, uma vez que *a hora é ignorada* e não é armazenada. O "
         "formato `datetime`é aceito apenas por compatibilidade com versões "
         "anteriores da API, que o aceitavam. Em versões futuras essa "
-        "flexibilidade será retirada.",
+        "flexibilidade será retirada.\n\n"
+        "A data informada deve permanecer a data original, mesmo em caso de "
+        "haver repactuação.",
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
