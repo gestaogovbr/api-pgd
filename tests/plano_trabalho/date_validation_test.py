@@ -19,61 +19,50 @@ class TestCreatePTInvalidDates(BasePTTest):
     """Testes relacionados a criar um Plano de Trabalho com datas inválidas."""
 
     @pytest.mark.parametrize(
-        "id_plano_trabalho, data_assinatura_tcr, data_inicio, data_termino",
+        ("data_inicio, data_termino"),
+        # data presente no example_part:
+        # "data_assinatura_tcr": "2023-06-01"
         [
-            ("77", "2023-03-01", "2023-04-01", "2023-06-04"),  # OK
-            ("78", "2023-03-01", "2023-06-04", "2023-04-01"),  # término antes do início
-            ("79", "2023-06-01", "2023-04-01", "2023-06-04"),  # início antes do TCR
+            # data_inicio anterior à data_assinatura_tcr (inválida)
+            (date(2023, 5, 1), date(2023, 7, 1)),
+            # data_inicio igual à data_assinatura_tcr (válida)
+            (date(2023, 6, 1), date(2023, 7, 1)),
+            # data_inicio posterior à data_assinatura_tcr (válida)
+            (date(2023, 7, 1), date(2023, 8, 1)),
+            # data_inicio posterior à data_termino (inválida)
+            (date(2023, 7, 1), date(2023, 6, 1)),
         ],
     )
     def test_create_pt_invalid_dates(
         self,
+        example_part: dict,  # pylint: disable=unused-argument
         input_part: dict,
-        id_plano_trabalho: str,
-        data_assinatura_tcr: str,
-        data_inicio: str,
-        data_termino: str,
+        data_inicio: date,
+        data_termino: date,
     ):
-        """Verifica se a data_termino_plano é maior ou igual à data_inicio_plano."""
-        input_part["data_assinatura_tcr"] = data_assinatura_tcr
+        """Testa a criação de um plano de trabalho com datas de início
+        que violam certas regras de validação.
+        """
         input_pt = deepcopy(self.input_pt)
-        input_pt["data_inicio"] = data_inicio
-        input_pt["data_termino"] = data_termino
-        # ajusta as datas dos registros de avaliação
-        data_inicio = date.fromisoformat(data_inicio)
-        data_termino = date.fromisoformat(data_termino)
-        input_pt["avaliacoes_registros_execucao"][0][
-            "data_inicio_periodo_avaliativo"
-        ] = data_inicio.isoformat()
-        input_pt["avaliacoes_registros_execucao"][0]["data_fim_periodo_avaliativo"] = (
-            data_inicio + timedelta(days=1)
-        ).isoformat()
-        input_pt["avaliacoes_registros_execucao"][0][
-            "data_avaliacao_registros_execucao"
-        ] = (data_inicio + timedelta(days=1)).isoformat()
+        # evitar validações sem relação com o teste
+        input_pt["avaliacoes_registros_execucao"] = []
+        input_pt["data_inicio"] = data_inicio.isoformat()
+        input_pt["data_termino"] = data_termino.isoformat()
 
-        input_pt["id_plano_trabalho"] = id_plano_trabalho
-
-        # cria o participante com a data_assinatura_tcr informada
-        response = self.client.put(
-            (
-                "/organizacao/SIAPE"
-                f"/{input_part['cod_unidade_autorizadora']}"
-                f"/{input_part['cod_unidade_lotacao']}"
-                f"/participante/{input_part['matricula_siape']}"
-            ),
-            json=input_part,
-            headers=self.header_usr_1,
-        )
-        assert response.status_code in (status.HTTP_200_OK, status.HTTP_201_CREATED)
-
-        # cria o plano_trabalho com a data_inicio informada
         response = self.put_plano_trabalho(input_pt)
+
         if data_inicio > data_termino:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
                 "data_termino do Plano de Trabalho deve ser maior ou igual "
                 "que data_inicio"
+            )
+            assert_error_message(response, detail_message)
+        elif data_inicio < date.fromisoformat(input_part["data_assinatura_tcr"]):
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = (
+                "data_inicio do Plano de Trabalho deve ser maior ou igual à "
+                "data_assinatura_tcr do Participante"
             )
             assert_error_message(response, detail_message)
         else:
