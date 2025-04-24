@@ -1,5 +1,11 @@
 # Release notes
 
+## 3.2.8
+
+* Add folder for schema migration scripts
+* Add validation rule for `data_inicio` and `data_assinatura_tcr` in
+  `PlanoTrabalhoSchema`
+
 
 ## 3.2.7
 
