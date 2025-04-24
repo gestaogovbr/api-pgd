@@ -131,28 +131,28 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
                 "101",
                 99,
                 "1237654",
-                "2023-01-01",
-                "2023-01-15",
+                "2023-06-01",
+                "2023-06-15",
                 2,
             ),  # igual ao exemplo
             (
                 "102",
                 99,
                 "1237654",
-                "2023-02-01",
-                "2023-02-15",
+                "2023-07-01",
+                "2023-07-15",
                 2,
             ),  # sem sobreposição
             # sobreposição no início
-            ("103", 99, "1237654", "2022-12-01", "2023-01-08", 2),
+            ("103", 99, "1237654", "2022-12-01", "2023-06-08", 2),
             # sobreposição no fim
-            ("104", 99, "1237654", "2023-01-30", "2023-02-15", 2),
+            ("104", 99, "1237654", "2023-06-30", "2023-07-15", 2),
             (
                 "105",
                 99,
                 "1237654",
-                "2023-01-02",
-                "2023-01-08",
+                "2023-06-02",
+                "2023-06-08",
                 2,
             ),  # contido no período
             (
@@ -160,16 +160,16 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
                 99,
                 "1237654",
                 "2022-12-31",
-                "2023-01-16",
+                "2023-06-16",
                 2,
             ),  # contém o período
-            ("107", 99, "1237654", "2022-12-01", "2023-01-08", 1),  # cancelado
+            ("107", 99, "1237654", "2022-12-01", "2023-06-08", 1),  # cancelado
             (
                 "109",
                 100,
                 "1234567",
-                "2023-01-01",
-                "2023-01-15",
+                "2023-06-01",
+                "2023-06-15",
                 2,
             ),  # outro participante
         ],
@@ -197,15 +197,15 @@ class TestCreatePTOverlappingDateInterval(BasePTTest):
         original_pt = input_pt.copy()
         input_pt2 = original_pt.copy()
         input_pt2["id_plano_trabalho"] = "556"
-        input_pt2["data_inicio"] = "2023-01-16"
-        input_pt2["data_termino"] = "2023-01-31"
+        input_pt2["data_inicio"] = "2023-06-16"
+        input_pt2["data_termino"] = "2023-06-30"
         input_pt2["avaliacoes_registros_execucao"] = [
             {
                 "id_periodo_avaliativo": "string",
-                "data_inicio_periodo_avaliativo": "2023-01-16",
-                "data_fim_periodo_avaliativo": "2023-01-23",
+                "data_inicio_periodo_avaliativo": "2023-06-16",
+                "data_fim_periodo_avaliativo": "2023-06-23",
                 "avaliacao_registros_execucao": 5,
-                "data_avaliacao_registros_execucao": "2023-01-23",
+                "data_avaliacao_registros_execucao": "2023-06-23",
                 "matricula_siape": "1237654",
                 "carga_horaria_disponivel": 80,
             }
@@ -330,10 +330,10 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         "id_plano_trabalho, data_inicio_periodo_avaliativo, "
         "data_fim_periodo_avaliativo, data_avaliacao_registros_execucao",
         [
-            ("80", "2023-04-01", "2023-04-10", "2023-03-31"),  # antes do início
-            ("81", "2023-04-01", "2023-04-10", "2023-04-01"),  # igual ao início
-            ("82", "2023-04-01", "2023-04-10", "2023-04-05"),  # depois do início
-            ("83", "2023-04-01", "2023-04-10", "2023-04-15"),  # depois do fim
+            ("80", "2023-06-02", "2023-06-10", "2023-06-01"),  # antes do início
+            ("81", "2023-06-01", "2023-06-10", "2023-06-01"),  # igual ao início
+            ("82", "2023-06-01", "2023-06-10", "2023-06-05"),  # depois do início
+            ("83", "2023-06-01", "2023-06-10", "2023-06-15"),  # depois do fim
         ],
     )
     def test_create_pt_data_avaliacao_out_of_bounds(
@@ -384,34 +384,34 @@ class TestCreatePlanoDeTrabalhoPeriodoAvaliativoOverlapping(BasePTTest):
     @pytest.mark.parametrize(
         "id_plano_trabalho, periodo_avaliativo",
         [
-            ("101", [("2023-01-01", "2023-01-02")]),  # igual ao exemplo
+            ("101", [("2023-06-01", "2023-06-02")]),  # igual ao exemplo
             (
                 "102",
-                [("2023-01-01", "2023-01-07"), ("2023-01-08", "2023-01-15")],
+                [("2023-06-01", "2023-06-07"), ("2023-06-08", "2023-06-15")],
             ),  # sem sobreposição
             (
                 "103",
-                [("2023-01-07", "2023-01-15"), ("2023-01-01", "2023-01-07")],
+                [("2023-06-07", "2023-06-15"), ("2023-06-01", "2023-06-07")],
             ),  # sobreposição no início
             (
                 "104",
-                [("2023-01-01", "2023-01-08"), ("2023-01-07", "2023-01-15")],
+                [("2023-06-01", "2023-06-08"), ("2023-06-07", "2023-06-15")],
             ),  # sobreposição no fim
             (
                 "105",
                 [
-                    ("2023-01-01", "2023-01-06"),
-                    ("2023-01-06", "2023-01-11"),
-                    ("2023-01-11", "2023-01-15"),
+                    ("2023-06-01", "2023-06-06"),
+                    ("2023-06-06", "2023-06-11"),
+                    ("2023-06-11", "2023-06-15"),
                 ],
             ),  # sobreposições múltiplas
             (
                 "106",
-                [("2023-01-01", "2023-01-14"), ("2023-01-02", "2023-01-13")],
+                [("2023-06-01", "2023-06-14"), ("2023-06-02", "2023-06-13")],
             ),  # contido no período
             (
                 "107",
-                [("2023-01-02", "2023-01-14"), ("2023-01-01", "2023-01-15")],
+                [("2023-06-02", "2023-06-14"), ("2023-06-01", "2023-06-15")],
             ),  # contém o período
         ],
     )
