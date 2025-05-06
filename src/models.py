@@ -348,7 +348,7 @@ class PlanoTrabalho(Base):
         nullable=False,
         comment="Data de início do plano de trabalho do participante. "
         "\n\n**Regras de validação:** deve ser igual ou posterior à "
-        "“data_assinatura_tcr” e à “data_inicio” do “plano_entregas”.",
+        "“data_inicio” do “plano_entregas”.",
     )
     data_termino = Column(
         Date,
