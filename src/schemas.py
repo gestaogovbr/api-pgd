@@ -27,8 +27,8 @@ from models import (
 from util import over_a_year
 
 STR_FIELD_MAX_SIZE = 300
-NON_NEGATIVE_INT4 = Annotated[NonNegativeInt, Field(le=(2**31) - 1)]
-POSITIVE_INT4 = Annotated[PositiveInt, Field(le=(2**31) - 1)]
+NON_NEGATIVE_INT8 = Annotated[NonNegativeInt, Field(le=(2**63) - 1)]
+POSITIVE_INT8 = Annotated[PositiveInt, Field(le=(2**63) - 1)]
 
 # Funções auxiliares
 
@@ -247,7 +247,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Origem da unidade",
         description=PlanoTrabalho.origem_unidade.comment,
     )
-    cod_unidade_autorizadora: POSITIVE_INT4 = Field(
+    cod_unidade_autorizadora: POSITIVE_INT8 = Field(
         title="Código da unidade autorizadora",
         description=PlanoTrabalho.cod_unidade_autorizadora.comment,
     )
@@ -259,7 +259,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Status do plano de trabalho",
         description=PlanoTrabalho.status.comment,
     )
-    cod_unidade_executora: POSITIVE_INT4 = Field(
+    cod_unidade_executora: POSITIVE_INT8 = Field(
         title="Código da unidade executora",
         description=PlanoTrabalho.cod_unidade_executora.comment,
     )
@@ -277,7 +277,7 @@ class PlanoTrabalhoSchema(BaseModel):
         max_length=7,
         pattern=r"\d{7}",
     )
-    cod_unidade_lotacao_participante: POSITIVE_INT4 = Field(
+    cod_unidade_lotacao_participante: POSITIVE_INT8 = Field(
         title="Código da unidade lotacao participante",
         description=PlanoTrabalho.cod_unidade_lotacao_participante.comment,
     )
@@ -289,7 +289,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Data de término do plano de trabalho",
         description=PlanoTrabalho.data_termino.comment,
     )
-    carga_horaria_disponivel: NON_NEGATIVE_INT4 = Field(
+    carga_horaria_disponivel: NON_NEGATIVE_INT8 = Field(
         title="Carga horária disponível do participante",
         description=PlanoTrabalho.carga_horaria_disponivel.comment,
     )
@@ -443,15 +443,15 @@ class PlanoEntregasSchema(BaseModel):
         title="Código do sistema da unidade",
         description=PlanoEntregas.origem_unidade.comment,
     )
-    cod_unidade_autorizadora: POSITIVE_INT4 = Field(
+    cod_unidade_autorizadora: POSITIVE_INT8 = Field(
         title="Código da unidade autorizadora",
         description=PlanoEntregas.cod_unidade_autorizadora.comment,
     )
-    cod_unidade_instituidora: POSITIVE_INT4 = Field(
+    cod_unidade_instituidora: POSITIVE_INT8 = Field(
         title="Código da unidade instituidora",
         description=PlanoEntregas.cod_unidade_instituidora.comment,
     )
-    cod_unidade_executora: POSITIVE_INT4 = Field(
+    cod_unidade_executora: POSITIVE_INT8 = Field(
         title="Código da unidade executora",
         description=PlanoEntregas.cod_unidade_executora.comment,
     )
@@ -525,11 +525,11 @@ class ParticipanteSchema(BaseModel):
         title="Código do sistema da unidade (SIAPE ou SIORG)",
         description=Participante.origem_unidade.comment,
     )
-    cod_unidade_autorizadora: NON_NEGATIVE_INT4 = Field(
+    cod_unidade_autorizadora: NON_NEGATIVE_INT8 = Field(
         title="Código da unidade organizacional autorizadora do PGD",
         description=Participante.cod_unidade_autorizadora.comment,
     )
-    cod_unidade_lotacao: NON_NEGATIVE_INT4 = Field(
+    cod_unidade_lotacao: NON_NEGATIVE_INT8 = Field(
         title="Código da unidade organizacional de lotação do participante",
         description=Participante.cod_unidade_lotacao.comment,
     )
@@ -540,7 +540,7 @@ class ParticipanteSchema(BaseModel):
         max_length=7,
         pattern=r"\d{7}",
     )
-    cod_unidade_instituidora: NON_NEGATIVE_INT4 = Field(
+    cod_unidade_instituidora: NON_NEGATIVE_INT8 = Field(
         title="Código da unidade organizacional instituidora do PGD",
         description=Participante.cod_unidade_instituidora.comment,
     )
