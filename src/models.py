@@ -224,7 +224,7 @@ class Entrega(Base):
         comment="origem_unidade do Plano de Entregas (FK)",
     )
     cod_unidade_autorizadora = Column(
-        Integer,
+        BigInteger,
         nullable=False,
         comment="cod_unidade_autorizadora do Plano de Entregas (FK)",
     )
@@ -335,7 +335,7 @@ class PlanoTrabalho(Base):
         "Administração de Recursos Humanos (SIAPE).",
     )
     cod_unidade_lotacao_participante = Column(
-        Integer,
+        BigInteger,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema Integrado de "
         "Administração de Recursos Humanos (SIAPE) corresponde à unidade de "
@@ -357,7 +357,7 @@ class PlanoTrabalho(Base):
         "\n\n**Regras de validação:** deve ser posterior à “data_inicio”.",
     )
     carga_horaria_disponivel = Column(
-        Integer,
+        BigInteger,
         nullable=False,
         comment="Carga horária total do participante disponível no período de "
         "vigência do plano de trabalho. Não inclui períodos de férias, "
@@ -475,7 +475,7 @@ class Contribuicao(Base):
         "ao Plano de Trabalho. (FK)",
     )
     cod_unidade_autorizadora_pt = Column(
-        Integer,
+        BigInteger,
         nullable=False,
         comment="cod_unidade_autorizadora do Plano de Trabalho (FK)",
     )
@@ -571,7 +571,7 @@ class AvaliacaoRegistrosExecucao(Base):
         "ao Plano de Trabalho. (FK)",
     )
     cod_unidade_autorizadora_pt = Column(
-        Integer,
+        BigInteger,
         nullable=False,
         comment="cod_unidade_autorizadora do Plano de Trabalho (FK)",
     )
