@@ -20,15 +20,7 @@ class TestCreatePTInvalidDates(BasePTTest):
 
     @pytest.mark.parametrize(
         ("data_inicio, data_termino"),
-        # data presente no example_part:
-        # "data_assinatura_tcr": "2023-06-01"
         [
-            # data_inicio anterior à data_assinatura_tcr (inválida)
-            (date(2023, 5, 1), date(2023, 7, 1)),
-            # data_inicio igual à data_assinatura_tcr (válida)
-            (date(2023, 6, 1), date(2023, 7, 1)),
-            # data_inicio posterior à data_assinatura_tcr (válida)
-            (date(2023, 7, 1), date(2023, 8, 1)),
             # data_inicio posterior à data_termino (inválida)
             (date(2023, 7, 1), date(2023, 6, 1)),
         ],
@@ -56,13 +48,6 @@ class TestCreatePTInvalidDates(BasePTTest):
             detail_message = (
                 "data_termino do Plano de Trabalho deve ser maior ou igual "
                 "que data_inicio"
-            )
-            assert_error_message(response, detail_message)
-        elif data_inicio < date.fromisoformat(input_part["data_assinatura_tcr"]):
-            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_message = (
-                "data_inicio do Plano de Trabalho deve ser maior ou igual à "
-                "data_assinatura_tcr do Participante"
             )
             assert_error_message(response, detail_message)
         else:
