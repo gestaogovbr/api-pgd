@@ -409,7 +409,7 @@ def example_pe_max_int(
     """Cria um Plano de Entrega como exemplo usando o valor máximo
     permitido para cod_unidade_autorizadora."""
     new_input_pe = deepcopy(input_pe)
-    new_input_pe["cod_unidade_autorizadora"] = MAX_INT
+    new_input_pe["cod_unidade_autorizadora"] = MAX_BIGINT
     client.put(
         f"/organizacao/SIAPE/{new_input_pe['cod_unidade_autorizadora']}"
         f"/plano_entregas/{new_input_pe['id_plano_entregas']}",
@@ -499,7 +499,7 @@ def example_part_max_int(client: httpx.Client, input_part: dict, header_admin: d
     """Cria exemplos de participantes com as combinações de códigos de
     unidade usando os inteiros máximos permitidos para os tipos de campo."""
     new_input_part = deepcopy(input_part)
-    new_input_part["cod_unidade_lotacao"] = MAX_INT
+    new_input_part["cod_unidade_lotacao"] = MAX_BIGINT
     client.put(
         f"/organizacao/{new_input_part['origem_unidade']}"
         f"/{new_input_part['cod_unidade_autorizadora']}"
@@ -509,7 +509,7 @@ def example_part_max_int(client: httpx.Client, input_part: dict, header_admin: d
         headers=header_admin,
     )
     new_input_part["cod_unidade_lotacao"] = input_part["cod_unidade_lotacao"]
-    new_input_part["cod_unidade_autorizadora"] = MAX_INT
+    new_input_part["cod_unidade_autorizadora"] = MAX_BIGINT
     client.put(
         f"/organizacao/{new_input_part['origem_unidade']}"
         f"/{new_input_part['cod_unidade_autorizadora']}"

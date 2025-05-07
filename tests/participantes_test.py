@@ -10,7 +10,7 @@ from fastapi import status
 from httpx import Client, Response
 import pytest
 
-from .conftest import MAX_INT
+from .conftest import MAX_BIGINT
 
 # Relação de campos obrigatórios para testar sua ausência:
 FIELDS_PARTICIPANTES = {
@@ -233,12 +233,12 @@ class TestCreateParticipante(BaseParticipanteTest):
             (-1, 1, 99),  # cod_unidade_autorizadora negativo
             (1, -1, 99),  # cod_unidade_instituidora negativo
             (1, 1, -1),  # cod_unidade_lotacao negativo
-            (MAX_INT + 1, 1, 99),  # cod_unidade_autorizadora maior que MAX_INT
-            (1, MAX_INT + 1, 99),  # cod_unidade_instituidora maior que MAX_INT
-            (1, 1, MAX_INT + 1),  # cod_unidade_lotacao maior que MAX_INT
-            (MAX_INT, 1, 99),  # cod_unidade_autorizadora igual a MAX_INT
-            (1, MAX_INT, 99),  # cod_unidade_instituidora igual a MAX_INT
-            (1, 1, MAX_INT),  # cod_unidade_lotacao igual a MAX_INT
+            (MAX_BIGINT + 1, 1, 99),  # cod_unidade_autorizadora maior que MAX_BIGINT
+            (1, MAX_BIGINT + 1, 99),  # cod_unidade_instituidora maior que MAX_BIGINT
+            (1, 1, MAX_BIGINT + 1),  # cod_unidade_lotacao maior que MAX_BIGINT
+            (MAX_BIGINT, 1, 99),  # cod_unidade_autorizadora igual a MAX_BIGINT
+            (1, MAX_BIGINT, 99),  # cod_unidade_instituidora igual a MAX_BIGINT
+            (1, 1, MAX_BIGINT),  # cod_unidade_lotacao igual a MAX_BIGINT
         ],
     )
     def test_create_participante_unit_out_of_range(
@@ -259,7 +259,7 @@ class TestCreateParticipante(BaseParticipanteTest):
 
         if all(
             (
-                (0 < input_part.get(field) <= MAX_INT)
+                (0 < input_part.get(field) <= MAX_BIGINT)
                 for field in (
                     "cod_unidade_autorizadora",
                     "cod_unidade_instituidora",
