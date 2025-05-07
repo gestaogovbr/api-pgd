@@ -357,7 +357,7 @@ class PlanoTrabalho(Base):
         "\n\n**Regras de validação:** deve ser posterior à “data_inicio”.",
     )
     carga_horaria_disponivel = Column(
-        BigInteger,
+        Integer,
         nullable=False,
         comment="Carga horária total do participante disponível no período de "
         "vigência do plano de trabalho. Não inclui períodos de férias, "
