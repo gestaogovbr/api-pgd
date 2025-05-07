@@ -12,7 +12,7 @@ from fastapi import status
 import pytest
 
 from util import assert_error_message
-from ..conftest import MAX_INT
+from ..conftest import MAX_INT, MAX_BIGINT
 
 
 # grupos de campos opcionais e obrigatórios a testar
@@ -440,13 +440,18 @@ class TestCreatePlanoTrabalho(BasePTTest):
             (1, -1, 99, 80),  # cod_unidade_executora negativo
             (1, 99, -1, 80),  # cod_unidade_lotacao_participante negativo
             (1, 99, 99, -80),  # carga_horaria_disponivel negativo
-            (MAX_INT + 1, 1, 99, 80),  # cod_unidade_autorizadora maior que MAX_INT
-            (1, MAX_INT + 1, 99, 80),  # cod_unidade_executora maior que MAX_INT
-            (1, 99, MAX_INT + 1, 80),  # cod_unidade_lotacao maior que MAX_INT
+            (
+                MAX_BIGINT + 1,
+                1,
+                99,
+                80,
+            ),  # cod_unidade_autorizadora maior que MAX_BIGINT
+            (1, MAX_BIGINT + 1, 99, 80),  # cod_unidade_executora maior que MAX_BIGINT
+            (1, 99, MAX_BIGINT + 1, 80),  # cod_unidade_lotacao maior que MAX_BIGINT
             (1, 99, 99, MAX_INT + 1),  # carga_horaria_disponivel maior que MAX_INT
-            (MAX_INT, 1, 99, 80),  # cod_unidade_autorizadora igual a MAX_INT
-            (1, MAX_INT, 99, 80),  # cod_unidade_executora igual a MAX_INT
-            (1, 99, MAX_INT, 80),  # cod_unidade_lotacao igual a MAX_INT
+            (MAX_BIGINT, 1, 99, 80),  # cod_unidade_autorizadora igual a MAX_BIGINT
+            (1, MAX_BIGINT, 99, 80),  # cod_unidade_executora igual a MAX_BIGINT
+            (1, 99, MAX_BIGINT, 80),  # cod_unidade_lotacao igual a MAX_BIGINT
             (1, 99, 99, MAX_INT),  # carga_horaria_disponivel igual a MAX_INT
         ],
     )
@@ -471,15 +476,13 @@ class TestCreatePlanoTrabalho(BasePTTest):
         response = self.put_plano_trabalho(input_pt)
 
         if all(
-            (
-                (0 < input_pt.get(field, 0) <= MAX_INT)
-                for field in (
-                    "cod_unidade_autorizadora",
-                    "cod_unidade_executora",
-                    "cod_unidade_lotacao_participante",
-                    "carga_horaria_disponivel",
-                )
-            )
+            (0 < input_pt.get(field, 0) <= max_value)
+            for field, max_value in {
+                "cod_unidade_autorizadora": MAX_BIGINT,
+                "cod_unidade_executora": MAX_BIGINT,
+                "cod_unidade_lotacao_participante": MAX_BIGINT,
+                "carga_horaria_disponivel": MAX_INT,
+            }.items()
         ):
             assert response.status_code == status.HTTP_201_CREATED
         else:
