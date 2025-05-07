@@ -27,6 +27,8 @@ from models import (
 from util import over_a_year
 
 STR_FIELD_MAX_SIZE = 300
+NON_NEGATIVE_INT4 = Annotated[NonNegativeInt, Field(le=(2**31) - 1)]
+POSITIVE_INT4 = Annotated[PositiveInt, Field(le=(2**31) - 1)]
 NON_NEGATIVE_INT8 = Annotated[NonNegativeInt, Field(le=(2**63) - 1)]
 POSITIVE_INT8 = Annotated[PositiveInt, Field(le=(2**63) - 1)]
 
