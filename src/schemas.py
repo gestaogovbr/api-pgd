@@ -291,7 +291,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Data de término do plano de trabalho",
         description=PlanoTrabalho.data_termino.comment,
     )
-    carga_horaria_disponivel: NON_NEGATIVE_INT8 = Field(
+    carga_horaria_disponivel: NON_NEGATIVE_INT4 = Field(
         title="Carga horária disponível do participante",
         description=PlanoTrabalho.carga_horaria_disponivel.comment,
     )
