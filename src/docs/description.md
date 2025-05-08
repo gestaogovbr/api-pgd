@@ -174,7 +174,7 @@ Trabalho.
 * O campo `meta_entrega` tem que ser um inteiro maior ou igual a zero.
 * Para o campo `tipo_meta` são permitidos os seguintes valores:
   * `unidade`
-  * `percentual` (nesse caso, `meta_entrega` tem que estar entre `0` e `100`)
+  * `percentual`
 
 
 ### 3. Planos de Trabalho
