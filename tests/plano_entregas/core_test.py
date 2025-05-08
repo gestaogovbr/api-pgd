@@ -349,7 +349,6 @@ class TestCreatePlanoEntrega(BasePETest):
             for id_entrega, entrega in input_by_entrega.items()
         )
 
-
 class TestCreatePEInputValidation(BasePETest):
     """Testes para a validação de entrada na criação de um Plano de Entregas."""
 
@@ -639,25 +638,37 @@ class TestCreatePEInputValidation(BasePETest):
             assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
 
     @pytest.mark.parametrize(
-        "entregas",
+        ("entregas", "status"),
         [
-            ([]),
-            None,
+            ([], 2),
+            ([], 5),
+            ([], 1),
+            (None, 1),
         ]
     )
     def test_create_plano_entregas_sem_entregas(
         self,
-        entregas
+        entregas,
+        status
     ):
-        """Cria um plano de entregas que não contém entregas."""
+        """Tenta criar um plano de entregas que não contém entregas.
+        Caso o status for 1 - Cancelado, o status deve ser 201 Created.
+        """
         input_pe = deepcopy(self.input_pe)
         input_pe["entregas"] = entregas
+        input_pe["status"] = status
 
         response = self.put_plano_entregas(input_pe)
 
         if isinstance(entregas, list):
-            # aceita lista vazia
-            assert response.status_code == http_status.HTTP_201_CREATED
+            if status != 1 and not entregas:
+                assert response.status_code == 422
+                detail_message = (
+                    "A lista de entregas não pode estar vazia"
+                )
+                assert_error_message(response, detail_message)
+            else:
+                assert response.status_code == http_status.HTTP_201_CREATED
         else:
             assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
 
