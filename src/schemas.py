@@ -98,6 +98,16 @@ class ModalidadesExecucao(IntEnum):
     teletrabalho_no_exterior_par7 = 5
 
 
+class StatusPlanoEntregasEnum(IntEnum):
+    """Status do Plano de Entregas"""
+
+    cancelado = 1
+    aprovado = 2
+    em_execucao = 3
+    concluido = 4
+    avaliado = 5
+
+
 # Classes de esquemas Pydantic
 
 
@@ -423,6 +433,7 @@ class EntregaSchema(BaseModel):
         max_length=STR_FIELD_MAX_SIZE,
     )
 
+
 class PlanoEntregasSchema(BaseModel):
     __doc__ = PlanoEntregas.__doc__
     model_config = ConfigDict(from_attributes=True)
@@ -446,7 +457,7 @@ class PlanoEntregasSchema(BaseModel):
         title="Identificador único do plano de entregas",
         description=PlanoEntregas.id_plano_entregas.comment,
     )
-    status: Annotated[PositiveInt, Field(le=5)] = Field(
+    status: StatusPlanoEntregasEnum = Field(
         title="Status do plano de entregas",
         description=PlanoEntregas.status.comment,
     )
@@ -471,6 +482,15 @@ class PlanoEntregasSchema(BaseModel):
         title="Entregas",
         description="Lista de entregas associadas ao Plano de Entregas",
     )
+
+    @model_validator(mode="after")
+    def validate_entregas_not_empty(self) -> "PlanoEntregasSchema":
+        """Valida se a lista de entregas não está vazia, exceto se
+        o status for igual a 1 - Cancelado
+        """
+        if not self.entregas and self.status != StatusPlanoEntregasEnum.cancelado:
+            raise ValueError("A lista de entregas não pode estar vazia")
+        return self
 
     @model_validator(mode="after")
     def validate_entregas_uniqueness(self) -> "PlanoEntregasSchema":
