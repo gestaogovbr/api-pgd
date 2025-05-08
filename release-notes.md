@@ -1,6 +1,6 @@
 # Release notes
 
-## 3.2.9
+## 3.3.0
 
 * Remove validation rule for `data_assinatura_tcr`
   if greater than `data_inicio` of `Plano de Trabalho`
