@@ -1,5 +1,16 @@
 # Release notes
 
+## 3.2.9
+
+* Remove validation rule for `data_assinatura_tcr`
+  if greater than `data_inicio` of `Plano de Trabalho`
+* Update remaining unit's type from Integer to BigInteger
+* Remove the --reload flag during image build
+* Allow `meta_entrega` to exceed 100 when in percent mode
+* Add validation to reject empty `Entregas` on submitting
+  `Plano de Entregas`, except when the status equals 1.
+
+
 ## 3.2.8
 
 * Add folder for schema migration scripts
