@@ -423,21 +423,6 @@ class EntregaSchema(BaseModel):
         max_length=STR_FIELD_MAX_SIZE,
     )
 
-    @model_validator(mode="after")
-    def validate_meta_percentual(self) -> "EntregaSchema":
-        if (
-            self.meta_entrega is not None
-            and isinstance(self.meta_entrega, int)
-            and self.tipo_meta == TipoMeta.percentual.value
-            and not 0 <= self.meta_entrega <= 100
-        ):
-            raise ValueError(
-                "Valor meta_entrega deve estar entre 0 e 100 "
-                "quando tipo_entrega for percentual."
-            )
-        return self
-
-
 class PlanoEntregasSchema(BaseModel):
     __doc__ = PlanoEntregas.__doc__
     model_config = ConfigDict(from_attributes=True)
