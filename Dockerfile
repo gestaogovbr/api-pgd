@@ -26,5 +26,5 @@ COPY src/ src/
 
 EXPOSE 5057
 
-ENTRYPOINT ["sh", "-c", "cd /api-pgd/src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload"]
+ENTRYPOINT ["sh", "-c", "cd /api-pgd/src && uvicorn api:app --host 0.0.0.0 --port 5057"]
 
