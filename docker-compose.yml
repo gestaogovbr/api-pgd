@@ -19,6 +19,10 @@ services:
   api-pgd:
     image: ghcr.io/gestaogovbr/api-pgd:latest
     container_name: api-pgd
+    entrypoint: ["sh",
+                  "-c",
+                  "cd /api-pgd/src && uvicorn api:app --host 0.0.0.0 --port 5057 --reload",
+                  ]
     depends_on:
       db:
         condition: service_healthy
