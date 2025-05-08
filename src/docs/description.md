@@ -176,6 +176,8 @@ Trabalho.
   * `unidade`
   * `percentual`
 
+**Atenção:** não é permitido o envio do Plano de Entregas sem entregas, exceto
+se o status do Plano de Entrega for igual a 1 (Cancelado).
 
 ### 3. Planos de Trabalho
 
