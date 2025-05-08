@@ -464,7 +464,7 @@ class TestCreatePEInputValidation(BasePETest):
         "id_plano_entregas, meta_entrega, tipo_meta",
         [
             ("555", 10, "unidade"),
-            ("556", 100, "percentual"),
+            ("556", -10, "percentual"),
             ("557", 1, "percentual"),
             ("558", -10, "unidade"),
             ("559", 200, "percentual"),
@@ -478,7 +478,7 @@ class TestCreatePEInputValidation(BasePETest):
         meta_entrega: int,
         tipo_meta: str,
     ):
-        """Tenta criar um Plano de Entregas com entrega com percentuais inválidos"""
+        """Tenta criar um Plano de Entregas com meta_entrega com valores inválidos"""
 
         input_pe = deepcopy(self.input_pe)
         input_pe["id_plano_entregas"] = id_plano_entregas
@@ -487,17 +487,7 @@ class TestCreatePEInputValidation(BasePETest):
 
         response = self.put_plano_entregas(input_pe)
 
-        if tipo_meta == "percentual" and (meta_entrega < 0 or meta_entrega > 100):
-            assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_message = (
-                "Valor meta_entrega deve estar entre 0 e 100 "
-                "quando tipo_entrega for percentual."
-            )
-            assert any(
-                f"Value error, {detail_message}" in error["msg"]
-                for error in response.json().get("detail")
-            )
-        elif tipo_meta == "unidade" and (meta_entrega < 0):
+        if meta_entrega < 0:
             assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = "Input should be greater than or equal to 0"
             assert any(
