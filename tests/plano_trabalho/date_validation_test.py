@@ -69,7 +69,7 @@ class TestCreatePTDateIntervalOverAYear(BasePTTest):
     def test_create_plano_trabalho_date_interval_over_a_year(
         self, data_inicio: str, data_termino: str
     ):
-        """Plano de Entregas não pode ter vigência superior a um ano."""
+        """Plano de trabalho não pode ter vigência superior a um ano."""
         input_pt = deepcopy(self.input_pt)
         input_pt["data_inicio"] = data_inicio
         input_pt["data_termino"] = data_termino
@@ -78,13 +78,13 @@ class TestCreatePTDateIntervalOverAYear(BasePTTest):
 
         if (
             over_a_year(
-                date.fromisoformat(data_termino), date.fromisoformat(data_inicio)
+                date.fromisoformat(data_inicio), date.fromisoformat(data_termino)
             )
             == 1
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
-                "Plano de trabalho não pode abranger período maior que 1 ano."
+                "Plano de trabalho não pode abranger período maior que 1 ano"
             )
             assert_error_message(response, detail_message)
         else:

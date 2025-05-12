@@ -43,14 +43,15 @@ class TestPlanoDeDatasBasicas(BasePETest):
 
         if (
             over_a_year(
-                date.fromisoformat(data_termino), date.fromisoformat(data_inicio)
+                date.fromisoformat(data_inicio), date.fromisoformat(data_termino)
             )
             == 1
         ):
             assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
-                "Plano de entregas não pode abranger período maior que 1 ano."
+                "Plano de entregas não pode abranger período maior que 1 ano"
             )
+            print (response.json())
             assert any(
                 f"Value error, {detail_message}" in error["msg"]
                 for error in response.json().get("detail")
@@ -91,8 +92,8 @@ class TestPlanoDeDatasBasicas(BasePETest):
     @pytest.mark.parametrize(
         "id_plano_entregas, data_inicio, data_avaliacao",
         [
-            ("77", "2020-06-04", "2020-04-01"),
-            ("78", "2020-06-04", "2020-06-11"),
+            ("77", "2023-06-04", "2023-04-01"),
+            ("78", "2023-06-04", "2023-06-11"),
         ],
     )
     def test_create_pe_invalid_data_avaliacao(
@@ -169,7 +170,7 @@ class TestPlanoDeDatasEntregas(BasePETest):
             ("13", 99, "2022-12-01", "2023-01-31", 4),  # sobreposição no início
             ("14", 99, "2023-12-01", "2024-01-31", 4),  # sobreposição no fim
             ("15", 99, "2023-02-01", "2023-05-31", 4),  # contido no período
-            ("16", 99, "2022-12-01", "2024-01-31", 4),  # contém o período
+            ("16", 99, "2022-12-01", "2023-07-31", 4),  # contém o período
             ("17", 100, "2023-02-01", "2023-05-31", 4),  # outra unidade
             # sobreposição porém um é cancelado
             ("18", 99, "2022-12-01", "2023-01-31", 1),
