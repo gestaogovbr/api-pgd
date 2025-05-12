@@ -328,7 +328,7 @@ class PlanoTrabalhoSchema(BaseModel):
     @model_validator(mode="after")
     def year_interval(self) -> "PlanoTrabalhoSchema":
         """Garante que o plano não abrange um período maior que 1 ano."""
-        if over_a_year(self.data_termino, self.data_inicio) == 1:
+        if over_a_year(self.data_inicio, self.data_termino) == 1:
             raise ValueError(
                 "Plano de trabalho não pode abranger período maior que 1 ano"
             )
@@ -504,7 +504,7 @@ class PlanoEntregasSchema(BaseModel):
     @model_validator(mode="after")
     def validate_period(self) -> "PlanoEntregasSchema":
         """Valida o período do plano de entregas."""
-        if over_a_year(self.data_termino, self.data_inicio) > 1:
+        if over_a_year(self.data_inicio, self.data_termino) == 1:
             raise ValueError(
                 "Plano de entregas não pode abranger período maior que 1 ano"
             )
