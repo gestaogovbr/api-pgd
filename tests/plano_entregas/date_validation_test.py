@@ -51,7 +51,6 @@ class TestPlanoDeDatasBasicas(BasePETest):
             detail_message = (
                 "Plano de entregas não pode abranger período maior que 1 ano"
             )
-            print (response.json())
             assert any(
                 f"Value error, {detail_message}" in error["msg"]
                 for error in response.json().get("detail")
