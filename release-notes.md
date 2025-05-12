@@ -1,5 +1,9 @@
 # Release notes
 
+## 3.3.1
+* Fix `Plano de Trabalho` and `Plano de Entrega` validation
+to reject plans that overlap a year
+
 ## 3.3.0
 
 * Remove validation rule for `data_assinatura_tcr`
