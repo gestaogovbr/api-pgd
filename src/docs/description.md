@@ -191,7 +191,14 @@ Os **Planos de Trabalho** submetidos devem seguir as seguintes regras:
 * O `cpf_participante` deve se referir a um participante já cadastrado
   pelo endpoint **Participante**.
 * O valor de `carga_horaria_disponivel` deve ser maior ou igual a zero.
+* Para o campo `status` são permitidos os seguintes valores:
+  * `1`: Cancelado;
+  * `2`: Aprovado;
+  * `3`: Em execução;
+  * `4`: Concluído;
 
+**Atenção:** não é permitido o envio do Plano de Trabalho sem contribuições, exceto
+se o status do Plano de Trabalho for igual a 1 (Cancelado).
 
 #### 3.1. Contribuição
 
