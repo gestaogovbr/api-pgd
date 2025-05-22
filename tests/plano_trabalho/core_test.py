@@ -481,6 +481,40 @@ class TestCreatePlanoTrabalho(BasePTTest):
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
+    @pytest.mark.parametrize(
+        ("contribuicoes", "status_pt"),
+        [
+            ([], 2),
+            ([], 4),
+            (None, 1),
+        ]
+    )
+    def test_create_plano_trabalho_sem_contribuicoes(
+        self,
+        contribuicoes,
+        status_pt
+    ):
+        """Tenta criar um plano de trabalho que não contém contribuições.
+        Caso o status for 1 - Cancelado, o status deve ser 201 Created.
+        """
+        input_pt = deepcopy(self.input_pt)
+        input_pt["contribuicoes"] = contribuicoes
+        input_pt["status"] = status_pt
+
+        response = self.put_plano_trabalho(input_pt)
+
+        if isinstance(contribuicoes, list):
+            if status_pt != 1 and not contribuicoes:
+                assert response.status_code == 422
+                detail_message = (
+                    "A lista de contribuições não pode estar vazia"
+                )
+                assert_error_message(response, detail_message)
+            else:
+                assert response.status_code == status.HTTP_201_CREATED
+        else:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
 
 class TestUpdatePlanoDeTrabalho(BasePTTest):
     """Testes para atualizar um Plano de Trabalho existente.
