@@ -313,8 +313,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Carga horária disponível do participante",
         description=PlanoTrabalho.carga_horaria_disponivel.comment,
     )
-
-    contribuicoes: Optional[List[ContribuicaoSchema]] = Field(
+    contribuicoes: List[ContribuicaoSchema] = Field(
         default_factory=list,
         title="Contribuições",
         description="Lista de Contribuições planejadas para o Plano de Trabalho.",
@@ -400,6 +399,14 @@ class PlanoTrabalhoSchema(BaseModel):
                     )
         return avaliacoes
 
+    @model_validator(mode="after")
+    def validate_contribuicoes_not_empty(self) -> "PlanoTrabalhoSchema":
+        """Valida se a lista de contribuicoes não está vazia, exceto se
+        o status for igual a 1 - Cancelado
+        """
+        if not self.contribuicoes and self.status != StatusPlanoTrabalhoEnum.cancelado:
+            raise ValueError("A lista de contribuições não pode estar vazia")
+        return self
 
 class EntregaSchema(BaseModel):
     __doc__ = Entrega.__doc__
