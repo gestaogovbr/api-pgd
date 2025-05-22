@@ -20,7 +20,6 @@ from ..conftest import MAX_INT, MAX_BIGINT
 FIELDS_PLANO_TRABALHO = {
     "optional": (
         ["avaliacoes_registros_execucao"],
-        ["contribuicoes"],
     ),
     "mandatory": (
         ["origem_unidade"],
@@ -34,6 +33,7 @@ FIELDS_PLANO_TRABALHO = {
         ["data_inicio"],
         ["data_termino"],
         ["carga_horaria_disponivel"],
+        ["contribuicoes"],
     ),
 }
 
@@ -420,15 +420,8 @@ class TestCreatePlanoTrabalho(BasePTTest):
             assert response.status_code == status.HTTP_201_CREATED
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_messages = [
-                "Input should be greater than 0",
-                "Input should be less than or equal to 4",
-            ]
-            assert any(
-                detail_message == error["msg"]
-                for error in response.json().get("detail", {})
-                for detail_message in detail_messages
-            )
+            detail_msg = "Input should be 1, 2, 3 or 4"
+            assert_error_message(response, detail_msg)
 
     @pytest.mark.parametrize(
         (
@@ -485,6 +478,40 @@ class TestCreatePlanoTrabalho(BasePTTest):
             }.items()
         ):
             assert response.status_code == status.HTTP_201_CREATED
+        else:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    @pytest.mark.parametrize(
+        ("contribuicoes", "status_pt"),
+        [
+            ([], 2),
+            ([], 4),
+            (None, 1),
+        ]
+    )
+    def test_create_plano_trabalho_sem_contribuicoes(
+        self,
+        contribuicoes,
+        status_pt
+    ):
+        """Tenta criar um plano de trabalho que não contém contribuições.
+        Caso o status for 1 - Cancelado, o status deve ser 201 Created.
+        """
+        input_pt = deepcopy(self.input_pt)
+        input_pt["contribuicoes"] = contribuicoes
+        input_pt["status"] = status_pt
+
+        response = self.put_plano_trabalho(input_pt)
+
+        if isinstance(contribuicoes, list):
+            if status_pt != 1 and not contribuicoes:
+                assert response.status_code == 422
+                detail_message = (
+                    "A lista de contribuições não pode estar vazia"
+                )
+                assert_error_message(response, detail_message)
+            else:
+                assert response.status_code == status.HTTP_201_CREATED
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
