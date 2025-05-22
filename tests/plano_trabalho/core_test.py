@@ -20,7 +20,6 @@ from ..conftest import MAX_INT, MAX_BIGINT
 FIELDS_PLANO_TRABALHO = {
     "optional": (
         ["avaliacoes_registros_execucao"],
-        ["contribuicoes"],
     ),
     "mandatory": (
         ["origem_unidade"],
@@ -34,6 +33,7 @@ FIELDS_PLANO_TRABALHO = {
         ["data_inicio"],
         ["data_termino"],
         ["carga_horaria_disponivel"],
+        ["contribuicoes"],
     ),
 }
 
