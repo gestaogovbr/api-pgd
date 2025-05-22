@@ -420,15 +420,8 @@ class TestCreatePlanoTrabalho(BasePTTest):
             assert response.status_code == status.HTTP_201_CREATED
         else:
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-            detail_messages = [
-                "Input should be greater than 0",
-                "Input should be less than or equal to 4",
-            ]
-            assert any(
-                detail_message == error["msg"]
-                for error in response.json().get("detail", {})
-                for detail_message in detail_messages
-            )
+            detail_msg = "Input should be 1, 2, 3 or 4"
+            assert_error_message(response, detail_msg)
 
     @pytest.mark.parametrize(
         (
