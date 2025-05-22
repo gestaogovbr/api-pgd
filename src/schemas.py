@@ -107,6 +107,14 @@ class StatusPlanoEntregasEnum(IntEnum):
     concluido = 4
     avaliado = 5
 
+class StatusPlanoTrabalhoEnum(IntEnum):
+    """Status do Plano de Trabalho"""
+
+    cancelado = 1
+    aprovado = 2
+    em_execucao = 3
+    concluido = 4
+
 
 # Classes de esquemas Pydantic
 
@@ -267,7 +275,7 @@ class PlanoTrabalhoSchema(BaseModel):
         title="Identificador único do plano de trabalho",
         description=PlanoTrabalho.id_plano_trabalho.comment,
     )
-    status: Annotated[PositiveInt, Field(le=4)] = Field(
+    status: StatusPlanoTrabalhoEnum = Field(
         title="Status do plano de trabalho",
         description=PlanoTrabalho.status.comment,
     )
