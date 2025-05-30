@@ -117,6 +117,11 @@ responsável pelo envio dos dados.
 Exemplo: "Ministério da Gestão e da Inovação em Serviços Públicos" ou
 "Conselho de Controle de Atividades Financeiras"
 
+Caso seja um unidade de nível maior que Lv1, deve-se informar o código
+de 14 dígitos - Código do órgão e código da Unidade Organizacional (Uorg)
+no sistema Siape. Os cinco primeiros dígitos correspondem ao Órgão e os
+nove últimos correspondem a Uorg.
+
 Obs: A instituição que não esteja no SIAPE pode usar o código SIORG.
 Nesse caso, utilizar o valor "SIORG" no campo `origem_unidade`.
 
