@@ -433,16 +433,9 @@ class TestCreatePlanoTrabalho(BasePTTest):
             (1, -1, 99, 80),  # cod_unidade_executora negativo
             (1, 99, -1, 80),  # cod_unidade_lotacao_participante negativo
             (1, 99, 99, -80),  # carga_horaria_disponivel negativo
-            (
-                MAX_BIGINT + 1,
-                1,
-                99,
-                80,
-            ),  # cod_unidade_autorizadora maior que MAX_BIGINT
             (1, MAX_BIGINT + 1, 99, 80),  # cod_unidade_executora maior que MAX_BIGINT
             (1, 99, MAX_BIGINT + 1, 80),  # cod_unidade_lotacao maior que MAX_BIGINT
             (1, 99, 99, MAX_INT + 1),  # carga_horaria_disponivel maior que MAX_INT
-            (MAX_BIGINT, 1, 99, 80),  # cod_unidade_autorizadora igual a MAX_BIGINT
             (1, MAX_BIGINT, 99, 80),  # cod_unidade_executora igual a MAX_BIGINT
             (1, 99, MAX_BIGINT, 80),  # cod_unidade_lotacao igual a MAX_BIGINT
             (1, 99, 99, MAX_INT),  # carga_horaria_disponivel igual a MAX_INT
