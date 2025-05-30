@@ -430,6 +430,55 @@ class TestCreateUser(BaseUserTest):
         )
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
+    @pytest.mark.parametrize(
+        "origem_unidade, cod_unidade_autorizadora",
+        [
+            ("SIAPE", 99999),  # 5 dígitos
+            ("SIAPE", 999999),  # 6 dígitos (não permitido maior que 5)
+            ("SIAPE", 99999999999999),  # 14 dígitos
+            ("SIAPE", 999999999999999),  # 14 dígitos
+            ("SIORG", 999999),  # 6 dígitos
+        ],
+    )
+    def test_create_user_invalid_cod_unidade_autorizadora(
+        self,
+        truncate_users,  # pylint: disable=unused-argument
+        header_admin: dict,
+        origem_unidade: str,
+        cod_unidade_autorizadora: int,
+    ):
+        """Testa a criação de um usuário com cod_unidade_autorizadora inválido.
+
+        Args:
+            header_usr_1 (dict): Cabeçalhos HTTP para o usuário 1.
+        """
+        new_data = USERS_TEST[0].copy()
+        new_data["cod_unidade_autorizadora"] = cod_unidade_autorizadora
+        new_data["origem_unidade"] = origem_unidade
+        response = self.create_or_update_user(
+            USERS_TEST[0]["email"],
+            new_data,
+            header_admin,
+        )
+        if origem_unidade == "SIAPE":
+            if (
+                len(str(cod_unidade_autorizadora)) > 5
+                and len(str(cod_unidade_autorizadora)) != 14
+            ):
+                # cod_unidade_autorizadora deve ter no máximo 5 dígitos ou 14 dígitos
+                assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                assert response.status_code in (status.HTTP_201_CREATED, status.HTTP_200_OK)
+
+        elif origem_unidade == "SIORG":
+            if len(str(cod_unidade_autorizadora)) > 6:
+                # cod_unidade_autorizadora deve ter no máximo 6 dígitos
+                assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                assert response.status_code in (status.HTTP_201_CREATED, status.HTTP_200_OK)
+        else:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
 
 # update /user
 
