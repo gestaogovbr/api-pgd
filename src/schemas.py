@@ -107,6 +107,7 @@ class StatusPlanoEntregasEnum(IntEnum):
     concluido = 4
     avaliado = 5
 
+
 class StatusPlanoTrabalhoEnum(IntEnum):
     """Status do Plano de Trabalho"""
 
@@ -117,6 +118,18 @@ class StatusPlanoTrabalhoEnum(IntEnum):
 
 
 # Classes de esquemas Pydantic
+class OrigemUnidadeValidation(BaseModel):
+    @staticmethod
+    def must_be_valid_cod_unit(origem: OrigemUnidadeEnum, cod_unidade):
+        """Valida o código da unidade de acordo com a origem."""
+        if origem == OrigemUnidadeEnum.siape:
+            if (
+                len(str(cod_unidade)) > 5 and len(str(cod_unidade)) != 14
+            ) or cod_unidade < 1:
+                raise ValueError("cod_SIAPE inválido")
+        elif origem == OrigemUnidadeEnum.siorg:
+            if len(str(cod_unidade)) > 6 or cod_unidade < 1:
+                raise ValueError("cod_SIORG inválido")
 
 
 class ContribuicaoSchema(BaseModel):
@@ -333,6 +346,13 @@ class PlanoTrabalhoSchema(BaseModel):
         return cpf_validate(cpf_participante)
 
     @model_validator(mode="after")
+    def validate_unidade(self):
+        OrigemUnidadeValidation.must_be_valid_cod_unit(
+            self.origem_unidade, self.cod_unidade_autorizadora
+        )
+        return self
+
+    @model_validator(mode="after")
     def year_interval(self) -> "PlanoTrabalhoSchema":
         """Garante que o plano não abrange um período maior que 1 ano."""
         if over_a_year(self.data_inicio, self.data_termino) == 1:
@@ -407,6 +427,7 @@ class PlanoTrabalhoSchema(BaseModel):
         if not self.contribuicoes and self.status != StatusPlanoTrabalhoEnum.cancelado:
             raise ValueError("A lista de contribuições não pode estar vazia")
         return self
+
 
 class EntregaSchema(BaseModel):
     __doc__ = Entrega.__doc__
@@ -539,6 +560,13 @@ class PlanoEntregasSchema(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def validate_unidade(self):
+        OrigemUnidadeValidation.must_be_valid_cod_unit(
+            self.origem_unidade, self.cod_unidade_autorizadora
+        )
+        return self
+
 
 class ParticipanteSchema(BaseModel):
     __doc__ = Participante.__doc__
@@ -600,6 +628,13 @@ class ParticipanteSchema(BaseModel):
         "Valida o CPF do participante."
         return cpf_validate(cpf)
 
+    @model_validator(mode="after")
+    def validate_unidade(self):
+        OrigemUnidadeValidation.must_be_valid_cod_unit(
+            self.origem_unidade, self.cod_unidade_autorizadora
+        )
+        return self
+
 
 class Token(BaseModel):
     access_token: str
@@ -657,9 +692,9 @@ class UsersSchema(UsersGetSchema):
         description=Users.password.comment,
     )
 
-    @field_validator("cod_unidade_autorizadora")
-    @staticmethod
-    def must_be_positive(cod_unidade: int) -> int:
-        if cod_unidade < 1:
-            raise ValueError("cod_SIAPE inválido")
-        return cod_unidade
+    @model_validator(mode="after")
+    def validate_unidade(self):
+        OrigemUnidadeValidation.must_be_valid_cod_unit(
+            self.origem_unidade, self.cod_unidade_autorizadora
+        )
+        return self
