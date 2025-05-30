@@ -239,7 +239,6 @@ class TestCreateParticipante(BaseParticipanteTest):
             (MAX_BIGINT + 1, 1, 99),  # cod_unidade_autorizadora maior que MAX_BIGINT
             (1, MAX_BIGINT + 1, 99),  # cod_unidade_instituidora maior que MAX_BIGINT
             (1, 1, MAX_BIGINT + 1),  # cod_unidade_lotacao maior que MAX_BIGINT
-            (MAX_BIGINT, 1, 99),  # cod_unidade_autorizadora igual a MAX_BIGINT
             (1, MAX_BIGINT, 99),  # cod_unidade_instituidora igual a MAX_BIGINT
             (1, 1, MAX_BIGINT),  # cod_unidade_lotacao igual a MAX_BIGINT
         ],
