@@ -274,7 +274,9 @@ class TestGetSingleUser(BaseUserTest):
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_get_user_logged_in_not_admin(
-        self, user1_credentials: dict, header_usr_2: dict  # user is_admin=False
+        self,
+        user1_credentials: dict,
+        header_usr_2: dict,  # user is_admin=False
     ):
         """Testa a obtenção de dados de um outro usuário por um usuário logado,
         mas não admin.
@@ -287,7 +289,9 @@ class TestGetSingleUser(BaseUserTest):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_get_user_self_logged_in_not_admin(
-        self, user2_credentials: dict, header_usr_2: dict  # user is_admin=False
+        self,
+        user2_credentials: dict,
+        header_usr_2: dict,  # user is_admin=False
     ):
         """Testa a obtenção de dados do próprio usuário logado, mas não admin.
 
@@ -299,7 +303,9 @@ class TestGetSingleUser(BaseUserTest):
         assert response.status_code == status.HTTP_200_OK
 
     def test_get_user_as_admin(
-        self, user1_credentials: dict, header_usr_1: dict  # user is_admin=True
+        self,
+        user1_credentials: dict,
+        header_usr_1: dict,  # user is_admin=True
     ):
         """Testa a obtenção de um usuário por um usuário admin.
 
