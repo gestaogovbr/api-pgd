@@ -65,6 +65,7 @@ class BasePETest:
         input_pe: dict,
         user1_credentials: dict,
         header_usr_1: dict,
+        header_admin: dict,
         client: Client,
     ):
         """Configurar o ambiente de teste.
@@ -81,6 +82,7 @@ class BasePETest:
         self.input_pe = input_pe
         self.user1_credentials = user1_credentials
         self.header_usr_1 = header_usr_1
+        self.header_admin = header_admin
         self.client = client
 
     @staticmethod
@@ -458,6 +460,51 @@ class TestCreatePEInputValidation(BasePETest):
                 detail_message in error["msg"]
                 for error in response.json().get("detail")
             )
+
+    @pytest.mark.parametrize(
+        "origem_unidade, cod_unidade_autorizadora",
+        [
+            ("SIAPE", 99999),  # 5 dígitos
+            ("SIAPE", 999999),  # 6 dígitos (não permitido maior que 5)
+            ("SIAPE", 99999999999999),  # 14 dígitos
+            ("SIAPE", 999999999999999),  # 14 dígitos
+            ("SIORG", 999999),  # 6 dígitos
+            ("SIORG", 9999999),  # 7 dígitos (não permitido maior que 6)
+        ],
+    )
+    def test_create_pe_invalid_cod_unidade_autorizadora(
+        self,
+        truncate_pt,  # pylint: disable=unused-argument
+        origem_unidade: str,
+        cod_unidade_autorizadora: int,
+        header_admin: dict
+    ):
+        """Testa a criação de um plano de entregas com cod_unidade_autorizadora inválido"""
+
+        input_pe = deepcopy(self.input_pe)
+        input_pe["cod_unidade_autorizadora"] = cod_unidade_autorizadora
+        input_pe["origem_unidade"] = origem_unidade
+        response = self.put_plano_entregas(input_pe,
+                                           header_usr=header_admin,
+                                           origem_unidade=origem_unidade,
+                                           cod_unidade_autorizadora=cod_unidade_autorizadora)
+        if origem_unidade == "SIAPE":
+            if (
+                len(str(cod_unidade_autorizadora)) > 5
+                and len(str(cod_unidade_autorizadora)) != 14
+            ):
+                # cod_unidade_autorizadora deve ter no máximo 5 dígitos ou 14 dígitos
+                assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                assert response.status_code == http_status.HTTP_201_CREATED
+        elif origem_unidade == "SIORG":
+            if len(str(cod_unidade_autorizadora)) > 6:
+                # cod_unidade_autorizadora deve ter no máximo 6 dígitos
+                assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                assert response.status_code == http_status.HTTP_201_CREATED
+        else:
+            assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
 
     @pytest.mark.parametrize(
         "id_plano_entregas, meta_entrega, tipo_meta",
