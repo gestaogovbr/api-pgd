@@ -103,6 +103,7 @@ class BaseParticipanteTest:
     def put_participante(
         self,
         input_part: dict,
+        origem_unidade: Optional[str] = None,
         cod_unidade_autorizadora: Optional[int] = None,
         cod_unidade_lotacao: Optional[int] = None,
         matricula_siape: Optional[str] = None,
@@ -120,6 +121,8 @@ class BaseParticipanteTest:
         Returns:
             httpx.Response: A resposta da API.
         """
+        if origem_unidade is None:
+            origem_unidade = input_part["origem_unidade"]
         if cod_unidade_autorizadora is None:
             cod_unidade_autorizadora = input_part["cod_unidade_autorizadora"]
         if cod_unidade_lotacao is None:
@@ -131,7 +134,7 @@ class BaseParticipanteTest:
 
         response = self.client.put(
             (
-                f"/organizacao/SIAPE/{cod_unidade_autorizadora}"
+                f"/organizacao/{origem_unidade}/{cod_unidade_autorizadora}"
                 f"/{cod_unidade_lotacao}/participante/{matricula_siape}"
             ),
             json=input_part,
@@ -521,6 +524,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
     def test_create_participante_missing_mandatory_fields(self, missing_fields: list):
         """Tenta submeter participantes faltando campos obrigatórios"""
         input_part = deepcopy(self.input_part)
+        origem_unidade = input_part["origem_unidade"]
         cod_unidade_lotacao = input_part["cod_unidade_lotacao"]
         matricula_siape = input_part["matricula_siape"]
         offset, field_list = missing_fields
@@ -532,6 +536,7 @@ class TestCreateParticipanteFieldValidation(BaseParticipanteTest):
         )
         response = self.put_participante(
             input_part,
+            origem_unidade=origem_unidade,
             cod_unidade_autorizadora=self.user1_credentials["cod_unidade_autorizadora"],
             cod_unidade_lotacao=cod_unidade_lotacao,
             matricula_siape=matricula_siape,
