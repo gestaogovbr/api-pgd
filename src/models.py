@@ -48,7 +48,11 @@ class PlanoEntregas(Base):
         "imediatamente inferiores, ou seja, para Uorg Lv2 e Uorg "
         "Lv3. Haverá situações, portanto, em que uma unidade do "
         "Uorg Lv1 de nível 2 ou 3 poderá enviar dados diretamente "
-        "para API.",
+        "para API. Caso seja um unidade de nível maior que Lv1, deve-se "
+        "informar o código de 14 dígitos - Código do órgão e código da "
+        "Unidade Organizacional (Uorg) no sistema Siape. Os cinco "
+        "primeiros dígitos correspondem ao Órgão e os nove últimos "
+        "correspondem a Uorg."
     )
     cod_unidade_instituidora = Column(
         BigInteger,
@@ -113,7 +117,7 @@ class PlanoEntregas(Base):
             superior ao da chefia da unidade de execução, em até
             trinta dias após o término do plano de entregas, em uma
             das seguintes escalas:
-            
+
             I - excepcional: plano de entregas executado com desempenho
             muito acima do esperado;
             II - alto desempenho: plano de entregas executado com
@@ -268,7 +272,7 @@ class PlanoTrabalho(Base):
         primary_key=True,
         nullable=False,
         comment="Código da unidade organizacional (UORG) no Sistema "
-        "Integrado de Administração de Recursos Humanos (Siape) "
+        "Integrado de Administração de Recursos Humanos (SIAPE) "
         "corresponde à Unidade de autorização. Referente ao artigo "
         "3º do Decreto nº 11.072, de 17 de maio de 2022. De forma "
         "geral, são os “Ministros de Estado, os dirigentes máximos "
@@ -280,7 +284,11 @@ class PlanoTrabalho(Base):
         "imediatamente inferiores, ou seja, para Uorg Lv2 e Uorg "
         "Lv3. Haverá situações, portanto, em que uma unidade do "
         "Uorg Lv1 de nível 2 ou 3 poderá enviar dados diretamente "
-        "para API.",
+        "para API. Caso seja um unidade de nível maior que Lv1, deve-se "
+        "informar o código de 14 dígitos - Código do órgão e código da "
+        "Unidade Organizacional (Uorg) no sistema Siape. Os cinco "
+        "primeiros dígitos correspondem ao Órgão e os nove últimos "
+        "correspondem a Uorg."
     )
     id_plano_trabalho = Column(
         String,
@@ -621,6 +629,11 @@ class Participante(Base):
         "autorização, é hoje a UORG responsável pelo envio dos dados.\n\n"
         'Exemplo: "Ministério da Gestão e da Inovação em Serviços Públicos" '
         'ou "Conselho de Controle de Atividades Financeiras"\n\n'
+        "Caso seja um unidade de nível maior que Lv1, deve-se "
+        "informar o código de 14 dígitos - Código do órgão e código da "
+        "Unidade Organizacional (Uorg) no sistema Siape. Os cinco "
+        "primeiros dígitos correspondem ao Órgão e os nove últimos "
+        "correspondem a Uorg.\n\n"
         "Obs: A instituição que não esteja no SIAPE pode usar o código SIORG.",
     )
     cod_unidade_lotacao = Column(
