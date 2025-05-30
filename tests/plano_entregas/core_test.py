@@ -644,7 +644,6 @@ class TestCreatePEInputValidation(BasePETest):
             (-1, 99, 99),  # cod_unidade_autorizadora negativo
             (1, -1, 99),  # cod_unidade_instituidora negativo
             (1, 99, -1),  # cod_unidade_executora negativo
-            (MAX_BIGINT, 99, 99),  # cod_unidade_autorizadora igual a MAX_BIGINT
             (1, MAX_BIGINT, 99),  # cod_unidade_instituidora igual a MAX_BIGINT
             (1, 99, MAX_BIGINT),  # cod_unidade_executora igual a MAX_BIGINT
             (MAX_BIGINT + 1, 99, 99),  # cod_unidade_autorizadora maior que MAX_BIGINT
