@@ -315,6 +315,51 @@ class TestCreateParticipante(BaseParticipanteTest):
             assert response.status_code == status.HTTP_201_CREATED
 
 
+    @pytest.mark.parametrize(
+        "origem_unidade, cod_unidade_autorizadora",
+        [
+            ("SIAPE", 99999),  # 5 dígitos
+            ("SIAPE", 999999),  # 6 dígitos (não permitido maior que 5)
+            ("SIAPE", 99999999999999),  # 14 dígitos
+            ("SIAPE", 999999999999999),  # 14 dígitos
+            ("SIORG", 999999),  # 6 dígitos
+            ("SIORG", 9999999),  # 7 dígitos (não permitido maior que 6)
+        ],
+    )
+    def test_create_participante_invalid_cod_unidade_autorizadora(
+        self,
+        origem_unidade: str,
+        cod_unidade_autorizadora: int,
+        header_admin: dict
+    ):
+        """Testa a criação de um participante com cod_unidade_autorizadora inválido"""
+
+        input_part = deepcopy(self.input_part)
+        input_part["cod_unidade_autorizadora"] = cod_unidade_autorizadora
+        input_part["origem_unidade"] = origem_unidade
+        response = self.put_participante(
+                                        input_part,
+                                        header_usr=header_admin,
+                                        origem_unidade=origem_unidade,
+                                        cod_unidade_autorizadora=cod_unidade_autorizadora)
+        if origem_unidade == "SIAPE":
+            if (
+                len(str(cod_unidade_autorizadora)) > 5
+                and len(str(cod_unidade_autorizadora)) != 14
+            ):
+                # cod_unidade_autorizadora deve ter no máximo 5 dígitos ou 14 dígitos
+                assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                assert response.status_code == status.HTTP_201_CREATED
+        elif origem_unidade == "SIORG":
+            if len(str(cod_unidade_autorizadora)) > 6:
+                # cod_unidade_autorizadora deve ter no máximo 6 dígitos
+                assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            else:
+                assert response.status_code == status.HTTP_201_CREATED
+        else:
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
 class TestUpdateParticipante(BaseParticipanteTest):
     """Testes para atualização de um Participante."""
 
