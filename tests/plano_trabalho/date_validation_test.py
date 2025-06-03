@@ -275,9 +275,9 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         input_pt["avaliacoes_registros_execucao"][0][
             "data_inicio_periodo_avaliativo"
         ] = data_inicio_periodo_avaliativo
-        input_pt["avaliacoes_registros_execucao"][0][
-            "data_fim_periodo_avaliativo"
-        ] = data_fim_periodo_avaliativo
+        input_pt["avaliacoes_registros_execucao"][0]["data_fim_periodo_avaliativo"] = (
+            data_fim_periodo_avaliativo
+        )
 
         response = self.put_plano_trabalho(input_pt)
 
@@ -297,6 +297,37 @@ class TestCreatePTDataAvaliacao(BasePTTest):
             detail_message = (
                 "A data de início do período avaliativo deve ser igual ou "
                 "posterior à data de início do Plano de Trabalho."
+            )
+            assert_error_message(response, detail_message)
+        else:
+            assert response.status_code == status.HTTP_201_CREATED
+
+    @pytest.mark.parametrize(
+        "data_avaliacao_registros_execucao",
+        [
+            "2099-01-01",  # data futura
+            date.today().strftime("%Y-%m-%d"),  # data atual
+            "2023-06-02",  # data passada
+        ],
+    )
+    def test_create_pt_data_avaliacao_future_date(
+        self,
+        data_avaliacao_registros_execucao: str,
+    ):
+        """Verifica se a data de avaliação do registro de execução é
+        inferior ou igual a data de envio.
+        """
+        input_pt = deepcopy(self.input_pt)
+        input_pt["avaliacoes_registros_execucao"][0][
+            "data_avaliacao_registros_execucao"
+        ] = data_avaliacao_registros_execucao
+        print (input_pt)
+        response = self.put_plano_trabalho(input_pt)
+        if date.fromisoformat(data_avaliacao_registros_execucao) > date.today():
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = (
+                "A data de avaliação de registros de execução não pode ser "
+                "superior à data atual."
             )
             assert_error_message(response, detail_message)
         else:
