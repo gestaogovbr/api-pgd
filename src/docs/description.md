@@ -234,6 +234,8 @@ se o status do Plano de Trabalho for igual a 1 (Cancelado).
   entre diferentes Avaliações de Registro de Execução para um mesmo
   Plano de Trabalho.
 * O campo `avaliacao_registros_execucao` admite valores de `1` a `5`.
+* A `data_avaliacao_registros_execucao` não pode ser superior à data
+  de envio.
 
 
 -------
