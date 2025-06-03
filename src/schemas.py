@@ -245,6 +245,18 @@ class AvaliacaoRegistrosExecucaoSchema(BaseModel):
             )
         return value
 
+    @field_validator("data_avaliacao_registros_execucao")
+    @staticmethod
+    def validate_data_avaliacao_not_future(data_avaliacao_registros_execucao: date) -> date:
+        """Valida se a data de avaliação é inferior ou igual a data de envio."""
+        print (data_avaliacao_registros_execucao)
+        if data_avaliacao_registros_execucao > date.today():
+            raise ValueError(
+                "A data de avaliação de registros de execução não pode ser "
+                "superior à data atual."
+            )
+        return data_avaliacao_registros_execucao
+
     @model_validator(mode="after")
     def validate_data_fim_periodo_avaliativo(
         self,
