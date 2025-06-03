@@ -562,7 +562,8 @@ class AvaliacaoRegistrosExecucao(Base):
         nullable=False,
         comment="Data em que foi realizada avaliação dos registros de execução do "
         "plano de trabalho no período avaliativo. Regras de validação: deve ser "
-        "igual ou posterior à “data_inicio_periodo_avaliativo”",
+        "igual ou posterior à “data_inicio_periodo_avaliativo e não pode ser uma"
+        "data futura”",
     )
     data_atualizacao = Column(DateTime)
     data_insercao = Column(DateTime, nullable=False)
