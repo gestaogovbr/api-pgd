@@ -1,5 +1,9 @@
 # Release notes
 
+## 3.3.2
+* Implement length validation for cod_unidade_autorizadora based on origem_unidade
+* Restrict future date for data_avaliacao_registros_execucao
+
 ## 3.3.1
 * Fix `Plano de Trabalho` and `Plano de Entrega` validation
 to reject plans that overlap a year
