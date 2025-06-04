@@ -321,7 +321,6 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         input_pt["avaliacoes_registros_execucao"][0][
             "data_avaliacao_registros_execucao"
         ] = data_avaliacao_registros_execucao
-        print (input_pt)
         response = self.put_plano_trabalho(input_pt)
         if date.fromisoformat(data_avaliacao_registros_execucao) > date.today():
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

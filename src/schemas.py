@@ -249,7 +249,6 @@ class AvaliacaoRegistrosExecucaoSchema(BaseModel):
     @staticmethod
     def validate_data_avaliacao_not_future(data_avaliacao_registros_execucao: date) -> date:
         """Valida se a data de avaliação é inferior ou igual a data de envio."""
-        print (data_avaliacao_registros_execucao)
         if data_avaliacao_registros_execucao > date.today():
             raise ValueError(
                 "A data de avaliação de registros de execução não pode ser "
