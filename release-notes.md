@@ -3,7 +3,7 @@
 ## 3.3.2
 * Implement length validation for cod_unidade_autorizadora based on origem_unidade
 * Restrict future date for data_avaliacao_registros_execucao
-* Create validation for empty Contribuicoes list
+* Create validation for empty Contribuicoes list, on submitting Plano de Trabalho, except when the status equals 1.
 
 ## 3.3.1
 * Fix `Plano de Trabalho` and `Plano de Entrega` validation
