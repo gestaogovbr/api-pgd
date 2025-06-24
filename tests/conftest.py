@@ -1,7 +1,7 @@
 """
 Funções auxiliares e fixtures dos testes.
 """
-
+from datetime import date
 from copy import deepcopy
 import os
 import sys
@@ -57,6 +57,8 @@ TEST_USER_AGENT = "API PGD CI Test (+https://github.com/gestaogovbr/api-pgd)"
 
 MAX_INT = (2**31) - 1
 MAX_BIGINT = (2**63) - 1
+
+MIN_ALLOWED_PT_TCR_DATE = date(2023, 7, 31)
 
 
 def get_bearer_token(username: str, password: str) -> str:
