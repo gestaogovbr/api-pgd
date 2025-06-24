@@ -142,6 +142,7 @@ Nesse caso, utilizar o valor "SIORG" no campo `origem_unidade`.
   * `5`: Teletrabalho com Residência no Exterior (Dec.11.072/2022, art. 12, §7°)
 * A `data_assinatura_tcr` não pode ser data futura. Recomenda-se enviar
   no formato ISO 8601 para datas (YYYY-MM-DD).
+* A `data_assinatura_tcr` não pode ser inferior a 31/07/2023.
 
 **Atenção:** os Participantes devem ser enviados antes dos Planos de
 Trabalho.
@@ -201,6 +202,7 @@ Os **Planos de Trabalho** submetidos devem seguir as seguintes regras:
   * `2`: Aprovado;
   * `3`: Em execução;
   * `4`: Concluído;
+* A `data_inicio` não pode ser inferior a 31/07/2023.
 
 **Atenção:** não é permitido o envio do Plano de Trabalho sem contribuições, exceto
 se o status do Plano de Trabalho for igual a 1 (Cancelado).
