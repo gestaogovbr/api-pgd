@@ -277,11 +277,11 @@ class TestCreateParticipante(BaseParticipanteTest):
     @pytest.mark.parametrize(
         "data_assinatura_tcr",
         [
-            ("2023-06-01"),
-            ("01-06-2023"),  # formatação errada
+            ("2024-06-01"),
+            ("01-06-2024"),  # formatação errada
             ("2523-06-01"),  # data futura
-            ("2023-06-01T03:00:00"),  # data e hora sem fuso horário
-            ("2023-06-01T00:00:00-03:00"),  # data e hora com fuso horário
+            ("2024-06-01T03:00:00"),  # data e hora sem fuso horário
+            ("2024-06-01T00:00:00-03:00"),  # data e hora com fuso horário
         ],
     )
     def test_create_participante_data_assinatura_tcr_date_format(
