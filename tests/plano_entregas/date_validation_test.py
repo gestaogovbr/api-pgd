@@ -91,8 +91,8 @@ class TestPlanoDeDatasBasicas(BasePETest):
     @pytest.mark.parametrize(
         "id_plano_entregas, data_inicio, data_avaliacao",
         [
-            ("77", "2023-06-04", "2023-04-01"),
-            ("78", "2023-06-04", "2023-06-11"),
+            ("77", "2024-06-04", "2024-04-01"),
+            ("78", "2024-06-04", "2024-06-11"),
         ],
     )
     def test_create_pe_invalid_data_avaliacao(
@@ -132,9 +132,9 @@ class TestPlanoDeDatasEntregas(BasePETest):
     @pytest.mark.parametrize(
         "id_plano_entregas, data_inicio, data_termino, data_entrega",
         [
-            ("91", "2023-08-01", "2023-09-01", "2023-08-08"),  # dentro
-            ("92", "2023-08-01", "2023-09-01", "2023-07-01"),  # antes do início
-            ("93", "2023-08-01", "2023-09-01", "2023-10-01"),  # depois do fim
+            ("91", "2024-08-01", "2024-09-01", "2024-08-08"),  # dentro
+            ("92", "2024-08-01", "2024-09-01", "2024-07-01"),  # antes do início
+            ("93", "2024-08-01", "2024-09-01", "2024-10-01"),  # depois do fim
         ],
     )
     def test_create_data_entrega_out_of_bounds(
@@ -164,15 +164,15 @@ class TestPlanoDeDatasEntregas(BasePETest):
     @pytest.mark.parametrize(
         "id_plano_entregas, cod_unidade_executora, data_inicio, data_termino, status",
         [
-            ("11", 99, "2023-01-01", "2023-06-30", 4),  # igual ao exemplo
-            ("12", 99, "2024-01-01", "2024-06-30", 4),  # sem sobreposição
-            ("13", 99, "2022-12-01", "2023-01-31", 4),  # sobreposição no início
-            ("14", 99, "2023-12-01", "2024-01-31", 4),  # sobreposição no fim
-            ("15", 99, "2023-02-01", "2023-05-31", 4),  # contido no período
-            ("16", 99, "2022-12-01", "2023-07-31", 4),  # contém o período
-            ("17", 100, "2023-02-01", "2023-05-31", 4),  # outra unidade
+            ("11", 99, "2024-01-01", "2024-06-30", 4),  # igual ao exemplo
+            ("12", 99, "2025-01-01", "2025-06-30", 4),  # sem sobreposição
+            ("13", 99, "2023-12-01", "2024-01-31", 4),  # sobreposição no início
+            ("14", 99, "2024-12-01", "2025-01-31", 4),  # sobreposição no fim
+            ("15", 99, "2024-02-01", "2024-05-31", 4),  # contido no período
+            ("16", 99, "2023-12-01", "2024-07-31", 4),  # contém o período
+            ("17", 100, "2024-02-01", "2024-05-31", 4),  # outra unidade
             # sobreposição porém um é cancelado
-            ("18", 99, "2022-12-01", "2023-01-31", 1),
+            ("18", 99, "2023-12-01", "2024-01-31", 1),
         ],
     )
     def test_create_plano_entregas_overlapping_date_interval(
@@ -195,10 +195,10 @@ class TestPlanoDeDatasEntregas(BasePETest):
         original_pe = self.input_pe.copy()
         input_pe2 = original_pe.copy()
         input_pe2["id_plano_entregas"] = "2"
-        input_pe2["data_inicio"] = "2023-07-01"
-        input_pe2["data_termino"] = "2023-12-31"
+        input_pe2["data_inicio"] = "2024-07-01"
+        input_pe2["data_termino"] = "2024-12-31"
         for entrega in input_pe2["entregas"]:
-            entrega["data_entrega"] = "2023-12-31"
+            entrega["data_entrega"] = "2024-12-31"
         response = self.put_plano_entregas(
             input_pe2,
             cod_unidade_autorizadora=self.user1_credentials["cod_unidade_autorizadora"],

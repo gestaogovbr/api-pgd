@@ -532,7 +532,7 @@ class TestUpdatePlanoDeTrabalho(BasePTTest):
 
         input_pt = deepcopy(self.input_pt)
         input_pt["status"] = 4  # Valor era 3
-        input_pt["data_termino"] = "2023-06-30"  # Valor era "2023-06-15"
+        input_pt["data_termino"] = "2024-06-30"  # Valor era "2024-06-15"
         response = self.put_plano_trabalho(input_pt)
         assert response.status_code == status.HTTP_200_OK
         self.assert_equal_plano_trabalho(response.json(), input_pt)

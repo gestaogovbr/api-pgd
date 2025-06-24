@@ -217,11 +217,11 @@ class TestCreatePlanoEntrega(BasePETest):
 
         input_pe = deepcopy(self.input_pe)
         input_pe["avaliacao"] = 3
-        input_pe["data_avaliacao"] = "2023-08-15"
+        input_pe["data_avaliacao"] = "2024-08-15"
         response = self.put_plano_entregas(input_pe)
         assert response.status_code == http_status.HTTP_200_OK
         assert response.json()["avaliacao"] == 3
-        assert response.json()["data_avaliacao"] == "2023-08-15"
+        assert response.json()["data_avaliacao"] == "2024-08-15"
 
         # Consulta API para conferir se a alteração foi persistida
         response = self.get_plano_entregas(
@@ -230,7 +230,7 @@ class TestCreatePlanoEntrega(BasePETest):
         )
         assert response.status_code == http_status.HTTP_200_OK
         assert response.json()["avaliacao"] == 3
-        assert response.json()["data_avaliacao"] == "2023-08-15"
+        assert response.json()["data_avaliacao"] == "2024-08-15"
 
     @pytest.mark.parametrize("omitted_fields", enumerate(FIELDS_ENTREGA["optional"]))
     def test_create_plano_entregas_entrega_omit_optional_fields(self, omitted_fields):
@@ -595,9 +595,9 @@ class TestCreatePEInputValidation(BasePETest):
     @pytest.mark.parametrize(
         "id_plano_entregas, status, avaliacao, data_avaliacao",
         [
-            ("78", 5, 2, "2023-06-11"),
+            ("78", 5, 2, "2024-06-11"),
             ("79", 5, 2, None),  # falta data_avaliacao
-            ("80", 5, None, "2023-06-11"),  # falta avaliacao
+            ("80", 5, None, "2024-06-11"),  # falta avaliacao
             ("81", 5, None, None),  # faltam ambos
             ("81", 2, None, None),  # status não é 5
         ],
