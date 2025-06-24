@@ -31,7 +31,7 @@ NON_NEGATIVE_INT4 = Annotated[NonNegativeInt, Field(le=(2**31) - 1)]
 POSITIVE_INT4 = Annotated[PositiveInt, Field(le=(2**31) - 1)]
 NON_NEGATIVE_INT8 = Annotated[NonNegativeInt, Field(le=(2**63) - 1)]
 POSITIVE_INT8 = Annotated[PositiveInt, Field(le=(2**63) - 1)]
-
+MIN_ALLOWED_PT_TCR_DATE = date(2023, 7, 31)
 # Funções auxiliares
 
 
@@ -356,6 +356,17 @@ class PlanoTrabalhoSchema(BaseModel):
         """Valida o CPF do participante."""
         return cpf_validate(cpf_participante)
 
+    @field_validator("data_inicio")
+    @staticmethod
+    def data_inicio_validate(data_inicio: date) -> date:
+        """Valida se a data de ínicio é superior à permitida."""
+        if data_inicio < MIN_ALLOWED_PT_TCR_DATE:
+            raise ValueError(
+                "Data de inicio do Plano de Trabalho inferior a permitida "
+                f"({MIN_ALLOWED_PT_TCR_DATE.isoformat()})"
+            )
+        return data_inicio
+
     @model_validator(mode="after")
     def validate_unidade(self):
         OrigemUnidadeValidation.must_be_valid_cod_unit(
@@ -638,6 +649,17 @@ class ParticipanteSchema(BaseModel):
     def cpf_part_validate(cpf: str) -> str:
         "Valida o CPF do participante."
         return cpf_validate(cpf)
+
+    @field_validator("data_assinatura_tcr")
+    @staticmethod
+    def data_assinatura_validate(data_assinatura_tcr: date) -> date:
+        """Valida se a data de assinatura é superior à permitida."""
+        if data_assinatura_tcr.date() < MIN_ALLOWED_PT_TCR_DATE:
+            raise ValueError(
+                "Data de assinatura do TCR inferior a permitida "
+                f"({MIN_ALLOWED_PT_TCR_DATE.isoformat()})"
+            )
+        return data_assinatura_tcr
 
     @model_validator(mode="after")
     def validate_unidade(self):
