@@ -80,8 +80,8 @@ class TestCreatePTDateIntervalOverAYear(BasePTTest):
         "data_inicio, data_termino",
         [
             ("2024-06-01", "2024-06-30"),  # igual ao exemplo
-            ("2024-06-01", "2024-06-01"),  # um ano
-            ("2024-06-01", "2024-06-02"),  # mais que um ano
+            ("2024-06-01", "2025-06-01"),  # um ano
+            ("2024-06-01", "2025-06-02"),  # mais que um ano
         ],
     )
     def test_create_plano_trabalho_date_interval_over_a_year(
