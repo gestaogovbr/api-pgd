@@ -10,7 +10,7 @@ from fastapi import status
 from httpx import Client, Response
 import pytest
 
-from .conftest import MAX_BIGINT
+from .conftest import MAX_BIGINT, MIN_ALLOWED_PT_TCR_DATE
 
 # Relação de campos obrigatórios para testar sua ausência:
 FIELDS_PARTICIPANTES = {
@@ -742,3 +742,23 @@ class TestCreateParticipanteDateValidation(BaseParticipanteTest):
         response = self.put_participante(input_part)
 
         assert response.status_code == status.HTTP_201_CREATED
+
+    def test_create_participante_data_assinatura_tcr_before_min_allowed_date(self):
+        """Tenta criar um participante com data de assinatura do TCR
+        anterior à permitida."""
+        input_part = deepcopy(self.input_part)
+
+        # Converte a string para datetime.date
+        input_part["data_assinatura_tcr"] = (
+            MIN_ALLOWED_PT_TCR_DATE - timedelta(days=1)
+        ).isoformat()
+        response = self.put_participante(input_part)
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_messages = f"Data de assinatura do TCR inferior a permitida "
+        detail_messages += f"({MIN_ALLOWED_PT_TCR_DATE.isoformat()})"
+        assert any(
+            message in error["msg"]
+            for message in detail_messages
+            for error in response.json().get("detail")
+        )
