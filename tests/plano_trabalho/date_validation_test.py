@@ -3,7 +3,7 @@ Trabalho.
 """
 
 from copy import deepcopy
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from fastapi import status
 
@@ -11,7 +11,7 @@ import pytest
 
 from util import over_a_year, assert_error_message
 from .core_test import BasePTTest
-
+from tests.conftest import MIN_ALLOWED_PT_TCR_DATE
 # Datas básicas
 
 
@@ -52,6 +52,24 @@ class TestCreatePTInvalidDates(BasePTTest):
             assert_error_message(response, detail_message)
         else:
             assert response.status_code == status.HTTP_201_CREATED
+
+    def test_create_pt_data_inicio_before_min_allowed_date(
+        self,
+    ):
+        """Verifica se a data de início do Plano de Trabalho é
+        inferior à permitida.
+        """
+        input_pt = deepcopy(self.input_pt)
+        input_pt["data_inicio"] = (
+            MIN_ALLOWED_PT_TCR_DATE - timedelta(days=1)
+        ).isoformat()
+        print (input_pt["data_inicio"])
+        response = self.put_plano_trabalho(input_pt)
+
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        detail_message = f"Data de inicio do Plano de Trabalho inferior a permitida "
+        detail_message += f"({MIN_ALLOWED_PT_TCR_DATE.isoformat()})"
+        assert_error_message(response, detail_message)
 
 
 class TestCreatePTDateIntervalOverAYear(BasePTTest):
