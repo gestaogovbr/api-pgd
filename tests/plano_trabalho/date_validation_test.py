@@ -325,7 +325,7 @@ class TestCreatePTDataAvaliacao(BasePTTest):
         [
             "2099-01-01",  # data futura
             date.today().strftime("%Y-%m-%d"),  # data atual
-            "2023-06-02",  # data passada
+            "2024-06-02",  # data passada
         ],
     )
     def test_create_pt_data_avaliacao_future_date(
