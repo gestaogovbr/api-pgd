@@ -22,9 +22,9 @@ class TestPlanoDeDatasBasicas(BasePETest):
     @pytest.mark.parametrize(
         "data_inicio, data_termino",
         [
-            ("2023-01-01", "2023-06-30"),  # igual ao exemplo
-            ("2023-01-01", "2024-01-01"),  # um ano
-            ("2023-01-01", "2024-01-02"),  # mais que um ano
+            ("2024-01-01", "2024-06-30"),  # igual ao exemplo
+            ("2024-01-01", "2025-01-01"),  # um ano
+            ("2024-01-01", "2025-01-02"),  # mais que um ano
         ],
     )
     def test_create_plano_entregas_date_interval_over_a_year(
