@@ -1,4 +1,6 @@
 # Release notes
+## 3.3.3
+* Reject data_inicio from Plano de trabalho and TCR signature before 2023-07-31
 
 ## 3.3.2
 * Implement length validation for cod_unidade_autorizadora based on origem_unidade
