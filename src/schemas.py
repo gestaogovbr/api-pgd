@@ -456,7 +456,6 @@ class PlanoTrabalhoSchema(PlanoTrabalhoBase):
             raise ValueError("A lista de contribuições não pode estar vazia")
         return self
 
-
 class EntregaSchema(BaseModel):
     __doc__ = Entrega.__doc__
     model_config = ConfigDict(from_attributes=True)
@@ -498,7 +497,7 @@ class EntregaSchema(BaseModel):
     )
 
 
-class PlanoEntregasSchema(BaseModel):
+class PlanoEntregasBase(BaseModel):
     __doc__ = PlanoEntregas.__doc__
     model_config = ConfigDict(from_attributes=True)
     origem_unidade: OrigemUnidadeEnum = Field(
@@ -547,6 +546,12 @@ class PlanoEntregasSchema(BaseModel):
         description="Lista de entregas associadas ao Plano de Entregas",
     )
 
+# Utilizado para requisições GET (sem validação)"""
+class PlanoEntregasResponseSchema(PlanoEntregasBase):
+    pass
+
+# Utilizado para requisições POST/PUT (com validação)
+class PlanoEntregasSchema(PlanoEntregasBase):
     @model_validator(mode="after")
     def validate_entregas_not_empty(self) -> "PlanoEntregasSchema":
         """Valida se a lista de entregas não está vazia, exceto se
@@ -594,8 +599,6 @@ class PlanoEntregasSchema(BaseModel):
             self.origem_unidade, self.cod_unidade_autorizadora
         )
         return self
-
-
 class ParticipanteSchema(BaseModel):
     __doc__ = Participante.__doc__
     model_config = ConfigDict(from_attributes=True)
