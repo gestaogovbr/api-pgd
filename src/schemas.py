@@ -282,8 +282,7 @@ class AvaliacaoRegistrosExecucaoSchema(BaseModel):
             )
         return self
 
-
-class PlanoTrabalhoSchema(BaseModel):
+class PlanoTrabalhoBase(BaseModel):
     __doc__ = PlanoTrabalho.__doc__
     model_config = ConfigDict(from_attributes=True)
 
@@ -349,6 +348,13 @@ class PlanoTrabalhoSchema(BaseModel):
             description="Lista de avaliações de registros de execução do Plano de Trabalho.",
         )
     )
+
+# Utilizado para requisições GET (sem validação)"""
+class PlanoTrabalhoResponseSchema(PlanoTrabalhoBase):
+    pass
+
+# Utilizado para requisições POST/PUT (com validação)
+class PlanoTrabalhoSchema(PlanoTrabalhoBase):
 
     @field_validator("cpf_participante")
     @staticmethod
