@@ -18,7 +18,7 @@ async def get_plano_trabalho(
     origem_unidade: str,
     cod_unidade_autorizadora: int,
     id_plano_trabalho: str,
-) -> Optional[schemas.PlanoTrabalhoSchema]:
+) -> Optional[schemas.PlanoTrabalhoResponseSchema]:
     """Traz um plano de trabalho a partir do banco de dados, consultando
     a partir dos parâmetros informados.
 
@@ -41,7 +41,7 @@ async def get_plano_trabalho(
         )
         db_plano_trabalho = result.unique().scalar_one_or_none()
     if db_plano_trabalho:
-        return schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho)
+         return schemas.PlanoTrabalhoResponseSchema.model_validate(db_plano_trabalho)
     return None
 
 
@@ -254,7 +254,7 @@ async def get_plano_entregas(
     origem_unidade: str,
     cod_unidade_autorizadora: int,
     id_plano_entregas: int,
-) -> Optional[schemas.PlanoEntregasSchema]:
+) -> Optional[schemas.PlanoEntregasResponseSchema]:
     """Traz um plano de entregas a partir do banco de dados, consultando
     a partir dos parâmetros informados.
 
@@ -278,7 +278,7 @@ async def get_plano_entregas(
         )
         db_plano_entrega = result.unique().scalar_one_or_none()
     if db_plano_entrega:
-        return db_plano_entrega
+        return schemas.PlanoEntregasResponseSchema.model_validate(db_plano_entrega)
     return None
 
 
