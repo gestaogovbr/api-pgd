@@ -476,7 +476,7 @@ async def reset_password(
     "/plano_entregas/{id_plano_entregas}",
     summary="Consulta plano de entregas",
     tags=["plano de entregas"],
-    response_model=schemas.PlanoEntregasSchema,
+    response_model=schemas.PlanoEntregasResponseSchema,
     responses={
         **response_schemas.outra_unidade_error,
         404: response_schemas.NotFoundErrorResponse.docs(
@@ -607,7 +607,7 @@ async def create_or_update_plano_entregas(
     "/plano_trabalho/{id_plano_trabalho}",
     summary="Consulta plano de trabalho",
     tags=["plano de trabalho"],
-    response_model=schemas.PlanoTrabalhoSchema,
+    response_model=schemas.PlanoTrabalhoResponseSchema,
     responses={
         **response_schemas.outra_unidade_error,
         404: response_schemas.NotFoundErrorResponse.docs(
