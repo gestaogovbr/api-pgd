@@ -1,4 +1,11 @@
 # Release notes
+
+## 3.3.4
+* Split Schema PlanoTrabalhoSchema in PlanoTrabalhoSchema (with validation) and
+  PlanoTrabalhoResponseSchema(without validation - for get responses)
+* Split Schema PlanoEntregasSchema in PlanoEntregasSchema (with validation)
+  and PlanoEntregasResponseSchema(without validation - for get responses)
+
 ## 3.3.3
 * Reject data_inicio from Plano de trabalho and TCR signature before 2023-07-31
 
