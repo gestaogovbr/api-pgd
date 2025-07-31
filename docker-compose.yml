@@ -42,7 +42,7 @@ services:
       # to new `SECRET` run openssl rand -hex 32
       SECRET: b8a3054ba3457614e95a88cc0807384430c1b338a54e95e4245f41e060da68bc
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
-      TEST_ENVIRONMENT: 'False'
+      TEST_ENVIRONMENT: 'True'
       MAIL_USERNAME: ''
       MAIL_FROM: admin@api-pgd.gov.br
       MAIL_PORT: 25

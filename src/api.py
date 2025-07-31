@@ -21,6 +21,7 @@ import crud_auth
 from db_config import (
     check_db_connection,
     create_db_and_tables,
+    create_audit_ddl,
     DbContextManager,
     get_db,
 )
@@ -66,6 +67,8 @@ async def lifespan(application: FastAPI):  # pylint: disable=unused-argument
     """Executa as rotinas de inicialização da API."""
     try:
         await create_db_and_tables()
+        if not TEST_ENVIRONMENT:
+            await create_audit_ddl()
         await crud_auth.init_user_admin()
     except OperationalError as exception:
         logger.error("A inicialização do banco de dados falhou: %s", exception)
