@@ -366,6 +366,36 @@ async def check_planos_entregas_unidade_per_period(
     return False
 
 
+def _build_plano_entregas_model(
+    plano_entregas: schemas.PlanoEntregasSchema,
+    creation_timestamp: datetime,
+) -> models.PlanoEntregas:
+    """Constrói uma instância do modelo PlanoEntregas com suas entregas associadas.
+
+    Args:
+        plano_entregas (schemas.PlanoEntregasSchema): Objeto Pydantic contendo os dados
+        do plano de entregas e suas entregas.
+        creation_timestamp: Timestamp a ser aplicado como data de criação.
+
+    Returns:
+        Uma instância do modelo PlanoEntregas com as entregas preenchidas e prontas
+        para persistência
+    """
+    creation_timestamp = datetime.now()
+    entregas = [
+        models.Entrega(**entrega.model_dump())
+        for entrega in plano_entregas.entregas
+    ]
+    for entrega in entregas:
+        entrega.data_insercao = creation_timestamp
+
+    plano_entregas.entregas = []
+    db_plano_entregas = models.PlanoEntregas(**plano_entregas.model_dump())
+    db_plano_entregas.data_insercao = creation_timestamp
+    db_plano_entregas.entregas = entregas
+
+    return db_plano_entregas
+
 async def create_plano_entregas(
     db_session: DbContextManager,
     plano_entregas: schemas.PlanoEntregasSchema,
@@ -384,18 +414,10 @@ async def create_plano_entregas(
             com os dados que foram gravados no banco.
     """
     creation_timestamp = datetime.now()
-    entregas = [
-        models.Entrega(**entrega.model_dump()) for entrega in plano_entregas.entregas
-    ]
-    plano_entregas.entregas = []
-    db_plano_entregas = models.PlanoEntregas(**plano_entregas.model_dump())
-    db_plano_entregas.data_insercao = creation_timestamp
+    db_plano_entregas = _build_plano_entregas_model(plano_entregas, creation_timestamp)
     async with db_session as session:
-        for entrega in entregas:
-            entrega.data_insercao = creation_timestamp
+        for entrega in db_plano_entregas.entregas:
             session.add(entrega)
-            db_plano_entregas.entregas.append(entrega)
-            db_plano_entregas.entregas = entregas
         session.add(db_plano_entregas)
         await session.commit()
         await session.refresh(db_plano_entregas)
@@ -422,17 +444,27 @@ async def update_plano_entregas(
         schemas.PlanoEntregasSchema: Esquema Pydantic do Plano de Entregas
             com o retorno de create_plano_entregas.
     """
+    creation_timestamp = datetime.now()
+    db_plano_entregas_atualizado = _build_plano_entregas_model(plano_entregas, creation_timestamp)
+
     async with db_session as session:
-        result = await session.execute(
-            select(models.PlanoEntregas)
-            .filter_by(origem_unidade=plano_entregas.origem_unidade)
-            .filter_by(cod_unidade_autorizadora=plano_entregas.cod_unidade_autorizadora)
-            .filter_by(id_plano_entregas=plano_entregas.id_plano_entregas)
-        )
-        db_plano_entregas = result.unique().scalar_one()
-        await session.delete(db_plano_entregas)
-        await session.commit()
-    return await create_plano_entregas(db_session, plano_entregas)
+        async with session.begin():
+            result = await session.execute(
+                select(models.PlanoEntregas)
+                .filter_by(origem_unidade=plano_entregas.origem_unidade)
+                .filter_by(cod_unidade_autorizadora=plano_entregas.cod_unidade_autorizadora)
+                .filter_by(id_plano_entregas=plano_entregas.id_plano_entregas)
+            )
+            db_plano_entregas = result.unique().scalar_one()
+            await session.delete(db_plano_entregas)
+            await session.flush()
+
+            for entrega in db_plano_entregas_atualizado.entregas:
+                session.add(entrega)
+            session.add(db_plano_entregas_atualizado)
+
+        await session.refresh(db_plano_entregas_atualizado)
+        return schemas.PlanoEntregasSchema.model_validate(db_plano_entregas_atualizado)
 
 
 async def get_participante(
