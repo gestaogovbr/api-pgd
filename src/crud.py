@@ -555,7 +555,7 @@ async def update_participante(
             com o retorno de create_participante.
     """
     async with db_session as session:
-        # find and delete
+        # find and replace
         result = await session.execute(
             select(models.Participante)
             .filter_by(origem_unidade=participante.origem_unidade)
