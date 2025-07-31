@@ -1,5 +1,8 @@
 # Release notes
 
+## 3.3.5
+* Use transaction mode in update_plano_trabalho and update_plano_entregas
+
 ## 3.3.4
 * Split Schema PlanoTrabalhoSchema in PlanoTrabalhoSchema (with validation) and
   PlanoTrabalhoResponseSchema(without validation - for get responses)
@@ -12,7 +15,8 @@
 ## 3.3.2
 * Implement length validation for cod_unidade_autorizadora based on origem_unidade
 * Restrict future date for data_avaliacao_registros_execucao
-* Create validation for empty Contribuicoes list, on submitting Plano de Trabalho, except when the status equals 1.
+* Create validation for empty Contribuicoes list, on submitting Plano de Trabalho,
+  except when the status equals 1.
 
 ## 3.3.1
 * Fix `Plano de Trabalho` and `Plano de Entrega` validation
