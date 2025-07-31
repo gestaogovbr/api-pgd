@@ -1,5 +1,4 @@
-"""Funções para ler, gravar, atualizar ou apagar dados no banco de dados.
-"""
+"""Funções para ler, gravar, atualizar ou apagar dados no banco de dados."""
 
 from datetime import datetime, date
 from typing import Optional
@@ -41,7 +40,7 @@ async def get_plano_trabalho(
         )
         db_plano_trabalho = result.unique().scalar_one_or_none()
     if db_plano_trabalho:
-         return schemas.PlanoTrabalhoResponseSchema.model_validate(db_plano_trabalho)
+        return schemas.PlanoTrabalhoResponseSchema.model_validate(db_plano_trabalho)
     return None
 
 
@@ -88,8 +87,7 @@ async def check_planos_trabalho_per_period(
                     (
                         # exclui o próprio plano de trabalho da verificação para
                         # não conflitar com ele mesmo
-                        models.PlanoTrabalho.id_plano_trabalho
-                        != id_plano_trabalho
+                        models.PlanoTrabalho.id_plano_trabalho != id_plano_trabalho
                     ),
                     (models.PlanoTrabalho.data_inicio <= data_termino),
                     (models.PlanoTrabalho.data_termino >= data_inicio),
@@ -101,6 +99,7 @@ async def check_planos_trabalho_per_period(
     if count_plano_trabalho > 0:
         return True
     return False
+
 
 async def _build_plano_trabalho_model(
     session: AsyncSession,
@@ -174,7 +173,9 @@ async def _build_plano_trabalho_model(
             result = await session.execute(
                 select(models.Entrega)
                 .filter_by(origem_unidade=plano_trabalho.origem_unidade)
-                .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
+                .filter_by(
+                    cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora
+                )
                 .filter_by(id_plano_entregas=contribuicao.id_plano_entregas)
                 .filter_by(id_entrega=contribuicao.id_entrega)
             )
@@ -218,15 +219,16 @@ async def create_plano_trabalho(
     """
     creation_timestamp = datetime.now()
     async with db_session as session:
-        db_plano_trabalho = await _build_plano_trabalho_model(session,
-                                                              plano_trabalho,
-                                                              creation_timestamp)
+        db_plano_trabalho = await _build_plano_trabalho_model(
+            session, plano_trabalho, creation_timestamp
+        )
         session.add(db_plano_trabalho)
         try:
             await session.commit()
         except IntegrityError as e:
             raise HTTPException(
-                status_code=422, detail="Alteração rejeitada por violar regras de integridade"
+                status_code=422,
+                detail="Alteração rejeitada por violar regras de integridade",
             ) from e
         await session.refresh(db_plano_trabalho)
     return schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho)
@@ -258,22 +260,25 @@ async def update_plano_trabalho(
             result = await session.execute(
                 select(models.PlanoTrabalho)
                 .filter_by(origem_unidade=plano_trabalho.origem_unidade)
-                .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
+                .filter_by(
+                    cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora
+                )
                 .filter_by(id_plano_trabalho=plano_trabalho.id_plano_trabalho)
             )
             db_plano_trabalho = result.unique().scalar_one()
             await session.delete(db_plano_trabalho)
             await session.flush()
 
-            db_plano_atualizado = await _build_plano_trabalho_model(session,
-                                                                    plano_trabalho,
-                                                                    creation_timestamp)
+            db_plano_atualizado = await _build_plano_trabalho_model(
+                session, plano_trabalho, creation_timestamp
+            )
             session.add(db_plano_atualizado)
             try:
                 await session.refresh(db_plano_atualizado)
             except IntegrityError as e:
                 raise HTTPException(
-                    status_code=422, detail="Alteração rejeitada por violar regras de integridade"
+                    status_code=422,
+                    detail="Alteração rejeitada por violar regras de integridade",
                 ) from e
         return schemas.PlanoTrabalhoSchema.model_validate(db_plano_atualizado)
 
@@ -351,8 +356,7 @@ async def check_planos_entregas_unidade_per_period(
                     (
                         # exclui o próprio plano de entregas da verificação
                         # para não conflitar com ele mesmo
-                        models.PlanoEntregas.id_plano_entregas
-                        != id_plano_entregas
+                        models.PlanoEntregas.id_plano_entregas != id_plano_entregas
                     ),
                     (models.PlanoEntregas.data_inicio <= data_termino),
                     (models.PlanoEntregas.data_termino >= data_inicio),
@@ -383,8 +387,7 @@ def _build_plano_entregas_model(
     """
     creation_timestamp = datetime.now()
     entregas = [
-        models.Entrega(**entrega.model_dump())
-        for entrega in plano_entregas.entregas
+        models.Entrega(**entrega.model_dump()) for entrega in plano_entregas.entregas
     ]
     for entrega in entregas:
         entrega.data_insercao = creation_timestamp
@@ -395,6 +398,7 @@ def _build_plano_entregas_model(
     db_plano_entregas.entregas = entregas
 
     return db_plano_entregas
+
 
 async def create_plano_entregas(
     db_session: DbContextManager,
@@ -445,14 +449,18 @@ async def update_plano_entregas(
             com o retorno de create_plano_entregas.
     """
     creation_timestamp = datetime.now()
-    db_plano_entregas_atualizado = _build_plano_entregas_model(plano_entregas, creation_timestamp)
+    db_plano_entregas_atualizado = _build_plano_entregas_model(
+        plano_entregas, creation_timestamp
+    )
 
     async with db_session as session:
         async with session.begin():
             result = await session.execute(
                 select(models.PlanoEntregas)
                 .filter_by(origem_unidade=plano_entregas.origem_unidade)
-                .filter_by(cod_unidade_autorizadora=plano_entregas.cod_unidade_autorizadora)
+                .filter_by(
+                    cod_unidade_autorizadora=plano_entregas.cod_unidade_autorizadora
+                )
                 .filter_by(id_plano_entregas=plano_entregas.id_plano_entregas)
             )
             db_plano_entregas = result.unique().scalar_one()
