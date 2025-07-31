@@ -8,7 +8,7 @@ from sqlalchemy import select, and_, func
 from sqlalchemy.sql import text
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
-
+from sqlalchemy.ext.asyncio import AsyncSession
 import models, schemas
 from db_config import DbContextManager, sync_engine
 
@@ -102,6 +102,102 @@ async def check_planos_trabalho_per_period(
         return True
     return False
 
+async def _build_plano_trabalho_model(
+    session: AsyncSession,
+    plano_trabalho: schemas.PlanoTrabalhoSchema,
+    creation_timestamp: datetime,
+) -> models.PlanoTrabalho:
+    """Cria uma instância do modelo PlanoTrabalho com todas as relações preenchidas,
+    como participante, contribuições e avaliações, associando-as corretamente.
+
+    Args:
+        session (AsyncSession): sessão async ativa do DbContext.
+        plano_trabalho (schemas.PlanoTrabalhoSchema): Objeto Pydantic contendo os
+        dados do plano de trabalho a serem persistidos.
+        creation_timestamp (datetime): Timestamp a ser usado como data de criação.
+
+    Returns:
+        Uma instância do modelo PlanoTrabalho pronta para ser adicionada à sessão."""
+
+    creation_timestamp = datetime.now()
+
+    contribuicoes = [
+        models.Contribuicao(
+            origem_unidade_pt=plano_trabalho.origem_unidade,
+            cod_unidade_autorizadora_pt=plano_trabalho.cod_unidade_autorizadora,
+            id_plano_trabalho=plano_trabalho.id_plano_trabalho,
+            **contribuicao.model_dump(),
+        )
+        for contribuicao in (plano_trabalho.contribuicoes or [])
+    ]
+
+    avaliacoes_registros_execucao = [
+        models.AvaliacaoRegistrosExecucao(**avaliacao.model_dump())
+        for avaliacao in (plano_trabalho.avaliacoes_registros_execucao or [])
+    ]
+
+    plano_trabalho.contribuicoes = []
+    plano_trabalho.avaliacoes_registros_execucao = []
+    db_plano = models.PlanoTrabalho(**plano_trabalho.model_dump())
+    db_plano.data_insercao = creation_timestamp
+
+    # Relacionamento com Participante
+    result = await session.execute(
+        select(models.Participante)
+        .filter_by(origem_unidade=plano_trabalho.origem_unidade)
+        .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
+        .filter_by(matricula_siape=plano_trabalho.matricula_siape)
+        .filter_by(cod_unidade_lotacao=plano_trabalho.cod_unidade_lotacao_participante)
+    )
+    db_participante = result.scalars().unique().one_or_none()
+    if not db_participante:
+        raise ValueError(
+            "Plano de Trabalho faz referência a participante inexistente.\n"
+            f" origem_unidade: {plano_trabalho.origem_unidade}\n"
+            f" cod_unidade_autorizadora: {plano_trabalho.cod_unidade_autorizadora}\n"
+            f" matricula_siape: {plano_trabalho.matricula_siape}\n"
+            f" cod_unidade_lotacao: {plano_trabalho.cod_unidade_lotacao_participante}"
+        )
+
+    session.add(db_participante)
+    db_participante.planos_trabalho.append(db_plano)
+
+    # Relacionamento com Contribuicao
+    for contribuicao in contribuicoes:
+        contribuicao.data_insercao = creation_timestamp
+        contribuicao.entrega = None
+        if (
+            contribuicao.tipo_contribuicao == 1
+            and contribuicao.id_plano_entregas
+            and contribuicao.id_entrega
+        ):
+            result = await session.execute(
+                select(models.Entrega)
+                .filter_by(origem_unidade=plano_trabalho.origem_unidade)
+                .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
+                .filter_by(id_plano_entregas=contribuicao.id_plano_entregas)
+                .filter_by(id_entrega=contribuicao.id_entrega)
+            )
+            db_entrega = result.scalars().unique().one_or_none()
+            if not db_entrega:
+                raise ValueError(
+                    "Contribuição do Plano de Trabalho faz referência a entrega inexistente. "
+                    f"origem_unidade: {plano_trabalho.origem_unidade} "
+                    f"cod_unidade_autorizadora: {plano_trabalho.cod_unidade_autorizadora} "
+                    f"id_plano_entregas: {contribuicao.id_plano_entregas} "
+                    f"id_entrega: {contribuicao.id_entrega}"
+                )
+            contribuicao.entrega = db_entrega
+
+    db_plano.contribuicoes = contribuicoes
+
+    for avaliacao in avaliacoes_registros_execucao:
+        avaliacao.data_insercao = creation_timestamp
+
+    db_plano.avaliacoes_registros_execucao = avaliacoes_registros_execucao
+
+    return db_plano
+
 
 async def create_plano_trabalho(
     db_session: DbContextManager,
@@ -121,90 +217,10 @@ async def create_plano_trabalho(
             com os dados que foram gravados no banco.
     """
     creation_timestamp = datetime.now()
-    contribuicoes = [
-        models.Contribuicao(
-            origem_unidade_pt=plano_trabalho.origem_unidade,
-            cod_unidade_autorizadora_pt=plano_trabalho.cod_unidade_autorizadora,
-            id_plano_trabalho=plano_trabalho.id_plano_trabalho,
-            **contribuicao.model_dump(),
-        )
-        for contribuicao in (plano_trabalho.contribuicoes or [])
-    ]
-
-    avaliacoes_registros_execucao = [
-        models.AvaliacaoRegistrosExecucao(**avaliacao_registros_execucao.model_dump())
-        for avaliacao_registros_execucao in (
-            plano_trabalho.avaliacoes_registros_execucao or []
-        )
-    ]
-    # Esvazia as listas para poder converter o plano_trabalho para SQL Alchemy
-    plano_trabalho.contribuicoes = []
-    plano_trabalho.avaliacoes_registros_execucao = []
-    db_plano_trabalho = models.PlanoTrabalho(**plano_trabalho.model_dump())
-    db_plano_trabalho.data_insercao = creation_timestamp
     async with db_session as session:
-        # Estabelece relacionamentos
-        # Relacionamento com Participante
-        query = (
-            select(models.Participante)
-            .filter_by(origem_unidade=plano_trabalho.origem_unidade)
-            .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
-            .filter_by(matricula_siape=plano_trabalho.matricula_siape)
-            .filter_by(
-                cod_unidade_lotacao=plano_trabalho.cod_unidade_lotacao_participante
-            )
-        )
-        result = await session.execute(query)
-        db_participante = result.scalars().unique().one_or_none()
-        if db_participante is None:
-            raise ValueError(
-                "Plano de Trabalho faz referência a participante inexistente.\n"
-                f" origem_unidade: {plano_trabalho.origem_unidade}\n"
-                f" cod_unidade_autorizadora: {plano_trabalho.cod_unidade_autorizadora}\n"
-                f" matricula_siape: {plano_trabalho.matricula_siape}\n"
-                f" cod_unidade_lotacao: {plano_trabalho.cod_unidade_lotacao_participante}"
-            )
-        session.add(db_participante)
-        db_participante.planos_trabalho.append(db_plano_trabalho)
-
-        # Relacionamento com Contribuicao
-        for contribuicao in contribuicoes:
-            contribuicao.data_insercao = creation_timestamp
-            # Relacionamento com Entrega, se existir
-            contribuicao.entrega = None
-            if (
-                contribuicao.tipo_contribuicao == 1
-                and contribuicao.id_plano_entregas
-                and contribuicao.id_entrega
-            ):
-                query = (
-                    select(models.Entrega)
-                    .filter_by(origem_unidade=plano_trabalho.origem_unidade)
-                    .filter_by(
-                        cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora
-                    )
-                    .filter_by(id_plano_entregas=contribuicao.id_plano_entregas)
-                    .filter_by(id_entrega=contribuicao.id_entrega)
-                )
-                result = await session.execute(query)
-                db_entrega = result.scalars().unique().one_or_none()
-                if db_entrega is None:
-                    raise ValueError(
-                        "Contribuição do Plano de Trabalho faz referência a entrega "
-                        "inexistente. "
-                        f"origem_unidade: {plano_trabalho.origem_unidade} "
-                        "cod_unidade_autorizadora: "
-                        f"{plano_trabalho.cod_unidade_autorizadora} "
-                        f"id_plano_entregas: {contribuicao.id_plano_entregas} "
-                        f"id_entrega: {contribuicao.id_entrega}"
-                    )
-                contribuicao.entrega = db_entrega
-        db_plano_trabalho.contribuicoes = contribuicoes
-
-        # Relacionamento com AvaliacaoRegistrosExecucao
-        for avaliacao_registros_execucao in avaliacoes_registros_execucao:
-            avaliacao_registros_execucao.data_insercao = creation_timestamp
-        db_plano_trabalho.avaliacoes_registros_execucao = avaliacoes_registros_execucao
+        db_plano_trabalho = await _build_plano_trabalho_model(session,
+                                                              plano_trabalho,
+                                                              creation_timestamp)
         session.add(db_plano_trabalho)
         try:
             await session.commit()
@@ -236,17 +252,30 @@ async def update_plano_trabalho(
         schemas.PlanoTrabalhoSchema: Esquema Pydantic do Plano de Trabalho
             com o retorno de create_plano_trabalho.
     """
+    creation_timestamp = datetime.now()
     async with db_session as session:
-        result = await session.execute(
-            select(models.PlanoTrabalho)
-            .filter_by(origem_unidade=plano_trabalho.origem_unidade)
-            .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
-            .filter_by(id_plano_trabalho=plano_trabalho.id_plano_trabalho)
-        )
-        db_plano_trabalho = result.unique().scalar_one()
-        await session.delete(db_plano_trabalho)
-        await session.commit()
-    return await create_plano_trabalho(db_session, plano_trabalho)
+        async with session.begin():
+            result = await session.execute(
+                select(models.PlanoTrabalho)
+                .filter_by(origem_unidade=plano_trabalho.origem_unidade)
+                .filter_by(cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora)
+                .filter_by(id_plano_trabalho=plano_trabalho.id_plano_trabalho)
+            )
+            db_plano_trabalho = result.unique().scalar_one()
+            await session.delete(db_plano_trabalho)
+            await session.flush()
+
+            db_plano_atualizado = await _build_plano_trabalho_model(session,
+                                                                    plano_trabalho,
+                                                                    creation_timestamp)
+            session.add(db_plano_atualizado)
+            try:
+                await session.refresh(db_plano_atualizado)
+            except IntegrityError as e:
+                raise HTTPException(
+                    status_code=422, detail="Alteração rejeitada por violar regras de integridade"
+                ) from e
+        return schemas.PlanoTrabalhoSchema.model_validate(db_plano_atualizado)
 
 
 async def get_plano_entregas(
