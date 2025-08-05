@@ -157,7 +157,6 @@ async def _build_plano_trabalho_model(
             f" matricula_siape: {plano_trabalho.matricula_siape}\n"
             f" cod_unidade_lotacao: {plano_trabalho.cod_unidade_lotacao_participante}"
         )
-
     session.add(db_participante)
     db_participante.planos_trabalho.append(db_plano)
 
@@ -274,13 +273,14 @@ async def update_plano_trabalho(
             )
             session.add(db_plano_atualizado)
             try:
-                await session.refresh(db_plano_atualizado)
+                await session.flush()
             except IntegrityError as e:
                 raise HTTPException(
                     status_code=422,
                     detail="Alteração rejeitada por violar regras de integridade",
                 ) from e
-        return schemas.PlanoTrabalhoSchema.model_validate(db_plano_atualizado)
+        await session.refresh(db_plano_atualizado)
+    return schemas.PlanoTrabalhoSchema.model_validate(db_plano_atualizado)
 
 
 async def get_plano_entregas(
@@ -469,7 +469,10 @@ async def update_plano_entregas(
 
             for entrega in db_plano_entregas_atualizado.entregas:
                 session.add(entrega)
+
             session.add(db_plano_entregas_atualizado)
+
+            await session.flush()
 
         await session.refresh(db_plano_entregas_atualizado)
         return schemas.PlanoEntregasSchema.model_validate(db_plano_entregas_atualizado)
