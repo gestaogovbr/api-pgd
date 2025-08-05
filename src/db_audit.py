@@ -67,3 +67,13 @@ AUDIT_DDL = """
     AFTER INSERT OR UPDATE OR DELETE ON avaliacao_registros_execucao
     FOR EACH ROW EXECUTE FUNCTION auditoria.fn_auditoria();
 """
+
+REMOVE_AUDIT_TRIGGERS = """
+    DROP TRIGGER IF EXISTS tr_auditoria_pt ON plano_trabalho;
+    DROP TRIGGER IF EXISTS tr_auditoria_pe ON plano_entregas;
+    DROP TRIGGER IF EXISTS tr_auditoria_part ON participante;
+    DROP TRIGGER IF EXISTS tr_auditoria_us ON users;
+    DROP TRIGGER IF EXISTS tr_auditoria_co ON contribuicao;
+    DROP TRIGGER IF EXISTS tr_auditoria_en ON entrega;
+    DROP TRIGGER IF EXISTS tr_auditoria_are ON avaliacao_registros_execucao;
+"""

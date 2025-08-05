@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.sql import text
-from db_audit import AUDIT_DDL
+from db_audit import AUDIT_DDL, REMOVE_AUDIT_TRIGGERS
 
 SQLALCHEMY_DATABASE_URL = os.environ["SQLALCHEMY_DATABASE_URL"]
 
@@ -34,6 +34,11 @@ async def create_audit_ddl():
 
     async with engine.begin() as conn:
         await conn.execute(text(AUDIT_DDL))
+
+async def remove_audit_triggers():
+
+    async with engine.begin() as conn:
+        await conn.execute(text(REMOVE_AUDIT_TRIGGERS))
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
