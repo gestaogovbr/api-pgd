@@ -22,6 +22,7 @@ from db_config import (
     check_db_connection,
     create_db_and_tables,
     create_audit_ddl,
+    remove_audit_triggers,
     DbContextManager,
     get_db,
 )
@@ -35,7 +36,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(
     os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", DEFAULT_TOKEN_EXPIRE_MINS)
 )
 TEST_ENVIRONMENT = os.environ.get("TEST_ENVIRONMENT", "False") == "True"
-
+DB_AUDIT_LOGS_ENABLED = os.environ.get("DB_AUDIT_LOGS_ENABLED", "False") == "True"
 # ## INIT --------------------------------------------------
 
 with open(
@@ -67,8 +68,10 @@ async def lifespan(application: FastAPI):  # pylint: disable=unused-argument
     """Executa as rotinas de inicialização da API."""
     try:
         await create_db_and_tables()
-        if not TEST_ENVIRONMENT:
+        if DB_AUDIT_LOGS_ENABLED:
             await create_audit_ddl()
+        else:
+            await remove_audit_triggers()
         await crud_auth.init_user_admin()
     except OperationalError as exception:
         logger.error("A inicialização do banco de dados falhou: %s", exception)
