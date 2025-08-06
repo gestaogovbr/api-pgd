@@ -1,5 +1,9 @@
 # Release notes
 
+## 3.3.6
+* Add audit table for registering database operations (INSERT/UPDATE/DELETE)
+* Hotfix: Refactor update_planos to ensure proper transaction handling 
+
 ## 3.3.5
 * Use transaction mode in update_plano_trabalho and update_plano_entregas
 
