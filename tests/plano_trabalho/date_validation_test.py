@@ -11,7 +11,7 @@ import pytest
 
 from util import over_a_year, assert_error_message
 from .core_test import BasePTTest
-from tests.conftest import MIN_ALLOWED_PT_TCR_DATE
+from tests.conftest import MIN_ALLOWED_PT_TCR_DATE, PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE
 # Datas básicas
 
 
@@ -107,6 +107,43 @@ class TestCreatePTDateIntervalOverAYear(BasePTTest):
             assert_error_message(response, detail_message)
         else:
             assert response.status_code == status.HTTP_201_CREATED
+            self.assert_equal_plano_trabalho(response.json(), input_pt)
+
+class TestUpdatePTDateIntervalOverAYear(BasePTTest):
+    """Testes relacionados a atualizar um Plano de Trabalho com intervalo de
+    data superior a um ano."""
+
+    @pytest.mark.parametrize(
+        "data_inicio, data_termino",
+        [
+            ("2024-01-01", "2025-05-31"),  # mais que um ano antes da data de corte
+            ("2025-06-01", "2026-06-02"),  # mais que um ano após a data de corte
+        ],
+    )
+    def test_update_plano_trabalho_date_interval_over_a_year(
+        self, data_inicio: str, data_termino: str
+    ):
+        """Plano de trabalho pode ser atualizado com vigência superior a um ano
+        desde que antes da data de corte."""
+        input_pt = deepcopy(self.input_pt)
+        input_pt["data_inicio"] = data_inicio
+        input_pt["data_termino"] = data_termino
+
+        response = self.put_plano_trabalho(input_pt)
+
+        if (
+            over_a_year(
+                date.fromisoformat(data_inicio), date.fromisoformat(data_termino)
+            )
+            == 1 AND date.fromisoformat(data_inicio) > PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE
+        ):
+            assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = (
+                "Plano de trabalho não pode abranger período maior que 1 ano"
+            )
+            assert_error_message(response, detail_message)
+        else:
+            assert response.status_code == status.HTTP_200_OK
             self.assert_equal_plano_trabalho(response.json(), input_pt)
 
 
