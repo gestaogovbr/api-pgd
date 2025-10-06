@@ -59,7 +59,7 @@ MAX_INT = (2**31) - 1
 MAX_BIGINT = (2**63) - 1
 
 MIN_ALLOWED_PT_TCR_DATE = date(2023, 7, 31)
-
+PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE = date(2025, 5, 31)
 
 def get_bearer_token(username: str, password: str) -> str:
     """Login on api-pgd and returns token to next authenticated calls.
