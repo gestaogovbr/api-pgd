@@ -24,7 +24,6 @@ from models import (
     Participante,
     Users,
 )
-from util import over_a_year
 
 STR_FIELD_MAX_SIZE = 300
 NON_NEGATIVE_INT4 = Annotated[NonNegativeInt, Field(le=(2**31) - 1)]
@@ -381,15 +380,6 @@ class PlanoTrabalhoSchema(PlanoTrabalhoBase):
         return self
 
     @model_validator(mode="after")
-    def year_interval(self) -> "PlanoTrabalhoSchema":
-        """Garante que o plano não abrange um período maior que 1 ano."""
-        if over_a_year(self.data_inicio, self.data_termino) == 1:
-            raise ValueError(
-                "Plano de trabalho não pode abranger período maior que 1 ano"
-            )
-        return self
-
-    @model_validator(mode="after")
     def must_be_sequential_dates(self) -> "PlanoTrabalhoSchema":
         "Verifica se a data de início e a data de término estão na ordem esperada."
         if self.data_inicio > self.data_termino:
@@ -573,10 +563,6 @@ class PlanoEntregasSchema(PlanoEntregasBase):
     @model_validator(mode="after")
     def validate_period(self) -> "PlanoEntregasSchema":
         """Valida o período do plano de entregas."""
-        if over_a_year(self.data_inicio, self.data_termino) == 1:
-            raise ValueError(
-                "Plano de entregas não pode abranger período maior que 1 ano"
-            )
         if self.data_termino < self.data_inicio:
             raise ValueError("data_termino deve ser maior ou igual que data_inicio.")
         if self.data_avaliacao is not None and self.data_avaliacao < self.data_inicio:
