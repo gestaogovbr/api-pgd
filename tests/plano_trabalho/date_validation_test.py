@@ -125,17 +125,20 @@ class TestUpdatePTDateIntervalOverAYear(BasePTTest):
     ):
         """Plano de trabalho pode ser atualizado com vigência superior a um ano
         desde que antes da data de corte."""
-        input_pt = deepcopy(self.input_pt)
-        input_pt["data_inicio"] = data_inicio
-        input_pt["data_termino"] = data_termino
+        self.put_plano_trabalho(self.input_pt)
+        input_pt2 = deepcopy(self.input_pt)
 
-        response = self.put_plano_trabalho(input_pt)
+        input_pt2["data_inicio"] = data_inicio
+        input_pt2["data_termino"] = data_termino
+        input_pt2["avaliacoes_registros_execucao"] = []
+
+        response = self.put_plano_trabalho(input_pt2)
 
         if (
             over_a_year(
                 date.fromisoformat(data_inicio), date.fromisoformat(data_termino)
             )
-            == 1 AND date.fromisoformat(data_inicio) > PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE
+            == 1 and date.fromisoformat(data_inicio) > PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE
         ):
             assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
             detail_message = (
@@ -144,7 +147,7 @@ class TestUpdatePTDateIntervalOverAYear(BasePTTest):
             assert_error_message(response, detail_message)
         else:
             assert response.status_code == status.HTTP_200_OK
-            self.assert_equal_plano_trabalho(response.json(), input_pt)
+            self.assert_equal_plano_trabalho(response.json(), input_pt2)
 
 
 class TestCreatePTOverlappingDateInterval(BasePTTest):
