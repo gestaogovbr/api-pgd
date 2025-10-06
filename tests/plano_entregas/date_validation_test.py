@@ -11,7 +11,7 @@ import pytest
 
 from util import over_a_year
 from .core_test import BasePETest
-
+from tests.conftest import PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE
 
 # Datas básicas
 
@@ -51,13 +51,50 @@ class TestPlanoDeDatasBasicas(BasePETest):
             detail_message = (
                 "Plano de entregas não pode abranger período maior que 1 ano"
             )
-            assert any(
-                f"Value error, {detail_message}" in error["msg"]
-                for error in response.json().get("detail")
-            )
+            assert response.json().get("detail") == detail_message
         else:
             assert response.status_code == http_status.HTTP_201_CREATED
             self.assert_equal_plano_entregas(response.json(), input_pe)
+
+    @pytest.mark.parametrize(
+        "data_inicio, data_termino",
+        [
+            ("2024-01-01", "2025-01-02", ),  # antes da data de corte (permitido)
+            ("2025-06-01", "2026-06-02"),  # após da data de corte (proibido)
+        ],
+    )
+    def test_update_plano_entregas_date_interval_over_a_year(
+        self,
+        truncate_pe,  # pylint: disable=unused-argument
+        data_inicio: str,
+        data_termino: str,
+    ):
+        """Plano de Entregas não pode ter vigência superior a um ano."""
+        self.put_plano_entregas(self.input_pe)
+        input_pe2 = deepcopy(self.input_pe)
+        input_pe2["data_inicio"] = data_inicio
+        input_pe2["data_termino"] = data_termino
+        # para evitar erro de data_avaliacao < data_inicio
+        input_pe2["data_avaliacao"] = data_inicio
+
+        response = self.put_plano_entregas(input_pe2)
+
+        if (
+            over_a_year(
+                date.fromisoformat(data_inicio), date.fromisoformat(data_termino)
+            )
+            == 1 and date.fromisoformat(data_inicio) > PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE
+        ):
+            assert response.status_code == http_status.HTTP_422_UNPROCESSABLE_ENTITY
+            detail_message = (
+                "Plano de entregas não pode abranger período maior que 1 ano"
+            )
+            assert response.json().get("detail") == detail_message
+        else:
+            assert response.status_code == http_status.HTTP_200_OK
+            self.assert_equal_plano_entregas(response.json(), input_pe2)
+
+
 
     @pytest.mark.parametrize(
         "data_inicio, data_termino",
