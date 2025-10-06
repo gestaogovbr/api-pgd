@@ -2,7 +2,7 @@
 """
 
 from contextlib import asynccontextmanager
-from datetime import timedelta
+from datetime import date, timedelta
 import json
 import logging
 import os
@@ -29,7 +29,7 @@ from db_config import (
 import email_config
 import response_schemas
 import schemas
-from util import check_permissions
+from util import check_permissions, over_a_year
 
 DEFAULT_TOKEN_EXPIRE_MINS = 30
 ACCESS_TOKEN_EXPIRE_MINUTES = int(
@@ -37,6 +37,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(
 )
 TEST_ENVIRONMENT = os.environ.get("TEST_ENVIRONMENT", "False") == "True"
 DB_AUDIT_LOGS_ENABLED = os.environ.get("DB_AUDIT_LOGS_ENABLED", "False") == "True"
+PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE = date(2025, 5, 31)
 # ## INIT --------------------------------------------------
 
 with open(
@@ -589,12 +590,24 @@ async def create_or_update_plano_entregas(
 
     try:
         if not db_plano_entregas:  # create
+            if over_a_year(plano_entregas.data_inicio, plano_entregas.data_termino) == 1:
+                    detail_msg = (
+                        "Plano de entregas não pode abranger período maior que 1 ano"
+                    )
+                    raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
+
             novo_plano_entregas = await crud.create_plano_entregas(
                 db_session=db,
                 plano_entregas=novo_plano_entregas,
             )
             response.status_code = status.HTTP_201_CREATED
         else:  # update
+            if over_a_year(plano_entregas.data_inicio, plano_entregas.data_termino) == 1 and \
+                plano_entregas.data_inicio > PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE:
+                    detail_msg = (
+                        "Plano de entregas não pode abranger período maior que 1 ano"
+                    )
+                    raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
             novo_plano_entregas = await crud.update_plano_entregas(
                 db_session=db,
                 plano_entregas=novo_plano_entregas,
@@ -722,12 +735,25 @@ async def create_or_update_plano_trabalho(
 
     try:
         if not db_plano_trabalho:  # create
+            if over_a_year(plano_trabalho.data_inicio, plano_trabalho.data_termino) == 1:
+                detail_msg = (
+                    "Plano de trabalho não pode abranger período maior que 1 ano"
+                )
+                raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
+
             novo_plano_trabalho = await crud.create_plano_trabalho(
                 db_session=db,
                 plano_trabalho=novo_plano_trabalho,
             )
             response.status_code = status.HTTP_201_CREATED
         else:  # update
+            if over_a_year(plano_trabalho.data_inicio, plano_trabalho.data_termino) == 1 and \
+                plano_trabalho.data_inicio > PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE:
+                detail_msg = (
+                    "Plano de trabalho não pode abranger período maior que 1 ano"
+                )
+                raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
+
             novo_plano_trabalho = await crud.update_plano_trabalho(
                 db_session=db,
                 plano_trabalho=novo_plano_trabalho,
