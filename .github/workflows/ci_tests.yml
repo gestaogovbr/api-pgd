@@ -21,3 +21,14 @@ jobs:
       run: make build
     - name: Run tests
       run: make tests
+    - name: Debug failure
+      if: failure()
+      run: |
+        echo "=== Docker Compose Services ==="
+        docker compose ps
+        echo
+        echo "=== Logs for api-pgd ==="
+        docker compose logs api-pgd || true
+        echo
+        echo "=== Logs for all containers ==="
+        docker compose logs || true
