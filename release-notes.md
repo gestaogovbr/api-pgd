@@ -1,4 +1,7 @@
 # Release notes
+## 3.3.7
+* Pin bcrypt version for compatibility with passlib 1.7.4
+* Allow updating PT and PE upper to 1 year if data_inicio is below the cutoff (31-05-2025)
 
 ## 3.3.6
 * Add audit table for registering database operations (INSERT/UPDATE/DELETE)
