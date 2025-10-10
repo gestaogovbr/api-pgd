@@ -87,10 +87,21 @@ class DbContextManager:
     """Context manager para manipulação de sessões do banco de dados.
     """
     def __init__(self):
-        self.db = async_session_maker()
+        self.async_session_maker = async_session_maker
+        self.db = None
 
     async def __aenter__(self):
+        self.db = self.async_session_maker()
         return self.db
 
     async def __aexit__(self, exc_type, exc_value, traceback):
-        await self.db.close()
+        try:
+            if exc_type is None:
+                # 2. If NO exception occurred, commit the transaction.
+                await self.db.commit()
+            else:
+                # 3. If an exception DID occur, roll back the transaction.
+                await self.db.rollback()
+        finally:
+            # 4. ALWAYS close the session.
+            await self.db.close()
