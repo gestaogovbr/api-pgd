@@ -1,4 +1,7 @@
 # Release notes
+# 3.3.8
+* Aumenta o pool size limit de conexões do SqlAlchemy e refatora a classe DbContextManager
+
 ## 3.3.7
 * Pin bcrypt version for compatibility with passlib 1.7.4
 * Allow updating PT and PE upper to 1 year if data_inicio is below the cutoff (31-05-2025)
