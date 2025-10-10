@@ -12,11 +12,15 @@ from db_audit import AUDIT_DDL, REMOVE_AUDIT_TRIGGERS
 
 SQLALCHEMY_DATABASE_URL = os.environ["SQLALCHEMY_DATABASE_URL"]
 
-engine = create_async_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_async_engine(
+    SQLALCHEMY_DATABASE_URL,
+    pool_size=15,
+    max_overflow=15,
+    pool_timeout=30,
+    )
 sync_engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
-
 
 # database models (SQLAlchemy)
 class Base(DeclarativeBase):  # pylint: disable=too-few-public-methods
