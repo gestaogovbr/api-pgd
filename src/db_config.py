@@ -14,9 +14,9 @@ SQLALCHEMY_DATABASE_URL = os.environ["SQLALCHEMY_DATABASE_URL"]
 
 engine = create_async_engine(
     SQLALCHEMY_DATABASE_URL,
-    pool_size=15,
-    max_overflow=15,
-    pool_timeout=30,
+    pool_size=30,
+    max_overflow=20,
+    pool_timeout=60,
     )
 sync_engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
