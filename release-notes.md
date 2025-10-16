@@ -1,4 +1,8 @@
 # Release notes
+
+# 3.3.9
+* Aumenta o pool size limit de conexões do SqlAlchemy e refatora método especial (aexit) do DbContextManager
+
 # 3.3.8
 * Aumenta o pool size limit de conexões do SqlAlchemy e refatora a classe DbContextManager
 
