@@ -96,12 +96,9 @@ class DbContextManager:
 
     async def __aexit__(self, exc_type, exc_value, traceback):
         try:
-            if exc_type is None:
-                # 2. If NO exception occurred, commit the transaction.
+            if not self.db.in_transaction() and exc_type is None:
                 await self.db.commit()
-            else:
-                # 3. If an exception DID occur, roll back the transaction.
+            elif not self.db.in_transaction():
                 await self.db.rollback()
         finally:
-            # 4. ALWAYS close the session.
             await self.db.close()
