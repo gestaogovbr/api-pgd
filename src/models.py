@@ -143,6 +143,7 @@ class PlanoEntregas(Base):
         lazy="joined",
         passive_deletes=True,
         cascade="save-update, merge, delete, delete-orphan",
+        comment="Plano de entregas associado à entrega do participante.",
     )
     __table_args__ = (
         UniqueConstraint(
@@ -220,6 +221,7 @@ class Entrega(Base):
         "PlanoEntregas",
         back_populates="entregas",
         lazy="joined",
+        comment="Plano de entregas associado à entrega do participante.",
     )
     # campos implícitos a partir do relacionamento
     origem_unidade = Column(
@@ -379,6 +381,7 @@ class PlanoTrabalho(Base):
         lazy="joined",
         passive_deletes=True,
         cascade="save-update, merge, delete, delete-orphan",
+        comment="Contribuições associadas ao plano de trabalho.",
     )
     avaliacoes_registros_execucao = relationship(
         "AvaliacaoRegistrosExecucao",
@@ -474,6 +477,7 @@ class Contribuicao(Base):
         "PlanoTrabalho",
         back_populates="contribuicoes",
         lazy="joined",
+        comment="Plano de trabalho associado as contribuições de projetos.",
     )
     # campos implícitos a partir do relacionamento
     origem_unidade_pt = Column(
@@ -552,7 +556,7 @@ class AvaliacaoRegistrosExecucao(Base):
             1. excepcional: plano de trabalho executado muito acima do esperado;
             2. alto desempenho: plano de trabalho executado acima do esperado;
             3. adequado: plano de trabalho executado dentro do esperado;
-            4. inadequado: plano de trabalho executado abaixo do esperado ou 
+            4. inadequado: plano de trabalho executado abaixo do esperado ou
             parcialmente executado;
             5. não executado: plano de trabalho integralmente não executado."""
         ),
@@ -571,6 +575,7 @@ class AvaliacaoRegistrosExecucao(Base):
         "PlanoTrabalho",
         back_populates="avaliacoes_registros_execucao",
         lazy="joined",
+        comment="Plano de trabalho associado à avaliação dos registros de execução.",
     )
     # campos implícitos a partir do relacionamento
     origem_unidade_pt = Column(
@@ -707,6 +712,7 @@ class Participante(Base):
         "PlanoTrabalho",
         back_populates="participante",
         lazy="joined",
+        comment="Planos de trabalho associados ao participante.",
     )
 
 
@@ -762,9 +768,11 @@ class Users(Base):
     data_atualizacao = Column(
         DateTime,
         onupdate=now(),
+        comment="Atualiza data e hora da última modificação do registro.",
     )
     data_insercao = Column(
         DateTime,
         nullable=False,
         default=now(),
+        comment="Exibe data e hora da inserção do registro.",
     )
