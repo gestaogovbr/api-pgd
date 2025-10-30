@@ -143,6 +143,7 @@ Nesse caso, utilizar o valor "SIORG" no campo `origem_unidade`.
 * A `data_assinatura_tcr` não pode ser data futura. Recomenda-se enviar
   no formato ISO 8601 para datas (YYYY-MM-DD).
 * A `data_assinatura_tcr` não pode ser inferior a 31/07/2023.
+* A `data_assinatura_tcr` deve permanecer a data original, mesmo em caso de haver repactuação.
 
 **Atenção:** os Participantes devem ser enviados antes dos Planos de
 Trabalho.
@@ -168,7 +169,16 @@ regras:
   * `5`: Avaliado.
 * O `status` `5` (Avaliado) só poderá ser usado se os campos `avaliacao` e
   `data_avaliacao` estiverem preenchidos.
-* O campo `avaliacao` admite valores de `1` a `5`.
+* É obrigatório o envio dos planos nos status "3", "4" e "5". Os planos nos
+  demais status não precisam necessariamente ser enviados.
+* A avaliação do plano de entregas pelo nível hierárquico superior ao da chefia
+  da unidade de execução deve ser de até trinta dias após o término do plano de entregas.
+* O campo `avaliacao` admite valores de `1` a `5`:
+  * `1` - excepcional: plano de entregas executado com desempenho muito acima do esperado;
+  * `2` - alto desempenho: plano de entregas executado com desempenho acima do esperado;
+  * `3` - adequado: plano de entregas executado dentro do esperado;
+  * `4` - inadequado: plano de entregas executado abaixo do esperado;
+  * `5` - plano de entregas não executado
 
 **Atenção:** os Planos de Entrega devem ser enviados antes dos Planos de
 Trabalho.
@@ -202,6 +212,12 @@ Os **Planos de Trabalho** submetidos devem seguir as seguintes regras:
   * `2`: Aprovado;
   * `3`: Em execução;
   * `4`: Concluído;
+*  O status "2" refere-se ao inciso II do art. 17 da IN nº 24/2023, ou seja,
+   com a pactuação entre chefia e participante do plano de trabalho. O status "3"
+   refere-se ao art. 20 da IN SEGES-SGPRT/MGi nº 24/2022 O status "4" (Concluído)
+   indica que os registros de execução do plano de trabalho foram inseridos e
+   encaminhados para avaliação. É obrigatório o envio dos planos nos status "3" e "4".
+   Os planos nos demais status não precisam necessariamente ser enviados.
 * A `data_inicio` não pode ser inferior a 31/07/2023.
 
 **Atenção:** não é permitido o envio do Plano de Trabalho sem contribuições, exceto
@@ -235,8 +251,14 @@ se o status do Plano de Trabalho for igual a 1 (Cancelado).
   `data_inicio_periodo_avaliativo` e `data_fim_periodo_avaliativo`,
   entre diferentes Avaliações de Registro de Execução para um mesmo
   Plano de Trabalho.
-* O campo `avaliacao_registros_execucao` admite valores de `1` a `5`.
-* A `data_avaliacao_registros_execucao` não pode ser superior à data
+* O campo `avaliacao_registros_execucao` admite valores de `1` a `5`:
+  * `1`: excepcional: plano de trabalho executado muito acima do esperado;
+  * `2`: alto desempenho: plano de trabalho executado acima do esperado;
+  * `3`: adequado: plano de trabalho executado dentro do esperado;
+  * `4`: inadequado: plano de trabalho executado abaixo do esperado ou parcialmente executado;
+  * `5`: não executado: plano de trabalho integralmente não executado.
+* A `data_avaliacao_registros_execucao` deve ser igual ou posterior à
+  `data_inicio_periodo_avaliativo` e não pode ser superior à data
   de envio.
 
 
