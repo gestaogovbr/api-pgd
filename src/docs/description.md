@@ -174,11 +174,11 @@ regras:
 * A avaliação do plano de entregas pelo nível hierárquico superior ao da chefia
   da unidade de execução deve ser de até trinta dias após o término do plano de entregas.
 * O campo `avaliacao` admite valores de `1` a `5`:
-  * `1` - excepcional: plano de entregas executado com desempenho muito acima do esperado;
-  * `2` - alto desempenho: plano de entregas executado com desempenho acima do esperado;
-  * `3` - adequado: plano de entregas executado dentro do esperado;
-  * `4` - inadequado: plano de entregas executado abaixo do esperado;
-  * `5` - plano de entregas não executado
+  * `1`: excepcional: plano de entregas executado com desempenho muito acima do esperado;
+  * `2`: alto desempenho: plano de entregas executado com desempenho acima do esperado;
+  * `3`: adequado: plano de entregas executado dentro do esperado;
+  * `4`: inadequado: plano de entregas executado abaixo do esperado;
+  * `5`: plano de entregas não executado
 
 **Atenção:** os Planos de Entrega devem ser enviados antes dos Planos de
 Trabalho.
