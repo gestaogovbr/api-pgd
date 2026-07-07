@@ -4,12 +4,14 @@ from datetime import datetime, date
 from typing import Optional
 
 from sqlalchemy import select, and_, func
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import text
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 import models, schemas
 from db_config import DbContextManager, sync_engine
+from util import over_a_year
 
 
 async def get_plano_trabalho(
