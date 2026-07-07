@@ -29,7 +29,7 @@ from db_config import (
 import email_config
 import response_schemas
 import schemas
-from util import check_permissions, over_a_year
+from util import check_permissions
 
 DEFAULT_TOKEN_EXPIRE_MINS = 30
 ACCESS_TOKEN_EXPIRE_MINUTES = int(
@@ -580,38 +580,14 @@ async def create_or_update_plano_entregas(
         )
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
 
-    # Verifica se já existe
-    db_plano_entregas = await crud.get_plano_entregas(
-        db_session=db,
-        origem_unidade=origem_unidade,
-        cod_unidade_autorizadora=cod_unidade_autorizadora,
-        id_plano_entregas=id_plano_entregas,
-    )
-
     try:
-        if not db_plano_entregas:  # create
-            if over_a_year(plano_entregas.data_inicio, plano_entregas.data_termino) == 1:
-                    detail_msg = (
-                        "Plano de entregas não pode abranger período maior que 1 ano"
-                    )
-                    raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
-
-            novo_plano_entregas = await crud.create_plano_entregas(
-                db_session=db,
-                plano_entregas=novo_plano_entregas,
-            )
+        novo_plano_entregas, created = await crud.upsert_plano_entregas(
+            db_session=db,
+            plano_entregas=novo_plano_entregas,
+            update_year_validation_cutoff_date=PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE,
+        )
+        if created:
             response.status_code = status.HTTP_201_CREATED
-        else:  # update
-            if over_a_year(plano_entregas.data_inicio, plano_entregas.data_termino) == 1 and \
-                plano_entregas.data_inicio > PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE:
-                    detail_msg = (
-                        "Plano de entregas não pode abranger período maior que 1 ano"
-                    )
-                    raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
-            novo_plano_entregas = await crud.update_plano_entregas(
-                db_session=db,
-                plano_entregas=novo_plano_entregas,
-            )
         return novo_plano_entregas
     except IntegrityError as exception:
         raise HTTPException(
@@ -725,39 +701,17 @@ async def create_or_update_plano_trabalho(
         )
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
 
-    # Verifica se já existe
-    db_plano_trabalho = await crud.get_plano_trabalho(
-        db_session=db,
-        origem_unidade=origem_unidade,
-        cod_unidade_autorizadora=cod_unidade_autorizadora,
-        id_plano_trabalho=id_plano_trabalho,
-    )
-
     try:
-        if not db_plano_trabalho:  # create
-            if over_a_year(plano_trabalho.data_inicio, plano_trabalho.data_termino) == 1:
-                detail_msg = (
-                    "Plano de trabalho não pode abranger período maior que 1 ano"
-                )
-                raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
-
-            novo_plano_trabalho = await crud.create_plano_trabalho(
-                db_session=db,
-                plano_trabalho=novo_plano_trabalho,
-            )
+        novo_plano_trabalho, created = await crud.upsert_plano_trabalho(
+            db_session=db,
+            plano_trabalho=novo_plano_trabalho,
+            update_year_validation_cutoff_date=(
+                PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE
+            ),
+        )
+        if created:
             response.status_code = status.HTTP_201_CREATED
-        else:  # update
-            if over_a_year(plano_trabalho.data_inicio, plano_trabalho.data_termino) == 1 and \
-                plano_trabalho.data_inicio > PT_PE_UPDATE_YEAR_VALIDATION_CUTOFF_DATE:
-                detail_msg = (
-                    "Plano de trabalho não pode abranger período maior que 1 ano"
-                )
-                raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail_msg)
-
-            novo_plano_trabalho = await crud.update_plano_trabalho(
-                db_session=db,
-                plano_trabalho=novo_plano_trabalho,
-            )
+        else:
             response.status_code = status.HTTP_200_OK
     except IntegrityError as exception:
         raise HTTPException(
