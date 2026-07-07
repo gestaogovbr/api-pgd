@@ -565,61 +565,127 @@ def _build_plano_entregas_model(
     return db_plano_entregas
 
 
-async def create_plano_entregas(
+# async def create_plano_entregas(
+#     db_session: DbContextManager,
+#     plano_entregas: schemas.PlanoEntregasSchema,
+# ) -> schemas.PlanoEntregasSchema:
+#     """Cria um plano de trabalho definido pelos dados do schema Pydantic
+#     plano_entregas.
+
+#     Args:
+#         db_session (DbContextManager): Context manager para a sessão
+#             async do SQL Alchemy.
+#         plano_entregas (schemas.PlanoEntregasSchema): Dados do plano
+#             de entregas como um esquema Pydantic.
+
+#     Returns:
+#         schemas.PlanoEntregasSchema: Esquema Pydantic do Plano de Entregas
+#             com os dados que foram gravados no banco.
+#     """
+#     creation_timestamp = datetime.now()
+#     db_plano_entregas = _build_plano_entregas_model(plano_entregas, creation_timestamp)
+#     async with db_session as session:
+#         for entrega in db_plano_entregas.entregas:
+#             session.add(entrega)
+#         session.add(db_plano_entregas)
+#         await session.commit()
+#         await session.refresh(db_plano_entregas)
+#     return schemas.PlanoEntregasSchema.model_validate(db_plano_entregas)
+
+
+async def upsert_plano_entregas(
     db_session: DbContextManager,
     plano_entregas: schemas.PlanoEntregasSchema,
-) -> schemas.PlanoEntregasSchema:
-    """Cria um plano de trabalho definido pelos dados do schema Pydantic
-    plano_entregas.
-
-    Args:
-        db_session (DbContextManager): Context manager para a sessão
-            async do SQL Alchemy.
-        plano_entregas (schemas.PlanoEntregasSchema): Dados do plano
-            de entregas como um esquema Pydantic.
-
-    Returns:
-        schemas.PlanoEntregasSchema: Esquema Pydantic do Plano de Entregas
-            com os dados que foram gravados no banco.
-    """
-    creation_timestamp = datetime.now()
-    db_plano_entregas = _build_plano_entregas_model(plano_entregas, creation_timestamp)
-    async with db_session as session:
-        for entrega in db_plano_entregas.entregas:
-            session.add(entrega)
-        session.add(db_plano_entregas)
-        await session.commit()
-        await session.refresh(db_plano_entregas)
-    return schemas.PlanoEntregasSchema.model_validate(db_plano_entregas)
-
-
-async def update_plano_entregas(
-    db_session: DbContextManager,
-    plano_entregas: schemas.PlanoEntregasSchema,
-) -> schemas.PlanoEntregasSchema:
-    """Atualiza um plano de entregas conforme os dados recebidos no
+    update_year_validation_cutoff_date: date,
+) -> tuple[schemas.PlanoEntregasSchema, bool]:
+    """Cria ou atualiza um plano de entregas conforme os dados recebidos no
     esquema Pydantic em plano_entregas.
 
-    Os dados existentes são primeiro apagados do banco para depois
-    inserir os dados recebidos.
+    O registro do plano é gravado com upsert para evitar conflitos de
+    integridade em transações concorrentes. As entregas existentes são
+    apagadas e recriadas dentro da mesma transação.
 
     Args:
         db_session (DbContextManager): Context manager para a sessão
             async do SQL Alchemy.
         plano_entregas (schemas.PlanoEntregasSchema): Dados do plano
             de entregas como um esquema Pydantic.
+        update_year_validation_cutoff_date (date): Data de corte para aplicar
+            a validação de período maior que 1 ano também nas atualizações.
 
     Returns:
-        schemas.PlanoEntregasSchema: Esquema Pydantic do Plano de Entregas
-            com o retorno de create_plano_entregas.
+        tuple[schemas.PlanoEntregasSchema, bool]: Esquema Pydantic do Plano
+            de Entregas e booleano indicando se foi criado.
     """
-    creation_timestamp = datetime.now()
-    db_plano_entregas_atualizado = _build_plano_entregas_model(
-        plano_entregas, creation_timestamp
-    )
+    timestamp = datetime.now()
+    plano_values = plano_entregas.model_dump(exclude={"entregas"})
+    plano_values["data_insercao"] = timestamp
+    entrega_identity = {
+        "origem_unidade": plano_entregas.origem_unidade,
+        "cod_unidade_autorizadora": plano_entregas.cod_unidade_autorizadora,
+        "id_plano_entregas": plano_entregas.id_plano_entregas,
+    }
+    entregas_values = [
+        {
+            **entrega.model_dump(),
+            **entrega_identity,
+            "data_insercao": timestamp,
+        }
+        for entrega in plano_entregas.entregas
+    ]
 
     async with db_session as session:
         async with session.begin():
+            result = await session.execute(
+                select(models.PlanoEntregas.id)
+                .filter_by(origem_unidade=plano_entregas.origem_unidade)
+                .filter_by(
+                    cod_unidade_autorizadora=plano_entregas.cod_unidade_autorizadora
+                )
+                .filter_by(id_plano_entregas=plano_entregas.id_plano_entregas)
+            )
+            plano_exists = result.scalar_one_or_none() is not None
+            created = not plano_exists
+            if over_a_year(plano_entregas.data_inicio, plano_entregas.data_termino) == 1:
+                if (
+                    not plano_exists
+                    or plano_entregas.data_inicio > update_year_validation_cutoff_date
+                ):
+                    raise HTTPException(
+                        status_code=422,
+                        detail="Plano de entregas não pode abranger período maior que 1 ano",
+                    )
+
+            insert_stmt = insert(models.PlanoEntregas).values(**plano_values)
+            update_values = {
+                column.name: insert_stmt.excluded[column.name]
+                for column in models.PlanoEntregas.__table__.columns
+                if column.name not in ("id", "data_insercao", "data_atualizacao")
+            }
+            update_values["data_atualizacao"] = timestamp
+            await session.execute(
+                insert_stmt.on_conflict_do_update(
+                    index_elements=[
+                        "origem_unidade",
+                        "cod_unidade_autorizadora",
+                        "id_plano_entregas",
+                    ],
+                    set_=update_values,
+                )
+            )
+
+            await session.execute(
+                models.Entrega.__table__.delete().where(
+                    models.Entrega.origem_unidade == plano_entregas.origem_unidade,
+                    models.Entrega.cod_unidade_autorizadora
+                    == plano_entregas.cod_unidade_autorizadora,
+                    models.Entrega.id_plano_entregas
+                    == plano_entregas.id_plano_entregas,
+                )
+            )
+            if entregas_values:
+                await session.execute(insert(models.Entrega), entregas_values)
+
             result = await session.execute(
                 select(models.PlanoEntregas)
                 .filter_by(origem_unidade=plano_entregas.origem_unidade)
@@ -628,19 +694,25 @@ async def update_plano_entregas(
                 )
                 .filter_by(id_plano_entregas=plano_entregas.id_plano_entregas)
             )
-            db_plano_entregas = result.unique().scalar_one()
-            await session.delete(db_plano_entregas)
-            await session.flush()
+            db_plano_entregas_atualizado = result.unique().scalar_one()
 
-            for entrega in db_plano_entregas_atualizado.entregas:
-                session.add(entrega)
+        return (
+            schemas.PlanoEntregasSchema.model_validate(db_plano_entregas_atualizado),
+            created,
+        )
 
-            session.add(db_plano_entregas_atualizado)
 
-            await session.flush()
-
-        await session.refresh(db_plano_entregas_atualizado)
-        return schemas.PlanoEntregasSchema.model_validate(db_plano_entregas_atualizado)
+# async def update_plano_entregas(
+#     db_session: DbContextManager,
+#     plano_entregas: schemas.PlanoEntregasSchema,
+# ) -> schemas.PlanoEntregasSchema:
+#     """Atualiza um plano de entregas pelo fluxo único de upsert."""
+#     db_plano_entregas, _ = await upsert_plano_entregas(
+#         db_session=db_session,
+#         plano_entregas=plano_entregas,
+#         update_year_validation_cutoff_date=date.max,
+#     )
+#     return db_plano_entregas
 
 
 async def get_participante(
