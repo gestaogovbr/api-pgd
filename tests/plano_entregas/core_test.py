@@ -9,7 +9,9 @@ from httpx import Client, Response
 from fastapi import status as http_status
 
 import pytest
+from sqlalchemy import text
 
+from db_config import sync_engine
 from util import assert_error_message
 from ..conftest import MAX_BIGINT
 
@@ -231,6 +233,47 @@ class TestCreatePlanoEntrega(BasePETest):
         assert response.status_code == http_status.HTTP_200_OK
         assert response.json()["avaliacao"] == 3
         assert response.json()["data_avaliacao"] == "2024-08-15"
+
+    def test_plano_entregas_datas_insercao_atualizacao(self):
+        """Verifica datas técnicas de criação e atualização do plano."""
+
+        response = self.put_plano_entregas(self.input_pe)
+        assert response.status_code == http_status.HTTP_201_CREATED
+
+        query = text(
+            """
+            SELECT data_insercao, data_atualizacao
+            FROM plano_entregas
+            WHERE origem_unidade = :origem_unidade
+              AND cod_unidade_autorizadora = :cod_unidade_autorizadora
+              AND id_plano_entregas = :id_plano_entregas
+            """
+        )
+        params = {
+            "origem_unidade": self.input_pe["origem_unidade"],
+            "cod_unidade_autorizadora": self.input_pe["cod_unidade_autorizadora"],
+            "id_plano_entregas": self.input_pe["id_plano_entregas"],
+        }
+
+        with sync_engine.connect() as conn:
+            db_plano = conn.execute(query, params).mappings().one()
+
+        data_insercao = db_plano["data_insercao"]
+        assert data_insercao is not None
+        assert db_plano["data_atualizacao"] is None
+
+        input_pe = deepcopy(self.input_pe)
+        input_pe["avaliacao"] = 3
+        input_pe["data_avaliacao"] = "2024-08-15"
+        response = self.put_plano_entregas(input_pe)
+        assert response.status_code == http_status.HTTP_200_OK
+
+        with sync_engine.connect() as conn:
+            db_plano = conn.execute(query, params).mappings().one()
+
+        assert db_plano["data_insercao"] == data_insercao
+        assert db_plano["data_atualizacao"] is not None
+        assert db_plano["data_atualizacao"] >= data_insercao
 
     @pytest.mark.parametrize("omitted_fields", enumerate(FIELDS_ENTREGA["optional"]))
     def test_create_plano_entregas_entrega_omit_optional_fields(self, omitted_fields):
