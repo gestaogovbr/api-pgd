@@ -201,63 +201,227 @@ async def _build_plano_trabalho_model(
     return db_plano
 
 
-async def create_plano_trabalho(
+# async def create_plano_trabalho(
+#     db_session: DbContextManager,
+#     plano_trabalho: schemas.PlanoTrabalhoSchema,
+# ) -> schemas.PlanoTrabalhoSchema:
+#     """Cria um plano de trabalho definido pelos dados do schema Pydantic
+#     plano_trabalho.
+
+#     Args:
+#         db_session (DbContextManager): Context manager para a sessão
+#             async do SQL Alchemy.
+#         plano_trabalho (schemas.PlanoTrabalhoSchema): Dados do plano
+#             de trabalho como um esquema Pydantic.
+
+#     Returns:
+#         schemas.PlanoTrabalhoSchema: Esquema Pydantic do Plano de Trabalho
+#             com os dados que foram gravados no banco.
+#     """
+#     creation_timestamp = datetime.now()
+#     async with db_session as session:
+#         db_plano_trabalho = await _build_plano_trabalho_model(
+#             session, plano_trabalho, creation_timestamp
+#         )
+#         session.add(db_plano_trabalho)
+#         try:
+#             await session.commit()
+#         except IntegrityError as e:
+#             raise HTTPException(
+#                 status_code=422,
+#                 detail="Alteração rejeitada por violar regras de integridade",
+#             ) from e
+#         await session.refresh(db_plano_trabalho)
+#     return schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho)
+
+
+async def upsert_plano_trabalho(
     db_session: DbContextManager,
     plano_trabalho: schemas.PlanoTrabalhoSchema,
-) -> schemas.PlanoTrabalhoSchema:
-    """Cria um plano de trabalho definido pelos dados do schema Pydantic
-    plano_trabalho.
-
-    Args:
-        db_session (DbContextManager): Context manager para a sessão
-            async do SQL Alchemy.
-        plano_trabalho (schemas.PlanoTrabalhoSchema): Dados do plano
-            de trabalho como um esquema Pydantic.
-
-    Returns:
-        schemas.PlanoTrabalhoSchema: Esquema Pydantic do Plano de Trabalho
-            com os dados que foram gravados no banco.
-    """
-    creation_timestamp = datetime.now()
-    async with db_session as session:
-        db_plano_trabalho = await _build_plano_trabalho_model(
-            session, plano_trabalho, creation_timestamp
-        )
-        session.add(db_plano_trabalho)
-        try:
-            await session.commit()
-        except IntegrityError as e:
-            raise HTTPException(
-                status_code=422,
-                detail="Alteração rejeitada por violar regras de integridade",
-            ) from e
-        await session.refresh(db_plano_trabalho)
-    return schemas.PlanoTrabalhoSchema.model_validate(db_plano_trabalho)
-
-
-async def update_plano_trabalho(
-    db_session: DbContextManager,
-    plano_trabalho: schemas.PlanoTrabalhoSchema,
-) -> schemas.PlanoTrabalhoSchema:
-    """Atualiza um plano de trabalho conforme os dados recebidos no
+    update_year_validation_cutoff_date: date,
+) -> tuple[schemas.PlanoTrabalhoSchema, bool]:
+    """Cria ou atualiza um plano de trabalho conforme os dados recebidos no
     esquema Pydantic em plano_trabalho.
 
-    Os dados existentes são primeiro apagados do banco para depois
-    inserir os dados recebidos.
+    O registro do plano é gravado com upsert para evitar conflitos de
+    integridade em transações concorrentes. As contribuições e avaliações
+    existentes são apagadas e recriadas dentro da mesma transação.
 
     Args:
         db_session (DbContextManager): Context manager para a sessão
             async do SQL Alchemy.
         plano_trabalho (schemas.PlanoTrabalhoSchema): Dados do plano
             de trabalho como um esquema Pydantic.
+        update_year_validation_cutoff_date (date): Data de corte para aplicar
+            a validação de período maior que 1 ano.
 
     Returns:
-        schemas.PlanoTrabalhoSchema: Esquema Pydantic do Plano de Trabalho
-            com o retorno de create_plano_trabalho.
+        tuple[schemas.PlanoTrabalhoSchema, bool]: Esquema Pydantic do Plano
+            de Trabalho e booleano indicando se foi criado.
     """
-    creation_timestamp = datetime.now()
+    timestamp = datetime.now()
+    plano_values = plano_trabalho.model_dump(
+        exclude={"contribuicoes", "avaliacoes_registros_execucao"}
+    )
+    plano_values["data_insercao"] = timestamp
+    plano_identity = {
+        "origem_unidade_pt": plano_trabalho.origem_unidade,
+        "cod_unidade_autorizadora_pt": plano_trabalho.cod_unidade_autorizadora,
+        "id_plano_trabalho": plano_trabalho.id_plano_trabalho,
+    }
+    contribuicoes_values = [
+        {
+            **contribuicao.model_dump(),
+            **plano_identity,
+            "data_insercao": timestamp,
+        }
+        for contribuicao in (plano_trabalho.contribuicoes or [])
+    ]
+    avaliacoes_values = [
+        {
+            **avaliacao.model_dump(),
+            **plano_identity,
+            "data_insercao": timestamp,
+        }
+        for avaliacao in (plano_trabalho.avaliacoes_registros_execucao or [])
+    ]
+
     async with db_session as session:
         async with session.begin():
+            result = await session.execute(
+                select(models.Participante.matricula_siape)
+                .filter_by(origem_unidade=plano_trabalho.origem_unidade)
+                .filter_by(
+                    cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora
+                )
+                .filter_by(matricula_siape=plano_trabalho.matricula_siape)
+                .filter_by(
+                    cod_unidade_lotacao=plano_trabalho.cod_unidade_lotacao_participante
+                )
+            )
+            participante_exists = result.scalar_one_or_none()
+            if not participante_exists:
+                raise ValueError(
+                    "Plano de Trabalho faz referência a participante inexistente.\n"
+                    f" origem_unidade: {plano_trabalho.origem_unidade}\n"
+                    f" cod_unidade_autorizadora: "
+                    f"{plano_trabalho.cod_unidade_autorizadora}\n"
+                    f" matricula_siape: {plano_trabalho.matricula_siape}\n"
+                    f" cod_unidade_lotacao: "
+                    f"{plano_trabalho.cod_unidade_lotacao_participante}"
+                )
+
+            for contribuicao in plano_trabalho.contribuicoes or []:
+                if (
+                    contribuicao.tipo_contribuicao == 1
+                    and contribuicao.id_plano_entregas
+                    and contribuicao.id_entrega
+                ):
+                    result = await session.execute(
+                        select(models.Entrega)
+                        .filter_by(origem_unidade=plano_trabalho.origem_unidade)
+                        .filter_by(
+                            cod_unidade_autorizadora=(
+                                plano_trabalho.cod_unidade_autorizadora
+                            )
+                        )
+                        .filter_by(id_plano_entregas=contribuicao.id_plano_entregas)
+                        .filter_by(id_entrega=contribuicao.id_entrega)
+                    )
+                    db_entrega = result.scalars().unique().one_or_none()
+                    if not db_entrega:
+                        raise ValueError(
+                            "Contribuição do Plano de Trabalho faz referência a "
+                            "entrega inexistente. "
+                            f"origem_unidade: {plano_trabalho.origem_unidade} "
+                            f"cod_unidade_autorizadora: "
+                            f"{plano_trabalho.cod_unidade_autorizadora} "
+                            f"id_plano_entregas: {contribuicao.id_plano_entregas} "
+                            f"id_entrega: {contribuicao.id_entrega}"
+                        )
+
+            result = await session.execute(
+                select(models.PlanoTrabalho.id_plano_trabalho)
+                .filter_by(origem_unidade=plano_trabalho.origem_unidade)
+                .filter_by(
+                    cod_unidade_autorizadora=plano_trabalho.cod_unidade_autorizadora
+                )
+                .filter_by(id_plano_trabalho=plano_trabalho.id_plano_trabalho)
+            )
+            plano_exists = result.scalar_one_or_none() is not None
+            created = not plano_exists
+            if (
+                over_a_year(plano_trabalho.data_inicio, plano_trabalho.data_termino)
+                == 1
+            ):
+                if (
+                    not plano_exists
+                    or plano_trabalho.data_inicio > update_year_validation_cutoff_date
+                ):
+                    raise HTTPException(
+                        status_code=422,
+                        detail=(
+                            "Plano de trabalho não pode abranger período "
+                            "maior que 1 ano"
+                        ),
+                    )
+
+            try:
+                insert_stmt = insert(models.PlanoTrabalho).values(**plano_values)
+                update_values = {
+                    column.name: insert_stmt.excluded[column.name]
+                    for column in models.PlanoTrabalho.__table__.columns
+                    if (
+                        not column.primary_key
+                        and column.name not in ("data_insercao", "data_atualizacao")
+                    )
+                }
+                update_values["data_atualizacao"] = timestamp
+                await session.execute(
+                    insert_stmt.on_conflict_do_update(
+                        index_elements=[
+                            "origem_unidade",
+                            "cod_unidade_autorizadora",
+                            "id_plano_trabalho",
+                        ],
+                        set_=update_values,
+                    )
+                )
+
+                await session.execute(
+                    models.Contribuicao.__table__.delete().where(
+                        models.Contribuicao.origem_unidade_pt
+                        == plano_trabalho.origem_unidade,
+                        models.Contribuicao.cod_unidade_autorizadora_pt
+                        == plano_trabalho.cod_unidade_autorizadora,
+                        models.Contribuicao.id_plano_trabalho
+                        == plano_trabalho.id_plano_trabalho,
+                    )
+                )
+                await session.execute(
+                    models.AvaliacaoRegistrosExecucao.__table__.delete().where(
+                        models.AvaliacaoRegistrosExecucao.origem_unidade_pt
+                        == plano_trabalho.origem_unidade,
+                        models.AvaliacaoRegistrosExecucao.cod_unidade_autorizadora_pt
+                        == plano_trabalho.cod_unidade_autorizadora,
+                        models.AvaliacaoRegistrosExecucao.id_plano_trabalho
+                        == plano_trabalho.id_plano_trabalho,
+                    )
+                )
+                if contribuicoes_values:
+                    await session.execute(
+                        insert(models.Contribuicao), contribuicoes_values
+                    )
+                if avaliacoes_values:
+                    await session.execute(
+                        insert(models.AvaliacaoRegistrosExecucao), avaliacoes_values
+                    )
+            except IntegrityError as e:
+                raise HTTPException(
+                    status_code=422,
+                    detail="Alteração rejeitada por violar regras de integridade",
+                ) from e
+
             result = await session.execute(
                 select(models.PlanoTrabalho)
                 .filter_by(origem_unidade=plano_trabalho.origem_unidade)
@@ -266,23 +430,22 @@ async def update_plano_trabalho(
                 )
                 .filter_by(id_plano_trabalho=plano_trabalho.id_plano_trabalho)
             )
-            db_plano_trabalho = result.unique().scalar_one()
-            await session.delete(db_plano_trabalho)
-            await session.flush()
+            db_plano_atualizado = result.unique().scalar_one()
 
-            db_plano_atualizado = await _build_plano_trabalho_model(
-                session, plano_trabalho, creation_timestamp
-            )
-            session.add(db_plano_atualizado)
-            try:
-                await session.flush()
-            except IntegrityError as e:
-                raise HTTPException(
-                    status_code=422,
-                    detail="Alteração rejeitada por violar regras de integridade",
-                ) from e
-        await session.refresh(db_plano_atualizado)
-    return schemas.PlanoTrabalhoSchema.model_validate(db_plano_atualizado)
+    return schemas.PlanoTrabalhoSchema.model_validate(db_plano_atualizado), created
+
+
+# async def update_plano_trabalho(
+#     db_session: DbContextManager,
+#     plano_trabalho: schemas.PlanoTrabalhoSchema,
+# ) -> schemas.PlanoTrabalhoSchema:
+#     """Atualiza um plano de trabalho pelo fluxo único de upsert."""
+#     db_plano_trabalho, _ = await upsert_plano_trabalho(
+#         db_session=db_session,
+#         plano_trabalho=plano_trabalho,
+#         update_year_validation_cutoff_date=date.max,
+#     )
+#     return db_plano_trabalho
 
 
 async def get_plano_entregas(
