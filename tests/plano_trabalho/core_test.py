@@ -10,7 +10,9 @@ from httpx import Client, Response
 from fastapi import status
 
 import pytest
+from sqlalchemy import text
 
+from db_config import sync_engine
 from util import assert_error_message
 from ..conftest import MAX_INT, MAX_BIGINT
 
@@ -248,6 +250,47 @@ class TestCreatePlanoTrabalho(BasePTTest):
 
         assert response.status_code == status.HTTP_200_OK
         self.assert_equal_plano_trabalho(response.json(), self.input_pt)
+
+    def test_plano_trabalho_datas_insercao_atualizacao(self):
+        """Verifica datas técnicas de criação e atualização do plano."""
+
+        response = self.put_plano_trabalho(self.input_pt)
+        assert response.status_code == status.HTTP_201_CREATED
+
+        query = text(
+            """
+            SELECT data_insercao, data_atualizacao
+            FROM plano_trabalho
+            WHERE origem_unidade = :origem_unidade
+              AND cod_unidade_autorizadora = :cod_unidade_autorizadora
+              AND id_plano_trabalho = :id_plano_trabalho
+            """
+        )
+        params = {
+            "origem_unidade": self.input_pt["origem_unidade"],
+            "cod_unidade_autorizadora": self.input_pt["cod_unidade_autorizadora"],
+            "id_plano_trabalho": self.input_pt["id_plano_trabalho"],
+        }
+
+        with sync_engine.connect() as conn:
+            db_plano = conn.execute(query, params).mappings().one()
+
+        data_insercao = db_plano["data_insercao"]
+        assert data_insercao is not None
+        assert db_plano["data_atualizacao"] is None
+
+        input_pt = deepcopy(self.input_pt)
+        input_pt["status"] = 4
+        input_pt["data_termino"] = "2024-06-30"
+        response = self.put_plano_trabalho(input_pt)
+        assert response.status_code == status.HTTP_200_OK
+
+        with sync_engine.connect() as conn:
+            db_plano = conn.execute(query, params).mappings().one()
+
+        assert db_plano["data_insercao"] == data_insercao
+        assert db_plano["data_atualizacao"] is not None
+        assert db_plano["data_atualizacao"] >= data_insercao
 
     @pytest.mark.parametrize(
         "missing_fields", enumerate(FIELDS_PLANO_TRABALHO["mandatory"])
